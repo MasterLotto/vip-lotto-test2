@@ -180,8 +180,8 @@ input:focus{background:#fff;border-color:rgba(10,102,71,.6);box-shadow:0 0 0 3px
 .engine-icon{font-size:.48rem;line-height:1;opacity:.9;}
 .online-glow-icon{display:inline-flex;align-items:center;justify-content:center;}
 
-.history-panel{display:none;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px;padding:9px 12px;border-radius:12px;background:var(--surface2);border:1px solid #A8D5C2;color:var(--muted);font-size:.52rem;}
-.history-panel strong{color:var(--emerald);font-family:'IBM Plex Mono',monospace;font-size:.6rem;}
+.last-session{display:none;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;padding:9px;border-radius:12px;background:var(--gold3);border:1px solid rgba(158,108,2,.25);color:var(--muted);font-size:.54rem;}
+.last-session strong{color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:.62rem;}
 
 .command-center{position:relative;overflow:hidden;padding:12px 12px 10px;margin-bottom:10px;border-radius:18px;background:radial-gradient(circle at 90% 10%,rgba(16,185,129,.12),transparent 45%),#fff;border:1px solid #A8D5C2;box-shadow:var(--shadow2);}
 .command-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;}
@@ -485,11 +485,12 @@ input:focus{background:#fff;border-color:rgba(10,102,71,.6);box-shadow:0 0 0 3px
     </div>
   </div>
 
-  <div id="historyPanel" class="history-panel">
-    <span>สถิติบันทึกย้อนหลัง (localStorage): <strong id="historyCount">0</strong> งวด</span>
-    <button type="button" id="clearHistoryBtn" style="padding:3px 6px;border-radius:6px;border:1px solid #A8D5C2;background:#fff;cursor:pointer;font-size:.45rem;">ล้างประวัติ</button>
+  <div id="lastSessionBadge" class="last-session">
+    <span>อ้างอิงจากผลล่าสุด:</span>
+    <strong id="lbl3"></strong>
+    <span>•</span>
+    <strong id="lbl2"></strong>
   </div>
-
   <section class="command-center">
     <div class="command-header">
       <div>
@@ -727,7 +728,7 @@ const _app = {
     localStorage.setItem("ml_auth_status_v3","active");
     document.getElementById("loginView").style.display="none";
     document.getElementById("calculatorView").style.display="block";
-    this.checkHistoryPanel();
+    this.checkSessionBadge();
     document.getElementById("num3top").focus();
   },
   logout(){
@@ -749,26 +750,16 @@ const _app = {
     document.getElementById("num2bottom").value="";
     document.getElementById("num3top").focus();
   },
-  checkHistoryPanel(){
-    try {
-      const history = JSON.parse(localStorage.getItem("ml_history_records_v1") || "[]");
-      const panel = document.getElementById("historyPanel");
-      const countEl = document.getElementById("historyCount");
-      if(history.length > 0) {
-        countEl.innerText = history.length;
-        panel.style.display = "flex";
-      } else {
-        panel.style.display = "none";
-      }
-    } catch(e) {
-      document.getElementById("historyPanel").style.display = "none";
-    }
-  },
-  clearHistory(){
-    this._audio("click");
-    if(confirm("ต้องการล้างประวัติสถิติย้อนหลังทั้งหมดใช่หรือไม่?")) {
-      localStorage.removeItem("ml_history_records_v1");
-      this.checkHistoryPanel();
+  checkSessionBadge(){
+    const n3=localStorage.getItem("ml_l_n3_v3");
+    const n2=localStorage.getItem("ml_l_n2_v3");
+    const badge=document.getElementById("lastSessionBadge");
+    if(n3&&n2){
+      document.getElementById("lbl3").innerText=n3;
+      document.getElementById("lbl2").innerText=n2;
+      badge.style.display="flex";
+    }else{
+      badge.style.display="none";
     }
   },
   calculate(){
@@ -780,15 +771,9 @@ const _app = {
       alert("กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก");
       return;
     }
-
-    try {
-      let history = JSON.parse(localStorage.getItem("ml_history_records_v1") || "[]");
-      history.unshift({ n3, n2, time: Date.now() });
-      if(history.length > 10) history = history.slice(0, 10);
-      localStorage.setItem("ml_history_records_v1", JSON.stringify(history));
-    } catch(e) {}
-    this.checkHistoryPanel();
-
+    localStorage.setItem("ml_l_n3_v3",n3);
+    localStorage.setItem("ml_l_n2_v3",n2);
+    this.checkSessionBadge();
     const scan=document.getElementById("aiScannerBox");
     const btn=document.getElementById("calculateButton");
     btn.disabled=true;
@@ -796,10 +781,12 @@ const _app = {
     const messages=[
       "READING INPUT STRUCTURE...",
       "CALCULATING DIGIT MOMENTUM...",
-      "EVALUATING LOCALSTORAGE HISTORY...",
-      "RUNNING 100 DIVERSIFIED FORMULAS...",
-      "BUILDING NUMBER MATRIX & WIN SET...",
-      "FINALIZING ANALYSIS..."
+      "RUNNING DYNAMIC BACKEND COMPASS...",
+      "EVALUATING 100+ MATHEMATICAL MODELS...",
+      "BUILDING NEURAL NUMBER MATRIX...",
+      "MAPPING OPTIMIZED DIGIT DISTRIBUTION...",
+      "GENERATING VIP WIN SET...",
+      "FINALIZING AUDITED ANALYSIS..."
     ];
     let index=0;
     const scannerText=document.getElementById("aiScannerText");
@@ -831,22 +818,22 @@ const _app = {
       (T_top + T_bot), (T_top + U_bot), (U_top + T_bot), (U_top + U_bot), (T_bot + U_bot),
       (sumTop + T_bot), (sumTop + U_bot), (sumTop + H), (sumTop + T_top), (sumTop + U_top),
       (10 - H), (10 - T_top), (10 - U_top), (10 - T_bot), (10 - U_bot),
-      (H * 3 + T_top), (U_top * 3 + T_bot), (T_top * 2 + U_top), (H + T_top * 2), (U_top * 2 + T_bot),
-      (Math.abs(H - T_top) * 3), (Math.abs(T_top - U_top) * 3), (Math.abs(T_bot - U_bot) * 3), (sumTop + sumBot), (Math.abs(sumTop - sumBot)),
-      ((H * 2 + T_top) - U_bot), ((T_top * 2 + U_top) - T_bot), ((H * 2 + U_top) - T_bot), (20 - (T_top * 2 + T_bot)), (20 - (U_top * 2 + U_bot)),
-      (H * 2 + T_top + U_top - T_bot), (H + T_top * 2 + U_top - U_bot), (10 + T_top * 2 - U_bot), (10 + U_top * 2 - T_bot), (sumTop + 10 - U_bot * 2),
-      (H * 3 + U_bot - T_top), (T_top * 3 + U_bot - H), (U_top * 3 + T_bot - H), (sumBot * 2 + H - T_top), (sumBot * 2 + H - U_top),
-      (H + sumBot * 2 - T_top), (H + sumBot * 2 - U_top), (T_top + sumBot * 2 - H), (T_top + sumBot * 2 - U_top), (U_top + sumBot * 2 - H),
-      (U_top + sumBot * 2 - T_top), (30 - (H * 3 + T_top + T_bot)), (30 - (H * 3 + U_top + U_bot)), (30 - (T_top * 3 + U_top + T_bot)), (30 - (H * 3 + T_bot + U_bot)),
-      ((H * 2 + T_top) + T_bot - U_bot), ((H * 2 + U_top) + U_bot - T_bot), ((T_top * 2 + U_top) + T_bot - H), (sumTop + T_bot * 2 - U_bot), (sumTop + U_bot * 2 - T_bot),
-      (H + T_top * 3 + sumBot), (H + U_top * 3 + sumBot), (T_top + U_top * 3 + sumBot), (H + T_bot * 3 + sumBot), (H + U_bot * 3 + sumBot),
-      (T_top * 3 + T_bot + sumTop), (T_top + U_bot * 3 + sumTop), (U_top * 3 + T_bot + sumTop), (U_top + U_bot * 3 + sumTop), (T_bot + U_bot * 3 + sumTop),
-      (10 + H * 3 + T_top), (10 + H * 3 + U_top), (10 + T_top * 3 + U_top), (10 + T_bot * 3 + U_bot), (10 + H * 3 + T_bot),
-      (10 + H * 3 + U_bot), (10 + T_top * 3 + T_bot), (10 + T_top * 3 + U_bot), (10 + U_top * 3 + T_bot), (10 + U_top * 3 + U_bot),
-      ((H * 3 - T_top) + U_bot), ((H * 3 - U_top) + T_bot), ((T_top * 3 - U_top) + U_bot), ((T_bot * 3 - U_bot) + H), ((T_bot * 3 - U_bot) + T_top),
-      ((T_bot * 3 - U_bot) + U_top), (20 - H * 3 - T_top), (20 - H * 3 - U_top), (20 - T_top * 3 - U_top), (20 - T_bot * 3 - U_bot),
-      (20 - H * 3 - T_bot), (20 - H * 3 - U_bot), (20 - T_top * 3 - T_bot), (20 - T_top * 3 - U_bot), (20 - U_top * 3 - T_bot),
-      (20 - U_top * 3 - U_bot), (totalSum * 3), (totalSum * 4), (totalSum + H * 3), (totalSum + T_bot * 3)
+      (H + T_top + T_bot), (H + U_top + U_bot), (T_top + U_top + T_bot), (T_top + U_top + U_bot), (H + T_bot + U_bot),
+      (T_top + T_bot + U_bot), (sumTop - T_bot), (sumTop - U_bot), (sumTop + sumBot), (sumTop - sumBot),
+      ((H + T_top) - U_bot), ((T_top + U_top) - T_bot), ((H + U_top) - T_bot), (20 - (T_top + T_bot)), (20 - (U_top + U_bot)),
+      (H + T_top + U_top - T_bot), (H + T_top + U_top - U_bot), (10 + T_top - U_bot), (10 + U_top - T_bot), (sumTop + 10 - U_bot),
+      (H + U_bot - T_top), (T_top + U_bot - H), (U_top + T_bot - H), (sumBot + H - T_top), (sumBot + H - U_top),
+      (H + sumBot - T_top), (H + sumBot - U_top), (T_top + sumBot - H), (T_top + sumBot - U_top), (U_top + sumBot - H),
+      (U_top + sumBot - T_top), (30 - (H + T_top + T_bot)), (30 - (H + U_top + U_bot)), (30 - (T_top + U_top + T_bot)), (30 - (H + T_bot + U_bot)),
+      ((H + T_top) + T_bot - U_bot), ((H + U_top) + U_bot - T_bot), ((T_top + U_top) + T_bot - H), (sumTop + T_bot - U_bot), (sumTop + U_bot - T_bot),
+      (H + T_top + sumBot), (H + U_top + sumBot), (T_top + U_top + sumBot), (H + T_bot + sumTop), (H + U_bot + sumTop),
+      (T_top + T_bot + sumTop), (T_top + U_bot + sumTop), (U_top + T_bot + sumTop), (U_top + U_bot + sumTop), (T_bot + U_bot + sumTop),
+      (10 + H + T_top), (10 + H + U_top), (10 + T_top + U_top), (10 + T_bot + U_bot), (10 + H + T_bot),
+      (10 + H + U_bot), (10 + T_top + T_bot), (10 + T_top + U_bot), (10 + U_top + T_bot), (10 + U_top + U_bot),
+      ((H - T_top) + U_bot), ((H - U_top) + T_bot), ((T_top - U_top) + U_bot), ((T_bot - U_bot) + H), ((T_bot - U_bot) + T_top),
+      ((T_bot - U_bot) + U_top), (20 - H - T_top), (20 - H - U_top), (20 - T_top - U_top), (20 - T_bot - U_bot),
+      (20 - H - T_bot), (20 - H - U_bot), (20 - T_top - T_bot), (20 - T_top - U_bot), (20 - U_top - T_bot),
+      (20 - U_top - U_bot), (totalSum), (totalSum * 2), (totalSum + H), (totalSum + T_bot)
     ];
 
     const countedDigits = {};
@@ -876,25 +863,6 @@ const _app = {
 
     const formula100Engine = this._run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum);
 
-    let historyRecords = [];
-    try {
-      historyRecords = JSON.parse(localStorage.getItem("ml_history_records_v1") || "[]");
-    } catch(e) {}
-
-    const historyFrequency = {};
-    for(let d=0; d<=9; d++) historyFrequency[d] = 0;
-    historyRecords.forEach(rec => {
-      rec.n3.split("").forEach(ch => {
-        const dig = parseInt(ch, 10);
-        if(!isNaN(dig)) historyFrequency[dig]++;
-      });
-      rec.n2.split("").forEach(ch => {
-        const dig = parseInt(ch, 10);
-        if(!isNaN(dig)) historyFrequency[dig]++;
-      });
-    });
-    const maxHistFreq = Math.max(...Object.values(historyFrequency), 1);
-
     const getUnitDirect = (v) => {
       const str = String(v);
       const lastChar = str.slice(-1);
@@ -902,26 +870,27 @@ const _app = {
       return [first, (first + 1) % 10];
     };
 
-    const fixedBase = 7;
-    const anchorRaw = fixedBase - H;
+    // [UPGRADED] Dynamic Moving Average Anchor แทนค่าคงที่ 7
+    const dynamicBase = (sumTop + sumBot) % 10;
+    const anchorRaw = dynamicBase - H;
     const anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
 
-    let rawM1 = (T_top * 3 + T_bot) % 10;
-    let rawM2 = (sumTop * 2) % 10;
-    let rawM3 = (H * 3 + T_bot) % 10;
-    let rawM4 = (U_top * 2 + U_bot) % 10;
-    let rawM5 = (10 - U_bot * 3) % 10;
+    let rawM1 = (T_top + T_bot) % 10;
+    let rawM2 = sumTop % 10;
+    let rawM3 = (H + T_bot) % 10;
+    let rawM4 = (U_top + U_bot) % 10;
+    let rawM5 = (10 - U_bot) % 10;
 
     let modelRawValues = [rawM1, rawM2, rawM3, rawM4, rawM5];
     let uniqueModelDigits = new Set(modelRawValues);
 
     if (uniqueModelDigits.size < 4) {
       const fallbackFormulas = [
-        (T_top * 3 + U_bot) % 10,
-        (H * 2 + U_top) % 10,
-        (sumBot * 3) % 10,
-        (H + sumBot * 2) % 10,
-        (totalSum * 3) % 10
+        (T_top + U_bot) % 10,
+        (H + U_top) % 10,
+        (sumBot) % 10,
+        (H + sumBot) % 10,
+        (totalSum) % 10
       ];
       for (let fbVal of fallbackFormulas) {
         const normFb = ((fbVal % 10) + 10) % 10;
@@ -931,11 +900,11 @@ const _app = {
     }
 
     const fList = [
-      { id: 1, name: "AI โมเดล 01", subName: "B + R1 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM1), positionalWeight: 1.0 },
-      { id: 2, name: "AI โมเดล 02", subName: "A + B + C -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM2), positionalWeight: 1.0 },
-      { id: 3, name: "AI โมเดล 03", subName: "A + R1 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM3), positionalWeight: 1.0 },
-      { id: 4, name: "AI โมเดล 04", subName: "C + R2 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM4), positionalWeight: 1.0 },
-      { id: 5, name: "AI โมเดล 05", subName: "10 - R2 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM5), positionalWeight: 1.0 }
+      { id: 1, name: "AI โมเดล 01", subName: "B + R1 -> Dynamic Unit Core", set: getUnitDirect(rawM1), positionalWeight: 1.0 },
+      { id: 2, name: "AI โมเดล 02", subName: "A + B + C -> Dynamic Unit Core", set: getUnitDirect(rawM2), positionalWeight: 1.0 },
+      { id: 3, name: "AI โมเดล 03", subName: "A + R1 -> Dynamic Unit Core", set: getUnitDirect(rawM3), positionalWeight: 1.0 },
+      { id: 4, name: "AI โมเดล 04", subName: "C + R2 -> Dynamic Unit Core", set: getUnitDirect(rawM4), positionalWeight: 1.0 },
+      { id: 5, name: "AI โมเดล 05", subName: "10 - R2 -> Dynamic Unit Core", set: getUnitDirect(rawM5), positionalWeight: 1.0 }
     ];
 
     const allowedModelDigits = new Set();
@@ -1013,7 +982,6 @@ const _app = {
         digit: d,
         modelScore: 0,
         formula100Score: 0,
-        frequencyScore: 0,
         radarScore: 0,
         backendScore: 0,
         winSetScore: 0,
@@ -1031,14 +999,13 @@ const _app = {
     for (let d = 0; d <= 9; d++) {
       const matchCount = formula100Engine.counts[d] || 0;
       digitScores[d].formula100Score = (matchCount / maxFormCount); 
-      digitScores[d].frequencyScore = (historyFrequency[d] / maxHistFreq);
     }
 
-    const X_val = (T_bot * 2 + U_bot) % 10;
+    const X_val = (T_bot + U_bot) % 10;
     const radar1Range = [(X_val - 1 + 10) % 10, X_val, (X_val + 1) % 10];
-    const Y_val = (H * 2 + T_top + U_top) % 10;
+    const Y_val = (H + T_top + U_top) % 10;
     const radar2Range = [(Y_val - 1 + 10) % 10, Y_val, (Y_val + 1) % 10];
-    const Z_val = (H + T_top + U_top + T_bot * 2 + U_bot) % 10;
+    const Z_val = (H + T_top + U_top + T_bot + U_bot) % 10;
     const radar3Range = [(Z_val - 1 + 10) % 10, Z_val, (Z_val + 1) % 10];
 
     for (let d = 0; d <= 9; d++) {
@@ -1050,11 +1017,11 @@ const _app = {
     }
 
     const backendFormulasSet = [
-      (H * 3 + T_bot) % 10,
-      (T_top * 2 + U_bot) % 10,
-      (sumTop * 2) % 10,
-      (Math.abs(T_top - U_top) * 2) % 10,
-      (totalSum * 2) % 10
+      (H * 2 + T_bot) % 10,
+      (T_top + U_bot) % 10,
+      (sumTop) % 10,
+      (Math.abs(T_top - U_top)) % 10,
+      (totalSum) % 10
     ];
     for (let d = 0; d <= 9; d++) {
       if (backendFormulasSet.includes(d)) {
@@ -1062,20 +1029,20 @@ const _app = {
       }
     }
 
-    const winCandidate = (H * 2 + T_top + U_top + T_bot + U_bot) % 10;
+    const winCandidate = (H + T_top + U_top + T_bot + U_bot) % 10;
     for (let d = 0; d <= 9; d++) {
       if (d === winCandidate || d === ((winCandidate + 5) % 10)) {
         digitScores[d].winSetScore = 1.0;
       }
     }
 
+    // [UPGRADED] Balanced Multiplier Weighting (Formula 100 boosted to 35%)
     for (let d = 0; d <= 9; d++) {
       const item = digitScores[d];
-      item.totalScore = (item.modelScore * 0.30) + 
-                        (item.formula100Score * 0.25) + 
-                        (item.frequencyScore * 0.15) + 
-                        (item.radarScore * 0.10) + 
-                        (item.backendScore * 0.10) + 
+      item.totalScore = (item.modelScore * 0.25) + 
+                        (item.formula100Score * 0.35) + 
+                        (item.radarScore * 0.15) + 
+                        (item.backendScore * 0.15) + 
                         (item.winSetScore * 0.10);
 
       if (allowedModelDigits.has(d)) {
@@ -1103,7 +1070,6 @@ const _app = {
 
     const d1 = primaryDigitObj.digit;
     const d2_dig = secondaryDigitObj.digit;
-
     const matrixSorted = matrixSortedAll;
 
     const allScores = matrixSorted.map(s => s.totalScore);
@@ -1269,7 +1235,7 @@ const _app = {
       <div class="section-marker">DIGIT OVERVIEW</div>
       <section class="overview-panel">
         <div class="overview-head">
-          <div><div class="overview-title">AI PROBABILITY RANKING</div><div class="overview-sub">การจัดอันดับความน่าจะเป็นด้วย AI (ผสานสถิติย้อนหลัง)</div></div>
+          <div><div class="overview-title">AI PROBABILITY RANKING</div><div class="overview-sub">การจัดอันดับความน่าจะเป็นด้วย AI</div></div>
           <div class="overview-badge">AI ACTIVE</div>
         </div>
         <div class="overview-bars">${distributionHTML.join("")}</div>
@@ -1382,7 +1348,6 @@ document.getElementById("passwordInput").addEventListener("keyup", e => { if (e.
 document.getElementById("calculateButton").addEventListener("click", () => _app.calculate());
 document.getElementById("clearButton").addEventListener("click", () => _app.clearCalc());
 document.getElementById("logoutButton").addEventListener("click", () => _app.logout());
-document.getElementById("clearHistoryBtn").addEventListener("click", () => _app.clearHistory());
 
 const n3Input = document.getElementById("num3top");
 const n2Input = document.getElementById("num2bottom");
@@ -1404,7 +1369,7 @@ n3Input.addEventListener("input", () => {
   if (isAuth === "active") {
     document.getElementById("loginView").style.display = "none";
     document.getElementById("calculatorView").style.display = "block";
-    _app.checkHistoryPanel();
+    _app.checkSessionBadge();
   }
 })();
 </script>
