@@ -882,10 +882,10 @@ const _app = {
 
     const fList = [
       { id: 1, name: "AI โมเดล 01", subName: "B + R1 -> Dynamic Unit Core", set: getUnitDirect(rawM1), positionalWeight: 1.0 },
-      { id: 2, name: "AI โมเดល 02", subName: "A + B + C -> Dynamic Unit Core", set: getUnitDirect(rawM2), positionalWeight: 1.0 },
-      { id: 3, name: "AI โมเดល 03", subName: "A + R1 -> Dynamic Unit Core", set: getUnitDirect(rawM3), positionalWeight: 1.0 },
-      { id: 4, name: "AI โมเดល 04", subName: "C + R2 -> Dynamic Unit Core", set: getUnitDirect(rawM4), positionalWeight: 1.0 },
-      { id: 5, name: "AI โมเดល 05", subName: "10 - R2 -> Dynamic Unit Core", set: getUnitDirect(rawM5), positionalWeight: 1.0 }
+      { id: 2, name: "AI โมเดล 02", subName: "A + B + C -> Dynamic Unit Core", set: getUnitDirect(rawM2), positionalWeight: 1.0 },
+      { id: 3, name: "AI โมเดล 03", subName: "A + R1 -> Dynamic Unit Core", set: getUnitDirect(rawM3), positionalWeight: 1.0 },
+      { id: 4, name: "AI โมเดล 04", subName: "C + R2 -> Dynamic Unit Core", set: getUnitDirect(rawM4), positionalWeight: 1.0 },
+      { id: 5, name: "AI โมเดล 05", subName: "10 - R2 -> Dynamic Unit Core", set: getUnitDirect(rawM5), positionalWeight: 1.0 }
     ];
 
     const allowedModelDigits = new Set();
@@ -1034,55 +1034,27 @@ const _app = {
       .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
 
     // ==========================================
-    // [AUDITED & REFACTORED] PRIMARY CONSENSUS RULE:
-    // ห้ามเอาเลขที่มาจากโมเดลเดียวกันมาคู่กัน ต้องเอาเลขที่ดีที่สุดจากแต่ละโมเดลเท่านั้น
+    // [STRICT AUDITED RULE: ห้ามเลขใกล้กันเกิน +1 หรือ -1]
     // ==========================================
-    
-    // 1. หาคะแนนรวมของแต่ละโมเดลจากสมาชิกลูกทีมในเซ็ต
-    evaluated.forEach(model => {
-      const modelScoreSum = model.set.reduce((sum, dig) => sum + (digitScores[dig].totalScore > 0 ? digitScores[dig].totalScore : 0), 0);
-      model.aiScore = Number((80.0 + (modelScoreSum / 2) * 18.5).toFixed(1));
-    });
-
-    // เรียงลำดับโมเดลตาม AI Score จากมากไปน้อยเพื่อหาโมเดลที่ดีที่สุด
-    const sortedModelsByScore = [...evaluated].sort((a, b) => b.aiScore - a.aiScore);
-
-    let primaryDigitObj = null;
+    let primaryDigitObj = matrixSortedAll[0];
     let secondaryDigitObj = null;
-    let primaryModelId = null;
 
-    // หาเลขที่ดีที่สุดจากโมเดลที่ดีที่สุดอันดับ 1
-    const bestModel = sortedModelsByScore[0];
-    if (bestModel && bestModel.set.length > 0) {
-      primaryModelId = bestModel.id;
-      // เลือกเลขในเซ็ตของโมเดลนี้ที่มีคะแนน totalScore สูงสุด
-      let bestDigitInModel = bestModel.set.reduce((best, curr) => 
-        digitScores[curr].totalScore > digitScores[best].totalScore ? curr : best
-      , bestModel.set[0]);
-      primaryDigitObj = digitScores[bestDigitInModel];
-    }
-
-    // หาเลขที่ดีที่สุดรองลงมาจาก "โมเดลอื่น" (ห้ามมาจากโมเดลเดียวกันกับตัวแรก)
-    for (let i = 1; i < sortedModelsByScore.length; i++) {
-      const otherModel = sortedModelsByScore[i];
-      // ค้นหาเลขในเซ็ตของโมเดลนี้ที่ยังไม่ใช่เลขตัวแรก
-      let bestDigitInOther = otherModel.set
-        .filter(d => d !== primaryDigitObj.digit)
-        .reduce((best, curr) => {
-          if (best === null) return curr;
-          return digitScores[curr].totalScore > digitScores[best].totalScore ? curr : best;
-        }, null);
-
-      if (bestDigitInOther !== null) {
-        secondaryDigitObj = digitScores[bestDigitInOther];
+    // ค้นหาเลขตัวที่สองจากตารางที่คะแนนสูงสุด แต่ต้องมีระยะห่างมากกว่า 1 แต้ม (ไม่ติดกันและไม่ซ้ำกัน)
+    for (let i = 1; i < matrixSortedAll.length; i++) {
+      const candidate = matrixSortedAll[i];
+      const diff = Math.abs(candidate.digit - primaryDigitObj.digit);
+      // เช็คระยะห่างเชิงวงกลมฐาน 10 ด้วย เช่น 0 กับ 9 ถือว่าติดกัน (ห่างกัน 1 หรือ 9 ซึ่งเทียบเท่าใกล้กัน)
+      const circularDiff = Math.min(diff, 10 - diff);
+      
+      if (circularDiff > 1) {
+        secondaryDigitObj = candidate;
         break;
       }
     }
 
-    // กรณีสำรอง หากหาจากโมเดลอื่นไม่ได้ ให้ดึงจากภาพรวมที่คะแนนสูงสุดแต่ต้องไม่ซ้ำโมเดลเดิม
-    if (!primaryDigitObj) primaryDigitObj = matrixSortedAll[0];
+    // หากกรณีหาไม่ได้ ให้เลือกตัวถัดไปที่ลดหย่อนระยะห่างที่สุดเท่าที่จะทำได้
     if (!secondaryDigitObj) {
-      secondaryDigitObj = matrixSortedAll.find(item => item.digit !== primaryDigitObj.digit) || matrixSortedAll[1];
+      secondaryDigitObj = matrixSortedAll[1];
     }
 
     const d1 = primaryDigitObj.digit;
@@ -1102,6 +1074,10 @@ const _app = {
     const primaryPct = calcConfidence(primaryDigitObj.totalScore);
     const secondaryPct = calcConfidence(secondaryDigitObj.totalScore);
 
+    evaluated.forEach(model => {
+      const modelScoreSum = model.set.reduce((sum, dig) => sum + (digitScores[dig].totalScore > 0 ? digitScores[dig].totalScore : 0), 0);
+      model.aiScore = Number((80.0 + (modelScoreSum / 2) * 18.5).toFixed(1));
+    });
     evaluated.sort((a, b) => b.aiScore - a.aiScore);
     evaluated.forEach((model, idx) => { model.isRecommended = idx < 2; });
 
