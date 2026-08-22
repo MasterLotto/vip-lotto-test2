@@ -1050,17 +1050,25 @@ const _app = {
       }
     }
 
-    // Scoring System Logic Refactoring: Dynamic Multiplier x1.15
+    // Scoring System Logic Refactoring (Updated Weights & Boost Multiplier)
     for (let d = 0; d <= 9; d++) {
       const item = digitScores[d];
-      item.totalScore = (item.modelScore * 0.35) + 
-                        (item.formula100Score * 0.25) + 
-                        (item.radarScore * 0.15) + 
-                        (item.backendScore * 0.15) + 
+      
+      // คำนวณคะแนนรวมตามสัดส่วนที่ปรับปรุงใหม่
+      // 1. Model Score 15% (0.15)
+      // 2. Formula 100 Score 20% (0.20)
+      // 3. Radar Score 45% (0.45)
+      // 4. Backend Score 10% (0.10)
+      // 5. WinSet Score 10% (0.10)
+      item.totalScore = (item.modelScore * 0.15) + 
+                        (item.formula100Score * 0.20) + 
+                        (item.radarScore * 0.45) + 
+                        (item.backendScore * 0.10) + 
                         (item.winSetScore * 0.10);
 
+      // Model Boost Multiplier: หากปรากฏในโมเดล 01–05 คูณเพิ่ม 5% (1.05)
       if (allowedModelDigits.has(d)) {
-        item.totalScore *= 1.15;
+        item.totalScore *= 1.05;
       }
     }
 
