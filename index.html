@@ -1,3 +1,10 @@
+Model Score: 2.5% 
+Formula 100 Score: 25.25% 
+Radar Score: 50% 
+Backend Score: 10% 
+WinSet Score: 10% 
+Model Boost Multiplier: หากเลข d อยู่ในกลุ่มตัวเลขที่สกัดได้จากโมเดล 01–05 คะแนนรวมจะถูกคูณเพิ่ม 2.5% (Score_{total} \timesรวม 5โมเดล ไม่เกิน 2.5 )
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -1054,21 +1061,21 @@ const _app = {
     for (let d = 0; d <= 9; d++) {
       const item = digitScores[d];
       
-      // ปรับปรุงสัดส่วนน้ำหนักตามเงื่อนไขใหม่:
-      // 1. Model Score 5% (0.05)
-      // 2. Formula 100 Score 25% (0.25)
+      // สัดส่วนน้ำหนักคะแนนตามข้อกำหนดใหม่:
+      // 1. Model Score 2.5% (0.025)
+      // 2. Formula 100 Score 25.25% (0.2525)
       // 3. Radar Score 50% (0.50)
       // 4. Backend Score 10% (0.10)
       // 5. WinSet Score 10% (0.10)
-      item.totalScore = (item.modelScore * 0.05) + 
-                        (item.formula100Score * 0.25) + 
+      item.totalScore = (item.modelScore * 0.025) + 
+                        (item.formula100Score * 0.2525) + 
                         (item.radarScore * 0.50) + 
                         (item.backendScore * 0.10) + 
                         (item.winSetScore * 0.10);
 
-      // Model Boost Multiplier (x1%): หากปรากฏอยู่ในโมเดล 01–05 คูณเพิ่ม 5% (Score_total x 1.05)
+      // Model Boost Multiplier: หากปรากฏอยู่ในโมเดล 01–05 คูณเพิ่ม 2.5% (Score_total x 1.025)
       if (allowedModelDigits.has(d)) {
-        item.totalScore *= 1.05;
+        item.totalScore *= 1.025;
       }
     }
 
