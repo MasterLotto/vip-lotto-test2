@@ -814,8 +814,8 @@ const _app = {
 
   _run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum) {
     const rawFormulas = [
-      (H + T_top), (H + U_top), (T_top + U_top), (H + T_bot), (H + U_bot),
-      (T_top + T_bot), (T_top + U_bot), (U_top + T_bot), (U_top + U_bot), (T_bot + U_bot),
+      (T_top + U_top), (U_top + U_top), (T_top + U_top), (T_top + T_bot), (T_top + U_bot),
+      (U_top + T_bot), (U_top + U_bot), (U_top + T_bot), (U_top + U_bot), (T_bot + U_bot),
       (sumTop + T_bot), (sumTop + U_bot), (sumTop + H), (sumTop + T_top), (sumTop + U_top),
       (10 - H), (10 - T_top), (10 - U_top), (10 - T_bot), (10 - U_bot),
       (H + T_top + T_bot), (H + U_top + U_bot), (T_top + U_top + T_bot), (T_top + U_top + U_bot), (H + T_bot + U_bot),
@@ -833,7 +833,7 @@ const _app = {
       ((H - T_top) + U_bot), ((H - U_top) + T_bot), ((T_top - U_top) + U_bot), ((T_bot - U_bot) + H), ((T_bot - U_bot) + T_top),
       ((T_bot - U_bot) + U_top), (20 - H - T_top), (20 - H - U_top), (20 - T_top - U_top), (20 - T_bot - U_bot),
       (20 - H - T_bot), (20 - H - U_bot), (20 - T_top - T_bot), (20 - T_top - U_bot), (20 - U_top - T_bot),
-      (20 - U_top - U_bot), (totalSum), (totalSum * 2), (totalSum + H), (totalSum + T_bot)
+      (20 - U_top - U_bot), (20 - H - T_bot), (20 - H - U_bot)
     ];
 
     const countedDigits = {};
@@ -863,27 +863,17 @@ const _app = {
 
     const formula100Engine = this._run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum);
 
-    // ==========================================
-    // [ปรับปรุงสูตรเจาะใหม่ตามกฎระเบียบแบบ 100%]
-    // ==========================================
-    
-    // ขั้นตอนที่ 1: การหา "เลขเด่น" (Source Digits / Formula Set)
-    // นำหลักสิบ 3 ตัวบน (T_top) มารวมกับ หลักสิบ 2 ตัวล่าง (T_bot) ดึงตัวท้ายเป็นเลขเด่นตัวที่ 1 และบวกเพิ่ม 1 แต้มเป็นเลขเด่นตัวที่ 2
     const step1Sum = T_top + T_bot;
     const d1_source = step1Sum % 10;
     const d2_source = (d1_source + 1) % 10;
     const formulaSet = [d1_source, d2_source];
 
-    // ขั้นตอนที่ 2: การหา "แกนกลาง" (Anchor) สำหรับเลขเจาะ
-    // ใช้เลขฐาน 7 คงที่ ลบด้วย หลักร้อยบน (H) ห้ามเปลี่ยนเลขฐานเด็ดขาด ดึงเอาเฉพาะตัวท้ายหรือหลักหน่วยที่เป็นตัวเลขเดี่ยว (0-9) มาใช้
     const anchorRaw = 7 - H;
     const anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
 
-    // ขั้นตอนที่ 3: การตรวจสอบการชนและการแผ่แกน (Expansion & Collision Check)
     let rawRange = [];
     let hasCollision = false;
 
-    // ตรวจสอบการชนกับเลขเด่น [d1_source, d2_source]
     for (let offset = -2; offset <= 2; offset++) {
       const val = this._normalize(anchor + offset);
       if (formulaSet.includes(val)) {
@@ -892,27 +882,22 @@ const _app = {
       }
     }
 
-    // หากชนให้ใช้ระยะ +-3 (รวม 7 ตัว) หากไม่ชนใช้ระยะ +-2 (รวม 5 ตัว)
     const expansionLimit = hasCollision ? 3 : 2;
     for (let offset = -expansionLimit; offset <= expansionLimit; offset++) {
       rawRange.push(this._normalize(anchor + offset));
     }
 
-    // ขั้นตอนที่ 4: กฎการคัดกรองขั้นเด็ดขาด (Filtering Rules)
-    // ตัดเลขเบิ้ล ตัดเลขเด่นมาวินกันเอง และตัดเลขที่ชนกับเลขเด่นออก
     const excludedDigits = [...new Set(formulaSet)];
     let cleanedPool = rawRange.filter(dg => !excludedDigits.includes(dg));
 
     const generatedPairs = [];
     formulaSet.forEach(sourceDigit => {
       cleanedPool.forEach(poolDigit => {
-        if (sourceDigit === poolDigit) return; // ตัดเลขเบิ้ล 100%
+        if (sourceDigit === poolDigit) return;
         generatedPairs.push({ digitA: sourceDigit, digitB: poolDigit, pairStr: `${sourceDigit}${poolDigit}` });
       });
     });
 
-    // ขั้นตอนที่ 5: การจัดชุดคู่เจาะ (Output Generation)
-    // จัดสรรคู่เจาะอย่างละ 5 คู่ รวมเป็น 10 คู่ (แบ่งเป็น 5 คู่ต่อเลขเด่น 1 ตัว)
     const pMap = {};
     formulaSet.forEach(sourceDigit => {
       let pairsForDigit = generatedPairs.filter(p => p.digitA === sourceDigit).map(p => p.pairStr);
@@ -929,7 +914,6 @@ const _app = {
       pMap[sourceDigit] = pairsForDigit;
     });
 
-    // สร้างโมเดลรองรับการแสดงผลแผงควบคุมระบบ AI (ความเข้ากันได้กับส่วน UI เดิม)
     let rawM1 = (T_top + T_bot) % 10;
     let rawM2 = sumTop % 10;
     let rawM3 = (H + T_bot) % 10;
@@ -962,7 +946,7 @@ const _app = {
         name: item.name,
         subName: item.subName,
         positionalWeight: item.positionalWeight,
-        set: formulaSet, // ใช้สูตรเจาะจริงที่ถูกต้องตามกฎที่กำหนด
+        set: formulaSet,
         pairsMap: pMap
       };
     });
@@ -992,12 +976,14 @@ const _app = {
       digitScores[d].formula100Score = (matchCount / maxFormCount); 
     }
 
-    const X_val = (T_bot + U_bot) % 10;
-    const radar1Range = [(X_val - 1 + 10) % 10, X_val, (X_val + 1) % 10];
-    const Y_val = (H + T_top + U_top) % 10;
-    const radar2Range = [(Y_val - 1 + 10) % 10, Y_val, (Y_val + 1) % 10];
-    const Z_val = (H + T_top + U_top + T_bot + U_bot) % 10;
-    const radar3Range = [(Z_val - 1 + 10) % 10, Z_val, (Z_val + 1) % 10];
+    const X = (T_bot + U_bot) % 10;
+    const radar1Range = [(X - 1 + 10) % 10, X, (X + 1) % 10];
+
+    const Y = (H + T_top + U_top) % 10;
+    const radar2Range = [(Y - 1 + 10) % 10, Y, (Y + 1) % 10];
+
+    const Z = (H + T_top + U_top + T_bot + U_bot) % 10;
+    const radar3Range = [(Z - 1 + 10) % 10, Z, (Z + 1) % 10];
 
     for (let d = 0; d <= 9; d++) {
       let rHits = 0;
@@ -1043,9 +1029,6 @@ const _app = {
     const matrixSortedAll = Object.values(digitScores)
       .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
 
-    // ==========================================
-    // [STRICT RULE: ห้ามเลขใกล้กันเกิน +1 หรือ -1]
-    // ==========================================
     let primaryDigitObj = matrixSortedAll[0];
     let secondaryDigitObj = null;
 
