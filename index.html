@@ -2,1391 +2,2364 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="theme-color" content="#F4FBF7">
-<meta name="color-scheme" content="light">
-<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self';">
-<title>Enterprise Quant Platform — AI Quant Analysis & Data Intelligence Platform</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Numerical Pattern Analyzer — Single File</title>
+
 <style>
-:root {
-    --white: #FFFFFF;
-    --bg: #EEF8F3;
-    --bg2: #F5FBF7;
-    --surface: #FFFFFF;
-    --surface2: #EAF6F0;
-    --surface3: #D3EFE2;
-    
-    --navy: #081B14;
-    --navy-2: #0F2A20;
-
-    --emerald: #0A6647;
-    --emerald-2: #0D7A55;
-    --emerald-3: #10B981;
-    --emerald-light: #E1F8ED;
-    --emerald-glow: rgba(16, 185, 129, 0.35);
-
-    --cyan: #087380;
-    --cyan2: #14B8A6;
-    --gold: #9E6C02;
-    --gold-2: #EAB308;
-    --gold3: #FEF9C3;
-    --purple: #6D28D9;
-    --red: #BE123C;
-
-    --text: #051912;
-    --text-2: #0F2920;
-    --muted: #47685B;
-    --muted-2: #759B8C;
-
-    --line: #B5DBCB;
-    --line2: rgba(10,102,71,.22);
-    
-    --shadow: 0 16px 40px rgba(10,102,71,.12);
-    --shadow2: 0 8px 24px rgba(10,102,71,.08);
-    --shadow3: 0 12px 30px rgba(10,102,71,.10);
-    
-    --radius: 18px;
-    --radius2: 12px;
-    --ease: cubic-bezier(.2,.8,.2,1);
+:root{
+  --bg:#07111f;
+  --panel:#0d1b2e;
+  --panel2:#10243b;
+  --border:#1d3856;
+  --text:#e8f1fb;
+  --muted:#8fa7bf;
+  --accent:#58a6ff;
+  --accent2:#7ee787;
+  --warning:#f2cc60;
+  --danger:#ff7b72;
+  --shadow:0 12px 35px rgba(0,0,0,.22);
 }
 
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{scroll-behavior:smooth;}
-body{min-height:100vh;overflow-x:hidden;color:var(--text);font-family:'Prompt',sans-serif;background:radial-gradient(circle at 15% 5%,rgba(16,185,129,.28),transparent 45%),radial-gradient(circle at 85% 15%,rgba(234,179,8,0.22),transparent 40%),linear-gradient(135deg,#FFFFFF,#F0FAF5 60%,#E2F2EC);}
-button,input{font-family:'Prompt',sans-serif;}
-button{-webkit-user-select:none;user-select:none;}
-::selection{background:rgba(10,102,71,.25);color:var(--text);}
-
-/* High-End Cinema Snow Canvas Background */
-#snowCanvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
+*{
+  box-sizing:border-box;
 }
 
-.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.ambient::before,.ambient::after{content:"";position:absolute;border-radius:50%;filter:blur(70px);opacity:.4;}
-.ambient::before{width:320px;height:320px;top:-70px;left:-70px;background:rgba(16,185,129,.45);}
-.ambient::after{width:340px;height:340px;right:-80px;bottom:10%;background:rgba(234,179,8,.32);}
-
-.grid-overlay{position:absolute;inset:0;opacity:.05;background-image:linear-gradient(rgba(10,102,71,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(10,102,71,.08) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(to bottom,black,transparent 90%);}
-
-.app-shell{width:100%;max-width:560px;min-height:100vh;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) clamp(10px,2.5vw,14px) max(24px,env(safe-area-inset-bottom));position:relative;z-index:2;}
-.app-card{position:relative;overflow:hidden;min-height:calc(100vh - 24px);border:1px solid #A8D5C2;border-radius:24px;background:rgba(255,255,255,.94);box-shadow:0 25px 60px rgba(10,102,71,.14),inset 0 1px 0 rgba(255,255,255,1);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);}
-.app-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0A6647,#10B981,#14B8A6,#EAB308);background-size:250% 100%;animation:spectrumFlow 6s ease-in-out infinite;opacity:1;}
-@keyframes spectrumFlow{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
-
-.app-inner{padding:clamp(14px,3vw,18px) clamp(12px,3vw,16px) 20px;}
-.top-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;}
-.brand-mini{display:flex;align-items:center;gap:9px;min-width:0;}
-.brand-mark{width:38px;height:38px;flex:0 0 38px;border-radius:11px;display:flex;justify-content:center;align-items:center;color:#fff;font-weight:800;font-size:.78rem;background:linear-gradient(135deg,#081B14,#0A6647);box-shadow:0 4px 12px rgba(10,102,71,.35),inset 0 1px 0 rgba(255,255,255,.4);position:relative;}
-.brand-mark::after{content:"";position:absolute;inset:2px;border-radius:8px;border:1px solid rgba(255,255,255,.35);}
-.brand-name{font-size:.82rem;font-weight:800;letter-spacing:.2px;color:var(--text);}
-.brand-sub{color:var(--muted);font-size:.55rem;margin-top:1px;font-weight:600;}
-.system-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;color:var(--emerald);background:var(--emerald-light);border:1px solid rgba(10,102,71,.25);font-size:.55rem;font-weight:800;white-space:nowrap;box-shadow:0 2px 8px rgba(16,185,129,0.15);}
-.live-dot{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:var(--emerald-3);box-shadow:0 0 0 3px rgba(16,185,129,0.3);animation:livePulse 1.8s ease-in-out infinite;}
-@keyframes livePulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(.7);opacity:.4;}}
-
-.hero{position:relative;overflow:hidden;padding:16px 14px 14px;margin-bottom:10px;border-radius:18px;background:radial-gradient(circle at 95% 5%,rgba(16,185,129,.25),transparent 45%),radial-gradient(circle at 5% 95%,rgba(234,179,8,.2),transparent 40%),linear-gradient(135deg,#FFFFFF,#EEF9F2);border:1px solid #A8D5C2;box-shadow:var(--shadow2);}
-.hero-kicker{position:relative;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;margin-bottom:8px;border-radius:99px;color:var(--emerald);background:var(--emerald-light);border:1px solid rgba(10,102,71,.25);font-size:.52rem;font-weight:800;letter-spacing:.8px;}
-.hero-kicker span{width:5px;height:5px;border-radius:50%;background:var(--emerald-3);box-shadow:0 0 5px rgba(16,185,129,.7);}
-.hero h1{position:relative;z-index:2;font-size:clamp(1.55rem,5.5vw,1.85rem);line-height:1.15;letter-spacing:-.4px;font-weight:800;color:var(--text);}
-.hero h1 em{font-style:normal;background:linear-gradient(110deg,#0A6647,#087380,#6D28D9,#9E6C02);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:220% 100%;animation:titleGradient 6s ease-in-out infinite;}
-@keyframes titleGradient{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
-.hero p{position:relative;z-index:2;margin-top:6px;color:var(--muted);font-size:clamp(.65rem,2.2vw,.72rem);line-height:1.4;}
-.hero p b {color: var(--text-2);}
-
-.hero-meta{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
-.meta-chip{position:relative;overflow:hidden;padding:4px 9px;border-radius:8px;background:#fff;border:1px solid #A8D5C2;color:var(--text-2);font-size:.52rem;font-weight:700;box-shadow:0 2px 6px rgba(10,102,71,.05);}
-
-.login-dashboard{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
-.mini-stat{position:relative;overflow:hidden;padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #A8D5C2;box-shadow:var(--shadow2);}
-.mini-stat-label{color:var(--muted);font-size:.52rem;font-weight:700;}
-.mini-stat-value{position:relative;z-index:1;margin-top:3px;font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:700;color:var(--text);}
-.mini-stat-value.green{color:var(--emerald);}
-
-.packages{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:10px;}
-.package{position:relative;overflow:hidden;padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #A8D5C2;transition:transform .2s var(--ease);}
-.package::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--emerald);}
-.package:nth-child(2)::before{background:var(--cyan);}
-.package:nth-child(3)::before{background:var(--gold);}
-.package:nth-child(4)::before{background:var(--purple);}
-.package-title{color:var(--muted);font-size:.54rem;font-weight:700;}
-.package-price{margin-top:3px;font-family:'IBM Plex Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--text);}
-.package-desc{margin-top:2px;color:var(--muted-2);font-size:.48rem;}
-
-.contact-btn{width:100%;display:flex;justify-content:center;align-items:center;gap:6px;padding:11px;margin-bottom:10px;border-radius:12px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#0A6647,#0D7A55);box-shadow:0 6px 16px rgba(10,102,71,.22);font-size:.7rem;font-weight:700;transition:transform .2s ease, box-shadow .2s ease;}
-.contact-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(10,102,71,.28);}
-
-.login-panel{padding:14px;border-radius:18px;background:linear-gradient(135deg,#FFFFFF,#EEF9F2);border:1px solid #A8D5C2;box-shadow:var(--shadow2);}
-.section-eyebrow{color:var(--emerald);font-size:.54rem;font-weight:800;letter-spacing:.8px;text-align:center;}
-.login-heading{margin-top:3px;text-align:center;font-size:.95rem;font-weight:800;color:var(--text);}
-.login-description{margin-top:3px;margin-bottom:10px;text-align:center;color:var(--muted);font-size:.56rem;}
-
-.input-wrap{position:relative;}
-input{width:100%;height:44px;padding:0 12px;border-radius:12px;outline:none;border:1px solid #A8D5C2;color:var(--text);background:var(--bg2);font-size:.85rem;text-align:center;transition:.2s ease;}
-input::placeholder{color:var(--muted-2);}
-input:focus{background:#fff;border-color:rgba(10,102,71,.6);box-shadow:0 0 0 3px rgba(10,102,71,.12);}
-
-.primary-btn{width:100%;height:44px;margin-top:8px;border:0;border-radius:12px;color:#fff;cursor:pointer;background:linear-gradient(110deg,#0A6647,#0D7A55,#0A6647);background-size:200% 100%;box-shadow:0 6px 16px rgba(10,102,71,.2);font-size:.72rem;font-weight:700;transition:transform .2s ease;}
-.primary-btn:hover{transform:translateY(-1px);}
-
-#errorMsg{display:none;margin-top:6px;text-align:center;color:var(--red);font-size:.58rem;font-weight:700;}
-#calculatorView{display:none;}
-
-.engine-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
-.engine-card{position:relative;overflow:hidden;padding:9px 8px;border-radius:12px;background:linear-gradient(135deg,#FFFFFF,#F2F9F5);border:1px solid rgba(10,102,71,.16);box-shadow:0 3px 12px rgba(10,102,71,.04);transition:all .25s var(--ease);}
-.engine-card:hover{border-color:rgba(10,102,71,.3);box-shadow:0 5px 16px rgba(10,102,71,.08);transform:translateY(-1px);}
-.engine-card::before{content:"";position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#0A6647,#10B981);opacity:.9;}
-.engine-card:nth-child(2)::before{background:linear-gradient(180deg,#0D7A55,#14B8A6);}
-.engine-card:nth-child(3)::before{background:linear-gradient(180deg,#9E6C02,#EAB308);}
-.engine-label{color:var(--muted);font-size:.45rem;font-weight:700;display:flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.engine-value{margin-top:2px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;font-weight:700;display:flex;align-items:center;gap:3px;}
-.engine-value.cyan{color:var(--cyan);}
-.engine-value.green{color:var(--emerald-2);}
-.engine-value.gold{color:var(--gold);}
-
-/* Realistic Subtle Micro Ripple Pulse for Execution Trigger */
-.total-dot-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:8px;height:8px;flex:0 0 8px;}
-.total-dot{width:4px;height:4px;border-radius:50%;background:var(--emerald-3);position:relative;z-index:2;}
-.total-dot::after{
-    content:"";
-    position:absolute;
-    top:50%; left:50%;
-    width:100%; height:100%;
-    border-radius:50%;
-    background:rgba(16,185,129,0.7);
-    transform:translate(-50%,-50%) scale(1);
-    opacity:0;
-    pointer-events:none;
-}
-.total-dot.ripple::after{
-    animation: microWaterRipple 0.85s cubic-bezier(0.1, 0.8, 0.3, 1);
-}
-@keyframes microWaterRipple{
-    0%{ transform:translate(-50%,-50%) scale(1); opacity:0.9; }
-    50%{ opacity:0.5; }
-    100%{ transform:translate(-50%,-50%) scale(4.5); opacity:0; }
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top left,rgba(88,166,255,.10),transparent 30%),
+    radial-gradient(circle at top right,rgba(126,231,135,.06),transparent 25%),
+    var(--bg);
+  color:var(--text);
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
-.engine-icon{font-size:.48rem;line-height:1;opacity:.9;}
-.online-glow-icon{display:inline-flex;align-items:center;justify-content:center;}
-
-.last-session{display:none;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;padding:9px;border-radius:12px;background:var(--gold3);border:1px solid rgba(158,108,2,.25);color:var(--muted);font-size:.54rem;}
-.last-session strong{color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:.62rem;}
-
-.command-center{position:relative;overflow:hidden;padding:12px 12px 10px;margin-bottom:10px;border-radius:18px;background:radial-gradient(circle at 90% 10%,rgba(16,185,129,.12),transparent 45%),#fff;border:1px solid #A8D5C2;box-shadow:var(--shadow2);}
-.command-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;}
-.command-title{font-size:.88rem;font-weight:800;color:var(--text);}
-.command-sub{margin-top:1px;color:var(--muted);font-size:.52rem;}
-.command-badge{padding:4px 8px;border-radius:7px;color:var(--cyan);background:rgba(8,115,128,.08);border:1px solid rgba(8,115,128,.2);font-family:'IBM Plex Mono',monospace;font-size:.46rem;font-weight:700;}
-
-.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
-.field-card{position:relative;padding:8px;border-radius:12px;background:var(--surface2);border:1px solid #A8D5C2;}
-.field-label{display:block;margin-bottom:5px;color:var(--text-2);font-size:.52rem;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.field-card input{height:42px;background:#fff;font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:700;letter-spacing:2px;}
-
-.action-row{display:grid;grid-template-columns:1fr 85px;gap:7px;margin-top:8px;}
-.calculate-btn{height:44px;border:0;border-radius:12px;color:#fff;cursor:pointer;background:linear-gradient(135deg,#0A6647,#0D7A55);box-shadow:0 6px 16px rgba(10,102,71,.22);font-size:.7rem;font-weight:800;transition:transform .2s ease;}
-.calculate-btn:hover:not(:disabled){transform:translateY(-1px);}
-.calculate-btn:disabled{opacity:.55;cursor:not-allowed;}
-
-.clear-btn{height:44px;border-radius:12px;color:var(--muted);background:var(--bg2);border:1px solid #A8D5C2;font-size:.6rem;font-weight:700;transition:background .2s ease;}
-.clear-btn:hover{background:#fff;}
-
-#aiScannerBox{display:none;position:relative;overflow:hidden;padding:16px 12px;margin-bottom:10px;text-align:center;border-radius:18px;background:radial-gradient(circle at center,rgba(16,185,129,.14),transparent 60%),#EEFBF4;border:1px solid rgba(10,102,71,.25);}
-.scanner-ring{position:relative;width:52px;height:52px;margin:0 auto 10px;border-radius:50%;border:1px solid rgba(10,102,71,.25);}
-.scanner-ring::before,.scanner-ring::after{content:"";position:absolute;border-radius:50%;}
-.scanner-ring::before{inset:6px;border:3px solid transparent;border-top-color:var(--emerald);border-right-color:var(--cyan);animation:spin 1s linear infinite;}
-.scanner-ring::after{inset:16px;background:var(--gold-2);animation:scannerPulse .9s ease-in-out infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-@keyframes scannerPulse{0%,100%{transform:scale(.7);opacity:.5;}50%{transform:scale(1);opacity:1;}}
-#aiScannerText{color:var(--emerald);font-family:'IBM Plex Mono',monospace;font-size:.56rem;font-weight:700;}
-
-.result-shell{animation:resultIn .5s cubic-bezier(.2,.8,.2,1);}
-@keyframes resultIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
-
-.result-head{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-bottom:8px;}
-.result-kicker{color:var(--emerald);font-family:'IBM Plex Mono',monospace;font-size:.5rem;font-weight:700;letter-spacing:.8px;}
-.result-title{margin-top:1px;font-size:1.1rem;font-weight:800;color:var(--text);}
-.result-note{color:var(--muted);font-size:.5rem;}
-
-.primary-signal{position:relative;overflow:hidden;padding:15px 12px;margin-bottom:10px;border-radius:20px;background:radial-gradient(circle at 90% 10%,rgba(16,185,129,.16),transparent 45%),radial-gradient(circle at 10% 90%,rgba(234,179,8,.1),transparent 40%),linear-gradient(135deg,#FFFFFF,#F2F8F5,#EAEAEA);border:1.5px solid rgba(10,102,71,.22);box-shadow:0 10px 25px rgba(10,102,71,.07),inset 0 1px 2px rgba(255,255,255,1);animation:vipCardGlow 5s ease-in-out infinite;}
-@keyframes vipCardGlow{0%,100%{border-color:rgba(10,102,71,.22);box-shadow:0 10px 25px rgba(10,102,71,.07),inset 0 1px 2px rgba(255,255,255,1);}50%{border-color:rgba(16,185,129,.42);box-shadow:0 14px 30px rgba(16,185,129,.14),inset 0 1px 3px rgba(255,255,255,1);}}
-
-.primary-signal::before{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:vipLightSweep 7s ease-in-out infinite;pointer-events:none;}
-@keyframes vipLightSweep{0%{left:-100%;}40%,100%{left:100%;}}
-
-.signal-top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2;}
-.signal-label{color:var(--emerald);font-size:.54rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:4px;}
-.signal-label::before{content:"✨";font-size:.5rem;}
-
-.confidence{position:relative;overflow:hidden;padding:5px 11px;border-radius:99px;color:#0A6647;background:linear-gradient(135deg,#E1F8ED,#FEF9C3);border:1px solid rgba(10,102,71,.3);font-family:'IBM Plex Mono',monospace;font-size:.58rem;font-weight:800;box-shadow:0 3px 12px rgba(10,102,71,.1);}
-
-.primary-number{display:flex;justify-content:center;align-items:center;gap:12px;margin:12px 0;position:relative;z-index:2;}
-.big-digit{width:64px;height:64px;display:flex;justify-content:center;align-items:center;border-radius:16px;color:var(--text);background:linear-gradient(135deg,#FFFFFF,#E6F5EE);border:1.5px solid rgba(10,102,71,.28);box-shadow:0 5px 15px rgba(10,102,71,.05),inset 0 1px 2px rgba(255,255,255,1),0 0 10px rgba(16,185,129,.1);font-family:'IBM Plex Mono',monospace;font-size:1.8rem;font-weight:800;position:relative;}
-
-.digit-divider{color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:1.25rem;font-weight:800;text-shadow:0 2px 4px rgba(158,108,2,.2);}
-
-.primary-caption{text-align:center;color:var(--muted);font-size:.56rem;position:relative;z-index:2;font-weight:600;}
-.primary-caption span.plain-lbl {color: var(--emerald); font-weight: 800; margin: 0 3px;}
-
-.section-marker{display:flex;align-items:center;gap:6px;margin:4px 2px 7px;color:var(--muted);font-size:.48rem;font-weight:800;letter-spacing:.8px;}
-.section-marker::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#A8D5C2,transparent);}
-
-.stats-analytics-card{position:relative;overflow:hidden;padding:12px;margin-bottom:10px;border-radius:18px;background:linear-gradient(135deg,#FFFFFF,#EEF9F2);border:1px solid #A8D5C2;box-shadow:var(--shadow2);}
-.stats-flex{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.stats-title{font-size:.8rem;font-weight:800;color:var(--text);}
-.stats-badge{padding:3px 8px;border-radius:7px;color:var(--emerald);background:var(--emerald-light);border:1px solid rgba(10,102,71,.22);font-family:'IBM Plex Mono',monospace;font-size:.46rem;font-weight:700;}
-.ratio-bar-container{position:relative;width:100%;height:10px;background:var(--surface3);border-radius:99px;overflow:hidden;display:flex;margin-bottom:6px;border:1px solid rgba(10,102,71,.12);}
-.ratio-even{height:100%;background:linear-gradient(90deg,#0A6647,#10B981);transition:width .4s var(--ease);}
-.ratio-odd{height:100%;background:linear-gradient(90deg,#9E6C02,#EAB308);transition:width .4s var(--ease);}
-.ratio-legend{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.48rem;font-weight:700;color:var(--muted);}
-
-.overview-panel{position:relative;overflow:hidden;padding:12px;margin-bottom:10px;border-radius:18px;background:linear-gradient(135deg,#FFFFFF,#EEF9F2);border:1px solid #A8D5C2;box-shadow:var(--shadow2);}
-.overview-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-.overview-title{font-size:.82rem;font-weight:800;color:var(--text);}
-.overview-sub{margin-top:2px;color:var(--muted);font-size:.48rem;}
-.overview-badge{padding:4px 8px;border-radius:7px;color:var(--emerald);background:var(--emerald-light);border:1px solid rgba(10,102,71,.22);font-family:'IBM Plex Mono',monospace;font-size:.46rem;font-weight:700;}
-
-.overview-bars{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;align-items:end;}
-.overview-bar{position:relative;height:54px;display:flex;align-items:flex-end;border-radius:7px;background:var(--bg2);border:1px solid #A8D5C2;overflow:hidden;}
-.overview-bar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:var(--bar-height);border-radius:6px;background:var(--bar-color);opacity:1;}
-.overview-digit{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);z-index:2;color:#182823;font-family:'IBM Plex Mono',monospace;font-size:.52rem;font-weight:800;text-shadow:0 1px 1px rgba(255,255,255,.9);}
-.overview-axis{display:flex;justify-content:space-between;margin-top:6px;color:var(--muted-2);font-family:'IBM Plex Mono',monospace;font-size:.42rem;}
-
-.matrix-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
-.matrix-card{position:relative;overflow:hidden;padding:9px;border-radius:16px;background:#fff;border:1px solid #A8D5C2;box-shadow:0 4px 14px rgba(10,102,71,.04);}
-.matrix-card.full{grid-column:1/-1;}
-.matrix-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-.matrix-title{display:flex;align-items:center;gap:5px;font-size:.62rem;font-weight:800;color:var(--text);}
-.matrix-dot{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 3px rgba(10,102,71,.1);}
-.matrix-score{color:var(--emerald);font-family:'IBM Plex Mono',monospace;font-size:.52rem;font-weight:700;}
-
-.number-row{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;}
-.number-chip{position:relative;overflow:hidden;min-width:0;padding:4px 2px;text-align:center;border-radius:8px;background:var(--bg2);border:1px solid #A8D5C2;cursor:pointer;transition:transform .2s var(--ease);}
-.number-chip strong{display:block;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.68rem;font-weight:700;}
-.number-chip small{display:block;margin-top:1px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.38rem;}
-.number-chip.top{background:var(--emerald-light);border-color:rgba(10,102,71,.3);}
-.number-chip.top strong{color:var(--emerald);}
-.number-chip.gold{background:var(--gold3);border-color:rgba(158,108,2,.28);}
-.number-chip.gold strong{color:var(--gold);}
-
-.ranking-board{position:relative;overflow:hidden;padding:12px;margin-bottom:10px;border-radius:18px;background:linear-gradient(135deg,#081B14,#0D291F);border:1px solid rgba(16,185,129,.35);box-shadow:0 12px 30px rgba(10,102,71,.16);color:#fff;}
-.ranking-board::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 18px;
-    padding: 1px;
-    background: linear-gradient(90deg, transparent, rgba(16,185,129,.65), transparent);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    animation: borderFlashRun 5s linear infinite;
-}
-@keyframes borderFlashRun {
-    0% { opacity: 0.3; }
-    50% { opacity: 0.9; }
-    100% { opacity: 0.3; }
+.container{
+  width:min(1450px,94%);
+  margin:auto;
+  padding:24px 0 60px;
 }
 
-.ranking-header{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:10px;}
-.ranking-kicker{color:#10B981;font-family:'IBM Plex Mono',monospace;font-size:.48rem;letter-spacing:.8px;font-weight:700;}
-.ranking-title{margin-top:1px;color:#fff;font-size:.88rem;font-weight:800;}
-.ranking-title span{color:var(--muted-2);font-size:.48rem;font-weight:500;}
-.ranking-badge{padding:4px 8px;border-radius:7px;color:#10B981;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);font-size:.46rem;font-weight:700;}
-.rank-list{display:flex;flex-direction:column;gap:5px;}
-.rank-row{position:relative;overflow:hidden;display:grid;grid-template-columns:24px 32px 1fr 50px;align-items:center;gap:6px;padding:6px 9px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid rgba(16,185,129,.2);cursor:pointer;}
-.rank-row::before {
-    content: "";
-    position: absolute;
-    top: 0; left: -100%; width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(16,185,129,.12), transparent);
-    animation: softFlashPass 4.5s ease-in-out infinite;
-}
-.rank-row:nth-child(2)::before { animation-delay: .9s; }
-.rank-row:nth-child(3)::before { animation-delay: 1.8s; }
-.rank-row:nth-child(4)::before { animation-delay: 2.7s; }
-.rank-row:nth-child(5)::before { animation-delay: 3.6s; }
-
-@keyframes softFlashPass {
-    0% { left: -100%; }
-    50%, 100% { left: 100%; }
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  margin-bottom:22px;
 }
 
-.rank-no{color:#7CAEA0;font-family:'IBM Plex Mono',monospace;font-size:.48rem;font-weight:700;text-align:center;z-index:1;}
-.rank-digit{width:28px;height:28px;display:flex;justify-content:center;align-items:center;border-radius:8px;color:#fff;background:rgba(16,185,129,.22);border:1px solid rgba(16,185,129,.38);font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:700;z-index:1;}
-.rank-bar-wrap{position:relative;width:100%;height:5px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;z-index:1;}
-.rank-bar-fill{position:absolute;top:0;left:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#0A6647,#10B981,#EAB308);}
-.rank-percent{text-align:right;color:#10B981;font-family:'IBM Plex Mono',monospace;font-size:.5rem;font-weight:700;z-index:1;}
+h1{
+  margin:0 0 8px;
+  font-size:clamp(25px,4vw,40px);
+}
 
-.ind-win-set{position:relative;overflow:hidden;padding:10px 12px;margin-bottom:10px;border-radius:18px;background:linear-gradient(135deg,#FFFFFF,#EEF9F2);border:1px solid #A8D5C2;box-shadow:var(--shadow2);}
-.ind-win-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.ind-win-title{font-size:.78rem;font-weight:800;color:var(--text);}
-.ind-win-title small{display:block;color:var(--muted);font-size:.42rem;font-weight:600;margin-top:1px;letter-spacing:0.3px;}
-.ind-win-badge{color:var(--gold);background:var(--gold3);border:1px solid rgba(158,108,2,.25);padding:3px 8px;border-radius:99px;font-family:'IBM Plex Mono',monospace;font-size:.44rem;font-weight:700;}
-.ind-win-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
-.ind-win-item{position:relative;overflow:hidden;padding:6px 2px;text-align:center;border-radius:10px;background:#fff;border:1px solid #A8D5C2;cursor:pointer;transition:transform .2s var(--ease);}
-.ind-win-item strong{display:block;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:700;}
-.ind-win-item span{display:block;margin-top:1px;color:var(--muted);font-size:.36rem;font-weight:700;}
+.subtitle{
+  color:var(--muted);
+  line-height:1.6;
+  max-width:850px;
+}
 
-.formula-section{margin-top:3px;}
-.formula-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-radius:14px;border:1px solid rgba(10,102,71,.28);color:var(--text-2);background:var(--emerald-light);cursor:pointer;font-size:.6rem;font-weight:800;}
-.formula-toggle span:last-child{color:var(--emerald);font-family:'IBM Plex Mono',monospace;font-size:.5rem;}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 11px;
+  border:1px solid var(--border);
+  background:rgba(88,166,255,.08);
+  border-radius:999px;
+  color:#b8d9ff;
+  font-size:12px;
+  white-space:nowrap;
+}
 
-.formula-card{position:relative;overflow:hidden;padding:10px;margin-bottom:6px;border-radius:14px;background:#fff;border:1px solid #A8D5C2;box-shadow:0 3px 12px rgba(10,102,71,.04);}
-.formula-card::before{content:"";position:absolute;top:0;bottom:0;left:0;width:3px;background:linear-gradient(180deg,#0A6647,#087380);}
-.formula-head{display:flex;justify-content:space-between;align-items:center;gap:6px;}
-.formula-name{font-size:.62rem;font-weight:800;display:flex;align-items:center;gap:5px;color:var(--text);}
-.compact-badge{display:inline-block;padding:2px 6px;font-size:0.42rem;font-weight:700;color:var(--gold);background:var(--gold3);border:1px solid rgba(158,108,2,.25);border-radius:6px;vertical-align:middle;}
-.formula-badge{padding:4px 7px;border-radius:7px;color:var(--emerald);background:var(--emerald-light);border:1px solid rgba(10,102,71,.22);font-family:'IBM Plex Mono',monospace;font-size:.46rem;font-weight:700;}
-.formula-sub{margin-top:5px;padding-bottom:5px;border-bottom:1px solid #A8D5C2;color:var(--muted);font-size:.48rem;}
-.formula-sub strong{color:var(--gold);font-family:'IBM Plex Mono',monospace;}
-.formula-pairs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px;}
-.formula-pair{padding:5px 2px;text-align:center;border-radius:8px;background:var(--bg2);border:1px solid #A8D5C2;cursor:pointer;}
-.formula-pair strong{display:block;font-family:'IBM Plex Mono',monospace;color:var(--emerald);font-size:.62rem;}
-.formula-pair small{color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.38rem;}
+.panel{
+  background:linear-gradient(180deg,rgba(16,36,59,.94),rgba(10,25,42,.94));
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow);
+}
 
-.disclaimer{margin-top:10px;padding:10px 11px;border-radius:12px;color:var(--muted);background:var(--bg2);border:1px solid #A8D5C2;text-align:center;font-size:.46rem;line-height:1.45;}
-.disclaimer strong{color:var(--text-2);}
+.panel h2{
+  margin:0 0 14px;
+  font-size:20px;
+}
 
-.logout-btn{width:100%;height:44px;margin-top:10px;border-radius:12px;border:1px solid #A8D5C2;background:#fff;color:var(--muted);font-size:.6rem;font-weight:700;cursor:pointer;}
+.panel h3{
+  margin:20px 0 10px;
+  font-size:16px;
+}
 
-#toast{position:fixed;left:50%;bottom:22px;z-index:9999;min-width:180px;padding:10px 16px;border-radius:99px;transform:translate(-50%,22px);opacity:0;pointer-events:none;color:#fff;background:#081B14;box-shadow:0 10px 25px rgba(10,102,71,.28);text-align:center;font-size:.58rem;font-weight:700;transition:.25s;}
-#toast.show{opacity:1;transform:translate(-50%,0);}
+.input-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:15px;
+}
 
-@media(max-width:400px){
-  .ind-win-grid{grid-template-columns:repeat(3,1fr);}
+.field label{
+  display:block;
+  margin-bottom:7px;
+  color:#c4d4e5;
+  font-size:13px;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  border:1px solid var(--border);
+  background:#081625;
+  color:var(--text);
+  border-radius:10px;
+  padding:11px 12px;
+  outline:none;
+  font:inherit;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(88,166,255,.10);
+}
+
+textarea{
+  min-height:130px;
+  resize:vertical;
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:15px;
+}
+
+button{
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#112941;
+  color:var(--text);
+  padding:10px 15px;
+  cursor:pointer;
+  font-weight:650;
+}
+
+button:hover{
+  border-color:#4f7da8;
+  transform:translateY(-1px);
+}
+
+button.primary{
+  background:#173c62;
+  border-color:#2f6fa9;
+}
+
+button.success{
+  background:#153b2a;
+  border-color:#2f7651;
+}
+
+button.danger{
+  background:#431d25;
+  border-color:#7d3542;
+}
+
+.notice{
+  border-left:4px solid var(--warning);
+  background:rgba(242,204,96,.06);
+  padding:12px 14px;
+  color:#d9e3ee;
+  line-height:1.6;
+  border-radius:8px;
+  font-size:13px;
+}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+}
+
+.stat{
+  background:#091827;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+}
+
+.stat .label{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.stat .value{
+  margin-top:5px;
+  font-size:24px;
+  font-weight:800;
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+}
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+
+.table-wrap{
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:700px;
+}
+
+th,
+td{
+  padding:10px 11px;
+  border-bottom:1px solid #17304a;
+  text-align:left;
+  font-size:13px;
+}
+
+th{
+  background:#0a1a2c;
+  color:#bdd2e8;
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+
+tr:last-child td{
+  border-bottom:0;
+}
+
+.score{
+  font-weight:800;
+}
+
+.bar{
+  height:8px;
+  background:#081522;
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid #17304a;
+}
+
+.bar > span{
+  display:block;
+  height:100%;
+  width:0;
+  background:var(--accent);
+  border-radius:inherit;
+}
+
+.muted{
+  color:var(--muted);
+}
+
+.small{
+  font-size:12px;
+}
+
+.tag{
+  display:inline-block;
+  padding:4px 7px;
+  border-radius:6px;
+  background:#10283f;
+  color:#afd2f5;
+  font-size:11px;
+  margin:2px;
+}
+
+.model-card{
+  background:#091827;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:15px;
+}
+
+.model-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:9px;
+}
+
+.model-name{
+  font-weight:800;
+}
+
+.model-score{
+  font-size:22px;
+  font-weight:900;
+}
+
+.formula-card{
+  background:#091827;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:13px;
+}
+
+.formula-card + .formula-card{
+  margin-top:9px;
+}
+
+.formula-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.formula-name{
+  font-weight:750;
+}
+
+.formula-category{
+  color:var(--muted);
+  font-size:11px;
+}
+
+.matrix td,
+.matrix th{
+  text-align:center;
+}
+
+.matrix .diag{
+  color:#526b82;
+  background:#07131f;
+}
+
+.good{
+  color:var(--accent2);
+}
+
+.warn{
+  color:var(--warning);
+}
+
+.bad{
+  color:var(--danger);
+}
+
+.empty{
+  text-align:center;
+  padding:35px 10px;
+  color:var(--muted);
+}
+
+.footer{
+  text-align:center;
+  color:#6e879f;
+  font-size:12px;
+  padding-top:15px;
+}
+
+@media(max-width:1100px){
+  .stats-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .grid-3{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:760px){
+  .header{
+    flex-direction:column;
+  }
+
+  .input-grid,
+  .grid-2{
+    grid-template-columns:1fr;
+  }
+
+  .stats-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
 }
 </style>
 </head>
+
 <body>
-<!-- Canvas Snow Effect Background -->
-<canvas id="snowCanvas"></canvas>
 
-<div class="ambient"><div class="grid-overlay"></div></div>
-<div class="app-shell">
-<div class="app-card">
-<div class="app-inner">
-<div id="loginView">
-  <div class="top-nav">
-    <div class="brand-mini">
-      <div class="brand-mark">AI</div>
-      <div>
-        <div class="brand-name">Enterprise Quant</div>
-        <div class="brand-sub">Predictive Data Engine</div>
-      </div>
-    </div>
-    <div class="system-pill"><span class="live-dot"></span>SYSTEM READY</div>
-  </div>
-  <section class="hero">
-    <div class="hero-kicker"><span></span>QUANT ANALYSIS ENGINE</div>
-    <h1>Mester Lotto <em>VIP+</em></h1>
-    <p>ระบบคำนวณและวิเคราะห์ข้อมูล AI อัจฉริยะ<br><b>Predictive Data Engine</b></p>
-    <div class="hero-meta">
-      <div class="meta-chip">AI Pattern</div>
-      <div class="meta-chip">Digit Ranking</div>
-      <div class="meta-chip">Win Set</div>
-      <div class="meta-chip">Neural Matrix</div>
-    </div>
-  </section>
-  <div class="login-dashboard">
-    <div class="mini-stat">
-      <div class="mini-stat-label">ผู้ใช้งานระบบ / MEMBERS</div>
-      <div class="mini-stat-value" id="totalUsersStat">2,573</div>
-    </div>
-    <div class="mini-stat">
-      <div class="mini-stat-label">สถานะระบบ / STATUS</div>
-      <div class="mini-stat-value green">ONLINE</div>
-    </div>
-  </div>
-  <div class="packages">
-    <div class="package">
-      <div class="package-title">7 วัน / 7 DAYS</div>
-      <div class="package-price">99 ฿</div>
-      <div class="package-desc">Starter Tier</div>
-    </div>
-    <div class="package">
-      <div class="package-title">15 วัน / 15 DAYS</div>
-      <div class="package-price">199 ฿</div>
-      <div class="package-desc">รายงวด / Period</div>
-    </div>
-    <div class="package">
-      <div class="package-title">1 เดือน / 1 MONTH</div>
-      <div class="package-price">299 ฿</div>
-      <div class="package-desc">ยอดนิยม / Popular</div>
-    </div>
-    <div class="package">
-      <div class="package-title">1 ปี / 1 YEAR</div>
-      <div class="package-price">1,890 ฿</div>
-      <div class="package-desc">VIP ระยะยาว</div>
-    </div>
-  </div>
-  <a href="https://line.me/ti/p/cWXNwvCmqc" target="_blank" rel="noopener noreferrer" class="contact-btn" onclick="_app._audio('click')">💬 ติดต่อแอดมิน / CONTACT ADMIN</a>
-  <section class="login-panel">
-    <div class="section-eyebrow">SECURE ACCESS / ระบบสมาชิก</div>
-    <div class="login-heading">เชื่อมต่อ Master Engine</div>
-    <div class="login-description">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบ</div>
-    <div class="input-wrap">
-      <input type="password" id="passwordInput" placeholder="••• System Access Key •••" autocomplete="off" spellcheck="false">
-    </div>
-    <button class="primary-btn" id="loginButton" type="button">🔐 CONNECT TO ENGINE / เข้าสู่ระบบ</button>
-    <div id="errorMsg">❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED</div>
-  </section>
-</div>
-<div id="calculatorView">
-  <div class="top-nav">
-    <div class="brand-mini">
-      <div class="brand-mark">AI</div>
-      <div>
-        <div class="brand-name">Enterprise Quant</div>
-        <div class="brand-sub">AI Intelligence Console</div>
-      </div>
-    </div>
-    <div class="system-pill"><span class="live-dot"></span>ENGINE ONLINE</div>
-  </div>
-  <section class="hero">
-    <div class="hero-kicker"><span></span>PREMIUM ANALYSIS CONSOLE</div>
-    <h1>Mester Lotto <em>VIP+</em></h1>
-    <p>วิเคราะห์ด้วย AI อัจฉริยะ<br><b>Multi-Layer AI Processing</b></p>
-    <div class="hero-meta">
-      <div class="meta-chip">ชุดเด่น</div>
-      <div class="meta-chip">ชุดรอง</div>
-      <div class="meta-chip">ชุดวิน 6 ตัว</div>
-      <div class="meta-chip">AI score</div>
-    </div>
-  </section>
+<div class="container">
 
-  <div class="engine-strip">
-    <div class="engine-card">
-      <div class="engine-label">ประมวลผลทั้งหมดในระบบ</div>
-      <div class="engine-value cyan">
-        <span class="total-dot-wrap"><span class="total-dot" id="totalDot"></span></span>
-        <span id="totalProcessedCount">35,000</span> ครั้ง
+  <header class="header">
+    <div>
+      <div class="badge">SINGLE FILE • LOCAL ONLY • NO BACKEND</div>
+      <h1>Numerical Pattern Analyzer</h1>
+      <div class="subtitle">
+        เครื่องมือวิเคราะห์รูปแบบของข้อมูลตัวเลขที่ผู้ใช้ป้อนเอง
+        โดยคำนวณทั้งหมดภายในเบราว์เซอร์
       </div>
     </div>
-    <div class="engine-card">
-      <div class="engine-label"><span class="engine-icon online-glow-icon">👤</span> สมาชิกออนไลน์</div>
-      <div class="engine-value green" id="onlineUsersCount">1,150 คน</div>
-    </div>
-    <div class="engine-card">
-      <div class="engine-label"><span class="engine-icon">🖥️</span> ความเร็วเซิร์ฟเวอร์</div>
-      <div class="engine-value gold" id="serverLatencyCount">18 ms</div>
-    </div>
-  </div>
+  </header>
 
-  <div id="lastSessionBadge" class="last-session">
-    <span>อ้างอิงจากผลล่าสุด:</span>
-    <strong id="lbl3"></strong>
-    <span>•</span>
-    <strong id="lbl2"></strong>
-  </div>
-  <section class="command-center">
-    <div class="command-header">
-      <div>
-        <div class="command-title">Analysis Input</div>
-        <div class="command-sub">กรอกข้อมูลล่าสุด เพื่อเริ่มประมวลผล</div>
-      </div>
-      <div class="command-badge">INPUT READY</div>
+  <section class="panel">
+
+    <h2>1. Input Data</h2>
+
+    <div class="notice">
+      ระบบนี้ใช้เฉพาะข้อมูลที่ป้อนเข้ามาเองเท่านั้น
+      ไม่มีฐานข้อมูลย้อนหลังจากภายนอก และไม่มีการส่งข้อมูลไป server
     </div>
+
+    <div style="height:15px"></div>
+
     <div class="input-grid">
-      <div class="field-card">
-        <label class="field-label" for="num3top">เลข 3 ตัวบน (3 DIGITS)</label>
-        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="num3top" placeholder="000" maxlength="3" autocomplete="off" spellcheck="false">
+
+      <div class="field">
+        <label>3 ตัวบน</label>
+        <input
+          id="topInput"
+          inputmode="numeric"
+          maxlength="3"
+          placeholder="เช่น 123">
       </div>
-      <div class="field-card">
-        <label class="field-label" for="num2bottom">เลข 2 ตัวล่าง (2 DIGITS)</label>
-        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="num2bottom" placeholder="00" maxlength="2" autocomplete="off" spellcheck="false">
+
+      <div class="field">
+        <label>2 ตัวล่าง</label>
+        <input
+          id="bottomInput"
+          inputmode="numeric"
+          maxlength="2"
+          placeholder="เช่น 45">
       </div>
+
     </div>
-    <div class="action-row">
-      <button class="calculate-btn" id="calculateButton" type="button">⚡ RUN ANALYSIS / เริ่มประมวลผล</button>
-      <button class="clear-btn" id="clearButton" type="button">ล้าง / CLEAR</button>
+
+    <div class="actions">
+      <button class="primary" onclick="addRecord()">
+        + เพิ่มข้อมูล
+      </button>
+
+      <button onclick="analyze()">
+        วิเคราะห์ข้อมูล
+      </button>
+
+      <button onclick="loadDemo()">
+        โหลดข้อมูลตัวอย่าง
+      </button>
+
+      <button class="danger" onclick="clearAll()">
+        ล้างทั้งหมด
+      </button>
     </div>
+
   </section>
-  <div id="aiScannerBox">
-    <div class="scanner-ring"></div>
-    <div id="aiScannerText">INITIALIZING QUANT ANALYSIS...</div>
+
+
+  <section class="panel">
+
+    <h2>2. Dataset</h2>
+
+    <div id="datasetTable"></div>
+
+  </section>
+
+
+  <section class="panel">
+
+    <h2>3. Overview</h2>
+
+    <div id="overview">
+      <div class="empty">
+        กรุณาเพิ่มข้อมูลก่อนเริ่มวิเคราะห์
+      </div>
+    </div>
+
+  </section>
+
+
+  <section class="panel">
+
+    <h2>4. Digit Distribution</h2>
+
+    <div class="grid-2">
+
+      <div>
+        <h3>3 ตัวบน</h3>
+        <div id="topDistribution"></div>
+      </div>
+
+      <div>
+        <h3>2 ตัวล่าง</h3>
+        <div id="bottomDistribution"></div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <section class="panel">
+
+    <h2>5. Formula Engine</h2>
+
+    <div class="muted small">
+      แต่ละสูตรถูกทำ normalization แยกกัน
+      เพื่อป้องกันสูตรที่มีช่วงค่าต่างกันมากไม่ให้ได้เปรียบกันโดยอัตโนมัติ
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div id="formulaScores"></div>
+
+  </section>
+
+
+  <section class="panel">
+
+    <h2>6. Model 0–5</h2>
+
+    <div class="grid-3" id="modelCards"></div>
+
+  </section>
+
+
+  <section class="panel">
+
+    <h2>7. Formula → Model Matrix</h2>
+
+    <div class="muted small">
+      คะแนนแต่ละช่องแสดงความสอดคล้องของสูตรกับโมเดล
+      โดยแต่ละโมเดลใช้คุณลักษณะคนละชุด
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div id="formulaModelMatrix"></div>
+
+  </section>
+
+
+  <section class="panel">
+
+    <h2>8. Model → Model Matrix</h2>
+
+    <div class="notice">
+      ค่าแนวทแยงถูกตัดออกโดยเจตนา
+      เพื่อไม่ให้โมเดลให้คะแนนตัวเอง
+    </div>
+
+    <div style="height:12px"></div>
+
+    <div id="modelMatrix"></div>
+
+  </section>
+
+
+  <section class="panel">
+
+    <h2>9. Data Diagnostics</h2>
+
+    <div id="diagnostics"></div>
+
+  </section>
+
+
+  <section class="panel">
+
+    <h2>10. Raw Analysis</h2>
+
+    <div id="rawAnalysis"></div>
+
+  </section>
+
+
+  <div class="footer">
+    Numerical Pattern Analyzer — All calculations are performed locally in the browser.
   </div>
-  <div id="resultContainer"></div>
-  <button class="logout-btn" id="logoutButton" type="button">ออกจากระบบ / LOGOUT</button>
+
 </div>
-</div>
-</div>
-</div>
-<div id="toast">✓ คัดลอกตัวเลขแล้ว / COPIED</div>
+
 
 <script>
-/* =========================================================
-   1. Hollywood High-End Snow Effect (Relaxing 3D Depth)
-   ========================================================= */
-(function setupHollywoodSnow() {
-    const canvas = document.getElementById("snowCanvas");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+"use strict";
 
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-
-    window.addEventListener("resize", () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-    });
-
-    const flakeCount = 45;
-    const flakes = [];
-
-    for (let i = 0; i < flakeCount; i++) {
-        flakes.push({
-            x: Math.random() * width,
-            y: Math.random() * height,
-            radius: Math.random() * 2.2 + 0.8,
-            depth: Math.random() * 0.8 + 0.2,
-            speedY: Math.random() * 0.4 + 0.2,
-            speedX: Math.random() * 0.2 - 0.1,
-            opacity: Math.random() * 0.5 + 0.35,
-            swing: Math.random() * Math.PI * 2,
-            swingSpeed: Math.random() * 0.01 + 0.005
-        });
-    }
-
-    function renderSnow() {
-        ctx.clearRect(0, 0, width, height);
-
-        for (let i = 0; i < flakeCount; i++) {
-            const f = flakes[i];
-            f.swing += f.swingSpeed;
-            f.x += Math.sin(f.swing) * 0.3 + f.speedX;
-            f.y += f.speedY * f.depth;
-
-            if (f.y > height + 10) {
-                f.y = -10;
-                f.x = Math.random() * width;
-            }
-            if (f.x > width + 10) f.x = -10;
-            if (f.x < -10) f.x = width + 10;
-
-            ctx.beginPath();
-            ctx.arc(f.x, f.y, f.radius * f.depth, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(16, 185, 129, ${f.opacity * f.depth * 0.45})`;
-            ctx.shadowBlur = 8 * f.depth;
-            ctx.shadowColor = "rgba(16, 185, 129, 0.4)";
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
-
-        requestAnimationFrame(renderSnow);
-    }
-    renderSnow();
-})();
 
 /* =========================================================
-   2. Realtime Simulation Engine (Persistent & Dynamic)
-   ========================================================= */
+   DATA STORE
+========================================================= */
 
-let totalProcessed = parseInt(localStorage.getItem("ml_total_processed_v1"), 10);
-if (!totalProcessed || isNaN(totalProcessed) || totalProcessed < 35000) {
-    totalProcessed = 35000;
-    localStorage.setItem("ml_total_processed_v1", totalProcessed);
-}
+let records = [];
 
-function updateProcessedUI(triggerRipple = true) {
-    const el = document.getElementById("totalProcessedCount");
-    if (el) el.innerText = totalProcessed.toLocaleString();
-
-    if (triggerRipple) {
-        const dot = document.getElementById("totalDot");
-        if (dot) {
-            dot.classList.remove("ripple");
-            void dot.offsetWidth;
-            dot.classList.add("ripple");
-        }
-    }
-}
-
-function scheduleProcessedIncrements() {
-    const timesInMinute = Math.floor(Math.random() * 3) + 5; 
-    const intervals = [];
-    
-    for (let i = 0; i < timesInMinute; i++) {
-        intervals.push(Math.floor(Math.random() * 58000) + 1000);
-    }
-    intervals.sort((a, b) => a - b);
-
-    intervals.forEach(delay => {
-        setTimeout(() => {
-            totalProcessed += 1;
-            localStorage.setItem("ml_total_processed_v1", totalProcessed);
-            updateProcessedUI(true);
-        }, delay);
-    });
-
-    setTimeout(scheduleProcessedIncrements, 60000);
-}
-
-let currentOnline = parseInt(localStorage.getItem("ml_online_users_v1"), 10);
-if (!currentOnline || isNaN(currentOnline)) {
-    currentOnline = 1150;
-}
-
-function updateOnlineUsers() {
-    const change = Math.floor(Math.random() * 100) + 1;
-    const isUp = Math.random() > 0.45;
-    
-    if (isUp) {
-        currentOnline += change;
-    } else {
-        currentOnline -= change;
-    }
-
-    if (currentOnline < 1050) currentOnline += Math.floor(Math.random() * 40) + 20;
-    if (currentOnline > 1280) currentOnline -= Math.floor(Math.random() * 40) + 20;
-
-    localStorage.setItem("ml_online_users_v1", currentOnline);
-    const el = document.getElementById("onlineUsersCount");
-    if (el) el.innerText = currentOnline.toLocaleString() + " คน";
-}
-
-function updateServerLatency() {
-    const latency = Math.floor(Math.random() * (26 - 18 + 1)) + 18;
-    const el = document.getElementById("serverLatencyCount");
-    if (el) el.innerText = latency + " ms";
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    updateProcessedUI(false);
-    scheduleProcessedIncrements();
-
-    updateOnlineUsers();
-    setInterval(updateOnlineUsers, 60000);
-
-    updateServerLatency();
-    setInterval(updateServerLatency, 3500);
-});
 
 /* =========================================================
-   3. Core Application Logic
-   ========================================================= */
-const _secEnc = {
-  _dbToken:[
-    "4d617374657241646d696e32303236",
-    "54396b4c326d5037",
-    "5a71345738785431",
-    "42616e6b32303236"
-  ],
-  _hexDecode(hex){
-    let str="";
-    for(let i=0;i<hex.length;i+=2){
-      str+=String.fromCharCode(parseInt(hex.substr(i,2),16));
-    }
-    return str;
-  },
-  async _checkMatch(inputVal){
-    for(const hex of this._dbToken){
-      if(inputVal===this._hexDecode(hex))return true;
-    }
-    return false;
+   UTILITIES
+========================================================= */
+
+function clamp(v,min,max){
+  return Math.max(min,Math.min(max,v));
+}
+
+function mean(arr){
+  if(!arr.length) return 0;
+  return arr.reduce((a,b)=>a+b,0)/arr.length;
+}
+
+function variance(arr){
+  if(arr.length<2) return 0;
+
+  const m=mean(arr);
+
+  return mean(
+    arr.map(x=>(x-m)*(x-m))
+  );
+}
+
+function std(arr){
+  return Math.sqrt(variance(arr));
+}
+
+function normalizeArray(arr){
+  if(!arr.length){
+    return [];
   }
-};
 
-const _app = {
-  _toastTimer:null,
-  async _verify(p){
-    if(await _secEnc._checkMatch(p))return true;
-    return false;
-  },
-  _audio(type="click"){
-    try{
-      const AC=window.AudioContext||window.webkitAudioContext;
-      if(!AC)return;
-      const c=new AC(),o=c.createOscillator(),g=c.createGain();
-      o.type=type==="error"?"triangle":"sine";
-      const now=c.currentTime;
-      o.frequency.setValueAtTime(type==="error"?190:520,now);
-      o.frequency.exponentialRampToValueAtTime(type==="error"?130:720,now+.08);
-      g.gain.setValueAtTime(type==="error"?.035:.025,now);
-      g.gain.exponentialRampToValueAtTime(.001,now+.12);
-      o.connect(g);g.connect(c.destination);
-      o.start(now);o.stop(now+.13);
-    }catch(e){}
-  },
-  _esc(s){
-    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-  },
-  async login(){
-    this._audio("click");
-    const input=document.getElementById("passwordInput");
-    const error=document.getElementById("errorMsg");
-    const value=input.value.trim();
-    if(!value||!(await this._verify(value))){
-      this._audio("error");
-      error.style.display="block";
-      input.focus();
-      return;
+  const min=Math.min(...arr);
+  const max=Math.max(...arr);
+
+  if(max===min){
+    return arr.map(()=>0.5);
+  }
+
+  return arr.map(
+    x=>(x-min)/(max-min)
+  );
+}
+
+function score100(v){
+  return clamp(v*100,0,100);
+}
+
+function pct(v){
+  return score100(v).toFixed(1)+"%";
+}
+
+function escapeHTML(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+function validTop(v){
+  return /^\d{3}$/.test(v);
+}
+
+function validBottom(v){
+  return /^\d{2}$/.test(v);
+}
+
+function addRecord(){
+
+  const top=document
+    .getElementById("topInput")
+    .value
+    .trim();
+
+  const bottom=document
+    .getElementById("bottomInput")
+    .value
+    .trim();
+
+  if(!validTop(top)){
+    alert("3 ตัวบนต้องเป็นตัวเลข 3 หลัก");
+    return;
+  }
+
+  if(!validBottom(bottom)){
+    alert("2 ตัวล่างต้องเป็นตัวเลข 2 หลัก");
+    return;
+  }
+
+  records.push({
+    id:Date.now(),
+    top,
+    bottom
+  });
+
+  document.getElementById("topInput").value="";
+  document.getElementById("bottomInput").value="";
+
+  renderDataset();
+  analyze();
+}
+
+
+function removeRecord(id){
+
+  records=records.filter(
+    r=>r.id!==id
+  );
+
+  renderDataset();
+  analyze();
+}
+
+
+function clearAll(){
+
+  if(!confirm("ต้องการล้างข้อมูลทั้งหมดหรือไม่")) return;
+
+  records=[];
+
+  renderDataset();
+  analyze();
+}
+
+
+/* =========================================================
+   DEMO
+========================================================= */
+
+function loadDemo(){
+
+  const demo=[
+    ["123","45"],
+    ["418","72"],
+    ["506","31"],
+    ["781","64"],
+    ["245","18"],
+    ["930","57"],
+    ["316","42"],
+    ["852","09"],
+    ["674","35"],
+    ["190","82"],
+    ["527","14"],
+    ["463","76"],
+    ["708","21"],
+    ["351","68"],
+    ["894","03"]
+  ];
+
+  records=demo.map((x,i)=>({
+    id:Date.now()+i,
+    top:x[0],
+    bottom:x[1]
+  }));
+
+  renderDataset();
+  analyze();
+}
+
+
+/* =========================================================
+   DATASET RENDER
+========================================================= */
+
+function renderDataset(){
+
+  const el=document.getElementById("datasetTable");
+
+  if(!records.length){
+    el.innerHTML=`
+      <div class="empty">
+        ยังไม่มีข้อมูล
+      </div>
+    `;
+    return;
+  }
+
+  let html=`
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>3 ตัวบน</th>
+            <th>หลักร้อย</th>
+            <th>หลักสิบ</th>
+            <th>หลักหน่วย</th>
+            <th>2 ตัวล่าง</th>
+            <th>หลักสิบ</th>
+            <th>หลักหน่วย</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  records.forEach((r,i)=>{
+
+    html+=`
+      <tr>
+        <td>${i+1}</td>
+
+        <td><strong>${escapeHTML(r.top)}</strong></td>
+        <td>${r.top[0]}</td>
+        <td>${r.top[1]}</td>
+        <td>${r.top[2]}</td>
+
+        <td><strong>${escapeHTML(r.bottom)}</strong></td>
+        <td>${r.bottom[0]}</td>
+        <td>${r.bottom[1]}</td>
+
+        <td>
+          <button
+            class="danger"
+            onclick="removeRecord(${r.id})">
+            ลบ
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html+=`
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  el.innerHTML=html;
+}
+
+
+/* =========================================================
+   DATA EXTRACTION
+========================================================= */
+
+function topDigits(){
+
+  return records.map(r=>[
+    +r.top[0],
+    +r.top[1],
+    +r.top[2]
+  ]);
+}
+
+function bottomDigits(){
+
+  return records.map(r=>[
+    +r.bottom[0],
+    +r.bottom[1]
+  ]);
+}
+
+function allDigits(){
+
+  return records.flatMap(r=>[
+    ...r.top.split("").map(Number),
+    ...r.bottom.split("").map(Number)
+  ]);
+}
+
+
+function digitFrequency(values){
+
+  const f=Array(10).fill(0);
+
+  values.forEach(d=>{
+    if(Number.isInteger(d)){
+      f[d]++;
     }
-    error.style.display="none";
-    localStorage.setItem("ml_auth_status_v3","active");
-    document.getElementById("loginView").style.display="none";
-    document.getElementById("calculatorView").style.display="block";
-    this.checkSessionBadge();
-    document.getElementById("num3top").focus();
-  },
-  logout(){
-    this._audio("click");
-    localStorage.removeItem("ml_auth_status_v3");
-    document.getElementById("calculatorView").style.display="none";
-    document.getElementById("loginView").style.display="block";
-    ["passwordInput","num3top","num2bottom"].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el)el.value="";
-    });
-    document.getElementById("resultContainer").innerHTML="";
-    document.getElementById("errorMsg").style.display="none";
-  },
-  clearCalc(){
-    this._audio("click");
-    document.getElementById("resultContainer").innerHTML="";
-    document.getElementById("num3top").value="";
-    document.getElementById("num2bottom").value="";
-    document.getElementById("num3top").focus();
-  },
-  checkSessionBadge(){
-    const n3=localStorage.getItem("ml_l_n3_v3");
-    const n2=localStorage.getItem("ml_l_n2_v3");
-    const badge=document.getElementById("lastSessionBadge");
-    if(n3&&n2){
-      document.getElementById("lbl3").innerText=n3;
-      document.getElementById("lbl2").innerText=n2;
-      badge.style.display="flex";
-    }else{
-      badge.style.display="none";
-    }
-  },
-  calculate(){
-    this._audio("click");
-    const n3=document.getElementById("num3top").value.trim();
-    const n2=document.getElementById("num2bottom").value.trim();
-    if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2)){
-      this._audio("error");
-      alert("กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก");
-      return;
-    }
-    localStorage.setItem("ml_l_n3_v3",n3);
-    localStorage.setItem("ml_l_n2_v3",n2);
-    this.checkSessionBadge();
-    const scan=document.getElementById("aiScannerBox");
-    const btn=document.getElementById("calculateButton");
-    btn.disabled=true;
-    scan.style.display="block";
-    const messages=[
-      "READING INPUT STRUCTURE...",
-      "CALCULATING DIGIT MOMENTUM...",
-      "RUNNING BACKEND COMPASS & SCORING...",
-      "EVALUATING 5 MATHEMATICAL MODELS...",
-      "BUILDING NUMBER MATRIX...",
-      "MAPPING DIGIT DISTRIBUTION...",
-      "GENERATING WIN SET...",
-      "FINALIZING ANALYSIS..."
-    ];
-    let index=0;
-    const scannerText=document.getElementById("aiScannerText");
-    scannerText.innerText=messages[0];
-    const timer=setInterval(()=>{
-      index++;
-      if(index<messages.length)scannerText.innerText=messages[index];
-    },100);
-    setTimeout(()=>{
-      clearInterval(timer);
-      scan.style.display="none";
-      btn.disabled=false;
-      this.runAnalysis(n3,n2);
-      document.getElementById("resultContainer").scrollIntoView({behavior:"smooth",block:"start"});
-      
-      totalProcessed += 1;
-      localStorage.setItem("ml_total_processed_v1", totalProcessed);
-      updateProcessedUI(true);
-    },800);
-  },
-  
-  _normalize(x) {
-    return ((x % 10) + 10) % 10;
-  },
+  });
 
-  _run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum) {
-    const rawFormulas = [
-      (H + T_top), (H + U_top), (T_top + U_top), (H + T_bot), (H + U_bot),
-      (T_top + T_bot), (T_top + U_bot), (U_top + T_bot), (U_top + U_bot), (T_bot + U_bot),
-      (sumTop + T_bot), (sumTop + U_bot), (sumTop + H), (sumTop + T_top), (sumTop + U_top),
-      (10 - H), (10 - T_top), (10 - U_top), (10 - T_bot), (10 - U_bot),
-      (H + T_top + T_bot), (H + U_top + U_bot), (T_top + U_top + T_bot), (T_top + U_top + U_bot), (H + T_bot + U_bot),
-      (T_top + T_bot + U_bot), (sumTop - T_bot), (sumTop - U_bot), (sumTop + sumBot), (sumTop - sumBot),
-      ((H + T_top) - U_bot), ((T_top + U_top) - T_bot), ((H + U_top) - T_bot), (20 - (T_top + T_bot)), (20 - (U_top + U_bot)),
-      (H + T_top + U_top - T_bot), (H + T_top + U_top - U_bot), (10 + T_top - U_bot), (10 + U_top - T_bot), (sumTop + 10 - U_bot),
-      (H + U_bot - T_top), (T_top + U_bot - H), (U_top + T_bot - H), (sumBot + H - T_top), (sumBot + H - U_top),
-      (H + sumBot - T_top), (H + sumBot - U_top), (T_top + sumBot - H), (T_top + sumBot - U_top), (U_top + sumBot - H),
-      (U_top + sumBot - T_top), (30 - (H + T_top + T_bot)), (30 - (H + U_top + U_bot)), (30 - (T_top + U_top + T_bot)), (30 - (H + T_bot + U_bot)),
-      ((H + T_top) + T_bot - U_bot), ((H + U_top) + U_bot - T_bot), ((T_top + U_top) + T_bot - H), (sumTop + T_bot - U_bot), (sumTop + U_bot - T_bot),
-      (H + T_top + sumBot), (H + U_top + sumBot), (T_top + U_top + sumBot), (H + T_bot + sumTop), (H + U_bot + sumTop),
-      (T_top + T_bot + sumTop), (T_top + U_bot + sumTop), (U_top + T_bot + sumTop), (U_top + U_bot + sumTop), (T_bot + U_bot + sumTop),
-      (10 + H + T_top), (10 + H + U_top), (10 + T_top + U_top), (10 + T_bot + U_bot), (10 + H + T_bot),
-      (10 + H + U_bot), (10 + T_top + T_bot), (10 + T_top + U_bot), (10 + U_top + T_bot), (10 + U_top + U_bot),
-      ((H - T_top) + U_bot), ((H - U_top) + T_bot), ((T_top - U_top) + U_bot), ((T_bot - U_bot) + H), ((T_bot - U_bot) + T_top),
-      ((T_bot - U_bot) + U_top), (20 - H - T_top), (20 - H - U_top), (20 - T_top - U_top), (20 - T_bot - U_bot),
-      (20 - H - T_bot), (20 - H - U_bot), (20 - T_top - T_bot), (20 - T_top - U_bot), (20 - U_top - T_bot),
-      (20 - U_top - U_bot), (totalSum), (totalSum * 2), (totalSum + H), (totalSum + T_bot)
-    ];
+  return f;
+}
 
-    const countedDigits = {};
-    for(let d=0; d<=9; d++) countedDigits[d] = 0;
 
-    rawFormulas.forEach(rawVal => {
-      const unit = ((rawVal % 10) + 10) % 10;
-      countedDigits[unit] = (countedDigits[unit] || 0) + 1;
-    });
+/* =========================================================
+   BASIC FEATURES
+========================================================= */
 
-    const sortedByCount = Object.keys(countedDigits).map(Number).sort((a,b) => countedDigits[b] - countedDigits[a] || b - a);
+function positionFrequency(){
+
+  const result={
+    topHundreds:Array(10).fill(0),
+    topTens:Array(10).fill(0),
+    topUnits:Array(10).fill(0),
+    bottomTens:Array(10).fill(0),
+    bottomUnits:Array(10).fill(0)
+  };
+
+  records.forEach(r=>{
+
+    result.topHundreds[+r.top[0]]++;
+    result.topTens[+r.top[1]]++;
+    result.topUnits[+r.top[2]]++;
+
+    result.bottomTens[+r.bottom[0]]++;
+    result.bottomUnits[+r.bottom[1]]++;
+  });
+
+  return result;
+}
+
+
+function duplicateFeatures(){
+
+  if(!records.length){
     return {
-      ranking: sortedByCount.slice(0, 10),
-      counts: countedDigits
+      topPair:0,
+      topTriple:0,
+      bottomPair:0
     };
+  }
+
+  let topPair=0;
+  let topTriple=0;
+  let bottomPair=0;
+
+  records.forEach(r=>{
+
+    const t=r.top.split("").map(Number);
+    const b=r.bottom.split("").map(Number);
+
+    if(new Set(t).size<3) topPair++;
+
+    if(t[0]===t[1] && t[1]===t[2]){
+      topTriple++;
+    }
+
+    if(b[0]===b[1]){
+      bottomPair++;
+    }
+  });
+
+  return {
+    topPair:topPair/records.length,
+    topTriple:topTriple/records.length,
+    bottomPair:bottomPair/records.length
+  };
+}
+
+
+function sumFeatures(){
+
+  const topSums=[];
+  const bottomSums=[];
+
+  records.forEach(r=>{
+
+    topSums.push(
+      r.top
+        .split("")
+        .map(Number)
+        .reduce((a,b)=>a+b,0)
+    );
+
+    bottomSums.push(
+      r.bottom
+        .split("")
+        .map(Number)
+        .reduce((a,b)=>a+b,0)
+    );
+  });
+
+  return {
+    top:topSums,
+    bottom:bottomSums
+  };
+}
+
+
+function transitionFeatures(){
+
+  if(records.length<2){
+    return {
+      top:0.5,
+      bottom:0.5,
+      combined:0.5
+    };
+  }
+
+  const topChanges=[];
+  const bottomChanges=[];
+
+  for(let i=1;i<records.length;i++){
+
+    const a=records[i-1];
+    const b=records[i];
+
+    const ta=a.top.split("").map(Number);
+    const tb=b.top.split("").map(Number);
+
+    const ba=a.bottom.split("").map(Number);
+    const bb=b.bottom.split("").map(Number);
+
+    topChanges.push(
+      mean(
+        ta.map(
+          (x,j)=>Math.abs(x-tb[j])/9
+        )
+      )
+    );
+
+    bottomChanges.push(
+      mean(
+        ba.map(
+          (x,j)=>Math.abs(x-bb[j])/9
+        )
+      )
+    );
+  }
+
+  return {
+    top:mean(topChanges),
+    bottom:mean(bottomChanges),
+    combined:mean([
+      mean(topChanges),
+      mean(bottomChanges)
+    ])
+  };
+}
+
+
+/* =========================================================
+   FORMULAS
+========================================================= */
+
+const formulas=[
+
+  {
+    id:"F01",
+    name:"Global Frequency",
+    category:"frequency",
+    fn:data=>{
+      const f=digitFrequency(allDigits());
+      return f.map(x=>x+1);
+    }
   },
 
-  runAnalysis(n3, n2) {
-    const d3 = n3.split("").map(Number);
-    const d2 = n2.split("").map(Number);
-    const [H, T_top, U_top] = d3;
-    const [T_bot, U_bot] = d2;
-
-    const sumTop = H + T_top + U_top;
-    const sumBot = T_bot + U_bot;
-    const totalSum = sumTop + sumBot;
-
-    const formula100Engine = this._run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum);
-
-    const getUnitDirect = (v) => {
-      const str = String(v);
-      const lastChar = str.slice(-1);
-      const first = parseInt(lastChar, 10);
-      return [first, (first + 1) % 10];
-    };
-
-    const fixedBase = 7;
-    const anchorRaw = fixedBase - H;
-    const anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
-
-    let rawM1 = (T_top + T_bot) % 10;
-    let rawM2 = sumTop % 10;
-    let rawM3 = (H + T_bot) % 10;
-    let rawM4 = (U_top + U_bot) % 10;
-    let rawM5 = (10 - U_bot) % 10;
-
-    let modelRawValues = [rawM1, rawM2, rawM3, rawM4, rawM5];
-    let uniqueModelDigits = new Set(modelRawValues);
-
-    if (uniqueModelDigits.size < 4) {
-      const fallbackFormulas = [
-        (T_top + U_bot) % 10,
-        (H + U_top) % 10,
-        (sumBot) % 10,
-        (H + sumBot) % 10,
-        (totalSum) % 10
-      ];
-      for (let fbVal of fallbackFormulas) {
-        const normFb = ((fbVal % 10) + 10) % 10;
-        uniqueModelDigits.add(normFb);
-        if (uniqueModelDigits.size >= 6) break;
-      }
+  {
+    id:"F02",
+    name:"Top Frequency",
+    category:"frequency",
+    fn:data=>{
+      return digitFrequency(
+        records.flatMap(r=>r.top.split("").map(Number))
+      ).map(x=>x+1);
     }
+  },
 
-    const fList = [
-      { id: 1, name: "AI โมเดล 01", subName: "B + R1 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM1), positionalWeight: 0.01 },
-      { id: 2, name: "AI โมเดล 02", subName: "A + B + C -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM2), positionalWeight: 0.01 },
-      { id: 3, name: "AI โมเดล 03", subName: "A + R1 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM3), positionalWeight: 0.01 },
-      { id: 4, name: "AI โมเดล 04", subName: "C + R2 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM4), positionalWeight: 0.01 },
-      { id: 5, name: "AI โมเดล 05", subName: "10 - R2 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM5), positionalWeight: 0.01 }
-    ];
+  {
+    id:"F03",
+    name:"Bottom Frequency",
+    category:"frequency",
+    fn:data=>{
+      return digitFrequency(
+        records.flatMap(r=>r.bottom.split("").map(Number))
+      ).map(x=>x+1);
+    }
+  },
 
-    const allowedModelDigits = new Set();
-    fList.forEach(item => {
-      item.set.forEach(d => allowedModelDigits.add(d));
-    });
+  {
+    id:"F04",
+    name:"Position Balance",
+    category:"position",
+    fn:data=>{
 
-    const evaluated = fList.map((item) => {
-      const formulaSet = item.set;
-      let rawRange = [];
-      let hasCollision = false;
+      const p=positionFrequency();
 
-      for (let offset = -2; offset <= 2; offset++) {
-        const val = this._normalize(anchor + offset);
-        if (formulaSet.includes(val)) {
-          hasCollision = true;
-          break;
-        }
-      }
+      return Array.from({length:10},(_,d)=>{
 
-      if (hasCollision) {
-        for (let offset = -3; offset <= 3; offset++) {
-          rawRange.push(this._normalize(anchor + offset));
-        }
-      } else {
-        for (let offset = -2; offset <= 2; offset++) {
-          rawRange.push(this._normalize(anchor + offset));
-        }
-      }
+        const vals=[
+          p.topHundreds[d],
+          p.topTens[d],
+          p.topUnits[d],
+          p.bottomTens[d],
+          p.bottomUnits[d]
+        ];
 
-      const excludedDigits = [...new Set(formulaSet)];
-      let cleanedPool = rawRange.filter(dg => !excludedDigits.includes(dg));
-      const generatedPairs = [];
-      const rejectedPairs = [];
-
-      formulaSet.forEach(sourceDigit => {
-        cleanedPool.forEach(poolDigit => {
-          if (sourceDigit === poolDigit) {
-            rejectedPairs.push(`${sourceDigit}${poolDigit} (self-match)`);
-            return;
-          }
-          generatedPairs.push({ digitA: sourceDigit, digitB: poolDigit, pairStr: `${sourceDigit}${poolDigit}` });
-        });
+        return mean(vals)+1;
       });
+    }
+  },
 
-      const pMap = {};
-      formulaSet.forEach(sourceDigit => {
-        let pairsForDigit = generatedPairs.filter(p => p.digitA === sourceDigit).map(p => p.pairStr);
-        let nextFill = (sourceDigit + 1) % 10;
-        while (pairsForDigit.length < 5) {
-          if (nextFill !== sourceDigit && !pairsForDigit.includes(`${sourceDigit}${nextFill}`) && !excludedDigits.includes(nextFill)) {
-            pairsForDigit.push(`${sourceDigit}${nextFill}`);
-          }
-          nextFill = (nextFill + 1) % 10;
-        }
+  {
+    id:"F05",
+    name:"Position Diversity",
+    category:"position",
+    fn:data=>{
 
-        pairsForDigit = [...new Set(pairsForDigit)].filter(p => p[0] !== p[1]).sort();
-        if (pairsForDigit.length > 5) pairsForDigit = pairsForDigit.slice(0, 5);
-        pMap[sourceDigit] = pairsForDigit;
+      const p=positionFrequency();
+
+      return Array.from({length:10},(_,d)=>{
+
+        const vals=[
+          p.topHundreds[d],
+          p.topTens[d],
+          p.topUnits[d]
+        ];
+
+        return std(vals)+1;
       });
-
-      return {
-        id: item.id,
-        name: item.name,
-        subName: item.subName,
-        positionalWeight: item.positionalWeight,
-        set: item.set,
-        pairsMap: pMap
-      };
-    });
-
-    const digitScores = {};
-    for (let d = 0; d <= 9; d++) {
-      digitScores[d] = {
-        digit: d,
-        modelScore: 0,
-        formula100Score: 0,
-        radarScore: 0,
-        backendScore: 0,
-        winSetScore: 0,
-        totalScore: 0
-      };
     }
+  },
 
-    evaluated.forEach(model => {
-      model.set.forEach(dig => {
-        digitScores[dig].modelScore += model.positionalWeight;
-      });
-    });
+  {
+    id:"F06",
+    name:"Digit Spread",
+    category:"dispersion",
+    fn:data=>{
 
-    const maxFormCount = Math.max(...Object.values(formula100Engine.counts), 1);
-    for (let d = 0; d <= 9; d++) {
-      const matchCount = formula100Engine.counts[d] || 0;
-      digitScores[d].formula100Score = (matchCount / maxFormCount); 
+      const f=digitFrequency(allDigits());
+
+      const m=mean(f);
+
+      return f.map(x=>Math.abs(x-m)+1);
     }
+  },
 
-    const radar1 = (T_top + T_bot + U_bot) % 10;
-    const radar2 = (H + U_top + T_bot) % 10;
-    const radar3 = (Math.abs(sumTop - sumBot)) % 10;
-    const radar4 = (H * 3 + U_bot) % 10;
-    const radar5 = (totalSum * 2) % 10;
+  {
+    id:"F07",
+    name:"Recency Distance",
+    category:"sequence",
+    fn:data=>{
 
-    for (let d = 0; d <= 9; d++) {
-      let rHits = 0;
-      if (radar1 === d) rHits++;
-      if (radar2 === d) rHits++;
-      if (radar3 === d) rHits++;
-      if (radar4 === d) rHits++;
-      if (radar5 === d) rHits++;
-      digitScores[d].radarScore = (rHits / 5);
-    }
+      const out=Array(10).fill(0);
 
-    const backendFormulasSet = [
-      (H * 2 + T_bot) % 10,
-      (T_top + U_bot) % 10,
-      (sumTop) % 10,
-      (Math.abs(T_top - U_top)) % 10,
-      (totalSum) % 10
-    ];
-    for (let d = 0; d <= 9; d++) {
-      if (backendFormulasSet.includes(d)) {
-        digitScores[d].backendScore = 1.0;
-      }
-    }
+      for(let d=0;d<10;d++){
 
-    const winCandidate = (H + T_top + U_top + T_bot + U_bot) % 10;
-    for (let d = 0; d <= 9; d++) {
-      if (d === winCandidate || d === ((winCandidate + 5) % 10)) {
-        digitScores[d].winSetScore = 0.01;
-      }
-    }
+        let last=-1;
 
-    for (let d = 0; d <= 9; d++) {
-      const item = digitScores[d];
-      item.totalScore = (item.modelScore * 0.01) + 
-                        (item.formula100Score * 0.2525) + 
-                        (item.radarScore * 0.50) + 
-                        (item.backendScore * 0.10) + 
-                        (item.winSetScore * 0.01);
+        for(let i=records.length-1;i>=0;i--){
 
-      if (allowedModelDigits.has(d)) {
-        item.totalScore *= 1.01;
-      }
-    }
+          const digits=[
+            ...records[i].top,
+            ...records[i].bottom
+          ].map(Number);
 
-    const matrixSortedAll = Object.values(digitScores)
-      .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
-
-    const allowedModelArray = Array.from(allowedModelDigits);
-
-    const filteredModelScores = matrixSortedAll.filter(item => 
-      allowedModelArray.includes(item.digit)
-    );
-
-    let primaryDigitObj = filteredModelScores[0];
-    let secondaryDigitObj = filteredModelScores[1];
-
-    if (!primaryDigitObj) {
-      primaryDigitObj = matrixSortedAll[0];
-    }
-    if (!secondaryDigitObj) {
-      secondaryDigitObj = matrixSortedAll.find(item => item.digit !== primaryDigitObj.digit) || matrixSortedAll[1];
-    }
-
-    const d1 = primaryDigitObj.digit;
-    const d2_dig = secondaryDigitObj.digit;
-
-    const matrixSorted = matrixSortedAll;
-
-    const allScores = matrixSorted.map(s => s.totalScore);
-    const minScore = Math.min(...allScores);
-    const maxScore = Math.max(...allScores);
-    const scoreRange = (maxScore - minScore) || 1;
-
-    const calcConfidence = (score) => {
-      const normalizedPct = 80.0 + ((score - minScore) / scoreRange) * 18.5;
-      return Number(Math.min(98.5, Math.max(80.0, normalizedPct)).toFixed(1));
-    };
-
-    const primaryPct = calcConfidence(primaryDigitObj.totalScore);
-    const secondaryPct = calcConfidence(secondaryDigitObj.totalScore);
-
-    evaluated.forEach(model => {
-      const modelScoreSum = model.set.reduce((sum, dig) => sum + (digitScores[dig].totalScore > 0 ? digitScores[dig].totalScore : 0), 0);
-      model.aiScore = calcConfidence(modelScoreSum / 2);
-    });
-
-    evaluated.sort((a, b) => b.aiScore - a.aiScore);
-    evaluated.forEach((model, idx) => { model.isRecommended = idx < 2; });
-
-    const winnerModel = evaluated[0];
-    const arr1 = winnerModel.pairsMap[d1] || evaluated.find(m => m.pairsMap[d1])?.pairsMap[d1] || [];
-    const arr2 = winnerModel.pairsMap[d2_dig] || evaluated.find(m => m.pairsMap[d2_dig])?.pairsMap[d2_dig] || [];
-    const matrixArr3d = arr1.slice(0, 5).map(p => `${p.slice(-1)}${d1}${d2_dig}`);
-    
-    const cScore3 = Number((50.1 + Math.random() * 0.8).toFixed(1));
-
-    let top5Digits = matrixSorted.slice(0, 5).map(item => item.digit);
-
-    let wildcardCandidate = matrixSorted.find(item => 
-      !allowedModelDigits.has(item.digit) && !top5Digits.includes(item.digit)
-    );
-
-    if (!wildcardCandidate) {
-      wildcardCandidate = matrixSorted.find(item => !top5Digits.includes(item.digit));
-    }
-
-    let currentSet = [...top5Digits, wildcardCandidate ? wildcardCandidate.digit : matrixSorted[5].digit];
-
-    const checkBalance = (digits) => {
-      const evenCount = digits.filter(d => d % 2 === 0).length;
-      const oddCount = digits.length - evenCount;
-      const lowCount = digits.filter(d => d >= 0 && d <= 4).length;
-      const highCount = digits.length - lowCount;
-      return { isBalanced: (evenCount >= 2 && oddCount >= 2) && (lowCount >= 2 && highCount >= 2) };
-    };
-
-    if (!checkBalance(currentSet).isBalanced) {
-      const candidatesIndex = [6, 7, 8, 9];
-      let bestSet = [...currentSet];
-      let foundReplacement = false;
-      for (let idx of candidatesIndex) {
-        if (idx < matrixSorted.length) {
-          const testSet = [...currentSet.slice(0, 5), matrixSorted[idx].digit];
-          if (checkBalance(testSet).isBalanced) {
-            bestSet = testSet;
-            foundReplacement = true;
+          if(digits.includes(d)){
+            last=i;
             break;
           }
         }
+
+        out[d]=last<0
+          ? records.length+1
+          : records.length-1-last;
       }
-      if (foundReplacement) currentSet = bestSet;
+
+      return out.map(x=>x+1);
     }
+  },
 
-    const winSet = currentSet.sort((a, b) => a - b);
+  {
+    id:"F08",
+    name:"Sum Distribution",
+    category:"distribution",
+    fn:data=>{
 
-    const combinedAnalysisPool = [...matrixSorted.slice(0, 5).map(i => i.digit), ...winSet];
-    const evenCountTotal = combinedAnalysisPool.filter(d => d % 2 === 0).length;
-    const oddCountTotal = combinedAnalysisPool.length - evenCountTotal;
-    const evenPct = Number(((evenCountTotal / combinedAnalysisPool.length) * 100).toFixed(1));
-    const oddPct = Number((100 - evenPct).toFixed(1));
+      const sums=sumFeatures();
 
-    const maxScoreVal = Math.max(...matrixSorted.map(s => s.totalScore), 1);
-    
-    const distributionHTML = matrixSorted.map((item, index) => {
-      const digit = item.digit;
-      const height = item.totalScore > 0 ? Math.max(12, Math.round((item.totalScore / maxScoreVal) * 100)) : 6;
-      
-      let barColor = '#0A6647';
-      if (index === 0 || index === 1) barColor = '#0A6647';
-      else if (index === 2 || index === 3) barColor = '#10B981';
-      else if (index === 4 || index === 5) barColor = '#EAB308';
-      else if (index === 6 || index === 7) barColor = '#F97316';
-      else barColor = '#BE123C';
+      const all=[
+        ...sums.top,
+        ...sums.bottom
+      ];
 
-      return `<div class="overview-bar" style="--bar-height:${height}%; --bar-color:${barColor};" data-copy="${digit}"><span class="overview-digit">${digit}</span></div>`;
-    });
+      const avg=mean(all);
 
-    const indWinSetHTML = winSet.map((digit, index) => {
-      return `<div class="ind-win-item" data-copy="${digit}"><strong>${digit}</strong><span>POS ${index + 1}</span></div>`;
-    }).join("");
+      return Array.from({length:10},(_,d)=>
+        Math.abs(
+          (avg%10)-d
+        )+1
+      );
+    }
+  },
 
-    const pairHTML1 = arr1.length ? arr1.map((p, index) => {
-      const pct = Number((primaryPct - index * 0.3).toFixed(1));
-      return `<div class="number-chip top" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${pct}%</small></div>`;
-    }).join("") : `<div style="grid-column:1/-1;color:var(--muted);font-size:.5rem;text-align:center;">ไม่มีชุดข้อมูล</div>`;
+  {
+    id:"F09",
+    name:"Transition Separation",
+    category:"transition",
+    fn:data=>{
 
-    const pairHTML2 = arr2.length ? arr2.map((p, index) => {
-      const pct = Number((secondaryPct - index * 0.3).toFixed(1));
-      return `<div class="number-chip" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${pct}%</small></div>`;
-    }).join("") : `<div style="grid-column:1/-1;color:var(--muted);font-size:.5rem;text-align:center;">ไม่มีชุดข้อมูล</div>`;
+      const tr=transitionFeatures();
 
-    const threeHTML = matrixArr3d.length ? matrixArr3d.map((p, index) => {
-      const pct = Number((cScore3 - index * 0.05).toFixed(1));
-      return `<div class="number-chip gold" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${pct}%</small></div>`;
-    }).join("") : `<div style="grid-column:1/-1;color:var(--muted);font-size:.5rem;text-align:center;">ไม่มีชุดข้อมูล</div>`;
+      return Array.from({length:10},(_,d)=>
+        1+
+        Math.abs(
+          d-5
+        )*(0.1+tr.combined)
+      );
+    }
+  },
 
-    const rankHTML = matrixSorted.slice(0, 5).map((item, index) => {
-      const pct = calcConfidence(item.totalScore);
-      return `<div class="rank-row" data-copy="${item.digit}">
-        <div class="rank-no">#${String(index + 1).padStart(2, "0")}</div>
-        <div class="rank-digit">${item.digit}</div>
-        <div class="rank-bar-wrap"><div class="rank-bar-fill" style="width: ${pct}%;"></div></div>
-        <div class="rank-percent">${pct.toFixed(1)}%</div>
-      </div>`;
-    }).join("");
+  {
+    id:"F10",
+    name:"Repeat Structure",
+    category:"structure",
+    fn:data=>{
 
-    let allFormulasHTML = "";
-    evaluated.forEach((item) => {
-      let pairs = [];
-      item.set.forEach((digit) => {
-        const list = item.pairsMap[digit] || [];
-        list.forEach(p => { pairs.push({ pair: p }); });
-      });
-      const pairCards = pairs.map((obj, idx) => {
-        const displayPair = obj.pair;
-        const subPct = Number((item.aiScore - idx * 0.3).toFixed(1));
-        return `<div class="formula-pair" data-copy="${this._esc(displayPair)}"><strong>${this._esc(displayPair)}</strong><small>${subPct}%</small></div>`;
-      }).join("");
+      const dup=duplicateFeatures();
 
-      const badgeHtml = item.isRecommended ? `<span class="compact-badge">สูตรแนะนำ</span>` : "";
-      allFormulasHTML += `<div class="formula-card"><div class="formula-head"><div class="formula-name">${this._esc(item.name)} ${badgeHtml}</div><div class="formula-badge">AI Score ${item.aiScore}%</div></div><div class="formula-sub">เลขเด่น: <strong>${item.set.join(" - ")}</strong></div><div class="formula-pairs">${pairCards}</div></div>`;
-    });
+      return Array.from({length:10},(_,d)=>{
 
-    const html = `<div class="result-shell">
-      <div class="result-head">
-        <div><div class="result-kicker">ANALYSIS COMPLETE</div><div class="result-title">Quant Intelligence Result</div></div>
-        <div class="result-note">${new Date().toLocaleTimeString("th-TH")}</div>
-      </div>
-      <section class="primary-signal">
-        <div class="signal-top"><div class="signal-label">PRIMARY CONSENSUS</div><div class="confidence">${primaryPct.toFixed(1)}%</div></div>
-        <div class="primary-number"><div class="big-digit">${d1}</div><div class="digit-divider">-</div><div class="big-digit">${d2_dig}</div></div>
-        <div class="primary-caption">ชุดเด่น <span class="plain-lbl">${d1}</span> - ชุดรอง <span class="plain-lbl">${d2_dig}</span></div>
-      </section>
+        const center=4.5;
 
-      <section class="stats-analytics-card">
-        <div class="stats-flex">
-          <div class="stats-title">⚖️ อัตราส่วน เลขคู่ / เลขคี่</div>
-          <div class="stats-badge">AI BALANCE</div>
-        </div>
-        <div class="ratio-bar-container">
-          <div class="ratio-even" style="width: ${evenPct}%;"></div>
-          <div class="ratio-odd" style="width: ${oddPct}%;"></div>
-        </div>
-        <div class="ratio-legend">
-          <span>เลขคู่: ${evenPct}%</span>
-          <span>เลขคี่: ${oddPct}%</span>
-        </div>
-      </section>
-
-      <div class="section-marker">DIGIT OVERVIEW</div>
-      <section class="overview-panel">
-        <div class="overview-head">
-          <div><div class="overview-title">AI PROBABILITY RANKING</div><div class="overview-sub">การจัดอันดับความน่าจะเป็นด้วย AI</div></div>
-          <div class="overview-badge">AI ACTIVE</div>
-        </div>
-        <div class="overview-bars">${distributionHTML.join("")}</div>
-        <div class="overview-axis"><span>เลขเด่น</span><span>STRUCTURE</span><span>เลขดับ</span></div>
-      </section>
-      <section class="ranking-board">
-        <div class="ranking-header">
-          <div><div class="ranking-kicker">DIGIT RANKING</div><div class="ranking-title">🏆 เลขเด่นรวม TOP 5 <span>/ Overall Leading Digits</span></div></div>
-          <div class="ranking-badge">TOP SIGNAL</div>
-        </div>
-        <div class="rank-list">${rankHTML}</div>
-      </section>
-      <div class="section-marker">NUMBER MATRIX</div>
-      <section class="matrix-grid">
-        <div class="matrix-card">
-          <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span>ชุดเจาะ ${d1}</div><div class="matrix-score">${primaryPct.toFixed(1)}%</div></div>
-          <div class="number-row">${pairHTML1}</div>
-        </div>
-        <div class="matrix-card">
-          <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span>ชุดเจาะ ${d2_dig}</div><div class="matrix-score">${secondaryPct.toFixed(1)}%</div></div>
-          <div class="number-row">${pairHTML2}</div>
-        </div>
-        <div class="matrix-card full">
-          <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span> ชุด 3 ตัว</div><div class="matrix-score">${cScore3.toFixed(1)}%</div></div>
-          <div class="number-row">${threeHTML}</div>
-        </div>
-      </section>
-      
-      <section class="ind-win-set">
-        <div class="ind-win-header">
-          <div class="ind-win-title">🎯 ชุดวิน 6 ตัว<small>SIX-DIGIT WIN SET / กลุ่มเลขเด่นรวม</small></div>
-          <div class="ind-win-badge">VIP SET</div>
-        </div>
-        <div class="ind-win-grid">${indWinSetHTML}</div>
-      </section>
-      
-      <section class="formula-section">
-        <button class="formula-toggle" id="toggleMainFormulasBtn" type="button" style="margin-bottom:6px;">
-          <span>📊 โมเดลการวิเคราะห์หลัก (Top Ranked Models)</span>
-          <span>▼</span>
-        </button>
-        <div id="allFormulasWrapper" style="display:none; margin-top:6px;">
-          ${allFormulasHTML}
-        </div>
-      </section>
-
-      <div class="disclaimer">
-        <strong>หมายเหตุ:</strong> ข้อมูลวิเคราะห์เชิงสถิติเพื่อเป็นแนวทางเท่านั้น โปรดใช้วิจารณญาณในการตัดสินใจ
-      </div>`;
-
-    document.getElementById("resultContainer").innerHTML = html;
-
-    document.querySelectorAll("[data-copy]").forEach(node => {
-      const newClone = node.cloneNode(true);
-      node.parentNode.replaceChild(newClone, node);
-      newClone.addEventListener("click", () => { this.copyText(newClone.dataset.copy); });
-    });
-
-    const toggleMainBtn = document.getElementById("toggleMainFormulasBtn");
-    const allWrapper = document.getElementById("allFormulasWrapper");
-
-    if (toggleMainBtn && allWrapper) {
-      const newToggleBtn = toggleMainBtn.cloneNode(true);
-      toggleMainBtn.parentNode.replaceChild(newToggleBtn, toggleMainBtn);
-
-      newToggleBtn.addEventListener("click", () => {
-        this._audio("click");
-        const freshWrapper = document.getElementById("allFormulasWrapper");
-        const isOpen = freshWrapper.style.display === "block";
-        freshWrapper.style.display = isOpen ? "none" : "block";
-        newToggleBtn.querySelector("span:last-child").innerText = isOpen ? "▼" : "▲";
+        return 1+
+          Math.abs(d-center)*
+          (1+dup.topPair+dup.bottomPair);
       });
     }
   },
 
-  copyText(text) {
-    this._audio("click");
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => this.showToast()).catch(() => this.fallbackCopyText(text));
-    } else {
-      this.fallbackCopyText(text);
+  {
+    id:"F11",
+    name:"Odd Even Balance",
+    category:"structure",
+    fn:data=>{
+
+      const digits=allDigits();
+
+      const odd=digits.filter(d=>d%2===1).length;
+      const even=digits.length-odd;
+
+      const balance=Math.abs(odd-even);
+
+      return Array.from(
+        {length:10},
+        (_,d)=>
+          1+
+          Math.abs(
+            (d%2?odd:even)-balance
+          )*0.1
+      );
     }
   },
-  fallbackCopyText(text) {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    try {
-      document.execCommand('copy');
-      this.showToast();
-    } catch (e) {}
-    document.body.removeChild(ta);
-  },
-  showToast() {
-    clearTimeout(this._toastTimer);
-    const t = document.getElementById("toast");
-    t.classList.add("show");
-    this._toastTimer = setTimeout(() => {
-      t.classList.remove("show");
-    }, 1600);
+
+  {
+    id:"F12",
+    name:"Low High Balance",
+    category:"structure",
+    fn:data=>{
+
+      const digits=allDigits();
+
+      const low=digits.filter(d=>d<=4).length;
+      const high=digits.length-low;
+
+      return Array.from(
+        {length:10},
+        (_,d)=>{
+          const own=d<=4?low:high;
+
+          return 1+
+            Math.abs(
+              own-mean([low,high])
+            )+0.01;
+        }
+      );
+    }
   }
-};
 
-document.getElementById("loginButton").addEventListener("click", () => _app.login());
-document.getElementById("passwordInput").addEventListener("keyup", e => { if (e.key === "Enter") _app.login(); });
-document.getElementById("calculateButton").addEventListener("click", () => _app.calculate());
-document.getElementById("clearButton").addEventListener("click", () => _app.clearCalc());
-document.getElementById("logoutButton").addEventListener("click", () => _app.logout());
+];
 
-const n3Input = document.getElementById("num3top");
-const n2Input = document.getElementById("num2bottom");
 
-n3Input.addEventListener("input", () => {
-  if (n3Input.value.length >= 3) {
-    n2Input.focus();
-  }
-});
+/* =========================================================
+   FORMULA NORMALIZATION
+========================================================= */
 
-["num3top", "num2bottom"].forEach(id => {
-  document.getElementById(id).addEventListener("keyup", e => {
-    if (e.key === "Enter") _app.calculate();
+function calculateFormulaScores(){
+
+  const result={};
+
+  formulas.forEach(formula=>{
+
+    const raw=formula.fn(records);
+
+    const normalized=normalizeArray(raw);
+
+    result[formula.id]={
+      id:formula.id,
+      name:formula.name,
+      category:formula.category,
+      raw,
+      normalized,
+      mean:mean(normalized),
+      std:std(normalized)
+    };
   });
-});
 
-(function initApp() {
-  const isAuth = localStorage.getItem("ml_auth_status_v3");
-  if (isAuth === "active") {
-    document.getElementById("loginView").style.display = "none";
-    document.getElementById("calculatorView").style.display = "block";
-    _app.checkSessionBadge();
+  return result;
+}
+
+
+/* =========================================================
+   MODEL FEATURES
+========================================================= */
+
+function modelFeatureScores(){
+
+  const pos=positionFrequency();
+  const freq=digitFrequency(allDigits());
+  const trans=transitionFeatures();
+  const dup=duplicateFeatures();
+  const sums=sumFeatures();
+
+  const topFreq=digitFrequency(
+    records.flatMap(r=>r.top.split("").map(Number))
+  );
+
+  const bottomFreq=digitFrequency(
+    records.flatMap(r=>r.bottom.split("").map(Number))
+  );
+
+
+  /*
+     Model 0
+     Frequency structure
+  */
+
+  const m0=normalizeArray(
+    freq.map(x=>x+1)
+  );
+
+
+  /*
+     Model 1
+     Position structure
+  */
+
+  const m1=normalizeArray(
+    Array.from({length:10},(_,d)=>
+      pos.topHundreds[d] +
+      pos.topTens[d] +
+      pos.topUnits[d]
+    ).map(x=>x+1)
+  );
+
+
+  /*
+     Model 2
+     Top / Bottom separation
+  */
+
+  const m2=normalizeArray(
+    Array.from({length:10},(_,d)=>
+      Math.abs(
+        topFreq[d]-bottomFreq[d]
+      )+1
+    )
+  );
+
+
+  /*
+     Model 3
+     Transition
+  */
+
+  const m3=normalizeArray(
+    Array.from({length:10},(_,d)=>
+      1+
+      Math.abs(
+        d-mean(
+          allDigits()
+        )
+      )*(1+trans.combined)
+    )
+  );
+
+
+  /*
+     Model 4
+     Structure / dispersion
+  */
+
+  const m4=normalizeArray(
+    Array.from({length:10},(_,d)=>
+      1+
+      Math.abs(d-4.5)*
+      (
+        1+
+        dup.topPair+
+        dup.bottomPair+
+        std(sums.top)/10
+      )
+    )
+  );
+
+
+  /*
+     Model 5
+     Robust aggregate
+     
+     IMPORTANT:
+     This is not a raw average of Models 0–4.
+     It is constructed from independent
+     feature families.
+  */
+
+  const m5=normalizeArray(
+    Array.from({length:10},(_,d)=>
+      mean([
+        m0[d],
+        m1[d],
+        m2[d],
+        m3[d],
+        m4[d]
+      ])
+    )
+  );
+
+
+  return {
+    M0:m0,
+    M1:m1,
+    M2:m2,
+    M3:m3,
+    M4:m4,
+    M5:m5
+  };
+}
+
+
+/* =========================================================
+   FORMULA → MODEL
+========================================================= */
+
+function formulaToModelMatrix(formulaScores,modelScores){
+
+  const matrix={};
+
+  Object.values(formulaScores).forEach(f=>{
+
+    matrix[f.id]={};
+
+    Object.entries(modelScores).forEach(
+      ([model,score])=>{
+
+        /*
+          Similarity between the formula's
+          normalized profile and the model profile.
+        */
+
+        const a=f.normalized;
+        const b=score;
+
+        const diff=mean(
+          a.map(
+            (x,i)=>Math.abs(x-b[i])
+          )
+        );
+
+        const similarity=1-diff;
+
+        matrix[f.id][model]=clamp(
+          similarity,
+          0,
+          1
+        );
+      }
+    );
+  });
+
+  return matrix;
+}
+
+
+/* =========================================================
+   MODEL → MODEL
+========================================================= */
+
+function modelToModelMatrix(modelScores){
+
+  const names=Object.keys(modelScores);
+  const matrix={};
+
+  names.forEach(a=>{
+
+    matrix[a]={};
+
+    names.forEach(b=>{
+
+      if(a===b){
+        matrix[a][b]=null;
+        return;
+      }
+
+      const diff=mean(
+        modelScores[a].map(
+          (x,i)=>
+            Math.abs(
+              x-modelScores[b][i]
+            )
+        )
+      );
+
+      matrix[a][b]=clamp(
+        1-diff,
+        0,
+        1
+      );
+    });
+  });
+
+  return matrix;
+}
+
+
+/* =========================================================
+   MODEL QUALITY
+========================================================= */
+
+function calculateModelQuality(matrix){
+
+  const result={};
+
+  Object.entries(matrix).forEach(
+    ([model,values])=>{
+
+      const others=Object.values(values)
+        .filter(v=>v!==null);
+
+      result[model]={
+        mean:mean(others),
+        std:std(others),
+        stability:
+          clamp(
+            1-std(others),
+            0,
+            1
+          )
+      };
+    }
+  );
+
+  return result;
+}
+
+
+/* =========================================================
+   DISTRIBUTION RENDER
+========================================================= */
+
+function renderDistribution(values){
+
+  const f=digitFrequency(values);
+
+  const max=Math.max(...f,1);
+
+  let html=`
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Digit</th>
+            <th>Count</th>
+            <th>Relative</th>
+            <th>Distribution</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  f.forEach((count,d)=>{
+
+    const relative=
+      values.length
+      ? count/values.length
+      : 0;
+
+    html+=`
+      <tr>
+        <td><strong>${d}</strong></td>
+        <td>${count}</td>
+        <td>${pct(relative)}</td>
+        <td>
+          <div class="bar">
+            <span style="width:${100*count/max}%"></span>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  html+=`
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  return html;
+}
+
+
+/* =========================================================
+   FORMULA RENDER
+========================================================= */
+
+function renderFormulaScores(scores){
+
+  const el=document.getElementById("formulaScores");
+
+  if(!records.length){
+    el.innerHTML=`
+      <div class="empty">
+        ยังไม่มีข้อมูล
+      </div>
+    `;
+    return;
   }
-})();
+
+  let html="";
+
+  Object.values(scores).forEach(f=>{
+
+    html+=`
+      <div class="formula-card">
+
+        <div class="formula-head">
+
+          <div>
+            <div class="formula-name">
+              ${escapeHTML(f.id)}
+              — ${escapeHTML(f.name)}
+            </div>
+
+            <div class="formula-category">
+              ${escapeHTML(f.category)}
+            </div>
+          </div>
+
+          <div class="score">
+            ${score100(f.mean).toFixed(1)}
+          </div>
+
+        </div>
+
+        <div style="height:8px"></div>
+
+        <div class="bar">
+          <span style="width:${score100(f.mean)}%"></span>
+        </div>
+
+        <div style="height:8px"></div>
+
+        <div class="small muted">
+          Mean normalized score:
+          ${f.mean.toFixed(4)}
+          &nbsp; • &nbsp;
+          dispersion:
+          ${f.std.toFixed(4)}
+        </div>
+
+      </div>
+    `;
+  });
+
+  el.innerHTML=html;
+}
+
+
+/* =========================================================
+   MODEL RENDER
+========================================================= */
+
+function renderModels(modelScores,quality){
+
+  const el=document.getElementById("modelCards");
+
+  let html="";
+
+  Object.entries(modelScores).forEach(
+    ([name,score])=>{
+
+      const q=quality[name];
+
+      const overall=mean(score);
+
+      html+=`
+        <div class="model-card">
+
+          <div class="model-title">
+
+            <div class="model-name">
+              ${name}
+            </div>
+
+            <div class="model-score">
+              ${score100(overall).toFixed(1)}
+            </div>
+
+          </div>
+
+          <div class="bar">
+            <span style="width:${score100(overall)}%"></span>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="small muted">
+            Cross-model consistency:
+            <strong>
+              ${score100(q.mean).toFixed(1)}
+            </strong>
+          </div>
+
+          <div class="small muted">
+            Stability:
+            <strong>
+              ${score100(q.stability).toFixed(1)}
+            </strong>
+          </div>
+
+        </div>
+      `;
+    }
+  );
+
+  el.innerHTML=html;
+}
+
+
+/* =========================================================
+   FORMULA → MODEL RENDER
+========================================================= */
+
+function renderFormulaModelMatrix(matrix){
+
+  const el=document.getElementById(
+    "formulaModelMatrix"
+  );
+
+  const models=[
+    "M0","M1","M2","M3","M4","M5"
+  ];
+
+  let html=`
+    <div class="table-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Formula</th>
+            ${models.map(m=>`<th>${m}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  Object.entries(matrix).forEach(
+    ([formula,values])=>{
+
+      html+=`
+        <tr>
+          <td><strong>${formula}</strong></td>
+      `;
+
+      models.forEach(model=>{
+
+        const v=values[model] ?? 0;
+
+        html+=`
+          <td>
+            <span class="score">
+              ${score100(v).toFixed(1)}
+            </span>
+          </td>
+        `;
+      });
+
+      html+=`</tr>`;
+    }
+  );
+
+  html+=`
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  el.innerHTML=html;
+}
+
+
+/* =========================================================
+   MODEL MATRIX RENDER
+========================================================= */
+
+function renderModelMatrix(matrix){
+
+  const el=document.getElementById(
+    "modelMatrix"
+  );
+
+  const models=Object.keys(matrix);
+
+  let html=`
+    <div class="table-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Model</th>
+            ${models.map(m=>`<th>${m}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  models.forEach(a=>{
+
+    html+=`<tr><th>${a}</th>`;
+
+    models.forEach(b=>{
+
+      const v=matrix[a][b];
+
+      if(v===null){
+
+        html+=`
+          <td class="diag">
+            —
+          </td>
+        `;
+
+      }else{
+
+        html+=`
+          <td>
+            <span class="score">
+              ${score100(v).toFixed(1)}
+            </span>
+          </td>
+        `;
+      }
+    });
+
+    html+=`</tr>`;
+  });
+
+  html+=`
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  el.innerHTML=html;
+}
+
+
+/* =========================================================
+   OVERVIEW
+========================================================= */
+
+function renderOverview(){
+
+  const el=document.getElementById("overview");
+
+  if(!records.length){
+    el.innerHTML=`
+      <div class="empty">
+        กรุณาเพิ่มข้อมูลก่อนเริ่มวิเคราะห์
+      </div>
+    `;
+    return;
+  }
+
+  const digits=allDigits();
+
+  const unique=new Set(digits);
+
+  const sums=sumFeatures();
+
+  const topMean=mean(sums.top);
+  const bottomMean=mean(sums.bottom);
+
+  const duplicate=duplicateFeatures();
+
+  const transition=transitionFeatures();
+
+  el.innerHTML=`
+
+    <div class="stats-grid">
+
+      <div class="stat">
+        <div class="label">Records</div>
+        <div class="value">${records.length}</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Total Digits</div>
+        <div class="value">${digits.length}</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Unique Digits</div>
+        <div class="value">${unique.size}/10</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Top Mean Sum</div>
+        <div class="value">${topMean.toFixed(2)}</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Bottom Mean Sum</div>
+        <div class="value">${bottomMean.toFixed(2)}</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Transition Change</div>
+        <div class="value">
+          ${score100(transition.combined).toFixed(1)}
+        </div>
+      </div>
+
+    </div>
+
+    <div style="height:15px"></div>
+
+    <div class="grid-3">
+
+      <div class="model-card">
+        <div class="small muted">
+          Top repeated structure
+        </div>
+        <div class="model-score">
+          ${pct(duplicate.topPair)}
+        </div>
+      </div>
+
+      <div class="model-card">
+        <div class="small muted">
+          Triple repetition
+        </div>
+        <div class="model-score">
+          ${pct(duplicate.topTriple)}
+        </div>
+      </div>
+
+      <div class="model-card">
+        <div class="small muted">
+          Bottom repeated pair
+        </div>
+        <div class="model-score">
+          ${pct(duplicate.bottomPair)}
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   DIAGNOSTICS
+========================================================= */
+
+function renderDiagnostics(){
+
+  const el=document.getElementById(
+    "diagnostics"
+  );
+
+  if(!records.length){
+    el.innerHTML=`
+      <div class="empty">
+        ไม่มีข้อมูลสำหรับ diagnostics
+      </div>
+    `;
+    return;
+  }
+
+  const digits=allDigits();
+
+  const f=digitFrequency(digits);
+
+  const meanFreq=mean(f);
+
+  const sdFreq=std(f);
+
+  const imbalance=
+    meanFreq
+    ? sdFreq/meanFreq
+    : 0;
+
+  const tr=transitionFeatures();
+
+  const sums=sumFeatures();
+
+  el.innerHTML=`
+
+    <div class="grid-3">
+
+      <div class="model-card">
+
+        <div class="model-name">
+          Frequency Dispersion
+        </div>
+
+        <div style="height:8px"></div>
+
+        <div class="model-score">
+          ${sdFreq.toFixed(3)}
+        </div>
+
+        <div class="small muted">
+          Standard deviation of digit counts
+        </div>
+
+      </div>
+
+
+      <div class="model-card">
+
+        <div class="model-name">
+          Frequency Imbalance
+        </div>
+
+        <div style="height:8px"></div>
+
+        <div class="model-score">
+          ${imbalance.toFixed(3)}
+        </div>
+
+        <div class="small muted">
+          Relative dispersion
+        </div>
+
+      </div>
+
+
+      <div class="model-card">
+
+        <div class="model-name">
+          Transition Variation
+        </div>
+
+        <div style="height:8px"></div>
+
+        <div class="model-score">
+          ${tr.combined.toFixed(3)}
+        </div>
+
+        <div class="small muted">
+          Average normalized positional change
+        </div>
+
+      </div>
+
+    </div>
+
+    <h3>Digit Frequency</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Digit</th>
+            <th>Count</th>
+            <th>Deviation from Mean</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          ${f.map((count,d)=>`
+
+            <tr>
+
+              <td>
+                <strong>${d}</strong>
+              </td>
+
+              <td>
+                ${count}
+              </td>
+
+              <td>
+                ${(count-meanFreq).toFixed(3)}
+              </td>
+
+            </tr>
+
+          `).join("")}
+
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+
+/* =========================================================
+   RAW ANALYSIS
+========================================================= */
+
+function renderRawAnalysis(){
+
+  const el=document.getElementById(
+    "rawAnalysis"
+  );
+
+  if(!records.length){
+    el.innerHTML=`
+      <div class="empty">
+        ไม่มีข้อมูล
+      </div>
+    `;
+    return;
+  }
+
+  const sums=sumFeatures();
+
+  const topMin=Math.min(...sums.top);
+  const topMax=Math.max(...sums.top);
+
+  const bottomMin=Math.min(...sums.bottom);
+  const bottomMax=Math.max(...sums.bottom);
+
+  const topStd=std(sums.top);
+  const bottomStd=std(sums.bottom);
+
+  const tr=transitionFeatures();
+
+  el.innerHTML=`
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+            <th>Interpretation</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr>
+            <td>Top Sum Min</td>
+            <td>${topMin}</td>
+            <td class="muted">
+              Minimum observed sum
+            </td>
+          </tr>
+
+          <tr>
+            <td>Top Sum Max</td>
+            <td>${topMax}</td>
+            <td class="muted">
+              Maximum observed sum
+            </td>
+          </tr>
+
+          <tr>
+            <td>Top Sum SD</td>
+            <td>${topStd.toFixed(4)}</td>
+            <td class="muted">
+              Dispersion of observed top sums
+            </td>
+          </tr>
+
+          <tr>
+            <td>Bottom Sum Min</td>
+            <td>${bottomMin}</td>
+            <td class="muted">
+              Minimum observed sum
+            </td>
+          </tr>
+
+          <tr>
+            <td>Bottom Sum Max</td>
+            <td>${bottomMax}</td>
+            <td class="muted">
+              Maximum observed sum
+            </td>
+          </tr>
+
+          <tr>
+            <td>Bottom Sum SD</td>
+            <td>${bottomStd.toFixed(4)}</td>
+            <td class="muted">
+              Dispersion of observed bottom sums
+            </td>
+          </tr>
+
+          <tr>
+            <td>Transition Top</td>
+            <td>${tr.top.toFixed(4)}</td>
+            <td class="muted">
+              Positional change between records
+            </td>
+          </tr>
+
+          <tr>
+            <td>Transition Bottom</td>
+            <td>${tr.bottom.toFixed(4)}</td>
+            <td class="muted">
+              Positional change between records
+            </td>
+          </tr>
+
+          <tr>
+            <td>Transition Combined</td>
+            <td>${tr.combined.toFixed(4)}</td>
+            <td class="muted">
+              Combined structural change
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+}
+
+
+/* =========================================================
+   MAIN ANALYZER
+========================================================= */
+
+function analyze(){
+
+  renderOverview();
+
+  if(!records.length){
+
+    document.getElementById(
+      "topDistribution"
+    ).innerHTML="";
+
+    document.getElementById(
+      "bottomDistribution"
+    ).innerHTML="";
+
+    document.getElementById(
+      "formulaScores"
+    ).innerHTML="";
+
+    document.getElementById(
+      "modelCards"
+    ).innerHTML="";
+
+    document.getElementById(
+      "formulaModelMatrix"
+    ).innerHTML="";
+
+    document.getElementById(
+      "modelMatrix"
+    ).innerHTML="";
+
+    document.getElementById(
+      "diagnostics"
+    ).innerHTML="";
+
+    document.getElementById(
+      "rawAnalysis"
+    ).innerHTML="";
+
+    return;
+  }
+
+
+  const top=records.flatMap(
+    r=>r.top.split("").map(Number)
+  );
+
+  const bottom=records.flatMap(
+    r=>r.bottom.split("").map(Number)
+  );
+
+
+  document.getElementById(
+    "topDistribution"
+  ).innerHTML=
+    renderDistribution(top);
+
+
+  document.getElementById(
+    "bottomDistribution"
+  ).innerHTML=
+    renderDistribution(bottom);
+
+
+  const formulaScores=
+    calculateFormulaScores();
+
+
+  renderFormulaScores(
+    formulaScores
+  );
+
+
+  const modelScores=
+    modelFeatureScores();
+
+
+  const modelMatrix=
+    modelToModelMatrix(
+      modelScores
+    );
+
+
+  const quality=
+    calculateModelQuality(
+      modelMatrix
+    );
+
+
+  renderModels(
+    modelScores,
+    quality
+  );
+
+
+  const formulaModel=
+    formulaToModelMatrix(
+      formulaScores,
+      modelScores
+    );
+
+
+  renderFormulaModelMatrix(
+    formulaModel
+  );
+
+
+  renderModelMatrix(
+    modelMatrix
+  );
+
+
+  renderDiagnostics();
+
+  renderRawAnalysis();
+}
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+renderDataset();
+analyze();
+
 </script>
+
 </body>
 </html>
