@@ -863,22 +863,85 @@ const _app = {
 
     const formula100Engine = this._run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum);
 
+    // ==========================================
+    // [ปรับปรุงสูตรเจาะใหม่ตามกฎระเบียบแบบ 100%]
+    // ==========================================
+    
+    // ขั้นตอนที่ 1: การหา "เลขเด่น" (Source Digits / Formula Set)
+    // นำหลักสิบ 3 ตัวบน (T_top) มารวมกับ หลักสิบ 2 ตัวล่าง (T_bot) ดึงตัวท้ายเป็นเลขเด่นตัวที่ 1 และบวกเพิ่ม 1 แต้มเป็นเลขเด่นตัวที่ 2
+    const step1Sum = T_top + T_bot;
+    const d1_source = step1Sum % 10;
+    const d2_source = (d1_source + 1) % 10;
+    const formulaSet = [d1_source, d2_source];
+
+    // ขั้นตอนที่ 2: การหา "แกนกลาง" (Anchor) สำหรับเลขเจาะ
+    // ใช้เลขฐาน 7 คงที่ ลบด้วย หลักร้อยบน (H) ห้ามเปลี่ยนเลขฐานเด็ดขาด ดึงเอาเฉพาะตัวท้ายหรือหลักหน่วยที่เป็นตัวเลขเดี่ยว (0-9) มาใช้
+    const anchorRaw = 7 - H;
+    const anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
+
+    // ขั้นตอนที่ 3: การตรวจสอบการชนและการแผ่แกน (Expansion & Collision Check)
+    let rawRange = [];
+    let hasCollision = false;
+
+    // ตรวจสอบการชนกับเลขเด่น [d1_source, d2_source]
+    for (let offset = -2; offset <= 2; offset++) {
+      const val = this._normalize(anchor + offset);
+      if (formulaSet.includes(val)) {
+        hasCollision = true;
+        break;
+      }
+    }
+
+    // หากชนให้ใช้ระยะ +-3 (รวม 7 ตัว) หากไม่ชนใช้ระยะ +-2 (รวม 5 ตัว)
+    const expansionLimit = hasCollision ? 3 : 2;
+    for (let offset = -expansionLimit; offset <= expansionLimit; offset++) {
+      rawRange.push(this._normalize(anchor + offset));
+    }
+
+    // ขั้นตอนที่ 4: กฎการคัดกรองขั้นเด็ดขาด (Filtering Rules)
+    // ตัดเลขเบิ้ล ตัดเลขเด่นมาวินกันเอง และตัดเลขที่ชนกับเลขเด่นออก
+    const excludedDigits = [...new Set(formulaSet)];
+    let cleanedPool = rawRange.filter(dg => !excludedDigits.includes(dg));
+
+    const generatedPairs = [];
+    formulaSet.forEach(sourceDigit => {
+      cleanedPool.forEach(poolDigit => {
+        if (sourceDigit === poolDigit) return; // ตัดเลขเบิ้ล 100%
+        generatedPairs.push({ digitA: sourceDigit, digitB: poolDigit, pairStr: `${sourceDigit}${poolDigit}` });
+      });
+    });
+
+    // ขั้นตอนที่ 5: การจัดชุดคู่เจาะ (Output Generation)
+    // จัดสรรคู่เจาะอย่างละ 5 คู่ รวมเป็น 10 คู่ (แบ่งเป็น 5 คู่ต่อเลขเด่น 1 ตัว)
+    const pMap = {};
+    formulaSet.forEach(sourceDigit => {
+      let pairsForDigit = generatedPairs.filter(p => p.digitA === sourceDigit).map(p => p.pairStr);
+      let nextFill = (sourceDigit + 1) % 10;
+      while (pairsForDigit.length < 5) {
+        if (nextFill !== sourceDigit && !pairsForDigit.includes(`${sourceDigit}${nextFill}`) && !excludedDigits.includes(nextFill)) {
+          pairsForDigit.push(`${sourceDigit}${nextFill}`);
+        }
+        nextFill = (nextFill + 1) % 10;
+      }
+
+      pairsForDigit = [...new Set(pairsForDigit)].filter(p => p[0] !== p[1]).sort();
+      if (pairsForDigit.length > 5) pairsForDigit = pairsForDigit.slice(0, 5);
+      pMap[sourceDigit] = pairsForDigit;
+    });
+
+    // สร้างโมเดลรองรับการแสดงผลแผงควบคุมระบบ AI (ความเข้ากันได้กับส่วน UI เดิม)
+    let rawM1 = (T_top + T_bot) % 10;
+    let rawM2 = sumTop % 10;
+    let rawM3 = (H + T_bot) % 10;
+    let rawM4 = (U_top + U_bot) % 10;
+    let rawM5 = (10 - U_bot) % 10;
+
     const getUnitDirect = (v) => {
       const str = String(v);
       const lastChar = str.slice(-1);
       const first = parseInt(lastChar, 10);
       return [first, (first + 1) % 10];
     };
-
-    const dynamicBase = (sumTop + sumBot) % 10;
-    const anchorRaw = dynamicBase - H;
-    const anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
-
-    let rawM1 = (T_top + T_bot) % 10;
-    let rawM2 = sumTop % 10;
-    let rawM3 = (H + T_bot) % 10;
-    let rawM4 = (U_top + U_bot) % 10;
-    let rawM5 = (10 - U_bot) % 10;
 
     const fList = [
       { id: 1, name: "AI โมเดล 01", subName: "B + R1 -> Dynamic Unit Core", set: getUnitDirect(rawM1), positionalWeight: 1.0 },
@@ -894,65 +957,12 @@ const _app = {
     });
 
     const evaluated = fList.map((item) => {
-      const formulaSet = item.set;
-      let rawRange = [];
-      let hasCollision = false;
-
-      for (let offset = -2; offset <= 2; offset++) {
-        const val = this._normalize(anchor + offset);
-        if (formulaSet.includes(val)) {
-          hasCollision = true;
-          break;
-        }
-      }
-
-      if (hasCollision) {
-        for (let offset = -3; offset <= 3; offset++) {
-          rawRange.push(this._normalize(anchor + offset));
-        }
-      } else {
-        for (let offset = -2; offset <= 2; offset++) {
-          rawRange.push(this._normalize(anchor + offset));
-        }
-      }
-
-      const excludedDigits = [...new Set(formulaSet)];
-      let cleanedPool = rawRange.filter(dg => !excludedDigits.includes(dg));
-      const generatedPairs = [];
-      const rejectedPairs = [];
-
-      formulaSet.forEach(sourceDigit => {
-        cleanedPool.forEach(poolDigit => {
-          if (sourceDigit === poolDigit) {
-            rejectedPairs.push(`${sourceDigit}${poolDigit} (self-match)`);
-            return;
-          }
-          generatedPairs.push({ digitA: sourceDigit, digitB: poolDigit, pairStr: `${sourceDigit}${poolDigit}` });
-        });
-      });
-
-      const pMap = {};
-      formulaSet.forEach(sourceDigit => {
-        let pairsForDigit = generatedPairs.filter(p => p.digitA === sourceDigit).map(p => p.pairStr);
-        let nextFill = (sourceDigit + 1) % 10;
-        while (pairsForDigit.length < 5) {
-          if (nextFill !== sourceDigit && !pairsForDigit.includes(`${sourceDigit}${nextFill}`) && !excludedDigits.includes(nextFill)) {
-            pairsForDigit.push(`${sourceDigit}${nextFill}`);
-          }
-          nextFill = (nextFill + 1) % 10;
-        }
-
-        pairsForDigit = [...new Set(pairsForDigit)].filter(p => p[0] !== p[1]).sort();
-        if (pairsForDigit.length > 5) pairsForDigit = pairsForDigit.slice(0, 5);
-        pMap[sourceDigit] = pairsForDigit;
-      });
-
       return {
         id: item.id,
         name: item.name,
         subName: item.subName,
         positionalWeight: item.positionalWeight,
-        set: item.set,
+        set: formulaSet, // ใช้สูตรเจาะจริงที่ถูกต้องตามกฎที่กำหนด
         pairsMap: pMap
       };
     });
@@ -1034,16 +1044,14 @@ const _app = {
       .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
 
     // ==========================================
-    // [STRICT AUDITED RULE: ห้ามเลขใกล้กันเกิน +1 หรือ -1]
+    // [STRICT RULE: ห้ามเลขใกล้กันเกิน +1 หรือ -1]
     // ==========================================
     let primaryDigitObj = matrixSortedAll[0];
     let secondaryDigitObj = null;
 
-    // ค้นหาเลขตัวที่สองจากตารางที่คะแนนสูงสุด แต่ต้องมีระยะห่างมากกว่า 1 แต้ม (ไม่ติดกันและไม่ซ้ำกัน)
     for (let i = 1; i < matrixSortedAll.length; i++) {
       const candidate = matrixSortedAll[i];
       const diff = Math.abs(candidate.digit - primaryDigitObj.digit);
-      // เช็คระยะห่างเชิงวงกลมฐาน 10 ด้วย เช่น 0 กับ 9 ถือว่าติดกัน (ห่างกัน 1 หรือ 9 ซึ่งเทียบเท่าใกล้กัน)
       const circularDiff = Math.min(diff, 10 - diff);
       
       if (circularDiff > 1) {
@@ -1052,7 +1060,6 @@ const _app = {
       }
     }
 
-    // หากกรณีหาไม่ได้ ให้เลือกตัวถัดไปที่ลดหย่อนระยะห่างที่สุดเท่าที่จะทำได้
     if (!secondaryDigitObj) {
       secondaryDigitObj = matrixSortedAll[1];
     }
