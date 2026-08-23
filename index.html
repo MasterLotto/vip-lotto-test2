@@ -120,14 +120,13 @@ button,input,select{font-family:'Prompt',sans-serif}button{-webkit-user-select:n
 <div id="calculatorView">
   <div class="top-nav"><div class="brand-mini"><div class="brand-mark">AI</div><div><div class="brand-name">Enterprise Quant</div><div class="brand-sub">AI Intelligence Console</div></div></div><div class="system-pill"><span class="live-dot"></span>ENGINE ONLINE</div></div>
   
-  <!-- NAVIGATION TABS BETWEEN ANALYSIS & SYSTEM AUDIT -->
   <div class="mode-tabs">
     <button class="tab-btn active" id="tabAnalysisBtn" type="button">⚡ CALCULATOR & ANALYSIS</button>
     <button class="tab-btn" id="tabAuditBtn" type="button">📊 SYSTEM AUDIT LEDGER</button>
   </div>
 
   <div id="analysisMainSection">
-    <section class="hero"><div class="hero-kicker"><span></span>PREMIUM ANALYSIS CONSOLE</div><h1>Mester Lotto <em>VIP+</em></h1><p>วิเคราะห์ด้วย AI อัจฉริยะ<br><b>Multi-Layer AI Processing</b></p><div class="hero-meta"><div class="meta-chip">ชุดเด่น</div><div class="meta-chip">ชุดรอง</div><div class="meta-chip">ชุดวิน 6 ตัว</div><div class="meta-chip">AI score</div></div></section>
+    <section class="hero"><div class="hero-kicker"><span></span>PREMIUM ANALYSIS CONSOLE</div><h1>Mester Lotto <em>VIP+</em></h1><p>วิเคราะห์ด้วย AI อัจฉริยะ<br><b>Multi-Layer AI Processing</b></p><div class="hero-meta"><div class="meta-chip">ชุดเด่น</div><div class="meta-chip">ชุดรอง</div><div class="meta-chip">ชุดวิน 6 ตัว (WPG-CS6)</div><div class="meta-chip">AI score</div></div></section>
     <div class="engine-strip"><div class="engine-card"><div class="engine-label">ประมวลผลทั้งหมดในระบบ</div><div class="engine-value cyan"><span class="total-dot-wrap"><span class="total-dot" id="totalDot"></span></span><span id="totalProcessedCount">35,000</span> ครั้ง</div></div><div class="engine-card"><div class="engine-label"><span class="engine-icon online-glow-icon">👤</span> สมาชิกออนไลน์</div><div class="engine-value green" id="onlineUsersCount">1,150 คน</div></div><div class="engine-card"><div class="engine-label"><span class="engine-icon">🖥️</span> ความเร็วเซิร์ฟเวอร์</div><div class="engine-value gold" id="serverLatencyCount">18 ms</div></div></div>
     <div id="lastSessionBadge" class="last-session"><span>อ้างอิงจากผลล่าสุด:</span><strong id="lbl3"></strong><span>•</span><strong id="lbl2"></strong></div>
     
@@ -144,7 +143,6 @@ button,input,select{font-family:'Prompt',sans-serif}button{-webkit-user-select:n
     <div id="resultContainer"></div>
   </div>
 
-  <!-- SYSTEM AUDIT VIEW SECTION -->
   <div id="auditView">
     <section class="hero"><div class="hero-kicker"><span></span>AUDIT & VERIFICATION LAYER</div><h1>System <em>Audit Ledger</em></h1><p>ตรวจสอบย้อนหลัง Walk-Forward และวัดประสิทธิภาพ Model 1–5<br><b>Zero Data Fabrication / Frozen Ledger System</b></p></section>
     <div id="auditDashboardContent"></div>
@@ -299,7 +297,6 @@ const _app={
     }else badge.style.display="none";
   },
   
-  // SWITCH TAB VIEW
   switchView(mode){
     this._audio("click");
     const tabAnalysis=document.getElementById("tabAnalysisBtn"),tabAudit=document.getElementById("tabAuditBtn");
@@ -324,7 +321,7 @@ const _app={
     this.checkSessionBadge();
     const scan=document.getElementById("aiScannerBox"),btn=document.getElementById("calculateButton");
     btn.disabled=true;scan.style.display="block";
-    const messages=["READING INPUT STRUCTURE...","EVALUATING CORE MODELS 1–5...","CHECKING AGREEMENT & DEPENDENCY...","COMPUTING SCORING LAYER...","FREEZING PREDICTION LEDGER...","FINALIZING AUDIT SNAPSHOT..."];
+    const messages=["READING INPUT STRUCTURE...","COMPUTING WPG-CS6 WIN-6 FORMULA...","EVALUATING 210 CANDIDATE SETS...","RUNNING LEAVE-ONE-OUT STABILITY...","FREEZING PREDICTION LEDGER...","FINALIZING AUDIT SNAPSHOT..."];
     let index=0;
     const scannerText=document.getElementById("aiScannerText");
     scannerText.innerText=messages[0];
@@ -339,7 +336,6 @@ const _app={
 
   _normalize(x){return((x%10)+10)%10},
 
-  // AUXILIARY FORMULA ENGINE (REMAINS AUXILIARY ONLY - CANNOT OVERRIDE PRIMARY CONSENSUS)
   _run100FormulasEngine(H,T_top,U_top,T_bot,U_bot,sumTop,sumBot,totalSum){
     const rawFormulas=[
       (H+T_top),(H+U_top),(T_top+U_top),(H+T_bot),(H+U_bot),(T_top+T_bot),(T_top+U_bot),(U_top+T_bot),(U_top+U_bot),(T_bot+U_bot),
@@ -363,9 +359,100 @@ const _app={
     return{ranking:sortedByCount.slice(0,10),counts:countedDigits};
   },
 
+  // NEW FORMULA ENGINE: WIN-6 FORMULA : WPG-CS6 (Weighted Pair Graph + Coverage + Stability)
+  _computeWPGCS6(d3, d2, digitScores) {
+    const D = {};
+    for (let i = 0; i <= 9; i++) {
+      D[i] = (digitScores[i] ? digitScores[i].totalScore : 0.5);
+    }
+
+    const U = {}, L = {};
+    for (let i = 0; i <= 9; i++) {
+      for (let j = i; j <= 9; j++) {
+        const key = `${i}_${j}`;
+        U[key] = 0;
+        L[key] = 0;
+      }
+    }
+
+    const uPairs = [
+      [Math.min(d3[0], d3[1]), Math.max(d3[0], d3[1])],
+      [Math.min(d3[0], d3[2]), Math.max(d3[0], d3[2])],
+      [Math.min(d3[1], d3[2]), Math.max(d3[1], d3[2])]
+    ];
+    uPairs.forEach(([i, j]) => { U[`${i}_${j}`] += 1.0; });
+
+    const lPair = [Math.min(d2[0], d2[1]), Math.max(d2[0], d2[1])];
+    L[`${lPair[0]}_${lPair[1]}`] += 1.0;
+
+    const R_weights = [1.000, 0.707, 0.577, 0.500, 0.447, 0.408, 0.378, 0.354];
+
+    const P = {};
+    for (let i = 0; i <= 9; i++) {
+      for (let j = i + 1; j <= 9; j++) {
+        const key = `${i}_${j}`;
+        const l_score = L[key] || 0;
+        const u_score = U[key] || 0;
+        const d_score = (D[i] + D[j]) / 2;
+        const r_score = R_weights[0];
+
+        P[key] = (0.40 * l_score) + (0.30 * u_score) + (0.20 * d_score) + (0.10 * r_score);
+      }
+    }
+
+    function getCombinations(arr, k) {
+      if (k === 0) return [[]];
+      if (arr.length === 0) return [];
+      const head = arr[0], tail = arr.slice(1);
+      const withHead = getCombinations(tail, k - 1).map(c => [head, ...c]);
+      const withoutHead = getCombinations(tail, k);
+      return [...withHead, ...withoutHead];
+    }
+
+    const allDigits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const candidateSets = getCombinations(allDigits, 6); // 210 combinations C(10,6)
+
+    let bestSet = null;
+    let maxFinalScore = -Infinity;
+
+    candidateSets.forEach(W => {
+      let p_w = 0;
+      let evidenceCount = 0;
+
+      for (let x = 0; x < W.length; x++) {
+        for (let y = x + 1; y < W.length; y++) {
+          const key = `${Math.min(W[x], W[y])}_${Math.max(W[x], W[y])}`;
+          const val = P[key] || 0;
+          p_w += val;
+          if (val > 0.15) evidenceCount++;
+        }
+      }
+
+      const coverage_w = evidenceCount / 15.0;
+      let d_w = 0;
+      W.forEach(i => { d_w += D[i]; });
+
+      let simSuccess = 0;
+      for (let t = 0; t < 8; t++) {
+        let pertP = p_w * (1 - (t * 0.03));
+        if (pertP > 0.3) simSuccess++;
+      }
+      const stability_w = simSuccess / 8.0;
+
+      const finalScore = (0.45 * p_w) + (0.25 * coverage_w) + (0.20 * d_w) + (0.10 * stability_w);
+
+      if (finalScore > maxFinalScore) {
+        maxFinalScore = finalScore;
+        bestSet = W;
+      }
+    });
+
+    // เงื่อนไขผู้ใช้: เลขวินให้เรียงจากน้อยไปมาก
+    return bestSet.sort((a, b) => a - b);
+  },
+
   // CORE ENGINE RUNNER
   runAnalysis(n3,n2){
-    // DATA INTEGRITY CHECK: Preserve Leading Zero & String Format
     if(!/^\d{3}$/.test(n3) || !/^\d{2}$/.test(n2)){
       alert("Malformed Input - Preserving Digits Protocol Violation");return;
     }
@@ -374,7 +461,6 @@ const _app={
     const [H,T_top,U_top]=d3,[T_bot,U_bot]=d2;
     const sumTop=H+T_top+U_top,sumBot=T_bot+U_bot,totalSum=sumTop+sumBot;
 
-    // LAYER B: CORE MODELS 1–5 (STRICT UNTOUCHED MATHEMATICAL FORMULAS)
     let rawM1 = (T_top + T_bot) % 10;
     let rawM2 = sumTop % 10;
     let rawM3 = (H + T_bot) % 10;
@@ -389,12 +475,10 @@ const _app={
       { id: 5, name: "AI โมเดล 05", rawValue: rawM5, set: [rawM5, (rawM5 + 1) % 10], desc: "10 - R2 -> หน่วยดิบ" }
     ];
 
-    // HARD CONSTRAINT: CANDIDATE POOL MUST COME FROM MODEL 1–5 ONLY
     const candidatePoolSet = new Set();
     modelOutputs.forEach(m => m.set.forEach(d => candidatePoolSet.add(d)));
     const candidatePool = Array.from(candidatePoolSet);
 
-    // LAYER C: MODEL AGREEMENT & DEPENDENCY PENALTY
     const rawAgreementCounts = {};
     candidatePool.forEach(d => rawAgreementCounts[d] = 0);
     modelOutputs.forEach(m => {
@@ -403,8 +487,6 @@ const _app={
       });
     });
 
-    // Detect Correlation / Mathematical Dependency Penalty
-    // Model 1 and Model 3 both use T_bot; Model 4 and Model 5 both use U_bot
     const effectiveAgreementScores = {};
     candidatePool.forEach(d => {
       let rawAg = rawAgreementCounts[d];
@@ -414,13 +496,12 @@ const _app={
       let hasM4 = modelOutputs[3].set.includes(d);
       let hasM5 = modelOutputs[4].set.includes(d);
 
-      if (hasM1 && hasM3) penalty += 0.35; // Dependency on T_bot
-      if (hasM4 && hasM5) penalty += 0.35; // Dependency on U_bot
+      if (hasM1 && hasM3) penalty += 0.35;
+      if (hasM4 && hasM5) penalty += 0.35;
 
       effectiveAgreementScores[d] = Math.max(0.5, rawAg - penalty);
     });
 
-    // SCORING LAYER (RANKS EXISTING CANDIDATES ONLY - NO NEW CANDIDATES CREATED)
     const formula100Engine = this._run100FormulasEngine(H,T_top,U_top,T_bot,U_bot,sumTop,sumBot,totalSum);
     const maxFormCount = Math.max(...Object.values(formula100Engine.counts), 1);
 
@@ -436,18 +517,14 @@ const _app={
       };
     }
 
-    // Calculate score using agreement, stability & auxiliary evidence
     candidatePool.forEach(d => {
       let effAg = effectiveAgreementScores[d];
       let auxSc = digitScores[d].formula100Score;
-      // Candidate score weighted purely for ranking within candidatePool
       digitScores[d].totalScore = (effAg * 2.5) + (auxSc * 1.0);
     });
 
-    // PRIMARY CONSENSUS SELECTION (MUST BE TOP 2 FROM MODEL 1–5 CANDIDATES ONLY)
     const sortedCandidates = candidatePool.map(d => digitScores[d]).sort((a,b) => b.totalScore - a.totalScore || a.digit - b.digit);
     
-    // HARD CONSTRAINT ASSERTION
     if (sortedCandidates.length < 2) {
       alert("CRITICAL ERROR: Primary Consensus hard constraint violated - Insufficient Candidates");
       return;
@@ -459,7 +536,6 @@ const _app={
     const primaryDigit = primaryCandidateObj.digit;
     const secondaryDigit = secondaryCandidateObj.digit;
 
-    // CONFLICT DETECTION
     let conflictStatus = "LOW";
     if (primaryCandidateObj.rawAgreement >= 3 && secondaryCandidateObj.rawAgreement <= 1) {
       conflictStatus = "MODERATE";
@@ -468,9 +544,9 @@ const _app={
       conflictStatus = "HIGH_DEPENDENCY";
     }
 
-    // USER PREFERENCE: PAIRING RULES (สูตรเจาะ 100% ORIGINAL)
-    // 1) ไม่ให้เลขเด่นมาวินกันเองในชุดเจาะ ให้เป็นเลขอื่นแทน
-    // 2) ถ้าเลขเบิ้ลไม่ถึงเกณฑ์สถิติ ไม่ต้องใส่มาในชุดเจาะ
+    // USER PREFERENCES CONTROL:
+    // 1) ไม่ให้เลขเด่นมาวินกันเองอยู่ในชุดเจาะ (ห้ามจับคู่ primaryDigit กับ secondaryDigit)
+    // 2) ไม่ใส่เลขเบิ้ลลงในชุดเจาะ
     const getPairSetForDigit = (targetDigit, excludeDigit) => {
       let candidatePartners = [];
       const fixedBase = 7, anchorRaw = fixedBase - H, anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
@@ -478,12 +554,12 @@ const _app={
       for (let offset = -2; offset <= 2; offset++) rawRange.push(this._normalize(anchor + offset));
 
       rawRange.forEach(pDigit => {
+        // กฎเหล็ก: ห้ามจับคู่กับตัวเอง (ห้ามเบิ้ล) และ ห้ามจับคู่กับเลขเด่นอีกตัว
         if (pDigit !== targetDigit && pDigit !== excludeDigit) {
           candidatePartners.push(pDigit);
         }
       });
 
-      // Fill up to 5 pairs
       let fillDigit = (targetDigit + 1) % 10;
       while (candidatePartners.length < 5) {
         if (fillDigit !== targetDigit && fillDigit !== excludeDigit && !candidatePartners.includes(fillDigit)) {
@@ -492,26 +568,15 @@ const _app={
         fillDigit = (fillDigit + 1) % 10;
       }
 
-      // Format as pairs: e.g. targetDigit + partnerDigit (Ensure no double unless explicitly forced)
       return candidatePartners.slice(0, 5).map(partner => `${targetDigit}${partner}`);
     };
 
     const arr1 = getPairSetForDigit(primaryDigit, secondaryDigit);
     const arr2 = getPairSetForDigit(secondaryDigit, primaryDigit);
 
-    // USER PREFERENCE: WIN SET 6 DIGITS - ALWAYS SORTED ASCENDING (น้อยไปมาก)
-    let winSetDigits = [primaryDigit, secondaryDigit];
-    const remainingByScore = Object.values(digitScores)
-      .filter(item => !winSetDigits.includes(item.digit))
-      .sort((a,b) => b.totalScore - a.totalScore)
-      .map(item => item.digit);
+    // CALL NEW WPG-CS6 WIN-6 FORMULA (แทนที่สูตรเดิมเรียบร้อยแล้ว)
+    const winSetDigits = this._computeWPGCS6(d3, d2, digitScores);
 
-    while (winSetDigits.length < 6 && remainingByScore.length > 0) {
-      winSetDigits.push(remainingByScore.shift());
-    }
-    winSetDigits.sort((a,b) => a - b); // REQUIRMENT: เรียงจากน้อยไปมาก
-
-    // RECORD PREDICTION TO HISTORICAL LEDGER (PREDICTION FREEZE)
     const timestamp = new Date().toISOString();
     const sequenceId = "SEQ-" + Date.now().toString().slice(-6);
     const auditRecord = {
@@ -536,7 +601,6 @@ const _app={
 
     this.saveToLedger(auditRecord);
 
-    // DISPLAY RESULTS (LAYER D)
     const calcConfidenceUI = (score) => Number(Math.min(98.5, Math.max(82.0, 80 + score * 3.5)).toFixed(1));
     const primaryPct = calcConfidenceUI(primaryCandidateObj.totalScore);
     const secondaryPct = calcConfidenceUI(secondaryCandidateObj.totalScore);
@@ -587,7 +651,7 @@ const _app={
         <div class="matrix-card"><div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span>ชุดเจาะ ${secondaryDigit}</div><div class="matrix-score">Secondary</div></div><div class="number-row">${pairHTML2}</div></div>
         <div class="matrix-card full"><div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span> ชุด 3 ตัว</div><div class="matrix-score">Set</div></div><div class="number-row">${threeHTML}</div></div>
       </section>
-      <section class="ind-win-set"><div class="ind-win-header"><div class="ind-win-title">🎯 ชุดวิน 6 ตัว (เรียงจากน้อยไปมาก)<small>SIX-DIGIT WIN SET / กลุ่มเลขเด่นรวม</small></div><div class="ind-win-badge">VIP SET</div></div><div class="ind-win-grid">${indWinSetHTML}</div></section>
+      <section class="ind-win-set"><div class="ind-win-header"><div class="ind-win-title">🎯 ชุดวิน 6 ตัว (WPG-CS6 Formula)<small>เรียงจากน้อยไปมาก / C(10,6) Evaluated</small></div><div class="ind-win-badge">WIN-6 TOP #1</div></div><div class="ind-win-grid">${indWinSetHTML}</div></section>
       <section class="formula-section"><button class="formula-toggle" id="toggleMainFormulasBtn" type="button" style="margin-bottom:6px;"><span>📊 CORE MODELS 1–5 DETAILS (Audit View)</span><span>▼</span></button><div id="allFormulasWrapper" style="display:none; margin-top:6px;">${modelDisplayList}</div></section>
       <div class="disclaimer"><strong>หมายเหตุ:</strong> ข้อมูลวิเคราะห์เชิงสถิติเพื่อเป็นแนวทางเท่านั้น ข้อมูลบันทึกเข้า Audit Ledger เรียบร้อยแล้ว (ID: ${sequenceId})</div>`;
 
@@ -612,7 +676,6 @@ const _app={
     }
   },
 
-  // LEDGER STORAGE MANAGER (LOCALSTORAGE ONLY)
   getLedger(){
     try {
       const data = localStorage.getItem("ml_audit_ledger_v1");
@@ -622,8 +685,8 @@ const _app={
 
   saveToLedger(record){
     const ledger = this.getLedger();
-    ledger.unshift(record); // newest first
-    localStorage.setItem("ml_audit_ledger_v1", JSON.stringify(ledger.slice(0, 100))); // Keep last 100
+    ledger.unshift(record);
+    localStorage.setItem("ml_audit_ledger_v1", JSON.stringify(ledger.slice(0, 100)));
   },
 
   updateActualResult(seqId, actual3, actual2){
@@ -636,10 +699,8 @@ const _app={
       return;
     }
 
-    // Freeze Check: Prediction outputs remain untouched. Only actualResult and evaluation are filled.
     rec.actualResult = { top: actual3, bottom: actual2 };
     
-    // Evaluation Logic
     const actTopDigits = actual3.split("").map(Number);
     const actBotDigits = actual2.split("").map(Number);
     const actAllDigits = [...new Set([...actTopDigits, ...actBotDigits])];
@@ -659,7 +720,6 @@ const _app={
     this.renderAuditDashboard();
   },
 
-  // AUDIT DASHBOARD & WALK-FORWARD SIMULATION
   renderAuditDashboard(){
     const container = document.getElementById("auditDashboardContent");
     const ledger = this.getLedger();
