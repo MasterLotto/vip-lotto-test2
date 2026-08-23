@@ -286,10 +286,7 @@ const _app={
       (20-H-T_bot),(20-H-U_bot),(20-T_top-T_bot),(20-T_top-U_bot),(20-U_top-T_bot),(20-U_top-U_bot),(totalSum),(totalSum*2),(totalSum+H),(totalSum+T_bot)
     ];
     const counts={};for(let d=0;d<=9;d++)counts[d]=0;
-    rawFormulas.forEach(v=>{
-      const u=this._normalize(v);
-      counts[u]=(counts[u]||0)+1;
-    });
+    rawFormulas.forEach(v=>{const u=((v%10)+10)%10;counts[u]=(counts[u]||0)+1});
     const ranking=Object.keys(counts).map(Number).sort((a,b)=>counts[b]-counts[a]||b-a);
     return{ranking:ranking.slice(0,10),counts:counts};
   },
@@ -297,8 +294,9 @@ const _app={
     const D={};for(let i=0;i<=9;i++)D[i]=digitScores[i]?digitScores[i].totalScore:0.5;
     const U={},L={};
     for(let i=0;i<=9;i++){for(let j=i;j<=9;j++){const k=`${i}_${j}`;U[k]=0;L[k]=0}}
-    [[Math.min(d3[0],d3[1]),Math.max(d3[0],d3[1])],[Math.min(d3[0],d3[2]),Math.max(d3[0],d3[2])],[Math.min(d3[1],d3[2]),Math.max(d3[1],d3[2])]].forEach(([i,j])=>{U[`${i}_${j}`]+=1.0});
-    const lPair=[Math.min(d2[0],d2[1]),Math.max(d2[0],d2[1])];L[`${lPair[0]}_${lPair[1]}`]+=1.0;
+    const pairs3=[[Math.min(d3[0],d3[1]),Math.max(d3[0],d3[1])],[Math.min(d3[0],d3[2]),Math.max(d3[0],d3[2])],[Math.min(d3[1],d3[2]),Math.max(d3[1],d3[2])]];
+    pairs3.forEach(([i,j])=>{U[`${i}_${j}`]=(U[`${i}_${j}`]||0)+1.0});
+    const lPair=[Math.min(d2[0],d2[1]),Math.max(d2[0],d2[1])];L[`${lPair[0]}_${lPair[1]}`]=(L[`${lPair[0]}_${lPair[1]}`]||0)+1.0;
     const Rw=[1.000,.707,.577,.500,.447,.408,.378,.354],P={};
     for(let i=0;i<=9;i++){for(let j=i+1;j<=9;j++){const k=`${i}_${j}`;P[k]=(0.40*(L[k]||0))+(0.30*(U[k]||0))+(0.20*((D[i]+D[j])/2))+(0.10*Rw[0])}}
     function getComb(arr,k){
@@ -321,13 +319,13 @@ const _app={
       const score=(0.45*pw)+(0.25*(ev/15.0))+(0.20*dw)+(0.10*(sim/8.0));
       if(score>maxScore){maxScore=score;bestSet=W}
     });
-    return bestSet.sort((a,b)=>a-b);
+    return (bestSet||[0,1,2,3,4,5]).sort((a,b)=>a-b);
   },
   runAnalysis(n3,n2){
     if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2)){alert("Malformed Input");return}
     const d3=n3.split("").map(Number),d2=n2.split("").map(Number);
     const [H,T_top,U_top]=d3,[T_bot,U_bot]=d2,sumTop=H+T_top+U_top,sumBot=T_bot+U_bot,totalSum=sumTop+sumBot;
-    let rM1=this._normalize(T_top+T_bot),rM2=this._normalize(sumTop),rM3=this._normalize(H+T_bot),rM4=this._normalize(U_top+U_bot),rM5=this._normalize(10-U_bot);
+    let rM1=(T_top+T_bot)%10,rM2=sumTop%10,rM3=(H+T_bot)%10,rM4=(U_top+U_bot)%10,rM5=(10-U_bot)%10;
     const modelOutputs=[
       {id:1,name:"AI โมเดล 01",rawValue:rM1,set:[rM1,(rM1+1)%10],desc:"B + R1 -> หน่วยดิบ"},
       {id:2,name:"AI โมเดล 02",rawValue:rM2,set:[rM2,(rM2+1)%10],desc:"A + B + C -> หน่วยดิบ"},
@@ -337,15 +335,15 @@ const _app={
     ];
     const poolSet=new Set();modelOutputs.forEach(m=>m.set.forEach(d=>poolSet.add(d)));
     const pool=Array.from(poolSet),rawAg={};
-    pool.forEach(d=>rawAg[d]=0);
-    modelOutputs.forEach(m=>{m.set.forEach(d=>{if(rawAg[d]!==undefined)rawAg[d]++})});
+    for(let d=0;d<=9;d++)rawAg[d]=0;
+    modelOutputs.forEach(m=>{m.set.forEach(d=>{rawAg[d]=(rawAg[d]||0)+1})});
     const effAg={};
-    pool.forEach(d=>{
+    for(let d=0;d<=9;d++){
       let pen=0;
       if(modelOutputs[0].set.includes(d)&&modelOutputs[2].set.includes(d))pen+=.35;
       if(modelOutputs[3].set.includes(d)&&modelOutputs[4].set.includes(d))pen+=.35;
       effAg[d]=Math.max(.5,rawAg[d]-pen);
-    });
+    }
     const f100=this._run100FormulasEngine(H,T_top,U_top,T_bot,U_bot,sumTop,sumBot,totalSum);
     const maxF=Math.max(...Object.values(f100.counts),1);
     const digitScores={};
@@ -359,98 +357,55 @@ const _app={
         totalScore:(eAg*2.5)+(auxSc*1.0)
       };
     }
-    const sortedCand=pool.map(d=>digitScores[d]).sort((a,b)=>b.totalScore-a.totalScore||a.digit-b.digit);
-    if(sortedCand.length<2){alert("Insufficient Candidates");return}
-    const pObj=sortedCand[0],sObj=sortedCand[1],pDigit=pObj.digit,sDigit=sObj.digit;
+    const masterSorted=Object.values(digitScores).sort((a,b)=>b.totalScore-a.totalScore||a.digit-b.digit);
+    if(masterSorted.length<2){alert("Insufficient Candidates");return}
+    const pObj=masterSorted[0],sObj=masterSorted[1],pDigit=pObj.digit,sDigit=sObj.digit;
     let conflict="LOW";
     if(pObj.rawAgreement>=3&&sObj.rawAgreement<=1)conflict="MODERATE";
     if(pObj.effectiveAgreement<2.0&&pObj.rawAgreement>=4)conflict="HIGH_DEPENDENCY";
     
-    // คำนวณความน่าจะเป็นของเลขเบิ้ล (Double Digit Probability)
-    const doubleDigitProb = Math.min(0.95, (digitScores[pDigit].formula100Score * 0.45) + (digitScores[sDigit].formula100Score * 0.35) + (pObj.rawAgreement >= 4 ? 0.25 : 0.05));
-    const allowDoubleDigits = doubleDigitProb >= 0.70;
-
-    // ฟังก์ชันสร้างชุดเจาะ: ตัดเลขเด่น/รองออกจากตัวจับคู่อย่างเด็ดขาด
-    const getPairSet = (target, excludeDigits) => {
-      let candidatePartners = [], anchor = this._normalize(Math.abs(7 - H));
-      let rawRange = [];
-      for (let o = -2; o <= 2; o++) rawRange.push(this._normalize(anchor + o));
-      
-      rawRange.forEach(p => {
-        if (!excludeDigits.includes(p)) candidatePartners.push(p);
-      });
-      
-      let fill = (target + 1) % 10;
-      while (candidatePartners.length < 5) {
-        if (!excludeDigits.includes(fill) && !candidatePartners.includes(fill)) {
-          candidatePartners.push(fill);
-        }
-        fill = (fill + 1) % 10;
+    const getPairSet=(target,exclude)=>{
+      let candidatePartners=[],anchor=((Math.abs(7-H)%10)+10)%10,rawRange=[];
+      for(let o=-2;o<=2;o++)rawRange.push(this._normalize(anchor+o));
+      rawRange.forEach(p=>{if(p!==target&&p!==exclude)candidatePartners.push(p)});
+      let fill=(target+1)%10;
+      while(candidatePartners.length<5){
+        if(fill!==target&&fill!==exclude&&!candidatePartners.includes(fill))candidatePartners.push(fill);
+        fill=(fill+1)%10;
       }
-      
-      let finalPartners = candidatePartners.slice(0, 5);
-      // หากความน่าจะเป็นเลขเบิ้ลไม่ถึง 70-80% ให้กรองเลขเบิ้ลออกจากชุดเจาะ
-      if (!allowDoubleDigits) {
-        finalPartners = finalPartners.filter(p => p !== target);
-        fill = (target + 2) % 10;
-        while (finalPartners.length < 5) {
-          if (!excludeDigits.includes(fill) && !finalPartners.includes(fill) && fill !== target) {
-            finalPartners.push(fill);
-          }
-          fill = (fill + 1) % 10;
-        }
-      }
-      return finalPartners.map(partner => `${target}${partner}`);
+      return candidatePartners.slice(0,5).map(partner=>`${target}${partner}`);
     };
-
-    // ส่งทั้ง pDigit และ sDigit เป็นการยกเว้นเพื่อป้องกันเด่น/รองวินกันเอง
-    const arr1 = getPairSet(pDigit, [pDigit, sDigit]);
-    const arr2 = getPairSet(sDigit, [pDigit, sDigit]);
-
-    // เรียกใช้ WPG-CS6 หลังจากคำนวณ digitScores สมบูรณ์แล้ว
-    const winSetDigits = this._computeWPGCS6(d3, d2, digitScores);
-    const seqId = "SEQ-" + Date.now().toString().slice(-6);
+    const arr1=getPairSet(pDigit,sDigit),arr2=getPairSet(sDigit,pDigit);
+    const winSetDigits=this._computeWPGCS6(d3,d2,digitScores);
+    const seqId="SEQ-"+Date.now().toString().slice(-6);
     this.saveToLedger({
       sequenceId:seqId,timestamp:new Date().toISOString(),
       inputTop:n3,inputBottom:n2,model1Output:rM1,model2Output:rM2,model3Output:rM3,model4Output:rM4,model5Output:rM5,
       candidatePool:pool,primaryConsensus:[pDigit,sDigit],rawAgreement:pObj.rawAgreement,
       effectiveAgreement:pObj.effectiveAgreement,conflictStatus:conflict,predictionStatus:"FROZEN",actualResult:null,evaluation:null
     });
-
-    const calcConf = sc => Number(Math.min(98.5, Math.max(82.0, 80 + sc * 3.5)).toFixed(1));
-    const pPct = calcConf(pObj.totalScore), sPct = calcConf(sObj.totalScore);
+    const calcConf=sc=>Number(Math.min(98.5,Math.max(82.0,80+sc*3.5)).toFixed(1));
+    const pPct=calcConf(pObj.totalScore),sPct=calcConf(sObj.totalScore),cScore3=Number((50.1+Math.random()*.8).toFixed(1));
+    const evenCount=winSetDigits.filter(d=>d%2===0).length,evenPct=Number(((evenCount/winSetDigits.length)*100).toFixed(1)),oddPct=Number((100-evenPct).toFixed(1));
+    const maxScVal=Math.max(...masterSorted.map(s=>s.totalScore),1);
     
-    // ประกาศ cScore3 ใน Scope ที่ถูกต้อง
-    const cScore3 = Number((50.1 + Math.random() * 0.8).toFixed(1));
-    const matrixSorted = Object.values(digitScores).sort((a, b) => b.totalScore - a.totalScore);
-    const evenCount = winSetDigits.filter(d => d % 2 === 0).length, evenPct = Number(((evenCount / winSetDigits.length) * 100).toFixed(1)), oddPct = Number((100 - evenPct).toFixed(1));
-    const maxScVal = Math.max(...matrixSorted.map(s => s.totalScore), 1);
-    
-    const distHTML = matrixSorted.map((item, i) => {
-      const h = item.totalScore > 0 ? Math.max(12, Math.round((item.totalScore / maxScVal) * 100)) : 6;
-      let col = i < 2 ? '#0A6647' : i < 5 ? '#10B981' : i < 8 ? '#EAB308' : '#BE123C';
+    const distHTML=masterSorted.map((item,i)=>{
+      const h=item.totalScore>0?Math.max(12,Math.round((item.totalScore/maxScVal)*100)):6;
+      let col=i<2?'#0A6647':i<5?'#10B981':i<8?'#EAB308':'#BE123C';
       return `<div class="overview-bar" style="--bar-height:${h}%; --bar-color:${col};" data-copy="${item.digit}"><span class="overview-digit">${item.digit}</span></div>`;
     }).join("");
-
-    const indWinHTML = winSetDigits.map((d, i) => `<div class="ind-win-item" data-copy="${d}"><strong>${d}</strong><span>POS ${i+1}</span></div>`).join("");
-    const pair1HTML = arr1.map((p, i) => `<div class="number-chip top" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${Number((pPct - i * .3).toFixed(1))}%</small></div>`).join("");
-    const pair2HTML = arr2.map((p, i) => `<div class="number-chip" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${Number((sPct - i * .3).toFixed(1))}%</small></div>`).join("");
-    
-    // สร้างชุด 3 ตัว โดยไม่ให้เลขเด่นและรองมาวินกันเอง
-    const thirdCandidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(d => d !== pDigit && d !== sDigit);
-    const arr3d = thirdCandidates.slice(0, 5).map(third => {
-      return [pDigit, third, (third + 2) % 10].sort((a, b) => a - b).join("");
-    });
-    
-    const threeHTML = arr3d.map((p, i) => `<div class="number-chip gold" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${Number((cScore3 - i * .05).toFixed(1))}%</small></div>`).join("");
-    const rankHTML = matrixSorted.slice(0, 5).map((item, i) => {
-      const pct = calcConf(item.totalScore);
+    const indWinHTML=winSetDigits.map((d,i)=>`<div class="ind-win-item" data-copy="${d}"><strong>${d}</strong><span>POS ${i+1}</span></div>`).join("");
+    const pair1HTML=arr1.map((p,i)=>`<div class="number-chip top" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${Number((pPct-i*.3).toFixed(1))}%</small></div>`).join("");
+    const pair2HTML=arr2.map((p,i)=>`<div class="number-chip" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${Number((sPct-i*.3).toFixed(1))}%</small></div>`).join("");
+    const arr3d=[`${pDigit}${sDigit}0`,`${pDigit}${sDigit}1`,`${pDigit}${sDigit}5`,`${pDigit}${sDigit}7`,`${pDigit}${sDigit}9`].map(p=>p.split("").sort((a,b)=>a-b).join(""));
+    const threeHTML=arr3d.map((p,i)=>`<div class="number-chip gold" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${Number((cScore3-i*.05).toFixed(1))}%</small></div>`).join("");
+    const rankHTML=masterSorted.slice(0,5).map((item,i)=>{
+      const pct=calcConf(item.totalScore);
       return `<div class="rank-row" data-copy="${item.digit}"><div class="rank-no">#${String(i+1).padStart(2,"0")}</div><div class="rank-digit">${item.digit}</div><div class="rank-bar-wrap"><div class="rank-bar-fill" style="width: ${pct}%;"></div></div><div class="rank-percent">${pct.toFixed(1)}%</div></div>`;
     }).join("");
-
-    const modelDisp = modelOutputs.map(m => {
-      const mPairs = getPairSet(m.rawValue, [m.rawValue, (m.rawValue + 1) % 10]);
-      const pairCards = mPairs.map((p, idx) => `<div class="formula-pair" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${Number((88.5 - idx * .3).toFixed(1))}%</small></div>`).join("");
+    const modelDisp=modelOutputs.map(m=>{
+      const mPairs=getPairSet(m.rawValue,(m.rawValue+1)%10);
+      const pairCards=mPairs.map((p,idx)=>`<div class="formula-pair" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${Number((88.5-idx*.3).toFixed(1))}%</small></div>`).join("");
       return `<div class="formula-card"><div class="formula-head"><div class="formula-name">${this._esc(m.name)} <span class="compact-badge">CORE MODEL</span></div><div class="formula-badge">RAW ${m.rawValue}</div></div><div class="formula-sub">คำนวณจาก: <strong>${this._esc(m.desc)}</strong> | Candidate: <strong>${m.set.join(" - ")}</strong></div><div class="formula-pairs">${pairCards}</div></div>`;
     }).join("");
 
