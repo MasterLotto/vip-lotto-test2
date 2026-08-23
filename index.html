@@ -4,13 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="theme-color" content="#F4FBF7">
-<meta name="color-scheme" content="light">
-<title>Enterprise Quant Platform — Multi-Batch Lotto Processing</title>
+<title>Enterprise Quant Platform — Smart Batch Processing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--white:#FFF;--bg:#EEF8F3;--bg2:#F5FBF7;--surface:#FFF;--surface2:#EAF6F0;--surface3:#D3EFE2;--navy:#081B14;--navy-2:#0F2A20;--emerald:#0A6647;--emerald-2:#0D7A55;--emerald-3:#10B981;--emerald-light:#E1F8ED;--cyan:#087380;--gold:#9E6C02;--gold-2:#EAB308;--gold3:#FEF9C3;--purple:#6D28D9;--red:#BE123C;--text:#051912;--text-2:#0F2920;--muted:#47685B;--muted-2:#759B8C;--line:#B5DBCB;--shadow2:0 8px 24px rgba(10,102,71,.08)}
+:root{--white:#FFF;--bg:#EEF8F3;--bg2:#F5FBF7;--surface:#FFF;--surface2:#EAF6F0;--surface3:#D3EFE2;--navy:#081B14;--navy-2:#0F2A20;--emerald:#0A6647;--emerald-2:#0D7A55;--emerald-light:#E1F8ED;--red:#BE123C;--text:#051912;--muted:#47685B;--shadow2:0 8px 24px rgba(10,102,71,.08)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{min-height:100vh;overflow-x:hidden;color:var(--text);font-family:'Prompt',sans-serif;background:radial-gradient(circle at 15% 5%,rgba(16,185,129,.28),transparent 45%),linear-gradient(135deg,#FFF,#F0FAF5 60%,#E2F2EC)}
 button,input,textarea{font-family:'Prompt',sans-serif}
@@ -21,19 +20,19 @@ button,input,textarea{font-family:'Prompt',sans-serif}
 .system-pill{padding:5px 11px;border-radius:99px;color:var(--emerald);background:var(--emerald-light);border:1px solid rgba(10,102,71,.25);font-size:.6rem;font-weight:800}
 .command-center{padding:14px;border-radius:18px;background:#fff;border:1px solid #A8D5C2;box-shadow:var(--shadow2);margin-bottom:14px}
 .command-title{font-size:.9rem;font-weight:800;margin-bottom:6px}
-textarea.paste-box{width:100%;height:140px;padding:10px;border-radius:12px;border:1px solid #A8D5C2;background:var(--bg2);font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--text);resize:vertical;outline:none;margin-bottom:10px}
+textarea.paste-box{width:100%;height:150px;padding:12px;border-radius:12px;border:1px solid #A8D5C2;background:var(--bg2);font-family:'IBM Plex Mono',monospace;font-size:.9rem;color:var(--text);resize:vertical;outline:none;margin-bottom:10px}
 textarea.paste-box:focus{background:#fff;border-color:var(--emerald)}
 .action-row{display:grid;grid-template-columns:1fr 85px;gap:7px}
 .calculate-btn{height:44px;border:0;border-radius:12px;color:#fff;cursor:pointer;background:linear-gradient(135deg,#0A6647,#0D7A55);font-size:.75rem;font-weight:800}
 .clear-btn{height:44px;border-radius:12px;color:var(--muted);background:var(--bg2);border:1px solid #A8D5C2;font-size:.65rem;font-weight:700;cursor:pointer}
 .batch-summary{background:var(--surface2);border:1px solid #A8D5C2;border-radius:14px;padding:12px;margin-bottom:10px}
-.batch-total{font-size:1.1rem;font-weight:800;color:var(--emerald);margin-bottom:8px}
-.lotto-group{background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:8px;border:1px solid #B5DBCB}
-.lotto-title{font-size:.8rem;font-weight:700;color:var(--navy)}
-.lotto-item{font-size:.7rem;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.batch-total{font-size:1.05rem;font-weight:800;color:var(--emerald);margin-bottom:8px}
+.lotto-card{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;border:1px solid #B5DBCB}
+.lotto-head{font-size:.85rem;font-weight:800;color:var(--navy);margin-bottom:6px;border-bottom:1px dashed #B5DBCB;padding-bottom:4px}
+.lotto-row{display:flex;justify-content:space-between;font-size:.8rem;font-family:'IBM Plex Mono',monospace;margin-top:3px}
+.lotto-label{color:var(--muted);font-weight:600}
+.lotto-val{color:var(--emerald);font-weight:700}
 .disclaimer{padding:10px;border-radius:12px;color:var(--muted);background:var(--bg2);border:1px solid #A8D5C2;text-align:center;font-size:.55rem}
-#toast{position:fixed;left:50%;bottom:22px;padding:10px 16px;border-radius:99px;opacity:0;pointer-events:none;color:#fff;background:#081B14;font-size:.6rem;font-weight:700;transition:.25s;transform:translate(-50%,22px)}
-#toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
@@ -46,15 +45,19 @@ textarea.paste-box:focus{background:#fff;border-color:var(--emerald)}
     </div>
 
     <section class="command-center">
-      <div class="command-title">คัดลอกและวางข้อความโพยหวย (ได้หลายหวยพร้อมกัน)</div>
-      <textarea id="pasteBox" class="paste-box" placeholder="วางข้อความที่นี่... 
+      <div class="command-title">คัดลอกและวางข้อความ (ได้หลายหวยพร้อมกัน)</div>
+      <textarea id="pasteBox" class="paste-box" placeholder="วางข้อความที่นี่...
 ตัวอย่าง:
-ฮานอย 123=100x100
-ลาว 456=50
-รัฐบาล 78=200x200"></textarea>
+ลาวเช้า | 23 ส.ค. 69
+351
+36
+
+ฮานอย VIP
+892
+14=100x100"></textarea>
       
       <div class="action-row">
-        <button class="calculate-btn" id="calcBtn" onclick="processBatch()">⚡ คำนวณยอดและประมวลผล</button>
+        <button class="calculate-btn" onclick="processBatch()">⚡ ประมวลผลและแยกแยะรายการ</button>
         <button class="clear-btn" onclick="clearInput()">ล้าง / CLEAR</button>
       </div>
     </section>
@@ -62,94 +65,102 @@ textarea.paste-box:focus{background:#fff;border-color:var(--emerald)}
     <div id="resultOutput"></div>
 
     <div class="disclaimer">
-      <strong>หมายเหตุ:</strong> ระบบจะทำการแยกแยะประเภท 3 ตัวบน / 2 ตัวล่าง และรวมยอดคำนวณเงินให้อัตโนมัติ
+      <strong>รองรับทั้งแบบ:</strong> เลขอย่างเดียว (แยก 3 ตัวบน/2 ตัวล่าง) และแบบพร้อมราคา (= / - / x)
     </div>
   </div>
 </div>
-
-<div id="toast">คัดลอกข้อความแล้ว</div>
 
 <script>
 function processBatch() {
     const rawText = document.getElementById('pasteBox').value.trim();
     if (!rawText) {
-        alert("กรุณาวางข้อความโพยหวยก่อนทำการคำนวณครับ");
+        alert("กรุณาวางข้อความก่อนทำการประมวลผลครับ");
         return;
     }
 
-    const lines = rawText.split('\n');
-    let categories = {};
+    const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    let results = [];
+    let currentGroup = null;
     let grandTotal = 0;
 
-    // Pattern อ่านค่า: [ชื่อหวย(ถ้ามี)] [ตัวเลข 2-3 หลัก] [ตัวคั่น = หรือ - หรือ x] [บน] [x ล่าง(ถ้ามี)]
-    const lineRegex = /(?:([^\d\n\=]+)\s*)?(\d{2,3})\s*[\=\-\s]\s*(\d+)(?:\s*x\s*(\d+))?/i;
-
     lines.forEach(line => {
-        let text = line.trim();
-        if (!text) return;
+        // รูปแบบมีราคา เช่น 123=100x100 หรือ 123-50
+        const priceMatch = line.match(/^(\d{2,3})\s*[\=\-]\s*(\d+)(?:\s*x\s*(\d+))?/i);
+        // รูปแบบเลขอย่างเดียว เช่น 351 หรือ 36
+        const numOnlyMatch = line.match(/^(\d{2,3})$/);
 
-        let match = text.match(lineRegex);
-        if (match) {
-            let cat = match[1] ? match[1].trim() : "รายการทั่วไป";
-            let num = match[2];
-            let val1 = parseInt(match[3]) || 0;
-            let val2 = parseInt(match[4]) || 0;
+        if (priceMatch) {
+            let num = priceMatch[1];
+            let v1 = parseInt(priceMatch[2]) || 0;
+            let v2 = parseInt(priceMatch[3]) || 0;
+            let sum = v1 + v2;
+            grandTotal += sum;
 
-            let lineSum = val1 + val2;
-            let typeText = (num.length === 3) ? "3 ตัว" : "2 ตัว";
-
-            if (!categories[cat]) {
-                categories[cat] = { total: 0, items: [] };
+            if (!currentGroup) {
+                currentGroup = { title: "รายการทั่วไป", items: [] };
+                results.push(currentGroup);
             }
-
-            categories[cat].total += lineSum;
-            grandTotal += lineSum;
-
-            categories[cat].items.push({
-                num: num,
-                type: typeText,
-                detail: `${num} = ${val1}${val2 ? 'x' + val2 : ''}`,
-                sum: lineSum
+            currentGroup.items.push({
+                label: num.length === 3 ? "3 ตัวบน" : "2 ตัวล่าง",
+                val: `${num} (${v1}${v2 ? 'x'+v2 : ''} = ${sum.toLocaleString()} บ.)`
             });
+        } 
+        else if (numOnlyMatch) {
+            let num = numOnlyMatch[1];
+            if (!currentGroup) {
+                currentGroup = { title: "รายการทั่วไป", items: [] };
+                results.push(currentGroup);
+            }
+            currentGroup.items.push({
+                label: num.length === 3 ? "3 ตัวบน" : "2 ตัวล่าง",
+                val: num
+            });
+        } 
+        else {
+            // ถ้าบรรทัดไม่ใช่ตัวเลข ให้ถือว่าเป็น "ชื่อหวย / หัวข้อ"
+            currentGroup = { title: line, items: [] };
+            results.push(currentGroup);
         }
     });
 
-    displayResult(grandTotal, categories);
+    displayResult(results, grandTotal);
 }
 
-function displayResult(grandTotal, categories) {
-    let out = document.getElementById('resultOutput');
-    if (grandTotal === 0) {
-        out.innerHTML = `<div class="batch-summary"><b style="color:var(--red);">ไม่พบรูปแบบตัวเลขที่ถูกต้อง กรุณาตรวจสอบข้อความที่วาง</b></div>`;
+function displayResult(results, grandTotal) {
+    const out = document.getElementById('resultOutput');
+    if (results.length === 0) {
+        out.innerHTML = `<div class="batch-summary"><b style="color:var(--red);">ไม่พบข้อมูลตัวเลข กรุณาตรวจสอบข้อความ</b></div>`;
         return;
     }
 
     let html = `<div class="batch-summary">`;
-    html += `<div class="batch-total">💰 ยอดรวมคำนวณทั้งหมด: ${grandTotal.toLocaleString()} บาท</div>`;
-
-    for (let cat in categories) {
-        html += `<div class="lotto-group">`;
-        html += `<div class="lotto-title">📌 ${cat} — รวม ${categories[cat].total.toLocaleString()} บาท</div>`;
-        categories[cat].items.forEach(item => {
-            html += `<div class="lotto-item">• [${item.type}] ${item.detail} (${item.sum.toLocaleString()} บ.)</div>`;
-        });
-        html += `</div>`;
+    if (grandTotal > 0) {
+        html += `<div class="batch-total">💰 ยอดเงินคำนวณรวม: ${grandTotal.toLocaleString()} บาท</div>`;
+    } else {
+        html += `<div class="batch-total">📋 แยกแยะข้อมูลผลรางวัลเรียบร้อย</div>`;
     }
-    html += `</div>`;
 
+    results.forEach(group => {
+        if (group.items.length > 0) {
+            html += `<div class="lotto-card">`;
+            html += `<div class="lotto-head">📌 ${group.title}</div>`;
+            group.items.forEach(item => {
+                html += `<div class="lotto-row">`;
+                html += `<span class="lotto-label">${item.label}:</span>`;
+                html += `<span class="lotto-val">${item.val}</span>`;
+                html += `</div>`;
+            });
+            html += `</div>`;
+        }
+    });
+
+    html += `</div>`;
     out.innerHTML = html;
 }
 
 function clearInput() {
     document.getElementById('pasteBox').value = "";
     document.getElementById('resultOutput').innerHTML = "";
-}
-
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 1600);
 }
 </script>
 </body>
