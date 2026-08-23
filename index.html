@@ -1659,7 +1659,7 @@ font-size:.41rem;
 }
 
 /* =========================================================
-   DEEP SCAN — NEW 3 SET STRUCTURE
+   DEEP SCAN
 ========================================================= */
 
 .deep-scan-board{
@@ -1896,7 +1896,7 @@ color:var(--muted);
 }
 
 /* =========================================================
-   WIN SET — PREMIUM COMPACT
+   WIN SET
 ========================================================= */
 
 .ind-win-set{
@@ -2220,9 +2220,7 @@ transition:none!important;
 </div>
 
 <div class="app-shell">
-
 <div class="app-card">
-
 <div class="app-inner">
 
 <!-- =========================================================
@@ -2625,9 +2623,7 @@ type="button"
 </div>
 
 </div>
-
 </div>
-
 </div>
 
 <div id="toast">
@@ -2643,21 +2639,14 @@ type="button"
 
 (function(){
 
-const canvas=
-document.getElementById("snowCanvas");
+const canvas=document.getElementById("snowCanvas");
 
 if(!canvas)return;
 
-const ctx=
-canvas.getContext("2d");
+const ctx=canvas.getContext("2d");
 
-let width=
-canvas.width=
-window.innerWidth;
-
-let height=
-canvas.height=
-window.innerHeight;
+let width=canvas.width=window.innerWidth;
+let height=canvas.height=window.innerHeight;
 
 window.addEventListener(
 "resize",
@@ -2676,26 +2665,19 @@ flakes.push({
 x:Math.random()*width,
 y:Math.random()*height,
 
-radius:
-Math.random()*2.2+.8,
+radius:Math.random()*2.2+.8,
 
-depth:
-Math.random()*.8+.2,
+depth:Math.random()*.8+.2,
 
-speedY:
-Math.random()*.4+.2,
+speedY:Math.random()*.4+.2,
 
-speedX:
-Math.random()*.2-.1,
+speedX:Math.random()*.2-.1,
 
-opacity:
-Math.random()*.5+.35,
+opacity:Math.random()*.5+.35,
 
-swing:
-Math.random()*Math.PI*2,
+swing:Math.random()*Math.PI*2,
 
-swingSpeed:
-Math.random()*.01+.005
+swingSpeed:Math.random()*.01+.005
 
 });
 
@@ -2703,37 +2685,22 @@ Math.random()*.01+.005
 
 function render(){
 
-ctx.clearRect(
-0,
-0,
-width,
-height
-);
+ctx.clearRect(0,0,width,height);
 
 flakes.forEach(f=>{
 
 f.swing+=f.swingSpeed;
 
-f.x+=
-Math.sin(f.swing)*.3+
-f.speedX;
-
-f.y+=
-f.speedY*
-f.depth;
+f.x+=Math.sin(f.swing)*.3+f.speedX;
+f.y+=f.speedY*f.depth;
 
 if(f.y>height+10){
-
 f.y=-10;
 f.x=Math.random()*width;
-
 }
 
-if(f.x>width+10)
-f.x=-10;
-
-if(f.x<-10)
-f.x=width+10;
+if(f.x>width+10)f.x=-10;
+if(f.x<-10)f.x=width+10;
 
 ctx.beginPath();
 
@@ -2831,9 +2798,7 @@ Math.floor(Math.random()*58000)+1000
 
 }
 
-intervals.sort(
-(a,b)=>a-b
-);
+intervals.sort((a,b)=>a-b);
 
 intervals.forEach(delay=>{
 
@@ -2876,9 +2841,7 @@ currentOnline=1150;
 function updateOnlineUsers(){
 
 const change=
-Math.floor(
-Math.random()*100
-)+1;
+Math.floor(Math.random()*100)+1;
 
 if(Math.random()>.45)
 currentOnline+=change;
@@ -2888,18 +2851,14 @@ currentOnline-=change;
 if(currentOnline<1050){
 
 currentOnline+=
-Math.floor(
-Math.random()*40
-)+20;
+Math.floor(Math.random()*40)+20;
 
 }
 
 if(currentOnline>1280){
 
 currentOnline-=
-Math.floor(
-Math.random()*40
-)+20;
+Math.floor(Math.random()*40)+20;
 
 }
 
@@ -2915,8 +2874,7 @@ document.getElementById(
 
 if(el)
 el.innerText=
-currentOnline.toLocaleString()+
-" คน";
+currentOnline.toLocaleString()+" คน";
 
 }
 
@@ -2934,8 +2892,7 @@ document.getElementById(
 
 if(el)
 el.innerText=
-latency+
-" ms";
+latency+" ms";
 
 }
 
@@ -2966,7 +2923,7 @@ updateServerLatency,
 
 
 /* =========================================================
-   SECURITY
+   SECURITY / ACCESS KEY
 ========================================================= */
 
 const _secEnc={
@@ -2988,10 +2945,7 @@ i+=2
 ){
 
 str+=String.fromCharCode(
-parseInt(
-hex.substr(i,2),
-16
-)
+parseInt(hex.substr(i,2),16)
 );
 
 }
@@ -3002,12 +2956,14 @@ return str;
 
 async _checkMatch(inputVal){
 
+const value=String(inputVal||"").trim();
+
 for(
 const hex of this._dbToken
 ){
 
 if(
-inputVal===
+value===
 this._hexDecode(hex)
 )
 return true;
@@ -3118,8 +3074,11 @@ document.getElementById(
 "errorMsg"
 );
 
-const value=
-input.value.trim();
+if(!input||!error){
+return;
+}
+
+const value=input.value.trim();
 
 if(
 !value||
@@ -3153,9 +3112,11 @@ document.getElementById(
 
 this.checkSessionBadge();
 
-document.getElementById(
-"num3top"
-).focus();
+const num3=
+document.getElementById("num3top");
+
+if(num3)
+num3.focus();
 
 },
 
@@ -3236,6 +3197,8 @@ const badge=
 document.getElementById(
 "lastSessionBadge"
 );
+
+if(!badge)return;
 
 if(n3&&n2){
 
@@ -3567,22 +3530,22 @@ counts:countedDigits
 
 runAnalysis(n3,n2){
 
-const d3=
+const inputDigits3=
 n3.split("").map(Number);
 
-const d2=
+const inputDigits2=
 n2.split("").map(Number);
 
 const[
 H,
 T_top,
 U_top
-]=d3;
+]=inputDigits3;
 
 const[
 T_bot,
 U_bot
-]=d2;
+]=inputDigits2;
 
 const sumTop=
 H+T_top+U_top;
@@ -4177,6 +4140,7 @@ idx<2;
 const winnerModel=
 evaluated[0];
 
+
 /* =========================================================
    TOP 3 — ACTUAL MATRIX RANKING
 ========================================================= */
@@ -4184,7 +4148,16 @@ evaluated[0];
 const top3Digits=
 matrixSorted.slice(0,3);
 
-const d3=
+/*
+   FIX:
+   เดิมประกาศ const d3 ซ้ำกับตัวแปร d3 ที่ใช้รับ
+   input 3 หลักด้านบน ทำให้ JavaScript ทั้งไฟล์ Parse ไม่ผ่าน
+   และเป็นสาเหตุให้ Login Button ไม่ทำงาน
+
+   เปลี่ยนชื่อเป็น thirdRankDigit
+========================================================= */
+
+const thirdRankDigit=
 top3Digits[2]
 ?top3Digits[2].digit
 :null;
@@ -4192,7 +4165,6 @@ top3Digits[2]
 
 /* =========================================================
    DEEP SCAN — 3 REAL TOP DIGIT SETS
-   ใช้ pairsMap จากโมเดลจริง
 ========================================================= */
 
 function findPairsForDigit(digit){
@@ -4219,7 +4191,6 @@ pairs:findPairsForDigit(item.digit).slice(0,5)
 
 /* =========================================================
    3 DIGIT SMART SCAN
-   ยังคงใช้ arr1 / winnerModel เดิม
 ========================================================= */
 
 const arr1=
@@ -4229,8 +4200,8 @@ const arr2=
 findPairsForDigit(d2_dig);
 
 const arr3=
-d3!==null
-?findPairsForDigit(d3)
+thirdRankDigit!==null
+?findPairsForDigit(thirdRankDigit)
 :[];
 
 const matrixArr3d=
@@ -4824,10 +4795,6 @@ ${new Date().toLocaleTimeString("th-TH")}
 </div>
 
 
-<!-- =====================================================
-     PRIMARY CONSENSUS
-===================================================== -->
-
 <section class="primary-signal">
 
 <div class="signal-top">
@@ -4878,10 +4845,6 @@ ${d2_dig}
 </section>
 
 
-<!-- =====================================================
-     TOP 3
-===================================================== -->
-
 <section class="top3-signal-board">
 
 <div class="top3-head">
@@ -4926,10 +4889,6 @@ ${top3HTML}
 
 </section>
 
-
-<!-- =====================================================
-     BALANCE
-===================================================== -->
 
 <section class="stats-analytics-card">
 
@@ -4979,10 +4938,6 @@ DIGIT OVERVIEW
 </div>
 
 
-<!-- =====================================================
-     OVERVIEW
-===================================================== -->
-
 <section class="overview-panel">
 
 <div class="overview-head">
@@ -5027,10 +4982,6 @@ STRUCTURE
 
 </section>
 
-
-<!-- =====================================================
-     DEEP SCAN
-===================================================== -->
 
 <div class="section-marker">
 DEEP SCAN
@@ -5089,10 +5040,6 @@ ${threeHTML}
 </section>
 
 
-<!-- =====================================================
-     WIN SET
-===================================================== -->
-
 <section class="ind-win-set">
 
 <div class="ind-win-header">
@@ -5119,10 +5066,6 @@ ${indWinSetHTML}
 
 </section>
 
-
-<!-- =====================================================
-     FORMULA DETAILS
-===================================================== -->
 
 <section class="formula-section">
 
@@ -5341,16 +5284,49 @@ t.classList.remove("show");
    EVENTS
 ========================================================= */
 
+const loginButton=
 document.getElementById(
 "loginButton"
-).addEventListener(
+);
+
+const passwordInput=
+document.getElementById(
+"passwordInput"
+);
+
+const calculateButton=
+document.getElementById(
+"calculateButton"
+);
+
+const clearButton=
+document.getElementById(
+"clearButton"
+);
+
+const logoutButton=
+document.getElementById(
+"logoutButton"
+);
+
+
+/*
+   ใช้ event binding แบบตรวจ element ก่อน
+   เพื่อป้องกัน JS หยุดหาก DOM บางส่วนถูกเปลี่ยน
+*/
+
+if(loginButton){
+
+loginButton.addEventListener(
 "click",
 ()=>_app.login()
 );
 
-document.getElementById(
-"passwordInput"
-).addEventListener(
+}
+
+if(passwordInput){
+
+passwordInput.addEventListener(
 "keyup",
 e=>{
 
@@ -5360,26 +5336,34 @@ _app.login();
 }
 );
 
-document.getElementById(
-"calculateButton"
-).addEventListener(
+}
+
+if(calculateButton){
+
+calculateButton.addEventListener(
 "click",
 ()=>_app.calculate()
 );
 
-document.getElementById(
-"clearButton"
-).addEventListener(
+}
+
+if(clearButton){
+
+clearButton.addEventListener(
 "click",
 ()=>_app.clearCalc()
 );
 
-document.getElementById(
-"logoutButton"
-).addEventListener(
+}
+
+if(logoutButton){
+
+logoutButton.addEventListener(
 "click",
 ()=>_app.logout()
 );
+
+}
 
 
 /* =========================================================
@@ -5396,6 +5380,8 @@ document.getElementById(
 "num2bottom"
 );
 
+if(n3Input){
+
 n3Input.addEventListener(
 "input",
 ()=>{
@@ -5407,12 +5393,17 @@ n3Input.value.replace(
 );
 
 if(
-n3Input.value.length>=3
+n3Input.value.length>=3&&
+n2Input
 )
 n2Input.focus();
 
 }
 );
+
+}
+
+if(n2Input){
 
 n2Input.addEventListener(
 "input",
@@ -5427,14 +5418,19 @@ n2Input.value.replace(
 }
 );
 
+}
+
 [
 "num3top",
 "num2bottom"
 ].forEach(id=>{
 
-document.getElementById(
-id
-).addEventListener(
+const el=
+document.getElementById(id);
+
+if(el){
+
+el.addEventListener(
 "keyup",
 e=>{
 
@@ -5443,6 +5439,8 @@ _app.calculate();
 
 }
 );
+
+}
 
 });
 
@@ -5453,22 +5451,41 @@ _app.calculate();
 
 (function initApp(){
 
-if(
-"active"===
+try{
+
+const active=
 localStorage.getItem(
 "ml_auth_status_v3"
-)
-){
+);
 
+if(active==="active"){
+
+const loginView=
 document.getElementById(
 "loginView"
-).style.display="none";
+);
 
+const calculatorView=
 document.getElementById(
 "calculatorView"
-).style.display="block";
+);
+
+if(loginView)
+loginView.style.display="none";
+
+if(calculatorView)
+calculatorView.style.display="block";
 
 _app.checkSessionBadge();
+
+}
+
+}catch(e){
+
+/*
+   หาก localStorage ใช้งานไม่ได้
+   ให้ระบบยังคงหน้า Login ทำงานตามปกติ
+*/
 
 }
 
