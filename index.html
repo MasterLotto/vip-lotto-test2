@@ -617,22 +617,19 @@ _app={
       }
     });
 
-    const evaluated=fList.map(item=>{
-      const formulaSet=item.set;
+    const generatePairsForSet=(formulaSet)=>{
       let rawRange=[],hasCollision=!1;
       for(let offset=-2;offset<=2;offset++){const val=this._normalize(anchor+offset);if(formulaSet.includes(val)){hasCollision=!0;break}}
       if(hasCollision)for(let offset=-3;offset<=3;offset++)rawRange.push(this._normalize(anchor+offset));
       else for(let offset=-2;offset<=2;offset++)rawRange.push(this._normalize(anchor+offset));
       const excludedDigits=[...new Set(formulaSet)];
       let cleanedPool=rawRange.filter(dg=>!excludedDigits.includes(dg));
-      const generatedPairs=[],rejectedPairs=[];
+      const generatedPairs=[],pMap={};
       formulaSet.forEach(sourceDigit=>{
         cleanedPool.forEach(poolDigit=>{
-          if(sourceDigit===poolDigit){rejectedPairs.push(`${sourceDigit}${poolDigit} (self-match)`);return}
-          generatedPairs.push({digitA:sourceDigit,digitB:poolDigit,pairStr:`${sourceDigit}${poolDigit}`})
+          if(sourceDigit!==poolDigit)generatedPairs.push({digitA:sourceDigit,digitB:poolDigit,pairStr:`${sourceDigit}${poolDigit}`});
         });
       });
-      const pMap={};
       formulaSet.forEach(sourceDigit=>{
         let pairsForDigit=generatedPairs.filter(p=>p.digitA===sourceDigit).map(p=>p.pairStr),nextFill=(sourceDigit+1)%10;
         while(pairsForDigit.length<5){
@@ -643,8 +640,10 @@ _app={
         if(pairsForDigit.length>5)pairsForDigit=pairsForDigit.slice(0,5);
         pMap[sourceDigit]=pairsForDigit;
       });
-      return{id:item.id,name:item.name,subName:item.subName,positionalWeight:item.positionalWeight,set:item.set,pairsMap:pMap};
-    });
+      return pMap;
+    };
+
+    const evaluated=fList.map(item=>({id:item.id,name:item.name,subName:item.subName,positionalWeight:item.positionalWeight,set:item.set,pairsMap:generatePairsForSet(item.set)}));
 
     let digitScores={};
     for(let d=0;d<=9;d++)digitScores[d]={digit:d,modelScore:0,formula100Score:0,radarScore:0,winSetScore:0,totalScore:0};
@@ -684,7 +683,6 @@ _app={
 
     const matrixSortedAll=Object.values(digitScores).sort((a,b)=>b.totalScore-a.totalScore||b.digit-a.digit);
     
-    // PRIMARY CONSENSUS: Use the absolute top 2 highest scoring digits overall from backend & frontend
     let primaryDigitObj = matrixSortedAll[0];
     let secondaryDigitObj = matrixSortedAll[1];
     
@@ -702,17 +700,12 @@ _app={
     evaluated.sort((a,b)=>b.aiScore-a.aiScore);
     evaluated.forEach((model,idx)=>{model.isRecommended=idx<2});
 
-    // Dynamic pairing retrieval for ANY digit (even if outside models 01-05)
     const getPairsForDigit = (dig) => {
       for(let m of evaluated) {
         if(m.pairsMap && m.pairsMap[dig]) return m.pairsMap[dig];
       }
-      let fallbackArr = [];
-      for(let i=1; i<=5; i++) {
-        let pStr = `${dig}${(dig+i)%10}`;
-        if(!fallbackArr.includes(pStr)) fallbackArr.push(pStr);
-      }
-      return fallbackArr.sort().slice(0, 5);
+      const generated = generatePairsForSet([dig, (dig+1)%10]);
+      return generated[dig] || [];
     };
 
     const arr1 = getPairsForDigit(d1);
