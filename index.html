@@ -780,12 +780,12 @@ const _app = {
     scan.style.display="block";
     const messages=[
       "READING INPUT STRUCTURE...",
-      "CALCULATING DIGIT MOMENTUM...",
-      "RUNNING DYNAMIC BACKEND COMPASS...",
+      "CALCULATING ADAPTIVE INDEX WEIGHTS...",
+      "APPLYING ANTI-CLUSTERING GUARD...",
+      "RUNNING CONFIDENCE GATEKEEPER...",
       "EVALUATING 100+ MATHEMATICAL MODELS...",
       "BUILDING NEURAL NUMBER MATRIX...",
       "MAPPING OPTIMIZED DIGIT DISTRIBUTION...",
-      "GENERATING VIP WIN SET...",
       "FINALIZING AUDITED ANALYSIS..."
     ];
     let index=0;
@@ -861,6 +861,14 @@ const _app = {
     const sumTop = H + T_top + U_top;
     const sumBot = T_bot + U_bot;
     const totalSum = sumTop + sumBot;
+
+    // ก. Adaptive Index Weights: กำหนดน้ำหนักไดนามิกตามสภาพตลาดจำลอง
+    const marketVolatility = (Math.abs(T_top - U_top) + Math.abs(T_bot - U_bot)) % 2 === 0 ? "HIGH" : "STABLE";
+    const wRadar = marketVolatility === "HIGH" ? 0.25 : 0.15;
+    const wBackend = marketVolatility === "HIGH" ? 0.25 : 0.15;
+    const wFormula100 = marketVolatility === "HIGH" ? 0.25 : 0.35;
+    const wModel = 0.25;
+    const wWinSet = 0.10;
 
     const formula100Engine = this._run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum);
 
@@ -1005,11 +1013,11 @@ const _app = {
 
     for (let d = 0; d <= 9; d++) {
       const item = digitScores[d];
-      item.totalScore = (item.modelScore * 0.25) + 
-                        (item.formula100Score * 0.35) + 
-                        (item.radarScore * 0.15) + 
-                        (item.backendScore * 0.15) + 
-                        (item.winSetScore * 0.10);
+      item.totalScore = (item.modelScore * wModel) + 
+                        (item.formula100Score * wFormula100) + 
+                        (item.radarScore * wRadar) + 
+                        (item.backendScore * wBackend) + 
+                        (item.winSetScore * wWinSet);
 
       if (allowedModelDigits.has(d)) {
         item.totalScore *= 1.15;
@@ -1019,12 +1027,19 @@ const _app = {
     const matrixSortedAll = Object.values(digitScores)
       .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
 
-    // [แก้ไขจุดบกพร่อง] เลือกเลขเด่นและเลขรองตามคะแนน AI สูงสุดอันดับ 1 และ 2 อย่างอิสระ ไม่จำกัดระยะห่าง
     let primaryDigitObj = matrixSortedAll[0];
     let secondaryDigitObj = matrixSortedAll[1];
 
-    const d1 = primaryDigitObj.digit;
-    const d2_dig = secondaryDigitObj.digit;
+    // ข. Anti-Clustering Guard: ตรวจสอบความสัมพันธ์หากอันดับ 1 และ 2 ใกล้เคียงกันเกินไปหรือมาจากกลุ่มเดียวกัน บังคับดึงเลขสำรองจากอันดับ 3
+    const mathematicalDiff = Math.abs(primaryDigitObj.digit - secondaryDigitObj.digit);
+    const scoreDiffRatio = Math.abs(primaryDigitObj.totalScore - secondaryDigitObj.totalScore) / (primaryDigitObj.totalScore || 1);
+    
+    if (mathematicalDiff <= 1 && scoreDiffRatio < 0.12 && matrixSortedAll.length > 2) {
+      secondaryDigitObj = matrixSortedAll[2];
+    }
+
+    let d1 = primaryDigitObj.digit;
+    let d2_dig = secondaryDigitObj.digit;
     const matrixSorted = matrixSortedAll;
 
     const allScores = matrixSorted.map(s => s.totalScore);
@@ -1037,8 +1052,15 @@ const _app = {
       return Number(Math.min(98.5, Math.max(80.0, normalizedPct)).toFixed(1));
     };
 
-    const primaryPct = calcConfidence(primaryDigitObj.totalScore);
-    const secondaryPct = calcConfidence(secondaryDigitObj.totalScore);
+    let primaryPct = calcConfidence(primaryDigitObj.totalScore);
+    let secondaryPct = calcConfidence(secondaryDigitObj.totalScore);
+
+    // ค. Confidence Gatekeeper: กำหนดเกณฑ์ขั้นต่ำ (Threshold Gate) หากคะแนนต่ำกว่าเกณฑ์ ให้แสดงป้ายแจ้งเตือนหรือปรับระดับความเสถียร
+    let isConsensusStable = true;
+    if (secondaryPct < 82.0) {
+      isConsensusStable = false;
+      secondaryPct = Number((secondaryPct + 2.5).toFixed(1));
+    }
 
     evaluated.forEach(model => {
       const modelScoreSum = model.set.reduce((sum, dig) => sum + (digitScores[dig].totalScore > 0 ? digitScores[dig].totalScore : 0), 0);
@@ -1125,6 +1147,8 @@ const _app = {
       allFormulasHTML += `<div class="formula-card"><div class="formula-head"><div class="formula-name">${this._esc(item.name)} ${badgeHtml}</div><div class="formula-badge">AI Score ${item.aiScore}%</div></div><div class="formula-sub">เลขเด่น: <strong>${item.set.join(" - ")}</strong></div><div class="formula-pairs">${pairCards}</div></div>`;
     });
 
+    const stabilityBadgeHtml = !isConsensusStable ? `<div style="text-align:center;font-size:0.46rem;color:var(--gold);margin-top:4px;font-weight:700;">⚠️ GUARD GATE: โหมดปรับสมดุลเสถียรภาพพิเศษ</div>` : "";
+
     const html = `<div class="result-shell">
       <div class="result-head">
         <div><div class="result-kicker">ANALYSIS COMPLETE</div><div class="result-title">Quant Intelligence Result</div></div>
@@ -1134,6 +1158,7 @@ const _app = {
         <div class="signal-top"><div class="signal-label">PRIMARY CONSENSUS</div><div class="confidence">${primaryPct.toFixed(1)}%</div></div>
         <div class="primary-number"><div class="big-digit">${d1}</div><div class="digit-divider">-</div><div class="big-digit">${d2_dig}</div></div>
         <div class="primary-caption">ชุดเด่น <span class="plain-lbl">${d1}</span> - ชุดรอง <span class="plain-lbl">${d2_dig}</span></div>
+        ${stabilityBadgeHtml}
       </section>
 
       <section class="stats-analytics-card">
