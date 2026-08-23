@@ -493,7 +493,7 @@ input:focus, textarea:focus{background:#fff;border-color:rgba(10,102,71,.6);box-
     <div class="command-header">
       <div>
         <div class="command-title">Analysis Multi-Input Stream</div>
-        <div class="command-sub">กรอกชุดสถิติย้อนหลัง (รูปแบบ: 3ตัวบน 2ตัวล่าง ต่อบรรทัด)</div>
+        <div class="command-sub">กรอกชุดสถิติย้อนหลัง (รองรับวันที่ ชื่อ และข้อความอิสระ)</div>
       </div>
       <div class="command-badge">AUDIT READY</div>
     </div>
@@ -501,10 +501,9 @@ input:focus, textarea:focus{background:#fff;border-color:rgba(10,102,71,.6);box-
     <div class="field-card">
       <label class="field-label" for="historicalBatchInput">ช่องใส่ข้อความสถิติมัลติอินพุต (สถิติย้อนหลังถึงปัจจุบัน)</label>
       <textarea id="historicalBatchInput" placeholder="ตัวอย่างรูปแบบ:
-789 64
-123 55
-456 88
-999 12" autocomplete="off" spellcheck="false"></textarea>
+16/08/69 หวยออก 789 64
+1/08/69 รอบพิเศษ 123 55
+456 88" autocomplete="off" spellcheck="false"></textarea>
     </div>
 
     <div class="action-row">
@@ -766,33 +765,49 @@ const _app = {
       return;
     }
 
-    // 1. Triple Check Parsing & Data Cleaning (Triple Check Engine)
+    // 1. Enhanced Flexible Parsing Engine (รองรับวันที่ ชื่อ และข้อความอิสระ พร้อม Triple Check)
     const lines = rawText.split("\n");
     const parsedRows = [];
-    let errorCount = 0;
 
     for (let line of lines) {
       line = line.trim();
       if (!line) continue;
-      // แยกด้วยช่องว่างหรือ comma
-      const parts = line.split(/[\s,]+/);
-      if (parts.length >= 2) {
-        let n3 = parts[0].trim();
-        let n2 = parts[1].trim();
-        // Triple check validation: ต้องเป็นตัวเลข 3 หลัก และ 2 หลักตามลำดับ
-        if (/^\d{3}$/.test(n3) && /^\d{2}$/.test(n2)) {
-          parsedRows.push({ n3, n2 });
-        } else {
-          errorCount++;
+      
+      // ค้นหากลุ่มตัวเลข 3 หลัก และ 2 หลักที่อยู่ในบรรทัด (ไม่ว่าจะมีวันที่หรือข้อความคั่นอยู่)
+      // ใช้ Regex กวาดหาตัวเลขทั้งหมดในบรรทัดเรียงตามลำดับ
+      const foundNumbers = line.match(/\d+/g);
+      if (foundNumbers) {
+        let n3 = null;
+        let n2 = null;
+
+        // ค้นหาตัวเลขที่เข้าข่าย 3 หลัก (หรือ 3 ตัว) และ 2 หลัก (หรือ 2 ตัว)
+        for (let numStr of foundNumbers) {
+          if (!n3 && numStr.length === 3) {
+            n3 = numStr;
+          } else if (!n2 && numStr.length === 2) {
+            n2 = numStr;
+          }
         }
-      } else {
-        errorCount++;
+
+        // หากยังหาไม่เจอแบบตรงเป๊ะ ลองจับคู่จากตัวเลขที่ยาวที่สุด หรือจัดลำดับตามที่พบ
+        if (!n3 || !n2) {
+          let threeDigitCandidates = foundNumbers.filter(n => n.length === 3);
+          let twoDigitCandidates = foundNumbers.filter(n => n.length === 2);
+          if (threeDigitCandidates.length > 0 && twoDigitCandidates.length > 0) {
+            n3 = threeDigitCandidates[threeDigitCandidates.length - 1]; // เอาตัวท้ายสุดที่เป็น 3 หลัก
+            n2 = twoDigitCandidates[twoDigitCandidates.length - 1]; // เอาตัวท้ายสุดที่เป็น 2 หลัก
+          }
+        }
+
+        if (n3 && n2 && /^\d{3}$/.test(n3) && /^\d{2}$/.test(n2)) {
+          parsedRows.push({ n3, n2 });
+        }
       }
     }
 
     if (parsedRows.length === 0) {
       this._audio("error");
-      alert("ไม่พบรูปแบบข้อมูลที่ถูกต้อง (ต้องเป็น 3 ตัวบน และ 2 ตัวล่าง เช่น 789 64)");
+      alert("ไม่พบรูปแบบข้อมูลเลข 3 ตัว และ 2 ตัวที่ถูกต้องในข้อความที่คุณกรอก (โปรดตรวจสอบให้อีกครั้ง)");
       return;
     }
 
@@ -879,7 +894,6 @@ const _app = {
   },
 
   runAnalysis(parsedRows) {
-    // ใช้แถวปลุกข้อมูลล่าสุด (แถวสุดท้ายจากประวัติย้อนหลัง) เป็นตัวตั้งต้นคำนวณหลัก
     const latestRow = parsedRows[parsedRows.length - 1];
     const n3 = latestRow.n3;
     const n2 = latestRow.n2;
@@ -893,14 +907,6 @@ const _app = {
     const sumBot = T_bot + U_bot;
     const totalSum = sumTop + sumBot;
 
-    // --- ตรรกะชั้นกอง 5 ประการที่ฉลาดที่สุด (5 Advanced Consensus Logic Layers) ---
-    // Logic 1: Retrospective Historical Hit Audit (ตรวจสอบสถิติย้อนหลังว่าโมเดลใดแม่นยำที่สุด)
-    // Logic 2: Flow Velocity Momentum Check (เช็คเลขไหลและแรงส่งจากสถิติที่ลูกค้ากรอกมาแบบ manual)
-    // Logic 3: Multi-Model Convergence Weighting (ให้น้ำหนักเฉพาะเลขที่ตรงกันจาก 5 โมเดลหลัก 501-05 เท่านั้น)
-    // Logic 4: Cross-Validation Anti-Clustering Guard (ป้องกันเลขซ้ำกลุ่มเดียวกัน เพื่อคัดกรอง 2 ตัวที่ดีที่สุดจริง ๆ)
-    // Logic 5: Adaptive Confidence Gatekeeper (เกณฑ์ความเชื่อมั่นขั้นต่ำ พร้อมระบบปรับเสถียรภาพอัตโนมัติ)
-
-    // คำนวณสถิติเลขไหล (Flow Statistics from manual input rows)
     const flowDigitCounts = {};
     for(let d=0; d<=9; d++) flowDigitCounts[d] = 0;
     parsedRows.forEach(row => {
@@ -912,7 +918,7 @@ const _app = {
     const wRadar = marketVolatility === "HIGH" ? 0.20 : 0.15;
     const wBackend = marketVolatility === "HIGH" ? 0.20 : 0.15;
     const wFormula100 = 0.20;
-    const wModel = 0.30; // ให้น้ำหนัก 5 โมเดลหลักสูงสุดตามโจทย์
+    const wModel = 0.30;
     const wWinSet = 0.10;
 
     const formula100Engine = this._run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum);
@@ -957,7 +963,6 @@ const _app = {
       pMap[sourceDigit] = pairsForDigit;
     });
 
-    // 5 โมเดลหลัก (501-05 โมเดล)
     let rawM1 = (T_top + T_bot) % 10;
     let rawM2 = sumTop % 10;
     let rawM3 = (H + T_bot) % 10;
@@ -1008,7 +1013,6 @@ const _app = {
       };
     }
 
-    // ประมวลผลคะแนนจาก 5 โมเดลหลัก
     evaluated.forEach(model => {
       model.set.forEach(dig => {
         digitScores[dig].modelScore += 1.0;
@@ -1063,7 +1067,6 @@ const _app = {
       digitScores[d].flowScore = (flowDigitCounts[d] / maxFlowVal);
     }
 
-    // รวมคะแนนผ่านตรรกะชั้นกองและกำหนดข้อบังคับ: PRIMARY CONSENSUS ต้องมาจากเลข 5 โมเดลหลักเท่านั้น
     for (let d = 0; d <= 9; d++) {
       const item = digitScores[d];
       let baseTotal = (item.modelScore * wModel) + 
@@ -1073,11 +1076,10 @@ const _app = {
                       (item.winSetScore * wWinSet) +
                       (item.flowScore * 0.15);
 
-      // บังคับสิทธิ์ขาด: ถ้าไม่อยู่ใน 5 โมเดลหลัก (501-05) คะแนนรวมจะถูกหักออกเพื่อคัดกรองให้เลขจาก 5 โมเดลเป็นอันดับหนึ่งเสมอ
       if (!allowedModelDigits.has(d)) {
         baseTotal *= 0.35;
       } else {
-        baseTotal *= 1.35; // เพิ่มน้ำหนักพิเศษให้เลขที่มาจาก 5 โมเดลหลัก
+        baseTotal *= 1.35;
       }
 
       item.totalScore = baseTotal;
@@ -1089,7 +1091,6 @@ const _app = {
     let primaryDigitObj = matrixSortedAll[0];
     let secondaryDigitObj = matrixSortedAll[1];
 
-    // ตรรกะชั้นกองข้อ 4: Anti-Clustering Guard คัดกรองไม่ให้อันดับ 1 และ 2 ซ้ำซ้อนหรือใกล้เคียงกันเกินไป
     const mathematicalDiff = Math.abs(primaryDigitObj.digit - secondaryDigitObj.digit);
     const scoreDiffRatio = Math.abs(primaryDigitObj.totalScore - secondaryDigitObj.totalScore) / (primaryDigitObj.totalScore || 1);
     
