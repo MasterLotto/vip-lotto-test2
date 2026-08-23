@@ -868,52 +868,6 @@ const _app = {
     const d2_source = (d1_source + 1) % 10;
     const formulaSet = [d1_source, d2_source];
 
-    const anchorRaw = 7 - H;
-    const anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
-
-    let rawRange = [];
-    let hasCollision = false;
-
-    for (let offset = -2; offset <= 2; offset++) {
-      const val = this._normalize(anchor + offset);
-      if (formulaSet.includes(val)) {
-        hasCollision = true;
-        break;
-      }
-    }
-
-    const expansionLimit = hasCollision ? 3 : 2;
-    for (let offset = -expansionLimit; offset <= expansionLimit; offset++) {
-      rawRange.push(this._normalize(anchor + offset));
-    }
-
-    const excludedDigits = [...new Set(formulaSet)];
-    let cleanedPool = rawRange.filter(dg => !excludedDigits.includes(dg));
-
-    const generatedPairs = [];
-    formulaSet.forEach(sourceDigit => {
-      cleanedPool.forEach(poolDigit => {
-        if (sourceDigit === poolDigit) return;
-        generatedPairs.push({ digitA: sourceDigit, digitB: poolDigit, pairStr: `${sourceDigit}${poolDigit}` });
-      });
-    });
-
-    const pMap = {};
-    formulaSet.forEach(sourceDigit => {
-      let pairsForDigit = generatedPairs.filter(p => p.digitA === sourceDigit).map(p => p.pairStr);
-      let nextFill = (sourceDigit + 1) % 10;
-      while (pairsForDigit.length < 5) {
-        if (nextFill !== sourceDigit && !pairsForDigit.includes(`${sourceDigit}${nextFill}`) && !excludedDigits.includes(nextFill)) {
-          pairsForDigit.push(`${sourceDigit}${nextFill}`);
-        }
-        nextFill = (nextFill + 1) % 10;
-      }
-
-      pairsForDigit = [...new Set(pairsForDigit)].filter(p => p[0] !== p[1]).sort();
-      if (pairsForDigit.length > 5) pairsForDigit = pairsForDigit.slice(0, 5);
-      pMap[sourceDigit] = pairsForDigit;
-    });
-
     let rawM1 = (T_top + T_bot) % 10;
     let rawM2 = sumTop % 10;
     let rawM3 = (H + T_bot) % 10;
@@ -940,17 +894,6 @@ const _app = {
       item.set.forEach(d => allowedModelDigits.add(d));
     });
 
-    const evaluated = fList.map((item) => {
-      return {
-        id: item.id,
-        name: item.name,
-        subName: item.subName,
-        positionalWeight: item.positionalWeight,
-        set: formulaSet,
-        pairsMap: pMap
-      };
-    });
-
     const digitScores = {};
     for (let d = 0; d <= 9; d++) {
       digitScores[d] = {
@@ -964,7 +907,7 @@ const _app = {
       };
     }
 
-    evaluated.forEach(model => {
+    fList.forEach(model => {
       model.set.forEach(dig => {
         digitScores[dig].modelScore += 1.0;
       });
@@ -1029,23 +972,11 @@ const _app = {
     const matrixSortedAll = Object.values(digitScores)
       .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
 
-    let primaryDigitObj = matrixSortedAll[0];
-    let secondaryDigitObj = null;
+    // Filter only digits that belong to models 01 to 05
+    const model01_05_Digits = matrixSortedAll.filter(item => allowedModelDigits.has(item.digit));
 
-    for (let i = 1; i < matrixSortedAll.length; i++) {
-      const candidate = matrixSortedAll[i];
-      const diff = Math.abs(candidate.digit - primaryDigitObj.digit);
-      const circularDiff = Math.min(diff, 10 - diff);
-      
-      if (circularDiff > 1) {
-        secondaryDigitObj = candidate;
-        break;
-      }
-    }
-
-    if (!secondaryDigitObj) {
-      secondaryDigitObj = matrixSortedAll[1];
-    }
+    let primaryDigitObj = model01_05_Digits[0] || matrixSortedAll[0];
+    let secondaryDigitObj = model01_05_Digits[1] || matrixSortedAll[1];
 
     const d1 = primaryDigitObj.digit;
     const d2_dig = secondaryDigitObj.digit;
@@ -1064,17 +995,32 @@ const _app = {
     const primaryPct = calcConfidence(primaryDigitObj.totalScore);
     const secondaryPct = calcConfidence(secondaryDigitObj.totalScore);
 
-    evaluated.forEach(model => {
+    const pMap = {};
+    fList.forEach(item => {
+      item.set.forEach(sourceDigit => {
+        let pairsForDigit = [];
+        let nextFill = (sourceDigit + 1) % 10;
+        while (pairsForDigit.length < 5) {
+          if (nextFill !== sourceDigit && !pairsForDigit.includes(`${sourceDigit}${nextFill}`)) {
+            pairsForDigit.push(`${sourceDigit}${nextFill}`);
+          }
+          nextFill = (nextFill + 1) % 10;
+        }
+        pMap[sourceDigit] = pairsForDigit;
+      });
+    });
+
+    fList.forEach(model => {
       const modelScoreSum = model.set.reduce((sum, dig) => sum + (digitScores[dig].totalScore > 0 ? digitScores[dig].totalScore : 0), 0);
       model.aiScore = Number((80.0 + (modelScoreSum / 2) * 18.5).toFixed(1));
     });
-    evaluated.sort((a, b) => b.aiScore - a.aiScore);
-    evaluated.forEach((model, idx) => { model.isRecommended = idx < 2; });
+    fList.sort((a, b) => b.aiScore - a.aiScore);
+    fList.forEach((model, idx) => { model.isRecommended = idx < 2; });
 
-    const winnerModel = evaluated[0];
-    const arr1 = winnerModel.pairsMap[d1] || evaluated.find(m => m.pairsMap[d1])?.pairsMap[d1] || [];
-    const arr2 = winnerModel.pairsMap[d2_dig] || evaluated.find(m => m.pairsMap[d2_dig])?.pairsMap[d2_dig] || [];
-    const matrixArr3d = arr1.slice(0, 5).map(p => `${p.slice(-1)}${d1}${d2_dig}`);
+    const winnerModel = fList[0];
+    const arr1 = winnerModel.pairsMap ? (winnerModel.pairsMap[d1] || []) : (pMap[d1] || []);
+    const arr2 = winnerModel.pairsMap ? (winnerModel.pairsMap[d2_dig] || []) : (pMap[d2_dig] || []);
+    const matrixArr3d = arr1.length ? arr1.slice(0, 5).map(p => `${p.slice(-1)}${d1}${d2_dig}`) : [`${d1}${d2_dig}0`, `${d2_dig}${d1}1`, `${d1}0${d2_dig}`, `${d2_dig}1${d1}`, `${d1}${d2_dig}2`];
     
     const cScore3 = Number((50.1 + Math.random() * 0.8).toFixed(1));
 
@@ -1168,10 +1114,10 @@ const _app = {
     }).join("");
 
     let allFormulasHTML = "";
-    evaluated.forEach((item) => {
+    fList.forEach((item) => {
       let pairs = [];
       item.set.forEach((digit) => {
-        const list = item.pairsMap[digit] || [];
+        const list = pMap[digit] || [];
         list.forEach(p => { pairs.push({ pair: p }); });
       });
       const pairCards = pairs.map((obj, idx) => {
