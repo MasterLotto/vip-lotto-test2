@@ -863,11 +863,6 @@ const _app = {
 
     const formula100Engine = this._run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum);
 
-    const step1Sum = T_top + T_bot;
-    const d1_source = step1Sum % 10;
-    const d2_source = (d1_source + 1) % 10;
-    const formulaSet = [d1_source, d2_source];
-
     let rawM1 = (T_top + T_bot) % 10;
     let rawM2 = sumTop % 10;
     let rawM3 = (H + T_bot) % 10;
@@ -877,8 +872,10 @@ const _app = {
     const getUnitDirect = (v) => {
       const str = String(v);
       const lastChar = str.slice(-1);
-      const first = parseInt(lastChar, 10);
-      return [first, (first + 1) % 10];
+      let first = parseInt(lastChar, 10);
+      let second = (first + 1) % 10;
+      let res = [first, second].sort((a, b) => a - b);
+      return res;
     };
 
     const fList = [
@@ -958,11 +955,11 @@ const _app = {
 
     for (let d = 0; d <= 9; d++) {
       const item = digitScores[d];
-      item.totalScore = (item.modelScore * 0.25) + 
-                        (item.formula100Score * 0.35) + 
-                        (item.radarScore * 0.15) + 
-                        (item.backendScore * 0.15) + 
-                        (item.winSetScore * 0.10);
+      item.totalScore = (item.modelScore * 0.025) + 
+                        (item.formula100Score * 0.40) + 
+                        (item.radarScore * 0.20) + 
+                        (item.backendScore * 0.20) + 
+                        (item.winSetScore * 0.175);
 
       if (allowedModelDigits.has(d)) {
         item.totalScore *= 1.15;
@@ -972,7 +969,6 @@ const _app = {
     const matrixSortedAll = Object.values(digitScores)
       .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
 
-    // Filter only digits that belong to models 01 to 05
     const model01_05_Digits = matrixSortedAll.filter(item => allowedModelDigits.has(item.digit));
 
     let primaryDigitObj = model01_05_Digits[0] || matrixSortedAll[0];
@@ -1018,10 +1014,22 @@ const _app = {
     fList.forEach((model, idx) => { model.isRecommended = idx < 2; });
 
     const winnerModel = fList[0];
-    const arr1 = winnerModel.pairsMap ? (winnerModel.pairsMap[d1] || []) : (pMap[d1] || []);
-    const arr2 = winnerModel.pairsMap ? (winnerModel.pairsMap[d2_dig] || []) : (pMap[d2_dig] || []);
-    const matrixArr3d = arr1.length ? arr1.slice(0, 5).map(p => `${p.slice(-1)}${d1}${d2_dig}`) : [`${d1}${d2_dig}0`, `${d2_dig}${d1}1`, `${d1}0${d2_dig}`, `${d2_dig}1${d1}`, `${d1}${d2_dig}2`];
+    const rawArr1 = winnerModel.pairsMap ? (winnerModel.pairsMap[d1] || []) : (pMap[d1] || []);
+    const rawArr2 = winnerModel.pairsMap ? (winnerModel.pairsMap[d2_dig] || []) : (pMap[d2_dig] || []);
+    const rawArr3d = rawArr1.length ? rawArr1.slice(0, 5).map(p => `${p.slice(-1)}${d1}${d2_dig}`) : [`${d1}${d2_dig}0`, `${d2_dig}${d1}1`, `${d1}0${d2_dig}`, `${d2_dig}1${d1}`, `${d1}${d2_dig}2`];
     
+    // Sort targeting digits so smaller numbers are always in front, unit place only
+    const sortPairAsc = (arr) => {
+      return arr.map(p => {
+        let sortedStr = p.split('').map(Number).sort((a,b) => a - b).join('');
+        return sortedStr;
+      });
+    };
+
+    const arr1 = sortPairAsc(rawArr1);
+    const arr2 = sortPairAsc(rawArr2);
+    const matrixArr3d = sortPairAsc(rawArr3d);
+
     const cScore3 = Number((50.1 + Math.random() * 0.8).toFixed(1));
 
     let top5Digits = matrixSorted.slice(0, 5).map(item => item.digit);
@@ -1118,7 +1126,10 @@ const _app = {
       let pairs = [];
       item.set.forEach((digit) => {
         const list = pMap[digit] || [];
-        list.forEach(p => { pairs.push({ pair: p }); });
+        list.forEach(p => { 
+          let sortedStr = p.split('').map(Number).sort((a,b) => a - b).join('');
+          pairs.push({ pair: sortedStr }); 
+        });
       });
       const pairCards = pairs.map((obj, idx) => {
         const displayPair = obj.pair;
