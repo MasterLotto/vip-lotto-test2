@@ -814,8 +814,8 @@ const _app = {
 
   _run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum) {
     const rawFormulas = [
-      (H + T_top), (H + U_top), (T_top + U_top), (H + T_bot), (H + U_bot),
-      (T_top + T_bot), (T_top + U_bot), (U_top + T_bot), (U_top + U_bot), (T_bot + U_bot),
+      (T_top + U_top), (U_top + U_top), (T_top + U_top), (T_top + T_bot), (T_top + U_bot),
+      (U_top + T_bot), (U_top + U_bot), (U_top + T_bot), (U_top + U_bot), (T_bot + U_bot),
       (sumTop + T_bot), (sumTop + U_bot), (sumTop + H), (sumTop + T_top), (sumTop + U_top),
       (10 - H), (10 - T_top), (10 - U_top), (10 - T_bot), (10 - U_bot),
       (H + T_top + T_bot), (H + U_top + U_bot), (T_top + U_top + T_bot), (T_top + U_top + U_bot), (H + T_bot + U_bot),
@@ -833,7 +833,7 @@ const _app = {
       ((H - T_top) + U_bot), ((H - U_top) + T_bot), ((T_top - U_top) + U_bot), ((T_bot - U_bot) + H), ((T_bot - U_bot) + T_top),
       ((T_bot - U_bot) + U_top), (20 - H - T_top), (20 - H - U_top), (20 - T_top - U_top), (20 - T_bot - U_bot),
       (20 - H - T_bot), (20 - H - U_bot), (20 - T_top - T_bot), (20 - T_top - U_bot), (20 - U_top - T_bot),
-      (20 - U_top - U_bot), (totalSum), (totalSum * 2), (totalSum + H), (totalSum + T_bot)
+      (20 - U_top - U_bot), (20 - H - T_bot), (20 - H - U_bot)
     ];
 
     const countedDigits = {};
@@ -863,22 +863,69 @@ const _app = {
 
     const formula100Engine = this._run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum);
 
-    const getUnitDirect = (v) => {
-      const str = String(v);
-      const lastChar = str.slice(-1);
-      const first = parseInt(lastChar, 10);
-      return [first, (first + 1) % 10];
-    };
+    const step1Sum = T_top + T_bot;
+    const d1_source = step1Sum % 10;
+    const d2_source = (d1_source + 1) % 10;
+    const formulaSet = [d1_source, d2_source];
 
-    const dynamicBase = (sumTop + sumBot) % 10;
-    const anchorRaw = dynamicBase - H;
+    const anchorRaw = 7 - H;
     const anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
+
+    let rawRange = [];
+    let hasCollision = false;
+
+    for (let offset = -2; offset <= 2; offset++) {
+      const val = this._normalize(anchor + offset);
+      if (formulaSet.includes(val)) {
+        hasCollision = true;
+        break;
+      }
+    }
+
+    const expansionLimit = hasCollision ? 3 : 2;
+    for (let offset = -expansionLimit; offset <= expansionLimit; offset++) {
+      rawRange.push(this._normalize(anchor + offset));
+    }
+
+    const excludedDigits = [...new Set(formulaSet)];
+    let cleanedPool = rawRange.filter(dg => !excludedDigits.includes(dg));
+
+    const generatedPairs = [];
+    formulaSet.forEach(sourceDigit => {
+      cleanedPool.forEach(poolDigit => {
+        if (sourceDigit === poolDigit) return;
+        generatedPairs.push({ digitA: sourceDigit, digitB: poolDigit, pairStr: `${sourceDigit}${poolDigit}` });
+      });
+    });
+
+    const pMap = {};
+    formulaSet.forEach(sourceDigit => {
+      let pairsForDigit = generatedPairs.filter(p => p.digitA === sourceDigit).map(p => p.pairStr);
+      let nextFill = (sourceDigit + 1) % 10;
+      while (pairsForDigit.length < 5) {
+        if (nextFill !== sourceDigit && !pairsForDigit.includes(`${sourceDigit}${nextFill}`) && !excludedDigits.includes(nextFill)) {
+          pairsForDigit.push(`${sourceDigit}${nextFill}`);
+        }
+        nextFill = (nextFill + 1) % 10;
+      }
+
+      pairsForDigit = [...new Set(pairsForDigit)].filter(p => p[0] !== p[1]).sort();
+      if (pairsForDigit.length > 5) pairsForDigit = pairsForDigit.slice(0, 5);
+      pMap[sourceDigit] = pairsForDigit;
+    });
 
     let rawM1 = (T_top + T_bot) % 10;
     let rawM2 = sumTop % 10;
     let rawM3 = (H + T_bot) % 10;
     let rawM4 = (U_top + U_bot) % 10;
     let rawM5 = (10 - U_bot) % 10;
+
+    const getUnitDirect = (v) => {
+      const str = String(v);
+      const lastChar = str.slice(-1);
+      const first = parseInt(lastChar, 10);
+      return [first, (first + 1) % 10];
+    };
 
     const fList = [
       { id: 1, name: "AI โมเดล 01", subName: "B + R1 -> Dynamic Unit Core", set: getUnitDirect(rawM1), positionalWeight: 1.0 },
@@ -894,65 +941,12 @@ const _app = {
     });
 
     const evaluated = fList.map((item) => {
-      const formulaSet = item.set;
-      let rawRange = [];
-      let hasCollision = false;
-
-      for (let offset = -2; offset <= 2; offset++) {
-        const val = this._normalize(anchor + offset);
-        if (formulaSet.includes(val)) {
-          hasCollision = true;
-          break;
-        }
-      }
-
-      if (hasCollision) {
-        for (let offset = -3; offset <= 3; offset++) {
-          rawRange.push(this._normalize(anchor + offset));
-        }
-      } else {
-        for (let offset = -2; offset <= 2; offset++) {
-          rawRange.push(this._normalize(anchor + offset));
-        }
-      }
-
-      const excludedDigits = [...new Set(formulaSet)];
-      let cleanedPool = rawRange.filter(dg => !excludedDigits.includes(dg));
-      const generatedPairs = [];
-      const rejectedPairs = [];
-
-      formulaSet.forEach(sourceDigit => {
-        cleanedPool.forEach(poolDigit => {
-          if (sourceDigit === poolDigit) {
-            rejectedPairs.push(`${sourceDigit}${poolDigit} (self-match)`);
-            return;
-          }
-          generatedPairs.push({ digitA: sourceDigit, digitB: poolDigit, pairStr: `${sourceDigit}${poolDigit}` });
-        });
-      });
-
-      const pMap = {};
-      formulaSet.forEach(sourceDigit => {
-        let pairsForDigit = generatedPairs.filter(p => p.digitA === sourceDigit).map(p => p.pairStr);
-        let nextFill = (sourceDigit + 1) % 10;
-        while (pairsForDigit.length < 5) {
-          if (nextFill !== sourceDigit && !pairsForDigit.includes(`${sourceDigit}${nextFill}`) && !excludedDigits.includes(nextFill)) {
-            pairsForDigit.push(`${sourceDigit}${nextFill}`);
-          }
-          nextFill = (nextFill + 1) % 10;
-        }
-
-        pairsForDigit = [...new Set(pairsForDigit)].filter(p => p[0] !== p[1]).sort();
-        if (pairsForDigit.length > 5) pairsForDigit = pairsForDigit.slice(0, 5);
-        pMap[sourceDigit] = pairsForDigit;
-      });
-
       return {
         id: item.id,
         name: item.name,
         subName: item.subName,
         positionalWeight: item.positionalWeight,
-        set: item.set,
+        set: formulaSet,
         pairsMap: pMap
       };
     });
@@ -982,12 +976,14 @@ const _app = {
       digitScores[d].formula100Score = (matchCount / maxFormCount); 
     }
 
-    const X_val = (T_bot + U_bot) % 10;
-    const radar1Range = [(X_val - 1 + 10) % 10, X_val, (X_val + 1) % 10];
-    const Y_val = (H + T_top + U_top) % 10;
-    const radar2Range = [(Y_val - 1 + 10) % 10, Y_val, (Y_val + 1) % 10];
-    const Z_val = (H + T_top + U_top + T_bot + U_bot) % 10;
-    const radar3Range = [(Z_val - 1 + 10) % 10, Z_val, (Z_val + 1) % 10];
+    const X = (T_bot + U_bot) % 10;
+    const radar1Range = [(X - 1 + 10) % 10, X, (X + 1) % 10];
+
+    const Y = (H + T_top + U_top) % 10;
+    const radar2Range = [(Y - 1 + 10) % 10, Y, (Y + 1) % 10];
+
+    const Z = (H + T_top + U_top + T_bot + U_bot) % 10;
+    const radar3Range = [(Z - 1 + 10) % 10, Z, (Z + 1) % 10];
 
     for (let d = 0; d <= 9; d++) {
       let rHits = 0;
@@ -1033,17 +1029,12 @@ const _app = {
     const matrixSortedAll = Object.values(digitScores)
       .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
 
-    // ==========================================
-    // [STRICT AUDITED RULE: ห้ามเลขใกล้กันเกิน +1 หรือ -1]
-    // ==========================================
     let primaryDigitObj = matrixSortedAll[0];
     let secondaryDigitObj = null;
 
-    // ค้นหาเลขตัวที่สองจากตารางที่คะแนนสูงสุด แต่ต้องมีระยะห่างมากกว่า 1 แต้ม (ไม่ติดกันและไม่ซ้ำกัน)
     for (let i = 1; i < matrixSortedAll.length; i++) {
       const candidate = matrixSortedAll[i];
       const diff = Math.abs(candidate.digit - primaryDigitObj.digit);
-      // เช็คระยะห่างเชิงวงกลมฐาน 10 ด้วย เช่น 0 กับ 9 ถือว่าติดกัน (ห่างกัน 1 หรือ 9 ซึ่งเทียบเท่าใกล้กัน)
       const circularDiff = Math.min(diff, 10 - diff);
       
       if (circularDiff > 1) {
@@ -1052,7 +1043,6 @@ const _app = {
       }
     }
 
-    // หากกรณีหาไม่ได้ ให้เลือกตัวถัดไปที่ลดหย่อนระยะห่างที่สุดเท่าที่จะทำได้
     if (!secondaryDigitObj) {
       secondaryDigitObj = matrixSortedAll[1];
     }
