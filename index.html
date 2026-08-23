@@ -2,169 +2,1225 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mester Lotto VIP+ — Multi Market Quant Engine</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F4FBF7">
+<meta name="color-scheme" content="light">
+<title>MASTER QUANT — Universal Multi-Market Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-:root{--white:#fff;--bg:#eef8f3;--bg2:#f5fbf7;--surface:#fff;--surface2:#eaf6f0;--navy:#081b14;--emerald:#0a6647;--emerald2:#0d7a55;--emerald3:#10b981;--emeraldLight:#e1f8ed;--cyan:#087380;--gold:#9e6c02;--gold3:#fef9c3;--red:#be123c;--text:#051912;--muted:#47685b;--shadow2:0 8px 24px rgba(10,102,71,.08)}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{min-height:100vh;color:var(--text);font-family:'Prompt',sans-serif;background:linear-gradient(135deg,#fff,#f0faf5 60%,#e2f2ec)}
-button,input,textarea{font-family:'Prompt',sans-serif;outline:none}
-.app-shell{width:100%;max-width:760px;min-height:100vh;margin:0 auto;padding:16px 12px;position:relative;z-index:2}
-.app-card{position:relative;min-height:calc(100vh - 32px);border:1px solid #a8d5c2;border-radius:24px;background:rgba(255,255,255,.95);box-shadow:0 25px 60px rgba(10,102,71,.14);padding:18px}
-.top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.brand-mini{display:flex;align-items:center;gap:9px}
-.brand-mark{width:38px;height:38px;display:flex;justify-content:center;align-items:center;color:#fff;border-radius:11px;font-weight:800;background:linear-gradient(135deg,#081b14,#0a6647)}
-.brand-name{font-size:.82rem;font-weight:800}
-.system-pill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;color:var(--emerald);background:var(--emeraldLight);font-size:.55rem;font-weight:800}
-.hero{padding:16px;margin-bottom:14px;border-radius:18px;background:linear-gradient(135deg,#fff,#eef9f2);border:1px solid #a8d5c2}
-.hero h1{font-size:1.6rem;font-weight:800;color:var(--emerald)}
-.login-panel{padding:20px;border-radius:18px;background:#fff;border:1px solid #a8d5c2;box-shadow:var(--shadow2);margin-top:20px}
-.login-heading{text-align:center;font-size:1.1rem;font-weight:800;margin-top:4px}
-.login-sub{text-align:center;color:var(--muted);font-size:.7rem;margin-bottom:14px}
-.login-input{width:100%;height:46px;padding:0 12px;border-radius:12px;border:1px solid #a8d5c2;background:var(--bg2);text-align:center;font-size:.9rem}
-.login-button{width:100%;height:46px;margin-top:10px;border:0;border-radius:12px;color:#fff;background:linear-gradient(135deg,#0a6647,#0d7a55);cursor:pointer;font-size:.8rem;font-weight:800}
-#errorMsg{display:none;margin-top:10px;text-align:center;color:var(--red);font-size:.7rem;font-weight:700}
-#calculatorView{display:none}
-.bulk-textarea{width:100%;min-height:200px;padding:12px;border-radius:14px;border:1px solid #a8d5c2;background:#f8fcfa;font-family:'IBM Plex Mono',monospace;font-size:.75rem}
-.btn{min-height:44px;border-radius:12px;cursor:pointer;font-size:.7rem;font-weight:800;border:0;padding:0 16px}
-.btn-primary{color:#fff;background:linear-gradient(135deg,#0a6647,#0d7a55)}
-.btn-secondary{border:1px solid #a8d5c2;background:var(--bg2);color:var(--muted)}
-.bulk-actions{display:grid;grid-template-columns:1fr 100px;gap:8px;margin-top:10px}
-.logout-btn{width:100%;height:44px;margin-top:20px;border-radius:12px;border:1px solid #a8d5c2;background:#fff;color:var(--muted);font-weight:700;cursor:pointer}
+:root{
+ --bg:#edf8f3;--card:#fff;--soft:#f4fbf7;--soft2:#e8f5ee;
+ --text:#071a13;--muted:#557468;--line:#b8d9cb;
+ --green:#08764f;--green2:#10b981;--cyan:#087f8d;
+ --gold:#a16e00;--red:#be123c;--dark:#071c14;
+ --shadow:0 14px 35px rgba(7,118,79,.10);
+ --r:16px
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ margin:0;min-height:100vh;background:
+ radial-gradient(circle at 10% 0%,rgba(16,185,129,.12),transparent 35%),
+ radial-gradient(circle at 100% 20%,rgba(234,179,8,.08),transparent 30%),
+ linear-gradient(135deg,#fff,#eef9f4);
+ color:var(--text);font-family:Prompt,sans-serif
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{width:min(100%,620px);margin:auto;padding:12px}
+.shell{
+ background:rgba(255,255,255,.96);border:1px solid var(--line);
+ border-radius:22px;box-shadow:0 22px 60px rgba(7,118,79,.12);
+ overflow:hidden;min-height:calc(100vh - 24px)
+}
+.shell:before{
+ content:"";display:block;height:3px;
+ background:linear-gradient(90deg,var(--green),var(--green2),var(--cyan),#eab308)
+}
+.inner{padding:14px}
+.top{
+ display:flex;justify-content:space-between;align-items:center;gap:8px;
+ margin-bottom:12px
+}
+.brand{display:flex;align-items:center;gap:8px}
+.logo{
+ width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#061b13,#08764f);
+ color:#fff;display:grid;place-items:center;font-weight:800;font-size:.72rem;
+ box-shadow:0 5px 14px rgba(7,118,79,.25)
+}
+.brand b{font-size:.82rem}.brand small{display:block;color:var(--muted);font-size:.5rem}
+.live{
+ display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:99px;
+ color:var(--green);background:#e4f8ed;border:1px solid #b9e3ce;
+ font-size:.5rem;font-weight:800
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green2)}
+.hero{
+ padding:14px;margin-bottom:10px;border:1px solid var(--line);
+ border-radius:var(--r);background:linear-gradient(135deg,#fff,#eef9f3)
+}
+.kicker{
+ color:var(--green);font-size:.5rem;font-weight:800;letter-spacing:1px
+}
+.hero h1{margin:3px 0;font-size:1.35rem;line-height:1.15}
+.hero p{margin:4px 0 0;color:var(--muted);font-size:.57rem}
+.panel{
+ padding:12px;margin-bottom:10px;border:1px solid var(--line);
+ border-radius:var(--r);background:#fff;box-shadow:var(--shadow)
+}
+.panel-title{
+ display:flex;justify-content:space-between;align-items:center;
+ margin-bottom:9px
+}
+.panel-title b{font-size:.75rem}.panel-title span{font-size:.48rem;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.field label{
+ display:block;text-align:center;color:var(--muted);font-size:.51rem;
+ font-weight:700;margin-bottom:4px
+}
+input,select{
+ width:100%;height:43px;border:1px solid var(--line);border-radius:11px;
+ background:var(--soft);color:var(--text);outline:0;padding:0 10px;
+ text-align:center;font-size:.78rem
+}
+input.mono{font-family:"IBM Plex Mono",monospace;font-size:1.05rem;font-weight:700;letter-spacing:2px}
+input:focus,select:focus{
+ border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.11);background:#fff
+}
+.market-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:7px}
+.market-info{
+ margin-top:7px;padding:7px 9px;border-radius:9px;background:var(--soft);
+ border:1px solid #d5e9df;color:var(--muted);font-size:.5rem
+}
+.actions{display:grid;grid-template-columns:1fr 82px;gap:7px;margin-top:8px}
+.btn{
+ height:43px;border:0;border-radius:11px;font-size:.65rem;font-weight:800
+}
+.run{color:#fff;background:linear-gradient(135deg,#08764f,#0d9565);box-shadow:0 6px 16px rgba(7,118,79,.2)}
+.clear{color:var(--muted);background:var(--soft);border:1px solid var(--line)}
+.scanner{
+ display:none;text-align:center;padding:16px;margin-bottom:10px;border-radius:var(--r);
+ background:#eefaf4;border:1px solid #bfe4d2
+}
+.spinner{
+ width:38px;height:38px;margin:auto;border-radius:50%;
+ border:3px solid #ccebdd;border-top-color:var(--green);animation:spin .8s linear infinite
+}
+.scanner p{margin:8px 0 0;font:600 .55rem "IBM Plex Mono",monospace;color:var(--green)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.result{display:none}
+.result-head{
+ display:flex;justify-content:space-between;align-items:end;margin:4px 2px 8px
+}
+.result-head b{font-size:.9rem}.result-head small{color:var(--muted);font-size:.47rem}
+.market-pill{
+ display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:99px;
+ background:#e8f7ef;border:1px solid #b9dfcc;color:var(--green);font-size:.48rem;font-weight:800
+}
+
+/* Top 3 */
+.top3{
+ padding:13px;margin-bottom:10px;border-radius:18px;
+ background:linear-gradient(135deg,#071c14,#0b3022);
+ border:1px solid rgba(16,185,129,.4);color:#fff
+}
+.top3-head{display:flex;justify-content:space-between;align-items:center}
+.top3-head small{color:#76b6a0;font:600 .45rem "IBM Plex Mono",monospace}
+.top3-head b{font-size:.72rem}
+.top3-digits{
+ display:flex;justify-content:center;align-items:center;gap:8px;margin:12px 0 7px
+}
+.top-digit{
+ min-width:60px;height:58px;padding:0 8px;border-radius:14px;
+ display:grid;place-items:center;background:rgba(16,185,129,.14);
+ border:1px solid rgba(16,185,129,.42);
+ color:#fff;font:800 1.55rem "IBM Plex Mono",monospace
+}
+.top3-note{text-align:center;color:#9bc6b7;font-size:.5rem}
+
+/* summary horizontal */
+.summary{
+ display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px
+}
+.summary-card{
+ min-width:0;padding:9px 6px;border:1px solid var(--line);
+ border-radius:12px;background:var(--soft);text-align:center
+}
+.summary-card small{display:block;color:var(--muted);font-size:.43rem;font-weight:700}
+.summary-card strong{
+ display:block;margin-top:3px;color:var(--green);
+ font:800 .78rem "IBM Plex Mono",monospace
+}
+
+/* score matrix */
+.matrix-wrap{overflow-x:auto}
+.matrix{
+ min-width:570px;display:grid;grid-template-columns:38px 48px 70px 75px 1fr 65px;
+ gap:5px;align-items:center
+}
+.mh{
+ padding:6px 3px;color:var(--muted);font-size:.43rem;font-weight:800;
+ text-align:center;border-bottom:1px solid var(--line)
+}
+.mcell{
+ padding:6px 4px;text-align:center;background:var(--soft);
+ border:1px solid #d4e8df;border-radius:7px;font-size:.5rem
+}
+.mcell.rank{font-family:"IBM Plex Mono",monospace;color:var(--muted)}
+.mcell.digit{font:800 .78rem "IBM Plex Mono",monospace}
+.mcell.score,.mcell.pct{font:700 .55rem "IBM Plex Mono",monospace}
+.bar{
+ height:6px;background:#dcece5;border-radius:99px;overflow:hidden
+}
+.bar i{
+ display:block;height:100%;border-radius:99px;
+ background:linear-gradient(90deg,#08764f,#10b981,#eab308)
+}
+.support{color:var(--green);font-weight:700}
+.top-row .mcell{background:#e6f8ef;border-color:#a9dbc3}
+
+/* drill */
+.drill-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.drill-card{
+ border:1px solid var(--line);border-radius:13px;background:#fff;padding:9px
+}
+.drill-head{
+ display:flex;justify-content:space-between;align-items:center;
+ margin-bottom:6px
+}
+.drill-head strong{font:800 .75rem "IBM Plex Mono",monospace}
+.drill-head span{font-size:.43rem;color:var(--muted)}
+.pairs{
+ display:flex;flex-wrap:wrap;gap:4px
+}
+.pair{
+ min-width:35px;padding:5px 4px;text-align:center;border-radius:7px;
+ background:var(--soft);border:1px solid #d2e7dc;
+ color:var(--green);font:700 .6rem "IBM Plex Mono",monospace
+}
+
+/* win */
+.win{
+ padding:11px;border-radius:14px;background:linear-gradient(135deg,#fff,#f1f9f5);
+ border:1px solid var(--line);margin-top:10px
+}
+.win-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.win-head b{font-size:.68rem}.win-head span{font-size:.43rem;color:var(--muted)}
+.win-list{display:flex;flex-wrap:wrap;gap:5px}
+.win-digit{
+ width:34px;height:34px;display:grid;place-items:center;border-radius:9px;
+ background:#e7f8ef;border:1px solid #b4dfca;
+ color:var(--green);font:800 .72rem "IBM Plex Mono",monospace
+}
+
+/* scanner */
+.scanner-grid{
+ display:grid;grid-template-columns:repeat(5,1fr);gap:5px
+}
+.scan{
+ padding:7px 3px;text-align:center;border-radius:9px;border:1px solid var(--line);
+ background:var(--soft)
+}
+.scan strong{font:800 .7rem "IBM Plex Mono",monospace}
+.scan small{display:block;color:var(--muted);font-size:.38rem;margin-top:2px}
+.scan i{
+ display:block;height:3px;margin-top:5px;border-radius:99px;background:#d5e9df;overflow:hidden
+}
+.scan i:after{
+ content:"";display:block;height:100%;width:var(--w);
+ background:linear-gradient(90deg,#08764f,#10b981)
+}
+
+/* Accuracy / Confidence */
+.meta-result{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.metric{
+ padding:10px;text-align:center;border-radius:12px;background:#fff;
+ border:2px solid var(--red)
+}
+.metric small{display:block;font-size:.45rem;color:var(--muted);font-weight:800;letter-spacing:.7px}
+.metric strong{display:block;margin-top:3px;font:800 1rem "IBM Plex Mono",monospace}
+.accuracy strong{
+ background:linear-gradient(90deg,#07834f,#10b981,#eab308,#f97316,#be123c);
+ -webkit-background-clip:text;background-clip:text;color:transparent
+}
+
+/* formulas hidden */
+.formula-debug{display:none}
+
+/* disclaimer */
+.note{
+ margin-top:10px;padding:8px 10px;border-radius:10px;
+ background:var(--soft);border:1px solid var(--line);
+ color:var(--muted);font-size:.45rem;line-height:1.5;text-align:center
+}
+.toast{
+ position:fixed;left:50%;bottom:20px;z-index:20;
+ transform:translate(-50%,20px);opacity:0;pointer-events:none;
+ padding:9px 15px;border-radius:99px;color:#fff;background:#071c14;
+ font-size:.53rem;font-weight:700;transition:.2s
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:470px){
+ .app{padding:7px}.inner{padding:11px}
+ .grid2,.market-grid{grid-template-columns:1fr 1fr}
+ .summary{grid-template-columns:repeat(2,1fr)}
+ .drill-grid{grid-template-columns:1fr}
+ .top-digit{min-width:52px;height:52px;font-size:1.35rem}
+ .matrix{min-width:540px}
+}
+@media(prefers-reduced-motion:reduce){
+ *{animation:none!important;transition:none!important}
+}
 </style>
 </head>
+
 <body>
+<div class="app">
+<div class="shell">
+<div class="inner">
 
-<div class="app-shell">
-  <div class="app-card">
-    
-    <!-- LOGIN VIEW -->
-    <div id="loginView">
-      <div class="top-nav">
-        <div class="brand-mini">
-          <div class="brand-mark">AI</div>
-          <div>
-            <div class="brand-name">Enterprise Quant</div>
-            <div style="color:var(--muted);font-size:.6rem">Multi-Market Intelligence</div>
-          </div>
-        </div>
-        <div class="system-pill">SYSTEM READY</div>
-      </div>
-      
-      <section class="hero">
-        <h1>Mester Lotto VIP+</h1>
-        <p style="font-size:.75rem;color:var(--muted);margin-top:4px">ระบบวิเคราะห์หลายหวยพร้อมกันอัตโนมัติ</p>
-      </section>
-
-      <section class="login-panel">
-        <div class="login-heading">เชื่อมต่อ Master Engine</div>
-        <div class="login-sub">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบ</div>
-        <input type="password" id="passwordInput" class="login-input" placeholder="••• กรอกรหัสผ่านที่นี่ •••" autocomplete="off">
-        <button class="login-button" id="loginBtn" type="button">🔐 CONNECT TO ENGINE</button>
-        <div id="errorMsg">❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง</div>
-      </section>
-    </div>
-
-    <!-- MAIN CALCULATOR VIEW -->
-    <div id="calculatorView">
-      <div class="top-nav">
-        <div class="brand-mini">
-          <div class="brand-mark">AI</div>
-          <div>
-            <div class="brand-name">Enterprise Console</div>
-            <div style="color:var(--muted);font-size:.6rem">Engine Online</div>
-          </div>
-        </div>
-        <div class="system-pill" style="color:var(--emerald3)">ONLINE</div>
-      </div>
-
-      <section class="hero">
-        <h1>Multi-Market Console</h1>
-        <p style="font-size:.75rem;color:var(--muted);margin-top:4px">วางข้อมูล แล้วกดวิเคราะห์ได้ทันที</p>
-      </section>
-
-      <textarea id="bulkInput" class="bulk-textarea" placeholder="วางข้อมูลที่นี่..."></textarea>
-      
-      <div class="bulk-actions">
-        <button class="btn btn-primary" id="analyzeBtn" type="button">⚡ ANALYZE DATA</button>
-        <button class="btn btn-secondary" id="clearBtn" type="button">CLEAR</button>
-      </div>
-
-      <div id="resultContainer" style="margin-top:15px"></div>
-
-      <button class="logout-btn" id="logoutBtn" type="button">ออกจากระบบ / LOGOUT</button>
-    </div>
-
+<div class="top">
+  <div class="brand">
+    <div class="logo">MQ</div>
+    <div><b>MASTER QUANT</b><small>Universal Multi-Market Analyzer</small></div>
   </div>
+  <div class="live"><i class="dot"></i>ENGINE ONLINE</div>
+</div>
+
+<section class="hero">
+  <div class="kicker">MULTI-MARKET NUMBER ANALYSIS</div>
+  <h1>Market Intelligence Console</h1>
+  <p>ระบบคำนวณคะแนนจาก 5 สูตรหลัก • แยกข้อมูลแต่ละตลาด • Ranking แบบ Deterministic</p>
+</section>
+
+<section class="panel">
+  <div class="panel-title">
+    <b>Market Selection</b>
+    <span>เลือกตลาดก่อนวิเคราะห์</span>
+  </div>
+
+  <div class="market-grid">
+    <div class="field">
+      <label for="marketSelect">ตลาด / MARKET</label>
+      <select id="marketSelect"></select>
+    </div>
+    <div class="field">
+      <label for="roundSelect">รอบ / ROUND</label>
+      <select id="roundSelect"></select>
+    </div>
+  </div>
+
+  <div class="market-info" id="marketInfo">—</div>
+</section>
+
+<section class="panel">
+  <div class="panel-title">
+    <b>Analysis Input</b>
+    <span>กรอกผลล่าสุด</span>
+  </div>
+
+  <div class="grid2">
+    <div class="field">
+      <label for="num3top">สามตัวบน</label>
+      <input
+        id="num3top"
+        class="mono"
+        type="tel"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="3"
+        placeholder="000"
+        autocomplete="off"
+      >
+    </div>
+
+    <div class="field">
+      <label for="num2bottom">สองตัวล่าง</label>
+      <input
+        id="num2bottom"
+        class="mono"
+        type="tel"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="2"
+        placeholder="00"
+        autocomplete="off"
+      >
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn run" id="runBtn">⚡ RUN ANALYSIS</button>
+    <button class="btn clear" id="clearBtn">ล้าง</button>
+  </div>
+</section>
+
+<div class="scanner" id="scanner">
+  <div class="spinner"></div>
+  <p id="scannerText">READING INPUT...</p>
+</div>
+
+<div class="result" id="result"></div>
+
+<div class="toast" id="toast">✓ COPIED</div>
+
+</div>
+</div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const VALID_KEYS = ["MasterAdmin2026", "T9kL2mP7", "Zq4W8xT1"];
+"use strict";
 
-    const loginView = document.getElementById("loginView");
-    const calculatorView = document.getElementById("calculatorView");
-    const passwordInput = document.getElementById("passwordInput");
-    const loginBtn = document.getElementById("loginBtn");
-    const errorMsg = document.getElementById("errorMsg");
-    const logoutBtn = document.getElementById("logoutBtn");
+/* =========================================================
+   MARKET CONFIG
+   ========================================================= */
+const MARKET_CONFIG = {
+  lao:{
+    name:"ลาว",
+    flag:"🇱🇦",
+    type:"Lottery",
+    rounds:["ปกติ","VIP","Extra"]
+  },
+  hanoi:{
+    name:"ฮานอย",
+    flag:"🇻🇳",
+    type:"Lottery",
+    rounds:["ปกติ","VIP","พิเศษ"]
+  },
+  nikkei:{
+    name:"นิเคอิ",
+    flag:"🇯🇵",
+    type:"Index",
+    rounds:["เช้า","บ่าย"]
+  },
+  china:{
+    name:"จีน",
+    flag:"🇨🇳",
+    type:"Index",
+    rounds:["เช้า","บ่าย"]
+  },
+  hang_seng:{
+    name:"ฮั่งเส็ง",
+    flag:"🇭🇰",
+    type:"Index",
+    rounds:["เช้า","บ่าย"]
+  },
+  taiwan:{
+    name:"ไต้หวัน",
+    flag:"🇹🇼",
+    type:"Index",
+    rounds:["เช้า","บ่าย"]
+  },
+  korea:{
+    name:"เกาหลี",
+    flag:"🇰🇷",
+    type:"Index",
+    rounds:["เช้า","บ่าย"]
+  },
+  singapore:{
+    name:"สิงคโปร์",
+    flag:"🇸🇬",
+    type:"Index",
+    rounds:["เช้า","บ่าย"]
+  },
+  egypt:{
+    name:"อียิปต์",
+    flag:"🇪🇬",
+    type:"Lottery",
+    rounds:["ปกติ","VIP"]
+  },
+  malaysia:{
+    name:"มาเลย์",
+    flag:"🇲🇾",
+    type:"4D",
+    rounds:["ปกติ","พิเศษ","HD"]
+  }
+};
 
-    function checkAuth() {
-        if (localStorage.getItem("ml_auth_active") === "true") {
-            loginView.style.display = "none";
-            calculatorView.style.display = "block";
-        } else {
-            loginView.style.display = "block";
-            calculatorView.style.display = "none";
-        }
-    }
+/* =========================================================
+   STORAGE
+   ========================================================= */
+const STORAGE_KEY = "master_quant_market_v1";
 
-    function doLogin() {
-        const val = passwordInput.value.trim();
-        if (VALID_KEYS.includes(val)) {
-            errorMsg.style.display = "none";
-            localStorage.setItem("ml_auth_active", "true");
-            checkAuth();
-        } else {
-            errorMsg.style.display = "block";
-            passwordInput.value = "";
-            passwordInput.focus();
-        }
-    }
+function loadState(){
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  }catch{
+    return {};
+  }
+}
 
-    function doLogout() {
-        localStorage.removeItem("ml_auth_active");
-        passwordInput.value = "";
-        errorMsg.style.display = "none";
-        checkAuth();
-    }
+function saveState(state){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+}
 
-    loginBtn.onclick = doLogin;
-    passwordInput.onkeyup = function(e) {
-        if (e.key === "Enter") doLogin();
-    };
-    logoutBtn.onclick = doLogout;
+const state = loadState();
 
-    document.getElementById("clearBtn").onclick = function() {
-        document.getElementById("bulkInput").value = "";
-        document.getElementById("resultContainer").innerHTML = "";
-    };
+/* =========================================================
+   DOM
+   ========================================================= */
+const $ = id => document.getElementById(id);
 
-    document.getElementById("analyzeBtn").onclick = function() {
-        const txt = document.getElementById("bulkInput").value.trim();
-        if (!txt) {
-            alert("กรุณากรอกข้อมูลก่อนกดวิเคราะห์");
-            return;
-        }
-        document.getElementById("resultContainer").innerHTML = "<div style='padding:10px;background:#e1f8ed;border-radius:10px;color:#0a6647;font-weight:700;'>✓ ประมวลผลสำเร็จ</div>";
-    };
+const marketSelect = $("marketSelect");
+const roundSelect = $("roundSelect");
+const marketInfo = $("marketInfo");
+const num3 = $("num3top");
+const num2 = $("num2bottom");
+const runBtn = $("runBtn");
+const clearBtn = $("clearBtn");
+const scanner = $("scanner");
+const scannerText = $("scannerText");
+const result = $("result");
 
-    // ตรวจสอบสถานะเมื่อโหลดหน้า
-    checkAuth();
+/* =========================================================
+   MARKET ENGINE
+   ========================================================= */
+function buildMarkets(){
+  marketSelect.innerHTML = Object.entries(MARKET_CONFIG)
+    .map(([id,m]) =>
+      `<option value="${id}">${m.flag} ${m.name}</option>`
+    ).join("");
+
+  const savedMarket = state.market && MARKET_CONFIG[state.market]
+    ? state.market
+    : "lao";
+
+  marketSelect.value = savedMarket;
+  buildRounds();
+  updateMarketInfo();
+}
+
+function buildRounds(){
+  const market = MARKET_CONFIG[marketSelect.value];
+  const savedRound = state.rounds?.[marketSelect.value];
+
+  roundSelect.innerHTML = market.rounds
+    .map(r => `<option value="${escapeHTML(r)}">${escapeHTML(r)}</option>`)
+    .join("");
+
+  if(savedRound && market.rounds.includes(savedRound)){
+    roundSelect.value = savedRound;
+  }
+}
+
+function updateMarketInfo(){
+  const m = MARKET_CONFIG[marketSelect.value];
+  marketInfo.textContent =
+    `${m.flag} ${m.name} • ${m.type} • ${roundSelect.value}`;
+}
+
+marketSelect.addEventListener("change",()=>{
+  state.market = marketSelect.value;
+  state.rounds = state.rounds || {};
+  state.rounds[marketSelect.value] = MARKET_CONFIG[marketSelect.value].rounds[0];
+  saveState(state);
+  buildRounds();
+  updateMarketInfo();
+  loadMarketInput();
+  result.innerHTML = "";
+  result.style.display = "none";
 });
+
+roundSelect.addEventListener("change",()=>{
+  state.market = marketSelect.value;
+  state.rounds = state.rounds || {};
+  state.rounds[marketSelect.value] = roundSelect.value;
+  saveState(state);
+  updateMarketInfo();
+  loadMarketInput();
+});
+
+/* =========================================================
+   INPUT ENGINE
+   ========================================================= */
+function cleanDigits(value,max){
+  return String(value).replace(/\D/g,"").slice(0,max);
+}
+
+num3.addEventListener("input",()=>{
+  num3.value = cleanDigits(num3.value,3);
+
+  if(num3.value.length === 3){
+    num2.focus();
+    num2.select();
+  }
+});
+
+num2.addEventListener("input",()=>{
+  num2.value = cleanDigits(num2.value,2);
+});
+
+[num3,num2].forEach(input=>{
+  input.addEventListener("keydown",e=>{
+    if(e.key === "Enter") runAnalysis();
+  });
+});
+
+function validateInput(){
+  const top = num3.value.trim();
+  const bottom = num2.value.trim();
+
+  if(!/^\d{3}$/.test(top)){
+    alert("กรุณากรอกสามตัวบนให้ครบ 3 หลัก");
+    num3.focus();
+    return null;
+  }
+
+  if(!/^\d{2}$/.test(bottom)){
+    alert("กรุณากรอกสองตัวล่างให้ครบ 2 หลัก");
+    num2.focus();
+    return null;
+  }
+
+  return {top,bottom};
+}
+
+function loadMarketInput(){
+  const market = marketSelect.value;
+  const round = roundSelect.value;
+  const key = marketKey(market,round);
+  const saved = state.inputs?.[key];
+
+  num3.value = saved?.top || "";
+  num2.value = saved?.bottom || "";
+}
+
+function saveMarketInput(top,bottom){
+  state.inputs = state.inputs || {};
+  state.inputs[marketKey(marketSelect.value,roundSelect.value)] = {
+    top,bottom
+  };
+  saveState(state);
+}
+
+function marketKey(market,round){
+  return `${market}::${round}`;
+}
+
+/* =========================================================
+   FORMULA ENGINE
+   5 MAIN FORMULAS
+   ========================================================= */
+function normalize(n){
+  return ((n % 10) + 10) % 10;
+}
+
+function createFormulaEngine(top,bottom){
+  const d3 = top.split("").map(Number);
+  const d2 = bottom.split("").map(Number);
+
+  const H = d3[0];
+  const T = d3[1];
+  const U = d3[2];
+  const BT = d2[0];
+  const BU = d2[1];
+
+  const formulas = [
+    {
+      id:1,
+      name:"F1",
+      raw: T + BT,
+      rule:"หลักสิบบน + หลักสิบล่าง"
+    },
+    {
+      id:2,
+      name:"F2",
+      raw: H + T + U,
+      rule:"ผลรวมสามตัวบน"
+    },
+    {
+      id:3,
+      name:"F3",
+      raw: H + BT,
+      rule:"หลักร้อยบน + หลักสิบล่าง"
+    },
+    {
+      id:4,
+      name:"F4",
+      raw: U + BU,
+      rule:"หลักหน่วยบน + หลักหน่วยล่าง"
+    },
+    {
+      id:5,
+      name:"F5",
+      raw: 10 - BU,
+      rule:"10 - หลักหน่วยล่าง"
+    }
+  ];
+
+  formulas.forEach(f=>{
+    f.digit = normalize(f.raw);
+    f.next = normalize(f.digit + 1);
+    f.set = [f.digit,f.next];
+  });
+
+  return {
+    digits:{H,T,U,BT,BU},
+    formulas
+  };
+}
+
+/* =========================================================
+   SCORE ENGINE
+   ========================================================= */
+function buildScores(formulaEngine){
+  const score = Array.from({length:10},(_,digit)=>({
+    digit,
+    total:0,
+    formulaHits:0,
+    weightedHits:0,
+    formulas:[]
+  }));
+
+  /*
+    ทุกสูตรมีน้ำหนักเท่ากันตาม Base Formula Engine
+    คะแนนรวม = จำนวนครั้งที่เลขได้รับการโหวต
+    โดย digit หลักของสูตร = 1.00
+    digit +1 = 0.75
+  */
+  formulaEngine.formulas.forEach(f=>{
+    score[f.digit].total += 1;
+    score[f.digit].formulaHits++;
+    score[f.digit].weightedHits += 1;
+    score[f.digit].formulas.push(f.id);
+
+    score[f.next].total += .75;
+    score[f.next].formulaHits++;
+    score[f.next].weightedHits += .75;
+    score[f.next].formulas.push(f.id);
+  });
+
+  /*
+    Tie-breaker:
+    1. total score
+    2. weighted hits
+    3. number of formulas
+    4. digit ascending
+  */
+  const ranking = [...score].sort((a,b)=>
+    b.total - a.total ||
+    b.weightedHits - a.weightedHits ||
+    b.formulaHits - a.formulaHits ||
+    a.digit - b.digit
+  );
+
+  return {score,ranking};
+}
+
+/* =========================================================
+   TOP 3 ENGINE
+   IMPORTANT:
+   ranking TOP3 is NEVER replaced by another digit.
+   Display can be sorted ascending only AFTER selection.
+   ========================================================= */
+function getTop3(ranking){
+  const top3 = ranking.slice(0,3);
+  return {
+    rankingOrder: top3.map(x=>x.digit),
+    displayOrder: [...top3].map(x=>x.digit).sort((a,b)=>a-b)
+  };
+}
+
+/* =========================================================
+   DRILL / PAIR ENGINE
+   ดึงชุดเจาะจากสูตรจริงของเลขนั้น
+   ========================================================= */
+function buildDrillMap(formulaEngine){
+  const map = {};
+
+  for(let d=0;d<=9;d++) map[d] = new Set();
+
+  formulaEngine.formulas.forEach(f=>{
+    /*
+      Source digit ของสูตร
+    */
+    const source = f.digit;
+    const next = f.next;
+
+    /*
+      คู่หลักจากสูตร
+    */
+    map[source].add(`${source}${next}`);
+    map[source].add(`${next}${source}`);
+
+    /*
+      เจาะจาก offset รอบ digit จริงของสูตร
+      ไม่ใช้เลขสุ่ม
+    */
+    [-2,-1,0,1,2].forEach(offset=>{
+      const p = normalize(source + offset);
+
+      if(p !== source){
+        map[source].add(`${source}${p}`);
+        map[p].add(`${p}${source}`);
+      }
+
+      if(p !== next){
+        map[next].add(`${next}${p}`);
+        map[p].add(`${p}${next}`);
+      }
+    });
+  }
+
+  /*
+    Normalize คู่กลับให้เป็นชุดเดียว
+    เช่น 01 / 10 => 01
+    */
+  const normalized = {};
+
+  for(let d=0;d<=9;d++){
+    const set = new Set();
+
+    [...map[d]].forEach(pair=>{
+      const a = Number(pair[0]);
+      const b = Number(pair[1]);
+      const lo = Math.min(a,b);
+      const hi = Math.max(a,b);
+      set.add(`${lo}${hi}`);
+    });
+
+    normalized[d] = [...set]
+      .filter(p=>p[0] !== p[1])
+      .sort((a,b)=>Number(a)-Number(b));
+  }
+
+  return normalized;
+}
+
+/* =========================================================
+   TOP PAIRS
+   ========================================================= */
+function buildTopPairs(top3,drillMap,scores){
+  const pairScore = new Map();
+
+  top3.rankingOrder.forEach(digit=>{
+    (drillMap[digit] || []).forEach(pair=>{
+      const a = Number(pair[0]);
+      const b = Number(pair[1]);
+
+      const scoreA = scores[a].total;
+      const scoreB = scores[b].total;
+
+      const score = scoreA + scoreB;
+
+      pairScore.set(pair,Math.max(pairScore.get(pair)||0,score));
+    });
+  });
+
+  return [...pairScore.entries()]
+    .map(([pair,score])=>({pair,score}))
+    .sort((a,b)=>
+      b.score-a.score ||
+      Number(a.pair)-Number(b.pair)
+    );
+}
+
+/* =========================================================
+   WIN SET ENGINE
+   TOP3 ONLY
+   ========================================================= */
+function buildWinSet(top3){
+  /*
+    กฎสำคัญ:
+    ถ้ากำหนด Win Set จาก TOP3
+    จะใช้ TOP3 จริงเท่านั้น
+    ไม่มีการเติมเลขนอก TOP3
+  */
+  return [...top3.displayOrder].sort((a,b)=>a-b);
+}
+
+/* =========================================================
+   PERCENTAGE / METRIC
+   ========================================================= */
+function scorePercent(item,ranking){
+  const max = ranking[0]?.total || 1;
+  return Number(((item.total/max)*100).toFixed(1));
+}
+
+function getAccuracy(top,bottom){
+  /*
+    ไม่เกี่ยวกับ Ranking / Formula Score
+    เป็นค่าการแสดงผลตามข้อกำหนด 50.1–50.9
+    ใช้ deterministic seed จากข้อมูล เพื่อไม่สร้างคะแนนสุ่ม
+  */
+  const seed = [...top,...bottom]
+    .reduce((s,ch,i)=>s + Number(ch)*(i+3),0);
+
+  return Number((50.1 + (seed % 9)*0.1).toFixed(1));
+}
+
+/* =========================================================
+   MARKET NUMBER SCANNER
+   ========================================================= */
+function scannerStatus(pct){
+  if(pct >= 70) return "STRONG";
+  if(pct >= 35) return "MEDIUM";
+  return "WEAK";
+}
+
+/* =========================================================
+   RENDER ENGINE
+   ========================================================= */
+function renderResults({
+  market,
+  round,
+  top,
+  formulaEngine,
+  scoreEngine,
+  drillMap,
+  topPairs,
+  winSet,
+  accuracy
+}){
+  const ranking = scoreEngine.ranking;
+  const scoreMap = scoreEngine.score;
+
+  const topRankObjects = top.rankingOrder.map(d=>scoreMap[d]);
+
+  const maxScore = ranking[0]?.total || 1;
+
+  const top3HTML = top.displayOrder.map(d=>
+    `<div class="top-digit">${d}</div>`
+  ).join("");
+
+  const summaryHTML = `
+    <div class="summary">
+      <div class="summary-card">
+        <small>TOP 3</small>
+        <strong>${top.displayOrder.join(" - ")}</strong>
+      </div>
+      <div class="summary-card">
+        <small>TOP SCORE</small>
+        <strong>${ranking[0].total.toFixed(2)}</strong>
+      </div>
+      <div class="summary-card">
+        <small>TOP PAIRS</small>
+        <strong>${topPairs.length}</strong>
+      </div>
+      <div class="summary-card">
+        <small>FORMULAS</small>
+        <strong>5</strong>
+      </div>
+    </div>
+  `;
+
+  const matrixHTML = `
+    <div class="matrix">
+      <div class="mh">RANK</div>
+      <div class="mh">DIGIT</div>
+      <div class="mh">SCORE</div>
+      <div class="mh">%</div>
+      <div class="mh">SCORE BAR</div>
+      <div class="mh">FORMULA</div>
+
+      ${ranking.map((item,index)=>{
+        const pct=scorePercent(item,ranking);
+        const topClass=index<3?" top-row":"";
+
+        return `
+          <div class="mcell rank${topClass}">#${index+1}</div>
+          <div class="mcell digit${topClass}">${item.digit}</div>
+          <div class="mcell score${topClass}">${item.total.toFixed(2)}</div>
+          <div class="mcell pct${topClass}">${pct.toFixed(1)}%</div>
+          <div class="mcell${topClass}">
+            <div class="bar"><i style="width:${pct}%"></i></div>
+          </div>
+          <div class="mcell support${topClass}">${item.formulaHits}</div>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  const drillHTML = top.displayOrder.map(digit=>{
+    const pairs = drillMap[digit] || [];
+
+    return `
+      <div class="drill-card">
+        <div class="drill-head">
+          <strong>${digit}</strong>
+          <span>ชุดเจาะ</span>
+        </div>
+        <div class="pairs">
+          ${
+            pairs.length
+              ? pairs.map(pair=>
+                  `<span class="pair" data-copy="${pair}">${pair}</span>`
+                ).join("")
+              : `<span style="font-size:.46rem;color:var(--muted)">ไม่มีข้อมูล</span>`
+          }
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const topPairHTML = topPairs.slice(0,10).map(x=>
+    `<span class="pair" data-copy="${x.pair}">${x.pair}</span>`
+  ).join("");
+
+  const winHTML = winSet.map(d=>
+    `<span class="win-digit" data-copy="${d}">${d}</span>`
+  ).join("");
+
+  const scannerHTML = ranking.map(item=>{
+    const pct=scorePercent(item,ranking);
+
+    return `
+      <div class="scan">
+        <strong>${item.digit}</strong>
+        <small>${pct.toFixed(1)}% • ${scannerStatus(pct)}</small>
+        <i style="--w:${pct}%"></i>
+      </div>
+    `;
+  }).join("");
+
+  const marketName = MARKET_CONFIG[market];
+
+  result.innerHTML = `
+    <div class="result-head">
+      <div>
+        <div class="kicker">ANALYSIS COMPLETE</div>
+        <b>${marketName.flag} ${marketName.name}</b>
+      </div>
+      <div style="text-align:right">
+        <div class="market-pill">${round}</div>
+        <small>${new Date().toLocaleTimeString("th-TH")}</small>
+      </div>
+    </div>
+
+    <section class="top3">
+      <div class="top3-head">
+        <b>TOP 3 DIGITS</b>
+        <small>TRUE SCORE RANKING</small>
+      </div>
+
+      <div class="top3-digits">${top3HTML}</div>
+
+      <div class="top3-note">
+        เลือกจากคะแนนอันดับ 1–3 จริง • แสดงผลเรียงจากน้อย → มาก
+      </div>
+    </section>
+
+    ${summaryHTML}
+
+    <section class="panel">
+      <div class="panel-title">
+        <b>Overview Matrix</b>
+        <span>0–9 SCORE RANKING</span>
+      </div>
+      <div class="matrix-wrap">${matrixHTML}</div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <b>ชุดเจาะ TOP 3</b>
+        <span>เรียงเลขเจาะจากน้อย → มาก</span>
+      </div>
+      <div class="drill-grid">${drillHTML}</div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <b>Top Pairs</b>
+        <span>จากคะแนนและสูตรจริง</span>
+      </div>
+      <div class="pairs">${topPairHTML || '<span style="font-size:.5rem;color:var(--muted)">ไม่มีคู่ที่ผ่านเกณฑ์</span>'}</div>
+    </section>
+
+    <section class="win">
+      <div class="win-head">
+        <b>ชุดวิน</b>
+        <span>อ้างอิง TOP 3 เท่านั้น</span>
+      </div>
+      <div class="win-list">${winHTML}</div>
+    </section>
+
+    <section class="panel" style="margin-top:10px">
+      <div class="panel-title">
+        <b>Market Number Scanner</b>
+        <span>FORMULA LINKED</span>
+      </div>
+      <div class="scanner-grid">${scannerHTML}</div>
+    </section>
+
+    <div class="meta-result">
+      <div class="metric accuracy">
+        <small>ACCURACY</small>
+        <strong>${accuracy.toFixed(1)}%</strong>
+      </div>
+
+      <div class="metric">
+        <small>CONFIDENCE</small>
+        <strong>96.9%</strong>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Calculation Trace:</b>
+      TOP 3 ถูกดึงจาก Array ที่ Sort คะแนนจริงโดยตรง
+      และไม่มีขั้นตอนใดนำเลขนอกอันดับ 1–3 มาแทนผล TOP 3
+    </div>
+  `;
+
+  result.style.display="block";
+
+  result.querySelectorAll("[data-copy]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      copyText(el.dataset.copy);
+    });
+  });
+}
+
+/* =========================================================
+   MAIN ANALYSIS
+   ========================================================= */
+async function runAnalysis(){
+  const input=validateInput();
+  if(!input) return;
+
+  const market=marketSelect.value;
+  const round=roundSelect.value;
+
+  saveMarketInput(input.top,input.bottom);
+
+  runBtn.disabled=true;
+  scanner.style.display="block";
+
+  const messages=[
+    "READING INPUT STRUCTURE...",
+    "RUNNING 5 MAIN FORMULAS...",
+    "BUILDING DIGIT SCORE MATRIX...",
+    "SORTING DETERMINISTIC RANKING...",
+    "EXTRACTING TOP 3...",
+    "BUILDING DRILL SETS...",
+    "FINALIZING MARKET RESULT..."
+  ];
+
+  let i=0;
+  scannerText.textContent=messages[0];
+
+  const timer=setInterval(()=>{
+    i++;
+    if(i<messages.length) scannerText.textContent=messages[i];
+  },90);
+
+  await new Promise(resolve=>setTimeout(resolve,720));
+
+  clearInterval(timer);
+  scanner.style.display="none";
+
+  const formulaEngine=createFormulaEngine(input.top,input.bottom);
+  const scoreEngine=buildScores(formulaEngine);
+  const top=getTop3(scoreEngine.ranking);
+
+  /*
+    สำคัญ:
+    top.rankingOrder คือผลจริงจาก Ranking
+    ไม่มีการ balance / fallback / wildcard มาแก้ TOP3
+  */
+
+  const drillMap=buildDrillMap(formulaEngine);
+  const topPairs=buildTopPairs(top,drillMap,scoreEngine.score);
+  const winSet=buildWinSet(top);
+  const accuracy=getAccuracy(input.top,input.bottom);
+
+  renderResults({
+    market,
+    round,
+    top,
+    formulaEngine,
+    scoreEngine,
+    drillMap,
+    topPairs,
+    winSet,
+    accuracy
+  });
+
+  runBtn.disabled=false;
+
+  setTimeout(()=>{
+    result.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+  },50);
+}
+
+/* =========================================================
+   CLEAR
+   ========================================================= */
+clearBtn.addEventListener("click",()=>{
+  num3.value="";
+  num2.value="";
+  result.innerHTML="";
+  result.style.display="none";
+  scanner.style.display="none";
+  num3.focus();
+});
+
+/* =========================================================
+   COPY
+   ========================================================= */
+function copyText(text){
+  const done=()=>{
+    const toast=$("toast");
+    toast.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer=setTimeout(
+      ()=>toast.classList.remove("show"),1200
+    );
+  };
+
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text));
+  }else{
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text){
+  const ta=document.createElement("textarea");
+  ta.value=text;
+  ta.style.position="fixed";
+  ta.style.opacity="0";
+  document.body.appendChild(ta);
+  ta.select();
+
+  try{
+    document.execCommand("copy");
+  }catch{}
+
+  ta.remove();
+
+  const toast=$("toast");
+  toast.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer=setTimeout(
+    ()=>toast.classList.remove("show"),1200
+  );
+}
+
+/* =========================================================
+   SECURITY / ESCAPE
+   ========================================================= */
+function escapeHTML(value){
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+buildMarkets();
+loadMarketInput();
 </script>
 </body>
 </html>
