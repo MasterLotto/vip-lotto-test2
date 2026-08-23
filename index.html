@@ -833,7 +833,8 @@ const _app = {
       ((H - T_top) + U_bot), ((H - U_top) + T_bot), ((T_top - U_top) + U_bot), ((T_bot - U_bot) + H), ((T_bot - U_bot) + T_top),
       ((T_bot - U_bot) + U_top), (20 - H - T_top), (20 - H - U_top), (20 - T_top - U_top), (20 - T_bot - U_bot),
       (20 - H - T_bot), (20 - H - U_bot), (20 - T_top - T_bot), (20 - T_top - U_bot), (20 - U_top - T_bot),
-      (20 - U_top - U_bot), (20 - H - T_bot), (20 - H - U_bot)
+      (20 - U_top - U_bot), (20 - H - T_bot), (20 - H - U_bot),
+      (H * 3 + U_bot), (T_top * 2 + T_bot), (U_top * 3 + H), (T_bot * 2 + U_top), (U_bot * 2 + T_top)
     ];
 
     const countedDigits = {};
@@ -872,18 +873,7 @@ const _app = {
     const anchor = ((Math.abs(anchorRaw) % 10) + 10) % 10;
 
     let rawRange = [];
-    let hasCollision = false;
-
-    for (let offset = -2; offset <= 2; offset++) {
-      const val = this._normalize(anchor + offset);
-      if (formulaSet.includes(val)) {
-        hasCollision = true;
-        break;
-      }
-    }
-
-    const expansionLimit = hasCollision ? 3 : 2;
-    for (let offset = -expansionLimit; offset <= expansionLimit; offset++) {
+    for (let offset = -3; offset <= 3; offset++) {
       rawRange.push(this._normalize(anchor + offset));
     }
 
@@ -1029,23 +1019,9 @@ const _app = {
     const matrixSortedAll = Object.values(digitScores)
       .sort((a, b) => b.totalScore - a.totalScore || b.digit - a.digit);
 
+    // [แก้ไขจุดบกพร่อง] เลือกเลขเด่นและเลขรองตามคะแนน AI สูงสุดอันดับ 1 และ 2 อย่างอิสระ ไม่จำกัดระยะห่าง
     let primaryDigitObj = matrixSortedAll[0];
-    let secondaryDigitObj = null;
-
-    for (let i = 1; i < matrixSortedAll.length; i++) {
-      const candidate = matrixSortedAll[i];
-      const diff = Math.abs(candidate.digit - primaryDigitObj.digit);
-      const circularDiff = Math.min(diff, 10 - diff);
-      
-      if (circularDiff > 1) {
-        secondaryDigitObj = candidate;
-        break;
-      }
-    }
-
-    if (!secondaryDigitObj) {
-      secondaryDigitObj = matrixSortedAll[1];
-    }
+    let secondaryDigitObj = matrixSortedAll[1];
 
     const d1 = primaryDigitObj.digit;
     const d2_dig = secondaryDigitObj.digit;
@@ -1078,43 +1054,8 @@ const _app = {
     
     const cScore3 = Number((50.1 + Math.random() * 0.8).toFixed(1));
 
-    let top5Digits = matrixSorted.slice(0, 5).map(item => item.digit);
-    let wildcardCandidate = matrixSorted.find(item => 
-      !allowedModelDigits.has(item.digit) && !top5Digits.includes(item.digit)
-    );
-
-    if (!wildcardCandidate) {
-      wildcardCandidate = matrixSorted.find(item => !top5Digits.includes(item.digit));
-    }
-
-    let currentSet = [...top5Digits, wildcardCandidate ? wildcardCandidate.digit : matrixSorted[5].digit];
-
-    const checkBalance = (digits) => {
-      const evenCount = digits.filter(d => d % 2 === 0).length;
-      const oddCount = digits.length - evenCount;
-      const lowCount = digits.filter(d => d >= 0 && d <= 4).length;
-      const highCount = digits.length - lowCount;
-      return { isBalanced: (evenCount >= 2 && oddCount >= 2) && (lowCount >= 2 && highCount >= 2) };
-    };
-
-    if (!checkBalance(currentSet).isBalanced) {
-      const candidatesIndex = [6, 7, 8, 9];
-      let bestSet = [...currentSet];
-      let foundReplacement = false;
-      for (let idx of candidatesIndex) {
-        if (idx < matrixSorted.length) {
-          const testSet = [...currentSet.slice(0, 5), matrixSorted[idx].digit];
-          if (checkBalance(testSet).isBalanced) {
-            bestSet = testSet;
-            foundReplacement = true;
-            break;
-          }
-        }
-      }
-      if (foundReplacement) currentSet = bestSet;
-    }
-
-    const winSet = currentSet.sort((a, b) => a - b);
+    let top6Digits = matrixSorted.slice(0, 6).map(item => item.digit);
+    const winSet = top6Digits.sort((a, b) => a - b);
 
     const combinedAnalysisPool = [...matrixSorted.slice(0, 5).map(i => i.digit), ...winSet];
     const evenCountTotal = combinedAnalysisPool.filter(d => d % 2 === 0).length;
