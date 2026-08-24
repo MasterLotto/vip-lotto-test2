@@ -67,8 +67,8 @@ overflow-x:hidden;
 font-family:'Prompt',sans-serif;
 color:var(--text);
 background:
-radial-gradient(circle at 12% 5%,rgba(16,185,129,.18),transparent 38%),
-radial-gradient(circle at 88% 15%,rgba(234,179,8,.12),transparent 34%),
+radial-gradient(circle at 12% 5%,rgba(16,185,129,.20),transparent 38%),
+radial-gradient(circle at 88% 15%,rgba(234,179,8,.13),transparent 34%),
 linear-gradient(135deg,#fff,#F0FAF5 58%,#E5F3ED);
 }
 
@@ -93,7 +93,7 @@ inset:0;
 width:100%;
 height:100%;
 pointer-events:none;
-z-index:99;
+z-index:3; /* Snow falls over entire UI but stays behind text content inside app-card */
 }
 
 .ambient{
@@ -159,7 +159,7 @@ overflow:hidden;
 min-height:calc(100vh - 24px);
 border:1px solid rgba(10,102,71,.22);
 border-radius:26px;
-background:rgba(255,255,255,.96);
+background:rgba(255,255,255,.95);
 box-shadow:
 0 25px 60px rgba(10,102,71,.13),
 inset 0 1px 0 #fff;
@@ -193,6 +193,8 @@ animation:spectrumFlow 7s ease-in-out infinite;
 }
 
 .app-inner{
+position:relative;
+z-index:4; /* Priority over snow canvas so text stays perfectly clear & unblocked */
 padding:
 clamp(14px,3vw,18px)
 clamp(12px,3vw,16px)
@@ -1234,7 +1236,7 @@ height:32px;
 display:flex;
 align-items:center;
 justify-content:center;
-border-radius:9px;
+border-radius:99px;
 color:#fff;
 background:
 linear-gradient(
@@ -1859,7 +1861,7 @@ height:29px;
 display:flex;
 align-items:center;
 justify-content:center;
-border-radius:8px;
+border-radius:99px;
 color:#5F4300;
 background:
 linear-gradient(
@@ -2076,6 +2078,99 @@ font-size:.35rem;
 color:var(--muted);
 }
 
+
+.ind-win-set{
+border-radius:19px;
+background:
+linear-gradient(135deg,#fff,#F2F9F5);
+}
+
+.ind-win-set{
+padding:10px 12px;
+margin-bottom:9px;
+}
+
+.ind-win-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:7px;
+margin-bottom:7px;
+}
+
+.ind-win-title{
+font-size:.76rem;
+font-weight:800;
+}
+
+.ind-win-title small{
+display:block;
+margin-top:1px;
+color:var(--muted);
+font-size:.41rem;
+font-weight:600;
+letter-spacing:.2px;
+}
+
+.ind-win-badge{
+padding:3px 8px;
+border-radius:99px;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.22);
+font-family:'IBM Plex Mono',monospace;
+font-size:.43rem;
+font-weight:700;
+}
+
+.ind-win-grid{
+display:grid;
+grid-template-columns:repeat(6,1fr);
+gap:4px;
+}
+
+.ind-win-item{
+position:relative;
+overflow:hidden;
+padding:7px 2px;
+text-align:center;
+border-radius:10px;
+background:
+linear-gradient(
+135deg,
+#fff,
+#F1F8F4
+);
+border:1px solid rgba(10,102,71,.14);
+cursor:pointer;
+transition:
+transform .2s var(--ease),
+box-shadow .2s ease,
+border-color .2s ease;
+}
+
+.ind-win-item:hover{
+transform:translateY(-1px);
+box-shadow:0 5px 12px rgba(10,102,71,.07);
+border-color:rgba(16,185,129,.28);
+}
+
+.ind-win-item strong{
+display:block;
+color:var(--text);
+font-family:'IBM Plex Mono',monospace;
+font-size:.82rem;
+font-weight:800;
+}
+
+.ind-win-item span{
+display:block;
+margin-top:1px;
+color:var(--muted);
+font-size:.35rem;
+font-weight:700;
+}
+
 .formula-section{
 margin-top:2px;
 }
@@ -2282,7 +2377,7 @@ transition:none!important;
 }
 
 /* =========================================================
- AUDITED UI REFINEMENTS — TOP 3 / BEST JUE / WIN SET
+ AUDITED UI REFINEMENTS — TOP 1-5 PAIR RANKINGS & WIN SET
  ========================================================= */
 .deep-scan-model-name{
 font-size:.58rem;
@@ -2305,101 +2400,87 @@ color:#3F6B5A;
 color:#087380;
 }
 
-/* Badge กำกับลำดับในช่องชุดเจาะ 1-5 ให้ดูง่าย ปัดเศษเนียน ไม่ขัดตา */
-.deep-scan-card .deep-pair{
+/* BEST JUE RANKings 1–5 (Distinctive, Luxury Metallic Tones with Clear Badging) */
+
+/* Rank 1: Royal Platinum Gold */
+.deep-scan-card .deep-pair.jue-rank-1{
 position:relative;
-overflow:hidden;
+background:linear-gradient(135deg, #FFFDE7, #FFF59D);
+border:1px solid #D4AF37;
+box-shadow:0 4px 12px rgba(212,175,55,.25), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.deep-scan-card .deep-pair.jue-rank-1 strong{
+color:#745100;
+text-shadow:0 1px 2px rgba(255,255,255,.8);
+}
+.deep-scan-card .deep-pair.jue-rank-1 small{color:#9E6C02;}
+
+/* Rank 2: High-Contrast Sterling Silver (Enhanced for Crisp Visibility & Standout) */
+.deep-scan-card .deep-pair.jue-rank-2{
+position:relative;
+background:linear-gradient(135deg, #F0F4F8, #D9E2EC);
+border:1.5px solid #829AB1;
+box-shadow:0 4px 12px rgba(160,174,192,.35), inset 0 1px 0 #FFFFFF;
+}
+.deep-scan-card .deep-pair.jue-rank-2 strong{
+color:#102A43;
+text-shadow:0 1px 1px rgba(255,255,255,.9);
+}
+.deep-scan-card .deep-pair.jue-rank-2 small{
+color:#334E68;
+font-weight:700;
 }
 
-.deep-scan-card .deep-pair::before{
-content:attr(data-rank);
+/* Rank 3: Rose Bronze Metallic */
+.deep-scan-card .deep-pair.jue-rank-3{
+position:relative;
+background:linear-gradient(135deg, #FFF3E0, #FFE0B2);
+border:1px solid #E65100;
+box-shadow:0 4px 10px rgba(230,81,0,.15);
+}
+.deep-scan-card .deep-pair.jue-rank-3 strong{color:#BF360C;}
+.deep-scan-card .deep-pair.jue-rank-3 small{color:#E65100;}
+
+/* Rank 4: Deep Sapphire Blue */
+.deep-scan-card .deep-pair.jue-rank-4{
+position:relative;
+background:linear-gradient(135deg, #E0F2FE, #BAE6FD);
+border:1px solid #0284C7;
+box-shadow:0 4px 10px rgba(2,132,199,.15);
+}
+.deep-scan-card .deep-pair.jue-rank-4 strong{color:#0369A1;}
+.deep-scan-card .deep-pair.jue-rank-4 small{color:#0284C7;}
+
+/* Rank 5: Subtle Soft Lavender (Clean Accent without Stealing Rank 1 Focus) */
+.deep-scan-card .deep-pair.jue-rank-5{
+position:relative;
+background:linear-gradient(135deg, #F5F3FF, #EDE9FE);
+border:1px solid #8B5CF6;
+box-shadow:0 3px 8px rgba(139,92,246,.12);
+}
+.deep-scan-card .deep-pair.jue-rank-5 strong{color:#6D28D9;}
+.deep-scan-card .deep-pair.jue-rank-5 small{color:#7C3AED;}
+
+/* Ranking Number Micro-Badges */
+.rank-tag{
 position:absolute;
-top:2px;
-right:3px;
+top:-1px;
+right:-1px;
+padding:1px 4px;
+border-bottom-left-radius:6px;
+border-top-right-radius:7px;
 font-family:'IBM Plex Mono',monospace;
 font-size:.32rem;
 font-weight:800;
-padding:1px 3px;
-border-radius:4px;
 line-height:1;
-opacity:.9;
+z-index:2;
 }
 
-/* อันดับ 1: สีทอง Premium Gold Shimmer */
-.deep-scan-card .deep-pair.jue-rank-1{
-background:linear-gradient(135deg,rgba(255,249,219,.95),rgba(255,255,255,.98));
-border:1px solid rgba(212,160,23,.55);
-box-shadow:0 4px 12px rgba(158,108,2,.12),inset 0 1px 0 rgba(255,255,255,.9);
-}
-.deep-scan-card .deep-pair.jue-rank-1 strong{
-color:#8A6200;
-text-shadow:0 0 8px rgba(234,179,8,.22);
-}
-.deep-scan-card .deep-pair.jue-rank-1 small{color:#9E6C02;}
-.deep-scan-card .deep-pair.jue-rank-1::before{
-background:#FEF08A;
-color:#8A6200;
-border:1px solid rgba(212,160,23,.3);
-}
-
-/* อันดับ 2: สีเงินพรีเมียม Platinum Silver (ปรับให้โดดเด่น คมชัด เงางาม) */
-.deep-scan-card .deep-pair.jue-rank-2{
-background:linear-gradient(135deg,rgba(240,244,248,.98),rgba(255,255,255,.98));
-border:1px solid rgba(148,163,184,.65);
-box-shadow:0 4px 12px rgba(100,116,139,.14),inset 0 1px 0 rgba(255,255,255,1);
-}
-.deep-scan-card .deep-pair.jue-rank-2 strong{
-color:#334155;
-text-shadow:0 0 6px rgba(148,163,184,.25);
-}
-.deep-scan-card .deep-pair.jue-rank-2 small{color:#475569;}
-.deep-scan-card .deep-pair.jue-rank-2::before{
-background:#E2E8F0;
-color:#1E293B;
-border:1px solid rgba(148,163,184,.4);
-}
-
-/* อันดับ 3: สีทองแดงอบอุ่น Rose Bronze Soft */
-.deep-scan-card .deep-pair.jue-rank-3{
-background:linear-gradient(135deg,rgba(253,242,233,.95),rgba(255,255,255,.98));
-border:1px solid rgba(217,119,6,0.4);
-box-shadow:0 4px 11px rgba(180,105,58,.10);
-}
-.deep-scan-card .deep-pair.jue-rank-3 strong{color:#B45309;}
-.deep-scan-card .deep-pair.jue-rank-3 small{color:#C2410C;}
-.deep-scan-card .deep-pair.jue-rank-3::before{
-background:#FFEDD5;
-color:#9A3412;
-border:1px solid rgba(217,119,6,.25);
-}
-
-/* อันดับ 4: สีฟ้า/เขียวมิ้นต์สดใส Soft Cyan */
-.deep-scan-card .deep-pair.jue-rank-4{
-background:linear-gradient(135deg,rgba(224,249,247,.95),rgba(255,255,255,.98));
-border:1px solid rgba(13,148,136,.35);
-box-shadow:0 4px 11px rgba(8,115,128,.08);
-}
-.deep-scan-card .deep-pair.jue-rank-4 strong{color:#0F766E;}
-.deep-scan-card .deep-pair.jue-rank-4 small{color:#115E59;}
-.deep-scan-card .deep-pair.jue-rank-4::before{
-background:#CCFBF1;
-color:#115E59;
-border:1px solid rgba(13,148,136,.25);
-}
-
-/* อันดับ 5: สีม่วงซอฟต์ Violet Slate (ลดความแย่งซีน ไม่ฉูดฉาด ดูหรูหราเข้ากัน) */
-.deep-scan-card .deep-pair.jue-rank-5{
-background:linear-gradient(135deg,rgba(245,243,255,.95),rgba(255,255,255,.98));
-border:1px solid rgba(139,92,246,.3);
-box-shadow:0 4px 11px rgba(109,40,217,.06);
-}
-.deep-scan-card .deep-pair.jue-rank-5 strong{color:#6D28D9;}
-.deep-scan-card .deep-pair.jue-rank-5 small{color:#5B21B6;}
-.deep-scan-card .deep-pair.jue-rank-5::before{
-background:#EDE9FE;
-color:#5B21B6;
-border:1px solid rgba(139,92,246,.2);
-}
+.deep-pair.jue-rank-1 .rank-tag{background:#D4AF37;color:#fff;}
+.deep-pair.jue-rank-2 .rank-tag{background:#486581;color:#fff;}
+.deep-pair.jue-rank-3 .rank-tag{background:#E65100;color:#fff;}
+.deep-pair.jue-rank-4 .rank-tag{background:#0284C7;color:#fff;}
+.deep-pair.jue-rank-5 .rank-tag{background:#8B5CF6;color:#fff;}
 
 .deep-scan-card .deep-pair.jue-rank-1::after{
 content:"";
@@ -2417,19 +2498,17 @@ pointer-events:none;
 86%,100%{transform:translateX(120%);opacity:0}
 }
 
-/* =========================================================
- PREMIUM WIN SET STYLING — REFINED CLEAN LOOK
- ========================================================= */
+/* Premium Ultra-Clean treatment for the Win Set Header Numbers */
 .ind-win-set{
 position:relative;
 overflow:hidden;
-padding:14px 12px;
+padding:12px;
 margin-bottom:9px;
 border-radius:20px;
 border:1px solid rgba(10,102,71,.18);
 background:
-radial-gradient(circle at 100% 0%,rgba(234,179,8,.08),transparent 32%),
-radial-gradient(circle at 0% 100%,rgba(16,185,129,.06),transparent 42%),
+radial-gradient(circle at 100% 0%,rgba(234,179,8,.10),transparent 32%),
+radial-gradient(circle at 0% 100%,rgba(16,185,129,.08),transparent 42%),
 linear-gradient(135deg,#FFFFFF,#F1F9F5);
 box-shadow:var(--shadowSoft);
 }
@@ -2448,11 +2527,11 @@ opacity:.82;
 .ind-win-header{
 position:relative;
 z-index:2;
-margin-bottom:10px;
+margin-bottom:8px;
 }
 
 .ind-win-title{
-font-size:.82rem;
+font-size:.78rem;
 font-weight:800;
 }
 
@@ -2467,11 +2546,10 @@ letter-spacing:.35px;
 }
 
 .ind-win-badge{
-padding:4px 9px;
+padding:4px 8px;
 color:#7A5700;
 background:linear-gradient(135deg,#FFF9D7,#FEF3A6);
-border:1px solid rgba(158,108,2,.25);
-border-radius:99px;
+border:1px solid rgba(158,108,2,.22);
 font-family:'IBM Plex Mono',monospace;
 font-size:.42rem;
 font-weight:800;
@@ -2481,49 +2559,40 @@ box-shadow:0 3px 9px rgba(158,108,2,.06);
 .ind-win-grid{
 position:relative;
 z-index:2;
-gap:6px;
+gap:5px;
 }
 
-/* ยกเลิกสีขอบทื่อๆ บนตัวเลขเดิมทั้งหมด ปรับเป็น Glow เนียนตา สะอาด ลักชูรี */
+/* Clean Professional Digit Cards without rigid top bar color blocks */
 .ind-win-item{
 position:relative;
 overflow:hidden;
-padding:9px 2px 8px;
+padding:9px 2px 7px;
 border-radius:12px;
-background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(243,249,245,.95));
-border:1px solid rgba(10,102,71,.12);
-box-shadow:0 3px 10px rgba(10,102,71,.03),inset 0 1px 0 rgba(255,255,255,.9);
-transition:all .22s var(--ease);
-}
-
-.ind-win-item::before{
-display:none; /* ยกเลิกแถบสีหนาแข็งทื่อด้านบน */
+background:linear-gradient(145deg,#FFFFFF,#F4FBF7);
+border:1px solid rgba(10,102,71,.15);
+box-shadow:0 3px 8px rgba(10,102,71,.04);
+transition:all .2s ease;
 }
 
 .ind-win-item:hover{
 transform:translateY(-2px);
-border-color:rgba(16,185,129,.35);
-box-shadow:0 8px 18px rgba(10,102,71,.08),inset 0 1px 0 #fff;
+border-color:var(--emerald);
+box-shadow:0 6px 14px rgba(10,102,71,.12);
 }
 
 .ind-win-item strong{
-display:block;
-font-family:'IBM Plex Mono',monospace;
-font-size:.95rem;
-font-weight:800;
-color:var(--navy2);
+font-size:.92rem;
 letter-spacing:.5px;
-text-shadow:0 1px 2px rgba(0,0,0,.04);
+color:var(--navy);
 }
 
 .ind-win-item span{
-display:block;
-margin-top:3px;
+margin-top:2px;
 font-family:'IBM Plex Mono',monospace;
-font-size:.36rem;
-font-weight:700;
-color:var(--muted);
-letter-spacing:.3px;
+font-size:.35rem;
+color:var(--emerald);
+font-weight:800;
+letter-spacing:.2px;
 }
 
 </style>
@@ -2900,455 +2969,1814 @@ type="button">
 
 <script>
 
-/* =========================================================
- HIGH-END DEPTH SNOW EFFECT WITH OCCLUSION MASKING
- ========================================================= */
+/* HIGH-END REALISTIC SNOW CANVAS ENGINE */
 (function(){
-const canvas = document.getElementById("snowCanvas");
-if(!canvas) return;
 
-const ctx = canvas.getContext("2d");
-let width = canvas.width = window.innerWidth;
-let height = canvas.height = window.innerHeight;
+const canvas=document.getElementById("snowCanvas");
+if(!canvas)return;
 
-window.addEventListener("resize", () => {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
+const ctx=canvas.getContext("2d");
+
+let width=canvas.width=window.innerWidth;
+let height=canvas.height=window.innerHeight;
+
+window.addEventListener("resize",()=>{
+width=canvas.width=window.innerWidth;
+height=canvas.height=window.innerHeight;
 });
 
-// สร้างเกล็ดหิมะแบบ 3 ชั้นความลึก (Background, Midground, Foreground)
-const flakes = [];
-const flakeCount = 55;
+const flakes=[];
 
-for(let i=0; i<flakeCount; i++){
-  const layer = Math.random();
-  let radius, depth, speedY, opacity;
-  
-  if(layer > 0.8) { // Foreground (ใหญ่ ตกพริ้วเร็ว)
-    radius = Math.random() * 2.2 + 1.8;
-    depth = 1.2;
-    speedY = Math.random() * 0.7 + 0.6;
-    opacity = Math.random() * 0.45 + 0.45;
-  } else if(layer > 0.35) { // Midground (ขนาดกลาง)
-    radius = Math.random() * 1.4 + 1.0;
-    depth = 0.8;
-    speedY = Math.random() * 0.4 + 0.3;
-    opacity = Math.random() * 0.35 + 0.3;
-  } else { // Background (เล็ก ตกช้า เบลอ)
-    radius = Math.random() * 0.9 + 0.5;
-    depth = 0.4;
-    speedY = Math.random() * 0.25 + 0.15;
-    opacity = Math.random() * 0.25 + 0.15;
-  }
-
-  flakes.push({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    radius: radius,
-    depth: depth,
-    speedY: speedY,
-    speedX: Math.random() * 0.3 - 0.15,
-    opacity: opacity,
-    swing: Math.random() * Math.PI * 2,
-    swingSpeed: Math.random() * 0.015 + 0.005
-  });
+for(let i=0;i<55;i++){
+flakes.push({
+x:Math.random()*width,
+y:Math.random()*height,
+radius:Math.random()*2.4+.6,
+depth:Math.random()*.85+.15,
+speedY:Math.random()*.45+.2,
+speedX:Math.random()*.25-.125,
+opacity:Math.random()*.5+.3,
+swing:Math.random()*Math.PI*2,
+swingSpeed:Math.random()*.012+.004
+});
 }
 
 function render(){
-  ctx.clearRect(0, 0, width, height);
+ctx.clearRect(0,0,width,height);
 
-  // คำนวณตำแหน่งพื้นที่ของ App Card เพื่อไม่ให้หิมะตกไปทับตัวเลขกล่องข้อความ
-  const card = document.querySelector(".app-card");
-  let cardRect = null;
-  if(card){
-    cardRect = card.getBoundingClientRect();
-  }
+flakes.forEach(f=>{
+f.swing+=f.swingSpeed;
+f.x+=Math.sin(f.swing)*.35+f.speedX;
+f.y+=f.speedY*f.depth;
 
-  flakes.forEach(f => {
-    f.swing += f.swingSpeed;
-    f.x += Math.sin(f.swing) * 0.45 + f.speedX;
-    f.y += f.speedY;
+if(f.y>height+10){
+f.y=-10;
+f.x=Math.random()*width;
+}
 
-    if(f.y > height + 10){
-      f.y = -10;
-      f.x = Math.random() * width;
-    }
-    if(f.x > width + 10) f.x = -10;
-    if(f.x < -10) f.x = width + 10;
+if(f.x>width+10)f.x=-10;
+if(f.x<-10)f.x=width+10;
 
-    // Snow Occlusion Check: ถ้าระดับ Background/Midground ตกลงมาในกล่องการ์ด ให้จางลงอย่างแนบเนียน
-    let currentOpacity = f.opacity;
-    if(cardRect && f.x >= cardRect.left && f.x <= cardRect.right && f.y >= cardRect.top && f.y <= cardRect.bottom){
-      if(f.depth < 1.0){
-        currentOpacity *= 0.18; // ซ่อนหิมะหลังกล่องตัวเลข เพื่อความสะอาดตา
-      } else {
-        currentOpacity *= 0.45;
-      }
-    }
+ctx.beginPath();
+ctx.arc(f.x, f.y, f.radius*f.depth, 0, Math.PI*2);
+ctx.fillStyle=`rgba(255, 255, 255, ${f.opacity*f.depth*.75})`;
+ctx.fill();
+});
 
-    ctx.beginPath();
-    ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(16, 185, 129, ${currentOpacity})`;
-    ctx.shadowBlur = f.depth > 1.0 ? 4 : 0;
-    ctx.shadowColor = "rgba(16, 185, 129, 0.4)";
-    ctx.fill();
-  });
-
-  requestAnimationFrame(render);
+requestAnimationFrame(render);
 }
 
 render();
+
 })();
 
-let totalProcessed = parseInt(localStorage.getItem("ml_total_processed_v1"), 10);
-if(!totalProcessed || isNaN(totalProcessed) || totalProcessed < 35000){
-  totalProcessed = 35000;
-  localStorage.setItem("ml_total_processed_v1", totalProcessed);
+
+let totalProcessed=
+parseInt(
+localStorage.getItem("ml_total_processed_v1"),
+10
+);
+
+if(
+!totalProcessed||
+isNaN(totalProcessed)||
+totalProcessed<35000
+){
+
+totalProcessed=35000;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
 }
+
 
 function updateProcessedUI(triggerRipple=true){
-  const el = document.getElementById("totalProcessedCount");
-  if(el) el.innerText = totalProcessed.toLocaleString();
-  if(triggerRipple){
-    const dot = document.getElementById("totalDot");
-    if(dot){
-      dot.classList.remove("ripple");
-      void dot.offsetWidth;
-      dot.classList.add("ripple");
-    }
-  }
+
+const el=
+document.getElementById("totalProcessedCount");
+
+if(el)
+el.innerText=
+totalProcessed.toLocaleString();
+
+if(triggerRipple){
+
+const dot=
+document.getElementById("totalDot");
+
+if(dot){
+
+dot.classList.remove("ripple");
+
+void dot.offsetWidth;
+
+dot.classList.add("ripple");
+
 }
+
+}
+
+}
+
 
 function scheduleProcessedIncrements(){
-  const count = Math.floor(Math.random()*3)+5;
-  const intervals = [];
-  for(let i=0; i<count; i++){
-    intervals.push(Math.floor(Math.random()*58000)+1000);
-  }
-  intervals.sort((a,b)=>a-b);
-  intervals.forEach(delay=>{
-    setTimeout(()=>{
-      totalProcessed += 1;
-      localStorage.setItem("ml_total_processed_v1", totalProcessed);
-      updateProcessedUI(true);
-    }, delay);
-  });
-  setTimeout(scheduleProcessedIncrements, 60000);
+
+const count=
+Math.floor(Math.random()*3)+5;
+
+const intervals=[];
+
+for(let i=0;i<count;i++){
+
+intervals.push(
+Math.floor(Math.random()*58000)+1000
+);
+
 }
 
-let currentOnline = parseInt(localStorage.getItem("ml_online_users_v1"), 10);
-if(!currentOnline || isNaN(currentOnline)) currentOnline = 1150;
+intervals.sort((a,b)=>a-b);
 
-function updateOnlineUsers(){
-  const change = Math.floor(Math.random()*100)+1;
-  if(Math.random() > 0.45) currentOnline += change;
-  else currentOnline -= change;
-  if(currentOnline < 1050) currentOnline += Math.floor(Math.random()*40)+20;
-  if(currentOnline > 1280) currentOnline -= Math.floor(Math.random()*40)+20;
+intervals.forEach(delay=>{
 
-  localStorage.setItem("ml_online_users_v1", currentOnline);
-  const el = document.getElementById("onlineUsersCount");
-  if(el) el.innerText = currentOnline.toLocaleString() + " คน";
-}
+setTimeout(()=>{
 
-function updateServerLatency(){
-  const latency = Math.floor(Math.random()*(26-18+1))+18;
-  const el = document.getElementById("serverLatencyCount");
-  if(el) el.innerText = latency + " ms";
-}
+totalProcessed+=1;
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  updateProcessedUI(false);
-  scheduleProcessedIncrements();
-  updateOnlineUsers();
-  setInterval(updateOnlineUsers, 60000);
-  updateServerLatency();
-  setInterval(updateServerLatency, 3500);
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
 
-  // Bind Login Event
-  const loginBtn = document.getElementById("loginButton");
-  const pwdInput = document.getElementById("passwordInput");
-  
-  if(loginBtn && pwdInput){
-    loginBtn.addEventListener("click", async ()=>{
-      const isOk = await _app._verify(pwdInput.value);
-      if(isOk){
-        document.getElementById("loginView").style.display = "none";
-        document.getElementById("calculatorView").style.display = "block";
-        _app._audio("click");
-      } else {
-        document.getElementById("errorMsg").style.display = "block";
-        _app._audio("error");
-      }
-    });
-  }
+updateProcessedUI(true);
 
-  // Bind Calculate Event
-  const calcBtn = document.getElementById("calculateButton");
-  if(calcBtn){
-    calcBtn.addEventListener("click", ()=>{
-      _app._runAnalysis();
-    });
-  }
+},delay);
 
-  // Bind Clear Event
-  const clearBtn = document.getElementById("clearButton");
-  if(clearBtn){
-    clearBtn.addEventListener("click", ()=>{
-      document.getElementById("num3top").value = "";
-      document.getElementById("num2bottom").value = "";
-      document.getElementById("resultContainer").innerHTML = "";
-      _app._audio("click");
-    });
-  }
-
-  // Bind Logout Event
-  const logoutBtn = document.getElementById("logoutButton");
-  if(logoutBtn){
-    logoutBtn.addEventListener("click", ()=>{
-      document.getElementById("calculatorView").style.display = "none";
-      document.getElementById("loginView").style.display = "block";
-      document.getElementById("passwordInput").value = "";
-      document.getElementById("errorMsg").style.display = "none";
-      _app._audio("click");
-    });
-  }
 });
 
-const _secEnc = {
-  _dbToken: [
-    "4d617374657241646d696e32303236",
-    "54396b4c326d5037",
-    "5a71345738785431"
-  ],
-  _hexDecode(hex){
-    let str = "";
-    for(let i=0; i<hex.length; i+=2){
-      str += String.fromCharCode(parseInt(hex.substr(i,2), 16));
-    }
-    return str;
-  },
-  async _checkMatch(inputVal){
-    const value = String(inputVal||"").trim();
-    for(const hex of this._dbToken){
-      if(value === this._hexDecode(hex)) return true;
-    }
-    return false;
-  }
+setTimeout(
+scheduleProcessedIncrements,
+60000
+);
+
+}
+
+
+let currentOnline=
+parseInt(
+localStorage.getItem("ml_online_users_v1"),
+10
+);
+
+if(
+!currentOnline||
+isNaN(currentOnline)
+)
+currentOnline=1150;
+
+
+function updateOnlineUsers(){
+
+const change=
+Math.floor(Math.random()*100)+1;
+
+if(Math.random()>.45)
+currentOnline+=change;
+else
+currentOnline-=change;
+
+if(currentOnline<1050)
+currentOnline+=
+Math.floor(Math.random()*40)+20;
+
+if(currentOnline>1280)
+currentOnline-=
+Math.floor(Math.random()*40)+20;
+
+localStorage.setItem(
+"ml_online_users_v1",
+currentOnline
+);
+
+const el=
+document.getElementById(
+"onlineUsersCount"
+);
+
+if(el)
+el.innerText=
+currentOnline.toLocaleString()+" คน";
+
+}
+
+
+function updateServerLatency(){
+
+const latency=
+Math.floor(
+Math.random()*(26-18+1)
+)+18;
+
+const el=
+document.getElementById(
+"serverLatencyCount"
+);
+
+if(el)
+el.innerText=
+latency+" ms";
+
+}
+
+
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+updateProcessedUI(false);
+
+scheduleProcessedIncrements();
+
+updateOnlineUsers();
+
+setInterval(
+updateOnlineUsers,
+60000
+);
+
+updateServerLatency();
+
+setInterval(
+updateServerLatency,
+3500
+);
+
+document.getElementById('loginButton').addEventListener('click', () => _app.login());
+document.getElementById('logoutButton').addEventListener('click', () => _app.logout());
+document.getElementById('calculateButton').addEventListener('click', () => _app.calculate());
+document.getElementById('clearButton').addEventListener('click', () => _app.clearCalc());
+
+}
+);
+
+
+const _secEnc={
+
+_dbToken:[
+"4d617374657241646d696e32303236",
+"54396b4c326d5037",
+"5a71345738785431"
+],
+
+_hexDecode(hex){
+
+let str="";
+
+for(let i=0;i<hex.length;i+=2){
+
+str+=String.fromCharCode(
+parseInt(
+hex.substr(i,2),
+16
+)
+);
+
+}
+
+return str;
+
+},
+
+async _checkMatch(inputVal){
+
+const value=
+String(inputVal||"").trim();
+
+for(
+const hex of this._dbToken
+){
+
+if(
+value===this._hexDecode(hex)
+)
+return true;
+
+}
+
+return false;
+
+}
+
 };
 
-const _app = {
-  _toastTimer: null,
-  async _verify(p){
-    return await _secEnc._checkMatch(p);
-  },
-  _audio(type="click"){
-    try{
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if(!AC) return;
-      const c = new AC();
-      const o = c.createOscillator();
-      const g = c.createGain();
-      const now = c.currentTime;
 
-      o.type = type === "error" ? "triangle" : "sine";
-      o.frequency.setValueAtTime(type === "error" ? 190 : 520, now);
-      o.frequency.exponentialRampToValueAtTime(type === "error" ? 130 : 720, now + 0.08);
+const _app={
 
-      g.gain.setValueAtTime(type === "error" ? 0.035 : 0.025, now);
-      g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+_toastTimer:null,
 
-      o.connect(g);
-      g.connect(c.destination);
-      o.start(now);
-      o.stop(now + 0.12);
-    } catch(e){}
-  },
-  _showToast(msg){
-    const t = document.getElementById("toast");
-    if(!t) return;
-    t.innerText = msg;
-    t.classList.add("show");
-    clearTimeout(this._toastTimer);
-    this._toastTimer = setTimeout(()=>{
-      t.classList.remove("show");
-    }, 2200);
-  },
-  _copy(text){
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text);
-    } else {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-    }
-    this._showToast("✓ คัดลอก " + text + " แล้ว");
-    this._audio("click");
-  },
-  _runAnalysis(){
-    const val3 = document.getElementById("num3top").value.trim();
-    const val2 = document.getElementById("num2bottom").value.trim();
+async _verify(p){
 
-    if(!val3 || !val2 || val3.length < 3 || val2.length < 2){
-      alert("กรุณากรอกข้อมูลเลข 3 ตัวบน และ 2 ตัวล่างให้ครบถ้วน");
-      return;
-    }
+return await _secEnc._checkMatch(p);
 
-    this._audio("click");
+},
 
-    const scanner = document.getElementById("aiScannerBox");
-    const container = document.getElementById("resultContainer");
-    scanner.style.display = "block";
-    container.innerHTML = "";
 
-    setTimeout(()=>{
-      scanner.style.display = "none";
-      this._renderResults(val3, val2);
-    }, 900);
-  },
-  _renderResults(v3, v2){
-    const container = document.getElementById("resultContainer");
-    
-    // คำนวณจำลองผลอัลกอริทึม Quant
-    const d3 = v3.split('').map(Number);
-    const d2 = v2.split('').map(Number);
-    const sumAll = d3.reduce((a,b)=>a+b,0) + d2.reduce((a,b)=>a+b,0);
-    
-    // อันดับสถิติตัวเลข 0-9
-    const scores = Array.from({length:10}, (_, i) => ({
-      digit: i,
-      score: ((sumAll * (i + 3) * 7) % 43) + 55
-    })).sort((a,b) => b.score - a.score);
+_audio(type="click"){
 
-    const topDigits = scores.slice(0, 3);
-    const winDigits = scores.slice(0, 6).map(s => s.digit);
+try{
 
-    // สร้างคู่เจาะ 5 อันดับพร้อม Label ชัดเจน
-    const juePairs = [
-      { pair: `${topDigits[0].digit}${topDigits[1].digit}`, rank: 1, label: "TOP 1" },
-      { pair: `${topDigits[0].digit}${topDigits[2].digit}`, rank: 2, label: "TOP 2" },
-      { pair: `${topDigits[1].digit}${topDigits[2].digit}`, rank: 3, label: "TOP 3" },
-      { pair: `${topDigits[0].digit}${winDigits[3]}`, rank: 4, label: "TOP 4" },
-      { pair: `${topDigits[1].digit}${winDigits[4]}`, rank: 5, label: "TOP 5" }
-    ];
+const AC=
+window.AudioContext||
+window.webkitAudioContext;
 
-    let html = `
-    <div class="result-shell">
-      <div class="result-head">
-        <div>
-          <div class="result-kicker">QUANT MATRIX COMPLETE</div>
-          <div class="result-title">ผลการวิเคราะห์ AI อัจฉริยะ</div>
-        </div>
-        <div class="result-note">อ้างอิงฐานข้อมูล ${v3} • ${v2}</div>
-      </div>
+if(!AC)return;
 
-      <!-- 🏆 อันดับสถิติตัวเลขเด่น Top 3 -->
-      <section class="top3-signal-board">
-        <div class="top3-head">
-          <div>
-            <div class="top3-kicker">PRIMARY SIGNALS</div>
-            <div class="top3-title">3 เด่นสถิติสูงสุด (Top Rank)</div>
-            <div class="top3-sub">วิเคราะห์จากความน่าจะเป็นสูงสุดของระบบ Quant</div>
-          </div>
-          <div class="top3-badge">CONFIDENCE HIGH</div>
-        </div>
-        <div class="top3-list">
-          <div class="top3-row rank-one" onclick="_app._copy('${topDigits[0].digit}')">
-            <div class="top3-position">#1</div>
-            <div class="top3-digit">${topDigits[0].digit}</div>
-            <div class="top3-info">
-              <div class="top3-label">อันดับ 1 (เด่นหลัก) <span>Highest Power</span></div>
-              <div class="top3-bar"><div class="top3-bar-fill" style="width: ${topDigits[0].score}%"></div></div>
-            </div>
-            <div class="top3-score">${topDigits[0].score}%</div>
-          </div>
+const c=new AC();
 
-          <div class="top3-row rank-two" onclick="_app._copy('${topDigits[1].digit}')">
-            <div class="top3-position">#2</div>
-            <div class="top3-digit">${topDigits[1].digit}</div>
-            <div class="top3-info">
-              <div class="top3-label">อันดับ 2 (เด่นรอง) <span>Second Power</span></div>
-              <div class="top3-bar"><div class="top3-bar-fill" style="width: ${topDigits[1].score}%"></div></div>
-            </div>
-            <div class="top3-score">${topDigits[1].score}%</div>
-          </div>
+const o=c.createOscillator();
+const g=c.createGain();
 
-          <div class="top3-row rank-three" onclick="_app._copy('${topDigits[2].digit}')">
-            <div class="top3-position">#3</div>
-            <div class="top3-digit">${topDigits[2].digit}</div>
-            <div class="top3-info">
-              <div class="top3-label">อันดับ 3 (เด่นเสริม) <span>Third Power</span></div>
-              <div class="top3-bar"><div class="top3-bar-fill" style="width: ${topDigits[2].score}%"></div></div>
-            </div>
-            <div class="top3-score">${topDigits[2].score}%</div>
-          </div>
-        </div>
-      </section>
+const now=c.currentTime;
 
-      <!-- 🎯 ชุดเจาะ 3 ตัว และ 5 อันดับความแม่นยำ (Best JUE Audit Refined) -->
-      <section class="deep-scan-board">
-        <div class="deep-scan-head">
-          <div>
-            <div class="deep-scan-kicker">BEST PAIRS SCAN</div>
-            <div class="deep-scan-title">ชุดเจาะ 2 ตัว 5 อันดับเด่น</div>
-            <div class="deep-scan-sub">เรียงตามลำดับความคุ้มค่าและความแม่นยำสูงสุด</div>
-          </div>
-        </div>
-        <div class="deep-scan-grid">
-          <div class="deep-scan-card rank-one">
-            <div class="deep-scan-top">
-              <div class="deep-scan-name">
-                <div class="deep-scan-digit">${topDigits[0].digit}</div>
-                <div>
-                  <span class="deep-rank-label">TOP JUE MATRIX</span>
-                  <div class="deep-scan-model-name">ชุดเจาะ AI อันดับ 1 (Gold Standard)</div>
-                </div>
-              </div>
-              <div class="deep-scan-score">98.5% SCORE</div>
-            </div>
-            <div class="deep-scan-pairs">
-              ${juePairs.map((p) => `
-                <div class="deep-pair jue-rank-${p.rank}" data-rank="${p.label}" onclick="_app._copy('${p.pair}')">
-                  <strong>${p.pair}</strong>
-                  <small>อันดับ ${p.rank}</small>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      </section>
+o.type=
+type==="error"
+?"triangle"
+:"sine";
 
-      <!-- 🎲 ชุดวิน 6 ตัวทรงพลัง (Audited Win Set) -->
-      <section class="ind-win-set">
-        <div class="ind-win-header">
-          <div>
-            <div class="ind-win-title">
-              ชุดวิน 6 ตัวพรีเมียม (Win Set 6 Digits)
-              <small>จัดกลุ่มตัวเลขความเสี่ยงต่ำ เรียบร้อย สะอาดตา</small>
-            </div>
-          </div>
-          <div class="ind-win-badge">WIN 6 MATRIX</div>
-        </div>
-        <div class="ind-win-grid">
-          ${winDigits.map((digit, index) => `
-            <div class="ind-win-item" onclick="_app._copy('${digit}')">
-              <strong>${digit}</strong>
-              <span>Pos ${index + 1}</span>
-            </div>
-          `).join('')}
-        </div>
-      </section>
+o.frequency.setValueAtTime(
+type==="error"?190:520,
+now
+);
+
+o.frequency.exponentialRampToValueAtTime(
+type==="error"?130:720,
+now+.08
+);
+
+g.gain.setValueAtTime(
+type==="error"?.035:.025,
+now
+);
+
+g.gain.exponentialRampToValueAtTime(
+.001,
+now+.12
+);
+
+o.connect(g);
+g.connect(c.destination);
+
+o.start(now);
+o.stop(now+.13);
+
+}catch(e){}
+
+},
+
+
+_esc(s){
+
+return String(s)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+},
+
+
+async login(){
+
+this._audio("click");
+
+const input=
+document.getElementById(
+"passwordInput"
+);
+
+const error=
+document.getElementById(
+"errorMsg"
+);
+
+if(!input||!error)return;
+
+const value=
+input.value.trim();
+
+if(
+!value||
+!(await this._verify(value))
+){
+
+this._audio("error");
+
+error.style.display="block";
+
+input.focus();
+
+return;
+
+}
+
+error.style.display="none";
+
+localStorage.setItem(
+"ml_auth_status_v3",
+"active"
+);
+
+document.getElementById(
+"loginView"
+).style.display="none";
+
+document.getElementById(
+"calculatorView"
+).style.display="block";
+
+this.checkSessionBadge();
+
+const num3=
+document.getElementById(
+"num3top"
+);
+
+if(num3)
+num3.focus();
+
+},
+
+
+logout(){
+
+this._audio("click");
+
+localStorage.removeItem(
+"ml_auth_status_v3"
+);
+
+document.getElementById(
+"calculatorView"
+).style.display="none";
+
+document.getElementById(
+"loginView"
+).style.display="block";
+
+[
+"passwordInput",
+"num3top",
+"num2bottom"
+].forEach(id=>{
+
+const el=
+document.getElementById(id);
+
+if(el)el.value="";
+
+});
+
+document.getElementById(
+"resultContainer"
+).innerHTML="";
+
+document.getElementById(
+"errorMsg"
+).style.display="none";
+
+},
+
+
+clearCalc(){
+
+this._audio("click");
+
+document.getElementById(
+"resultContainer"
+).innerHTML="";
+
+document.getElementById(
+"num3top"
+).value="";
+
+document.getElementById(
+"num2bottom"
+).value="";
+
+document.getElementById(
+"num3top"
+).focus();
+
+},
+
+
+checkSessionBadge(){
+
+const n3=
+localStorage.getItem(
+"ml_l_n3_v3"
+);
+
+const n2=
+localStorage.getItem(
+"ml_l_n2_v3"
+);
+
+const badge=
+document.getElementById(
+"lastSessionBadge"
+);
+
+if(!badge)return;
+
+if(n3&&n2){
+
+document.getElementById(
+"lbl3"
+).innerText=n3;
+
+document.getElementById(
+"lbl2"
+).innerText=n2;
+
+badge.style.display="flex";
+
+}else{
+
+badge.style.display="none";
+
+}
+
+},
+
+
+calculate(){
+
+this._audio("click");
+
+const n3=
+document.getElementById(
+"num3top"
+).value.trim();
+
+const n2=
+document.getElementById(
+"num2bottom"
+).value.trim();
+
+if(
+!/^\d{3}$/.test(n3)||
+!/^\d{2}$/.test(n2)
+){
+
+this._audio("error");
+
+alert(
+"กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก"
+);
+
+return;
+
+}
+
+localStorage.setItem(
+"ml_l_n3_v3",
+n3
+);
+
+localStorage.setItem(
+"ml_l_n2_v3",
+n2
+);
+
+this.checkSessionBadge();
+
+
+const scan=
+document.getElementById(
+"aiScannerBox"
+);
+
+const btn=
+document.getElementById(
+"calculateButton"
+);
+
+btn.disabled=true;
+
+scan.style.display="block";
+
+
+const messages=[
+
+"READING INPUT STRUCTURE...",
+
+"CALCULATING DIGIT MOMENTUM...",
+
+"RUNNING TOP 5 PAIR RANKING ENGINE...",
+
+"EVALUATING 5 MATHEMATICAL MODELS...",
+
+"BUILDING NUMBER MATRIX...",
+
+"MAPPING DIGIT DISTRIBUTION...",
+
+"GENERATING WIN SET...",
+
+"FINALIZING ANALYSIS..."
+
+];
+
+
+let index=0;
+
+const scannerText=
+document.getElementById(
+"aiScannerText"
+);
+
+scannerText.innerText=
+messages[0];
+
+
+const timer=
+setInterval(()=>{
+
+index++;
+
+if(index<messages.length){
+
+scannerText.innerText=
+messages[index];
+
+}
+
+},100);
+
+
+setTimeout(()=>{
+
+clearInterval(timer);
+
+scan.style.display="none";
+
+btn.disabled=false;
+
+this.runAnalysis(
+n3,
+n2
+);
+
+document.getElementById(
+"resultContainer"
+).scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
+
+totalProcessed+=1;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
+updateProcessedUI(true);
+
+},800);
+
+},
+
+
+_normalize(x){
+
+return(x%10+10)%10;
+
+},
+
+
+_run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
+){
+
+const rawFormulas=[
+
+H+T_top,
+H+U_top,
+T_top+U_top,
+H+T_bot,
+H+U_bot,
+T_top+T_bot,
+T_top+U_bot,
+U_top+T_bot,
+U_top+U_bot,
+T_bot+U_bot,
+
+sumTop+T_bot,
+sumTop+U_bot,
+sumTop+H,
+sumTop+T_top,
+sumTop+U_top,
+
+10-H,
+10-T_top,
+10-U_top,
+10-T_bot,
+10-U_bot,
+
+H+T_top+T_bot,
+H+U_top+U_bot,
+T_top+U_top+T_bot,
+T_top+U_top+U_bot,
+H+T_bot+U_bot,
+T_top+T_bot+U_bot,
+
+sumTop-T_bot,
+sumTop-U_bot,
+sumTop+sumBot,
+sumTop-sumBot,
+
+H+T_top-U_bot,
+T_top+U_top-T_bot,
+H+U_top-T_bot,
+
+20-(T_top+T_bot),
+20-(U_top+U_bot),
+
+H+T_top+U_top-T_bot,
+H+T_top+U_top-U_bot,
+
+10+T_top-U_bot,
+10+U_top-T_bot,
+
+sumTop+10-U_bot,
+
+H+U_bot-T_top,
+T_top+U_bot-H,
+U_top+T_bot-H,
+
+sumBot+H-T_top,
+sumBot+H-U_top,
+
+H+sumBot-T_top,
+H+sumBot-U_top,
+
+T_top+sumBot-H,
+T_top+sumBot-U_top,
+
+U_top+sumBot-H,
+U_top+sumBot-T_top,
+
+30-(H+T_top+T_bot),
+30-(H+U_top+U_bot),
+30-(T_top+U_top+T_bot),
+30-(H+T_bot+U_bot),
+
+H+T_top+T_bot-U_bot,
+H+U_top+U_bot-T_bot,
+T_top+U_top+T_bot-H,
+
+sumTop+T_bot-U_bot,
+sumTop+U_bot-T_bot,
+
+H+T_top+sumBot,
+H+U_top+sumBot,
+T_top+U_top+sumBot,
+
+H+T_bot+sumTop,
+H+U_bot+sumTop,
+T_top+T_bot+sumTop,
+T_top+U_bot+sumTop,
+U_top+T_bot+sumTop,
+U_top+U_bot+sumTop,
+T_bot+U_bot+sumTop,
+
+10+H+T_top,
+10+H+U_top,
+10+T_top+U_top,
+10+T_bot+U_bot,
+10+H+T_bot,
+10+H+U_bot,
+10+T_top+T_bot,
+10+T_top+U_bot,
+10+U_top+T_bot,
+10+U_top+U_bot,
+
+H-T_top+U_bot,
+H-U_top+T_bot,
+T_top-U_top+U_bot,
+
+T_bot-U_bot+H,
+T_bot-U_bot+T_top,
+T_bot-U_bot+U_top,
+
+20-H-T_top,
+20-H-U_top,
+20-T_top-U_top,
+20-T_bot-U_bot,
+20-H-T_bot,
+20-H-U_bot,
+20-T_top-T_bot,
+20-T_top-U_bot,
+20-U_top-T_bot,
+20-U_top-U_bot,
+
+totalSum,
+2*totalSum,
+totalSum+H,
+totalSum+T_bot
+
+];
+
+
+const countedDigits={};
+
+for(let d=0;d<=9;d++)
+countedDigits[d]=0;
+
+
+rawFormulas.forEach(rawVal=>{
+
+const unit=
+(rawVal%10+10)%10;
+
+countedDigits[unit]=
+(countedDigits[unit]||0)+1;
+
+});
+
+
+const sortedByCount=
+Object.keys(countedDigits)
+.map(Number)
+.sort(
+(a,b)=>
+countedDigits[b]-countedDigits[a]||
+b-a
+);
+
+
+return{
+ranking:sortedByCount.slice(0,10),
+counts:countedDigits
+};
+
+},
+
+
+runAnalysis(n3,n2){
+
+const inputDigits3=
+n3.split("").map(Number);
+
+const inputDigits2=
+n2.split("").map(Number);
+
+const[
+H,
+T_top,
+U_top
+]=inputDigits3;
+
+const[
+T_bot,
+U_bot
+]=inputDigits2;
+
+const sumTop=
+H+T_top+U_top;
+
+const sumBot=
+T_bot+U_bot;
+
+const totalSum=
+sumTop+sumBot;
+
+
+const formula100Engine=
+this._run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
+);
+
+
+const getUnitDirect=v=>{
+
+const str=String(v);
+
+const first=
+parseInt(
+str.slice(-1),
+10
+);
+
+return[
+first,
+(first+1)%10
+];
+
+};
+
+
+const fixedBase=7;
+
+const anchorRaw=
+fixedBase-H;
+
+const anchor=
+(Math.abs(anchorRaw)%10+10)%10;
+
+
+let rawM1=
+(T_top+T_bot)%10;
+
+let rawM2=
+sumTop%10;
+
+let rawM3=
+(H+T_bot)%10;
+
+let rawM4=
+(U_top+U_bot)%10;
+
+let rawM5=
+(10-U_bot)%10;
+
+
+let modelRawValues=[
+rawM1,
+rawM2,
+rawM3,
+rawM4,
+rawM5
+];
+
+let uniqueModelDigits=
+new Set(modelRawValues);
+
+
+if(uniqueModelDigits.size<4){
+
+const fallbackFormulas=[
+(T_top+U_bot)%10,
+(H+U_top)%10,
+sumBot%10,
+(H+sumBot)%10,
+totalSum%10
+];
+
+for(
+let fbVal of fallbackFormulas
+){
+
+const normFb=
+(fbVal%10+10)%10;
+
+uniqueModelDigits.add(
+normFb
+);
+
+if(uniqueModelDigits.size>=6)
+break;
+
+}
+
+}
+
+
+const fList=[
+
+{
+id:1,
+name:"AI โมเดล 01",
+subName:"B + R1",
+set:getUnitDirect(rawM1)
+},
+
+{
+id:2,
+name:"AI โมเดล 02",
+subName:"A + B + C",
+set:getUnitDirect(rawM2)
+},
+
+{
+id:3,
+name:"AI โมเดล 03",
+subName:"A + R1",
+set:getUnitDirect(rawM3)
+},
+
+{
+id:4,
+name:"AI โมเดล 04",
+subName:"C + R2",
+set:getUnitDirect(rawM4)
+},
+
+{
+id:5,
+name:"AI โมเดล 05",
+subName:"10 - R2",
+set:getUnitDirect(rawM5)
+}
+
+];
+
+
+const allowedModelDigits=
+new Set();
+
+fList.forEach(item=>{
+item.set.forEach(d=>{
+allowedModelDigits.add(d);
+});
+});
+
+
+const evaluated=
+fList.map(model=>{
+
+const formulaSet=
+model.set;
+
+let rawRange=[];
+
+let hasCollision=false;
+
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
+
+const val=
+this._normalize(
+anchor+offset
+);
+
+if(
+formulaSet.includes(val)
+){
+
+hasCollision=true;
+
+break;
+
+}
+
+}
+
+
+if(hasCollision){
+
+for(
+let offset=-3;
+offset<=3;
+offset++
+){
+
+rawRange.push(
+this._normalize(
+anchor+offset
+)
+);
+
+}
+
+}else{
+
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
+
+rawRange.push(
+this._normalize(
+anchor+offset
+)
+);
+
+}
+
+}
+
+
+const excludedDigits=
+[
+...new Set(formulaSet)
+];
+
+
+let cleanedPool=
+rawRange.filter(
+dg=>
+!excludedDigits.includes(dg)
+);
+
+
+const generatedPairs=[];
+
+
+formulaSet.forEach(
+sourceDigit=>{
+
+cleanedPool.forEach(
+poolDigit=>{
+
+if(sourceDigit===poolDigit)
+return;
+
+generatedPairs.push({
+
+digitA:sourceDigit,
+
+digitB:poolDigit,
+
+pairStr:
+`${sourceDigit}${poolDigit}`
+
+});
+
+});
+
+}
+);
+
+
+const pMap={};
+
+
+formulaSet.forEach(
+sourceDigit=>{
+
+let pairsForDigit=
+generatedPairs
+.filter(
+p=>p.digitA===sourceDigit
+)
+.map(
+p=>p.pairStr
+);
+
+
+let nextFill=
+(sourceDigit+1)%10;
+
+
+while(
+pairsForDigit.length<5
+){
+
+if(
+nextFill!==sourceDigit&&
+!pairsForDigit.includes(
+`${sourceDigit}${nextFill}`
+)&&
+!excludedDigits.includes(
+nextFill
+)
+){
+
+pairsForDigit.push(
+`${sourceDigit}${nextFill}`
+);
+
+}
+
+nextFill=
+(nextFill+1)%10;
+
+}
+
+
+pairsForDigit=[
+...new Set(pairsForDigit)
+]
+.filter(
+p=>p[0]!==p[1]
+)
+.sort();
+
+
+if(
+pairsForDigit.length>5
+)
+pairsForDigit=
+pairsForDigit.slice(0,5);
+
+
+pMap[sourceDigit]=
+pairsForDigit;
+
+});
+
+
+return{
+
+id:model.id,
+name:model.name,
+subName:model.subName,
+set:model.set,
+pairsMap:pMap
+
+};
+
+});
+
+
+const digitScores={};
+
+
+for(let d=0;d<=9;d++){
+
+digitScores[d]={
+
+digit:d,
+
+modelScore:0,
+
+formula100Score:0,
+
+radarScore:0,
+
+backendScore:0,
+
+winSetScore:0,
+
+totalScore:0
+
+};
+
+}
+
+
+evaluated.forEach(model=>{
+
+model.set.forEach(
+dig=>{
+digitScores[dig]
+.modelScore+=1;
+}
+);
+
+});
+
+
+const maxFormCount=
+Math.max(
+...Object.values(
+formula100Engine.counts
+),
+1
+);
+
+
+for(let d=0;d<=9;d++){
+
+digitScores[d]
+.formula100Score=
+(formula100Engine.counts[d]||0)/
+maxFormCount;
+
+}
+
+
+const X_val=
+(T_bot+U_bot)%10;
+
+const radar1Range=[
+(X_val-1+10)%10,
+X_val,
+(X_val+1)%10
+];
+
+
+const Y_val=
+(H+T_top+U_top)%10;
+
+const radar2Range=[
+(Y_val-1+10)%10,
+Y_val,
+(Y_val+1)%10
+];
+
+
+const Z_val=
+(H+T_top+U_top+T_bot+U_bot)%10;
+
+const radar3Range=[
+(Z_val-1+10)%10,
+Z_val,
+(Z_val+1)%10
+];
+
+
+for(let d=0;d<=9;d++){
+
+let rHits=0;
+
+if(
+radar1Range.includes(d)
+)
+rHits++;
+
+if(
+radar2Range.includes(d)
+)
+rHits++;
+
+if(
+radar3Range.includes(d)
+)
+rHits++;
+
+digitScores[d]
+.radarScore=
+rHits/3;
+
+}
+
+
+const backendFormulasSet=[
+
+(2*H+T_bot)%10,
+(T_top+U_bot)%10,
+sumTop%10,
+Math.abs(T_top-U_top)%10,
+totalSum%10
+
+];
+
+
+for(let d=0;d<=9;d++){
+
+if(
+backendFormulasSet.includes(d)
+)
+digitScores[d]
+.backendScore=1;
+
+}
+
+
+const winCandidate=
+(H+T_top+U_top+T_bot+U_bot)%10;
+
+
+for(let d=0;d<=9;d++){
+
+if(
+d===winCandidate||
+d===(winCandidate+5)%10
+)
+digitScores[d]
+.winSetScore=1;
+
+}
+
+
+for(let d=0;d<=9;d++){
+
+const item=
+digitScores[d];
+
+item.totalScore=
+.35*item.modelScore+
+.25*item.formula100Score+
+.15*item.radarScore+
+.15*item.backendScore+
+.1*item.winSetScore;
+
+if(
+allowedModelDigits.has(d)
+)
+item.totalScore*=1.15;
+
+}
+
+
+const matrixSortedAll=
+Object.values(digitScores)
+.sort(
+(a,b)=>
+b.totalScore-a.totalScore||
+b.digit-a.digit
+);
+
+
+const matrixSorted=
+matrixSortedAll;
+
+
+const allScores=
+matrixSorted.map(
+s=>s.totalScore
+);
+
+const minScore=
+Math.min(...allScores);
+
+const maxScore=
+Math.max(...allScores);
+
+const scoreRange=
+maxScore-minScore||1;
+
+
+const calcConfidence=score=>{
+
+const normalizedPct=
+80+
+(score-minScore)/
+scoreRange*
+18.5;
+
+return Number(
+Math.min(
+98.5,
+Math.max(
+80,
+normalizedPct
+)
+).toFixed(1)
+);
+
+};
+
+
+evaluated.forEach(model=>{
+
+const modelScoreSum=
+model.set.reduce(
+(sum,dig)=>
+sum+
+(
+digitScores[dig]
+.totalScore>0
+?
+digitScores[dig]
+.totalScore
+:
+0
+),
+0
+);
+
+model.aiScore=
+calcConfidence(
+modelScoreSum/2
+);
+
+});
+
+
+evaluated.sort(
+(a,b)=>
+b.aiScore-a.aiScore
+);
+
+evaluated.forEach(
+(model,idx)=>{
+model.isRecommended=
+idx<2;
+}
+);
+
+
+const top3Digits=
+matrixSorted.slice(0,3);
+
+const winSet6Digits=
+matrixSorted.slice(0,6).map(item=>item.digit);
+
+
+/* =========================================================
+TOP 5 FOCUS PAIR RANKING ENGINE & DISTINCT VISUAL MAPPING
+========================================================= */
+
+const pairVotesMap={};
+
+
+evaluated.forEach(
+model=>{
+
+const modelVotedPairsThisModel=
+new Set();
+
+Object.values(
+model.pairsMap
+).forEach(
+pairList=>{
+
+pairList.forEach(
+pStr=>{
+
+const d1_char=
+pStr[0];
+
+const d2_char=
+pStr[1];
+
+if(
+d1_char===d2_char
+)
+return;
+
+const canonicalKey=
+[
+d1_char,
+d2_char
+]
+.sort()
+.join("");
+
+
+if(
+!modelVotedPairsThisModel
+.has(canonicalKey)
+){
+
+modelVotedPairsThisModel
+.add(canonicalKey);
+
+if(
+!pairVotesMap[canonicalKey]
+){
+
+pairVotesMap[canonicalKey]={
+
+canonical:
+canonicalKey,
+
+displayPair:
+pStr,
+
+votes:0,
+
+digitScoreSum:0
+
+};
+
+}
+
+pairVotesMap[
+canonicalKey
+].votes+=1;
+
+}
+
+});
+
+});
+
+});
+
+
+Object.values(
+pairVotesMap
+).forEach(
+item=>{
+
+const dX=
+parseInt(
+item.canonical[0],
+10
+);
+
+const dY=
+parseInt(
+item.canonical[1],
+10
+);
+
+item.digitScoreSum=
+(
+digitScores[dX]?.totalScore||0
+)+
+(
+digitScores[dY]?.totalScore||0
+);
+
+});
+
+
+const sortedPairsAll=
+Object.values(
+pairVotesMap
+)
+.sort(
+(a,b)=>{
+
+if(
+b.votes!==a.votes
+)
+return b.votes-a.votes;
+
+return b.digitScoreSum-
+a.digitScoreSum;
+
+}
+);
+
+
+let top5Pairs=
+sortedPairsAll.slice(0,5);
+
+
+while(
+top5Pairs.length<5&&
+sortedPairsAll.length>
+top5Pairs.length
+){
+
+const nextCandidate=
+sortedPairsAll[
+top5Pairs.length
+];
+
+if(
+nextCandidate&&
+!top5Pairs.includes(
+nextCandidate
+)
+){
+
+top5Pairs.push(
+nextCandidate
+);
+
+}else{
+
+break;
+
+}
+
+}
+
+
+const top5MaxVotes=
+top5Pairs[0]?.votes||5;
+
+/* Rank lookup table to apply distinct metallic styles & micro badges */
+const rankLookup={};
+top5Pairs.forEach((item, idx)=>{
+const key1 = item.displayPair;
+const key2 = item.displayPair.split('').reverse().join('');
+rankLookup[key1] = idx + 1;
+rankLookup[key2] = idx + 1;
+});
+
+
+// Render Top 3 Signal HTML
+const top3SignalHTML = `
+<div class="top3-signal-board">
+  <div class="top3-head">
+    <div>
+      <div class="top3-kicker">TOP 3 DIGIT SIGNAL</div>
+      <div class="top3-title">สามอันดับเลขเด่นประจำงวด</div>
+      <div class="top3-sub">ประมวลผลจาก Neural Matrix & 100 สูตรควอนต์</div>
     </div>
-    `;
+    <div class="top3-badge">HIGH PRECISION</div>
+  </div>
+  <div class="top3-list">
+    ${top3Digits.map((item, idx) => {
+      const rankClass = idx === 0 ? 'rank-one' : idx === 1 ? 'rank-two' : 'rank-three';
+      const rankLabel = idx === 0 ? 'อันดับ 1 (ท็อปเด่น)' : idx === 1 ? 'อันดับ 2 (เด่นรอง)' : 'อันดับ 3 (เด่นร่วม)';
+      const conf = calcConfidence(item.totalScore);
+      return `
+        <div class="top3-row ${rankClass}">
+          <div class="top3-position">#${idx+1}</div>
+          <div class="top3-digit">${item.digit}</div>
+          <div class="top3-info">
+            <div class="top3-label">${rankLabel} <span>Digit Score: ${item.totalScore.toFixed(2)}</span></div>
+            <div class="top3-bar"><div class="top3-bar-fill" style="width:${conf}%"></div></div>
+          </div>
+          <div class="top3-score">${conf}%</div>
+        </div>
+      `;
+    }).join('')}
+  </div>
+  <div class="top3-footnote">
+    <span class="mini-live"></span>
+    <strong>AI Momentum Status:</strong> อัปเดตการวิเคราะห์ดัชนีพร้อมใช้งาน
+  </div>
+</div>
+`;
 
-    container.innerHTML = html;
-  }
+
+// Render Win Set HTML with Refined Minimal Clean Badging
+const winSetHTML = `
+<div class="ind-win-set">
+  <div class="ind-win-header">
+    <div>
+      <div class="ind-win-title">
+        ชุดเลขวิน 6 ตัว
+        <small>WIN SET MATRIX • COMBINATION READY</small>
+      </div>
+    </div>
+    <div class="ind-win-badge">6 DIGITS</div>
+  </div>
+  <div class="ind-win-grid">
+    ${winSet6Digits.map((dg, idx) => `
+      <div class="ind-win-item">
+        <strong>${dg}</strong>
+        <span>POS ${idx+1}</span>
+      </div>
+    `).join('')}
+  </div>
+</div>
+`;
+
+
+// Render Top Models Evaluation HTML
+const modelsHTML = `
+<div class="deep-scan-board">
+  <div class="deep-scan-head">
+    <div>
+      <div class="deep-scan-kicker">MODEL EVALUATION</div>
+      <div class="deep-scan-title">ผลประมวลผล 5 โมเดล AI หลัก</div>
+      <div class="deep-scan-sub">จัดอันดับชุดเจาะ 5 อันดับแรกพร้อมสัญลักษณ์ Rank Clear View</div>
+    </div>
+  </div>
+  <div class="deep-scan-grid">
+    ${evaluated.map((model, idx) => {
+      const cardRankClass = idx === 0 ? 'rank-one' : idx === 1 ? 'rank-two' : 'rank-three';
+      const rankBadge = idx === 0 ? 'TOP MODEL' : idx === 1 ? 'SECOND BEST' : `MODEL 0${idx+1}`;
+      
+      return `
+        <div class="deep-scan-card ${cardRankClass}">
+          <div class="deep-scan-top">
+            <div class="deep-scan-name">
+              <div class="deep-scan-digit">${model.set[0]}</div>
+              <div>
+                <span class="deep-rank-label">MODEL RANK #${idx+1}</span>
+                <div class="deep-scan-model-name">${model.name} (${model.subName})</div>
+              </div>
+            </div>
+            <div class="deep-scan-rank">${rankBadge}</div>
+            <div class="deep-scan-score">${model.aiScore}%</div>
+          </div>
+          <div class="deep-scan-pairs">
+            ${(model.pairsMap[model.set[0]] || []).slice(0,5).map(pStr => {
+              const jueRank = rankLookup[pStr] || 0;
+              const jueClass = jueRank > 0 ? `jue-rank-${jueRank}` : '';
+              const rankTagHTML = jueRank > 0 ? `<div class="rank-tag">TOP ${jueRank}</div>` : '';
+              return `
+                <div class="deep-pair ${jueClass}" data-copy="${pStr}">
+                  ${rankTagHTML}
+                  <strong>${pStr}</strong>
+                  <small>JUE</small>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }).join('')}
+  </div>
+</div>
+`;
+
+
+const finalHTML = `
+<div class="result-shell">
+  <div class="result-head">
+    <div>
+      <div class="result-kicker">QUANT SYSTEM RESULT</div>
+      <div class="result-title">สรุปผลการวิเคราะห์ AI</div>
+    </div>
+    <div class="result-note">Mester Lotto VIP+</div>
+  </div>
+  ${top3SignalHTML}
+  ${winSetHTML}
+  ${modelsHTML}
+</div>
+`;
+
+document.getElementById("resultContainer").innerHTML = finalHTML;
+
+}
+
 };
 
 </script>
-
 </body>
 </html>
