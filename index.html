@@ -1,72 +1,5 @@
 <!DOCTYPE html>
 <html lang="th">
- <!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Mester Lotto VIP+ — Premium Quant Intelligence</title>
-<style>
-html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#fff}
-iframe{display:block;width:100%;height:100%;border:0}
-#loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#F4FBF7;color:#0A6647;font-family:Arial,sans-serif;font-weight:700;z-index:9999}
-</style>
-</head>
-<body>
-<div id="loader">กำลังโหลด Mester Lotto VIP+...</div>
-<iframe id="app" title="Mester Lotto VIP+"></iframe>
-
-<script>
-/*
-  Mester Lotto VIP+ — FULL AUDITED BUILD
-  ใช้โค้ดโปรเจกต์เดิมเป็นฐาน
-  - Login / credential เดิม
-  - Top 1 ทอง
-  - Top 2 เงินแบบชัดเจน
-  - Top 3 ทองแดง
-  - Top 4–5 แยกสีแต่ไม่แย่งความเด่น
-  - ชุดวิน 6 ตัวมีตัวบอก TOP 1–6 ในพื้นที่เดิม
-  - Snow layer อยู่หลัง UI และไม่บังตัวเลข
-*/
-
-const FULL_APP_GZIP_BASE64 = `H4sIAAAAAAACA+1dW3PbRrL+K4b+...`;
-
-async function boot(){
-  try{
-    const raw = Uint8Array.from(
-      atob(FULL_APP_GZIP_BASE64),
-      c => c.charCodeAt(0)
-    );
-
-    if(typeof DecompressionStream==="undefined"){
-      throw new Error("BROWSER_DOES_NOT_SUPPORT_DECOMPRESSION_STREAM");
-    }
-
-    const stream = new Blob([raw]).stream().pipeThrough(
-      new DecompressionStream("gzip")
-    );
-
-    const html = await new Response(stream).text();
-
-    const frame = document.getElementById("app");
-
-    frame.srcdoc = html;
-
-    frame.addEventListener("load",()=>{
-      document.getElementById("loader").remove();
-    },{once:true});
-
-  }catch(error){
-    document.getElementById("loader").innerHTML =
-      "ไม่สามารถเปิดโปรเจกต์ได้ กรุณาใช้ Chrome / Edge รุ่นปัจจุบัน";
-    console.error(error);
-  }
-}
-
-boot();
-</script>
-</body>
-</html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
@@ -117,7 +50,6 @@ boot();
 --ease:cubic-bezier(.2,.8,.2,1);
 }
 
-
 *{
 box-sizing:border-box;
 margin:0;
@@ -125,11 +57,9 @@ padding:0;
 -webkit-tap-highlight-color:transparent;
 }
 
-
 html{
 scroll-behavior:smooth;
 }
-
 
 body{
 min-height:100vh;
@@ -142,24 +72,20 @@ radial-gradient(circle at 88% 15%,rgba(234,179,8,.13),transparent 34%),
 linear-gradient(135deg,#fff,#F0FAF5 58%,#E5F3ED);
 }
 
-
 button,
 input{
 font-family:'Prompt',sans-serif;
 }
-
 
 button{
 -webkit-user-select:none;
 user-select:none;
 }
 
-
 ::selection{
 background:rgba(10,102,71,.18);
 color:var(--text);
 }
-
 
 #snowCanvas{
 position:fixed;
@@ -167,10 +93,8 @@ inset:0;
 width:100%;
 height:100%;
 pointer-events:none;
-z-index:3;
-mix-blend-mode:normal;
+z-index:999;
 }
-
 
 .ambient{
 position:fixed;
@@ -179,7 +103,6 @@ pointer-events:none;
 z-index:0;
 overflow:hidden;
 }
-
 
 .ambient::before,
 .ambient::after{
@@ -190,7 +113,6 @@ filter:blur(75px);
 opacity:.34;
 }
 
-
 .ambient::before{
 width:320px;
 height:320px;
@@ -199,7 +121,6 @@ left:-90px;
 background:rgba(16,185,129,.34);
 }
 
-
 .ambient::after{
 width:340px;
 height:340px;
@@ -207,7 +128,6 @@ right:-100px;
 bottom:8%;
 background:rgba(234,179,8,.20);
 }
-
 
 .grid-overlay{
 position:absolute;
@@ -219,7 +139,6 @@ linear-gradient(90deg,rgba(10,102,71,.12) 1px,transparent 1px);
 background-size:34px 34px;
 mask-image:linear-gradient(to bottom,#000,transparent 88%);
 }
-
 
 .app-shell{
 width:100%;
@@ -234,21 +153,19 @@ position:relative;
 z-index:2;
 }
 
-
 .app-card{
 position:relative;
 overflow:hidden;
 min-height:calc(100vh - 24px);
 border:1px solid rgba(10,102,71,.22);
 border-radius:26px;
-background:rgba(255,255,255,.88);
+background:rgba(255,255,255,.95);
 box-shadow:
 0 25px 60px rgba(10,102,71,.13),
 inset 0 1px 0 #fff;
 backdrop-filter:blur(24px);
 -webkit-backdrop-filter:blur(24px);
 }
-
 
 .app-card::before{
 content:"";
@@ -270,12 +187,10 @@ background-size:240% 100%;
 animation:spectrumFlow 7s ease-in-out infinite;
 }
 
-
 @keyframes spectrumFlow{
 0%,100%{background-position:0 50%}
 50%{background-position:100% 50%}
 }
-
 
 .app-inner{
 padding:
@@ -283,7 +198,6 @@ clamp(14px,3vw,18px)
 clamp(12px,3vw,16px)
 22px;
 }
-
 
 .top-nav{
 display:flex;
@@ -293,14 +207,12 @@ gap:8px;
 margin-bottom:14px;
 }
 
-
 .brand-mini{
 display:flex;
 align-items:center;
 gap:9px;
 min-width:0;
 }
-
 
 .brand-mark{
 width:38px;
@@ -320,7 +232,6 @@ inset 0 1px 0 rgba(255,255,255,.38);
 position:relative;
 }
 
-
 .brand-mark::after{
 content:"";
 position:absolute;
@@ -329,13 +240,11 @@ border-radius:8px;
 border:1px solid rgba(255,255,255,.32);
 }
 
-
 .brand-name{
 font-size:.82rem;
 font-weight:800;
 letter-spacing:.2px;
 }
-
 
 .brand-sub{
 margin-top:1px;
@@ -343,7 +252,6 @@ font-size:.55rem;
 font-weight:600;
 color:var(--muted);
 }
-
 
 .system-pill{
 display:flex;
@@ -359,7 +267,6 @@ font-weight:800;
 white-space:nowrap;
 }
 
-
 .live-dot{
 width:6px;
 height:6px;
@@ -370,12 +277,10 @@ box-shadow:0 0 0 3px rgba(16,185,129,.22);
 animation:livePulse 1.8s ease-in-out infinite;
 }
 
-
 @keyframes livePulse{
 0%,100%{transform:scale(1);opacity:1}
 50%{transform:scale(.72);opacity:.45}
 }
-
 
 .hero,
 .login-panel,
@@ -392,7 +297,6 @@ border:1px solid rgba(10,102,71,.18);
 box-shadow:var(--shadowSoft);
 }
 
-
 .hero,
 .login-panel,
 .command-center,
@@ -404,7 +308,6 @@ background:
 linear-gradient(135deg,#fff,#F2F9F5);
 }
 
-
 .hero{
 padding:16px 14px 14px;
 margin-bottom:10px;
@@ -413,7 +316,6 @@ radial-gradient(circle at 95% 5%,rgba(16,185,129,.18),transparent 42%),
 radial-gradient(circle at 5% 95%,rgba(234,179,8,.12),transparent 38%),
 linear-gradient(135deg,#fff,#EEF9F2);
 }
-
 
 .hero::after{
 content:"";
@@ -429,7 +331,6 @@ box-shadow:
 0 0 0 38px rgba(16,185,129,.025);
 pointer-events:none;
 }
-
 
 .hero-kicker{
 position:relative;
@@ -448,7 +349,6 @@ font-weight:800;
 letter-spacing:.8px;
 }
 
-
 .hero-kicker span{
 width:5px;
 height:5px;
@@ -456,7 +356,6 @@ border-radius:50%;
 background:var(--green);
 box-shadow:0 0 6px rgba(16,185,129,.75);
 }
-
 
 .hero h1{
 position:relative;
@@ -466,7 +365,6 @@ line-height:1.15;
 letter-spacing:-.4px;
 font-weight:800;
 }
-
 
 .hero h1 em{
 font-style:normal;
@@ -485,12 +383,10 @@ background-size:220% 100%;
 animation:titleGradient 7s ease-in-out infinite;
 }
 
-
 @keyframes titleGradient{
 0%,100%{background-position:0 50%}
 50%{background-position:100% 50%}
 }
-
 
 .hero p{
 position:relative;
@@ -501,11 +397,9 @@ line-height:1.4;
 color:var(--muted);
 }
 
-
 .hero p b{
 color:var(--text2);
 }
-
 
 .hero-meta{
 position:relative;
@@ -515,7 +409,6 @@ flex-wrap:wrap;
 gap:5px;
 margin-top:10px;
 }
-
 
 .meta-chip{
 padding:4px 9px;
@@ -528,14 +421,12 @@ font-weight:700;
 box-shadow:0 2px 6px rgba(10,102,71,.04);
 }
 
-
 .login-dashboard{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:7px;
 margin-bottom:10px;
 }
-
 
 .mini-stat{
 padding:10px 12px;
@@ -545,13 +436,11 @@ border:1px solid rgba(10,102,71,.15);
 box-shadow:var(--shadowSoft);
 }
 
-
 .mini-stat-label{
 color:var(--muted);
 font-size:.50rem;
 font-weight:700;
 }
-
 
 .mini-stat-value{
 margin-top:3px;
@@ -560,11 +449,9 @@ font-size:1rem;
 font-weight:700;
 }
 
-
 .mini-stat-value.green{
 color:var(--emerald);
 }
-
 
 .packages{
 display:grid;
@@ -572,7 +459,6 @@ grid-template-columns:repeat(2,1fr);
 gap:7px;
 margin-bottom:10px;
 }
-
 
 .package{
 position:relative;
@@ -589,13 +475,11 @@ box-shadow .22s ease,
 border-color .22s ease;
 }
 
-
 .package:hover{
 transform:translateY(-1px);
 box-shadow:0 9px 22px rgba(10,102,71,.08);
 border-color:rgba(10,102,71,.24);
 }
-
 
 .package::before{
 content:"";
@@ -606,7 +490,6 @@ right:0;
 height:2px;
 background:var(--emerald);
 }
-
 
 .package::after{
 content:"";
@@ -619,11 +502,9 @@ border-radius:50%;
 background:rgba(16,185,129,.055);
 }
 
-
 .package:nth-child(2)::before{background:var(--cyan)}
 .package:nth-child(3)::before{background:var(--gold2)}
 .package:nth-child(4)::before{background:var(--purple)}
-
 
 .package-title{
 position:relative;
@@ -632,7 +513,6 @@ font-size:.53rem;
 font-weight:700;
 color:var(--muted);
 }
-
 
 .package-price{
 position:relative;
@@ -643,7 +523,6 @@ font-size:1.12rem;
 font-weight:700;
 }
 
-
 .package-desc{
 position:relative;
 z-index:1;
@@ -651,7 +530,6 @@ margin-top:2px;
 font-size:.47rem;
 color:var(--muted2);
 }
-
 
 .contact-btn{
 width:100%;
@@ -681,18 +559,15 @@ box-shadow .2s ease,
 background-position .35s ease;
 }
 
-
 .contact-btn:hover{
 transform:translateY(-1px);
 background-position:100% 50%;
 box-shadow:0 9px 22px rgba(10,102,71,.23);
 }
 
-
 .login-panel{
 padding:14px;
 }
-
 
 .section-eyebrow{
 color:var(--emerald);
@@ -702,14 +577,12 @@ letter-spacing:.8px;
 text-align:center;
 }
 
-
 .login-heading{
 margin-top:3px;
 font-size:.95rem;
 font-weight:800;
 text-align:center;
 }
-
 
 .login-description{
 margin-top:3px;
@@ -718,7 +591,6 @@ color:var(--muted);
 font-size:.55rem;
 text-align:center;
 }
-
 
 input{
 width:100%;
@@ -734,18 +606,15 @@ text-align:center;
 transition:.2s ease;
 }
 
-
 input::placeholder{
 color:var(--muted2);
 }
-
 
 input:focus{
 background:#fff;
 border-color:rgba(10,102,71,.55);
 box-shadow:0 0 0 3px rgba(10,102,71,.10);
 }
-
 
 .primary-btn,
 .calculate-btn{
@@ -776,7 +645,6 @@ box-shadow .2s ease,
 background-position .35s ease;
 }
 
-
 .primary-btn::after,
 .calculate-btn::after{
 content:"";
@@ -797,17 +665,14 @@ transition:left .55s ease;
 pointer-events:none;
 }
 
-
 .primary-btn:hover::after,
 .calculate-btn:hover:not(:disabled)::after{
 left:130%;
 }
 
-
 .primary-btn{
 margin-top:8px;
 }
-
 
 .primary-btn:hover,
 .calculate-btn:hover:not(:disabled){
@@ -818,12 +683,10 @@ box-shadow:
 background-position:100% 50%;
 }
 
-
 .primary-btn:active,
 .calculate-btn:active:not(:disabled){
 transform:translateY(0);
 }
-
 
 #errorMsg{
 display:none;
@@ -834,11 +697,9 @@ font-size:.56rem;
 font-weight:700;
 }
 
-
 #calculatorView{
 display:none;
 }
-
 
 .engine-strip{
 display:grid;
@@ -846,7 +707,6 @@ grid-template-columns:1fr 1fr 1fr;
 gap:6px;
 margin-bottom:10px;
 }
-
 
 .engine-card{
 position:relative;
@@ -858,7 +718,6 @@ border:1px solid rgba(10,102,71,.14);
 box-shadow:var(--shadowSoft);
 }
 
-
 .engine-card::before{
 content:"";
 position:absolute;
@@ -869,16 +728,13 @@ width:3px;
 background:linear-gradient(180deg,#0A6647,#10B981);
 }
 
-
 .engine-card:nth-child(2)::before{
 background:linear-gradient(180deg,#0D7A55,#14B8A6);
 }
 
-
 .engine-card:nth-child(3)::before{
 background:linear-gradient(180deg,#9E6C02,#EAB308);
 }
-
 
 .engine-label{
 display:flex;
@@ -892,7 +748,6 @@ overflow:hidden;
 text-overflow:ellipsis;
 }
 
-
 .engine-value{
 display:flex;
 align-items:center;
@@ -903,11 +758,9 @@ font-size:.67rem;
 font-weight:700;
 }
 
-
 .engine-value.cyan{color:var(--cyan)}
 .engine-value.green{color:var(--emerald)}
 .engine-value.gold{color:var(--gold)}
-
 
 .total-dot-wrap{
 display:inline-flex;
@@ -917,7 +770,6 @@ width:8px;
 height:8px;
 }
 
-
 .total-dot{
 width:4px;
 height:4px;
@@ -925,17 +777,14 @@ border-radius:50%;
 background:var(--green);
 }
 
-
 .total-dot.ripple{
 animation:microRipple .85s ease-out;
 }
-
 
 @keyframes microRipple{
 0%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}
 100%{box-shadow:0 0 0 9px rgba(16,185,129,0)}
 }
-
 
 .last-session{
 display:none;
@@ -951,19 +800,16 @@ color:var(--muted);
 font-size:.53rem;
 }
 
-
 .last-session strong{
 color:var(--gold);
 font-family:'IBM Plex Mono',monospace;
 font-size:.61rem;
 }
 
-
 .command-center{
 padding:12px;
 margin-bottom:10px;
 }
-
 
 .command-header{
 display:flex;
@@ -973,19 +819,16 @@ gap:8px;
 margin-bottom:10px;
 }
 
-
 .command-title{
 font-size:.87rem;
 font-weight:800;
 }
-
 
 .command-sub{
 margin-top:1px;
 color:var(--muted);
 font-size:.51rem;
 }
-
 
 .command-badge{
 padding:4px 8px;
@@ -998,13 +841,11 @@ font-size:.45rem;
 font-weight:700;
 }
 
-
 .input-grid{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:7px;
 }
-
 
 .field-card{
 padding:8px;
@@ -1012,7 +853,6 @@ border-radius:12px;
 background:var(--surface2);
 border:1px solid rgba(10,102,71,.15);
 }
-
 
 .field-label{
 display:block;
@@ -1026,7 +866,6 @@ overflow:hidden;
 text-overflow:ellipsis;
 }
 
-
 .field-card input{
 height:42px;
 background:#fff;
@@ -1036,14 +875,12 @@ font-weight:700;
 letter-spacing:2px;
 }
 
-
 .action-row{
 display:grid;
 grid-template-columns:1fr 82px;
 gap:7px;
 margin-top:8px;
 }
-
 
 .clear-btn{
 height:44px;
@@ -1059,19 +896,16 @@ background .2s ease,
 border-color .2s ease;
 }
 
-
 .clear-btn:hover{
 transform:translateY(-1px);
 background:#fff;
 border-color:rgba(10,102,71,.28);
 }
 
-
 .calculate-btn:disabled{
 opacity:.55;
 cursor:not-allowed;
 }
-
 
 #aiScannerBox{
 display:none;
@@ -1087,7 +921,6 @@ radial-gradient(circle at center,rgba(16,185,129,.12),transparent 60%),
 border:1px solid rgba(10,102,71,.18);
 }
 
-
 .scanner-ring{
 position:relative;
 width:52px;
@@ -1096,7 +929,6 @@ margin:0 auto 10px;
 border-radius:50%;
 border:1px solid rgba(10,102,71,.20);
 }
-
 
 .scanner-ring::before{
 content:"";
@@ -1109,7 +941,6 @@ border-radius:50%;
 animation:spin 1s linear infinite;
 }
 
-
 .scanner-ring::after{
 content:"";
 position:absolute;
@@ -1119,17 +950,14 @@ background:var(--gold2);
 animation:scannerPulse .9s ease-in-out infinite;
 }
 
-
 @keyframes spin{
 to{transform:rotate(360deg)}
 }
-
 
 @keyframes scannerPulse{
 0%,100%{transform:scale(.7);opacity:.5}
 50%{transform:scale(1);opacity:1}
 }
-
 
 #aiScannerText{
 color:var(--emerald);
@@ -1138,11 +966,9 @@ font-size:.55rem;
 font-weight:700;
 }
 
-
 .result-shell{
 animation:resultIn .5s var(--ease);
 }
-
 
 @keyframes resultIn{
 from{
@@ -1155,7 +981,6 @@ transform:none;
 }
 }
 
-
 .result-head{
 display:flex;
 justify-content:space-between;
@@ -1163,7 +988,6 @@ align-items:flex-end;
 gap:8px;
 margin:2px 2px 8px;
 }
-
 
 .result-kicker{
 color:var(--emerald);
@@ -1173,19 +997,16 @@ font-weight:800;
 letter-spacing:.8px;
 }
 
-
 .result-title{
 margin-top:1px;
 font-size:1.08rem;
 font-weight:800;
 }
 
-
 .result-note{
 color:var(--muted);
 font-size:.49rem;
 }
-
 
 .top3-signal-board{
 padding:12px;
@@ -1204,7 +1025,6 @@ linear-gradient(
 );
 border-color:rgba(10,102,71,.19);
 }
-
 
 .top3-signal-board::before{
 content:"";
@@ -1226,7 +1046,6 @@ background-size:200% 100%;
 animation:top3Flow 5s ease-in-out infinite;
 }
 
-
 @keyframes top3Flow{
 0%,100%{
 background-position:0 50%;
@@ -1238,7 +1057,6 @@ opacity:1;
 }
 }
 
-
 .top3-head{
 position:relative;
 z-index:2;
@@ -1249,7 +1067,6 @@ gap:8px;
 margin-bottom:9px;
 }
 
-
 .top3-kicker{
 color:var(--emerald);
 font-family:'IBM Plex Mono',monospace;
@@ -1258,20 +1075,17 @@ font-weight:800;
 letter-spacing:1px;
 }
 
-
 .top3-title{
 margin-top:2px;
 font-size:.84rem;
 font-weight:800;
 }
 
-
 .top3-sub{
 margin-top:1px;
 color:var(--muted);
 font-size:.45rem;
 }
-
 
 .top3-badge{
 padding:4px 8px;
@@ -1285,7 +1099,6 @@ font-weight:800;
 white-space:nowrap;
 }
 
-
 .top3-list{
 position:relative;
 z-index:2;
@@ -1294,12 +1107,11 @@ flex-direction:column;
 gap:5px;
 }
 
-
 .top3-row{
 position:relative;
 overflow:hidden;
 display:grid;
-grid-template-columns:27px 38px 1fr 53px;
+grid-template-columns:34px 38px 1fr 53px;
 align-items:center;
 gap:7px;
 min-height:42px;
@@ -1313,13 +1125,11 @@ box-shadow .25s ease,
 border-color .25s ease;
 }
 
-
 .top3-row:hover{
 transform:translateY(-1px);
 border-color:rgba(16,185,129,.34);
 box-shadow:0 6px 16px rgba(10,102,71,.07);
 }
-
 
 .top3-row::before{
 content:"";
@@ -1340,16 +1150,13 @@ animation:top3Sweep 6s ease-in-out infinite;
 pointer-events:none;
 }
 
-
 .top3-row:nth-child(2)::before{
 animation-delay:1.2s;
 }
 
-
 .top3-row:nth-child(3)::before{
 animation-delay:2.4s;
 }
-
 
 @keyframes top3Sweep{
 0%,45%{
@@ -1365,7 +1172,6 @@ opacity:0;
 }
 }
 
-
 .top3-row.rank-one{
 background:
 linear-gradient(
@@ -1376,56 +1182,51 @@ rgba(247,252,249,.96)
 border-color:rgba(158,108,2,.24);
 }
 
-
 .top3-row.rank-two{
 background:
 linear-gradient(
 90deg,
-rgba(225,248,237,.70),
+rgba(235,240,238,.90),
 rgba(247,252,249,.96)
 );
-border-color:rgba(10,102,71,.19);
+border-color:rgba(110,126,120,.30);
 }
-
 
 .top3-row.rank-three{
 background:
 linear-gradient(
 90deg,
-rgba(8,115,128,.045),
+rgba(224,249,247,.70),
 rgba(247,252,249,.96)
 );
-border-color:rgba(8,115,128,.17);
+border-color:rgba(8,115,128,.18);
 }
-
 
 .top3-position{
 position:relative;
 z-index:2;
 display:flex;
+flex-direction:column;
 align-items:center;
 justify-content:center;
 font-family:'IBM Plex Mono',monospace;
-font-size:.48rem;
+font-size:.44rem;
 font-weight:800;
 color:var(--muted2);
+line-height:1.1;
 }
-
 
 .top3-row.rank-one .top3-position{
 color:var(--gold);
 }
 
-
 .top3-row.rank-two .top3-position{
-color:var(--emerald);
+color:#4A5E57;
 }
-
 
 .top3-row.rank-three .top3-position{
 color:var(--cyan);
 }
-
 
 .top3-digit{
 position:relative;
@@ -1452,7 +1253,6 @@ font-size:.92rem;
 font-weight:800;
 }
 
-
 .top3-row.rank-one .top3-digit{
 color:#5F4300;
 background:
@@ -1464,16 +1264,19 @@ linear-gradient(
 border-color:rgba(158,108,2,.34);
 }
 
-
 .top3-row.rank-two .top3-digit{
+color:#263833;
 background:
 linear-gradient(
 135deg,
-#0A6647,
-#10B981
+#E2E8E6,
+#BFCBCA
 );
+border-color:rgba(110,126,120,.45);
+box-shadow:
+0 4px 10px rgba(110,126,120,.15),
+inset 0 1px 0 rgba(255,255,255,.65);
 }
-
 
 .top3-row.rank-three .top3-digit{
 background:
@@ -1484,13 +1287,11 @@ linear-gradient(
 );
 }
 
-
 .top3-info{
 position:relative;
 z-index:2;
 min-width:0;
 }
-
 
 .top3-label{
 display:flex;
@@ -1501,13 +1302,11 @@ font-size:.49rem;
 font-weight:800;
 }
 
-
 .top3-label span{
 color:var(--muted);
 font-size:.41rem;
 font-weight:600;
 }
-
 
 .top3-bar{
 position:relative;
@@ -1518,7 +1317,6 @@ border-radius:99px;
 background:#DDEDE5;
 overflow:hidden;
 }
-
 
 .top3-bar-fill{
 position:absolute;
@@ -1534,7 +1332,6 @@ linear-gradient(
 transition:width .7s var(--ease);
 }
 
-
 .top3-row.rank-one .top3-bar-fill{
 background:
 linear-gradient(
@@ -1545,16 +1342,15 @@ linear-gradient(
 );
 }
 
-
 .top3-row.rank-two .top3-bar-fill{
 background:
 linear-gradient(
 90deg,
-#0A6647,
-#10B981
+#53645E,
+#83968E,
+#4A5E57
 );
 }
-
 
 .top3-row.rank-three .top3-bar-fill{
 background:
@@ -1564,7 +1360,6 @@ linear-gradient(
 #14B8A6
 );
 }
-
 
 .top3-score{
 position:relative;
@@ -1576,16 +1371,17 @@ font-weight:800;
 color:var(--emerald);
 }
 
-
 .top3-row.rank-one .top3-score{
 color:var(--gold);
 }
 
+.top3-row.rank-two .top3-score{
+color:#4A5E57;
+}
 
 .top3-row.rank-three .top3-score{
 color:var(--cyan);
 }
-
 
 .top3-footnote{
 position:relative;
@@ -1602,11 +1398,9 @@ font-size:.42rem;
 text-align:center;
 }
 
-
 .top3-footnote strong{
 color:var(--text2);
 }
-
 
 .mini-live{
 width:5px;
@@ -1617,12 +1411,10 @@ box-shadow:0 0 0 3px rgba(16,185,129,.12);
 animation:livePulse 1.8s ease-in-out infinite;
 }
 
-
 .stats-analytics-card{
 padding:11px 12px;
 margin-bottom:9px;
 }
-
 
 .stats-flex{
 display:flex;
@@ -1631,12 +1423,10 @@ justify-content:space-between;
 margin-bottom:8px;
 }
 
-
 .stats-title{
 font-size:.75rem;
 font-weight:800;
 }
-
 
 .stats-badge{
 padding:3px 8px;
@@ -1649,7 +1439,6 @@ font-size:.44rem;
 font-weight:700;
 }
 
-
 .ratio-bar-container{
 display:flex;
 width:100%;
@@ -1661,20 +1450,17 @@ background:var(--surface3);
 border:1px solid rgba(10,102,71,.10);
 }
 
-
 .ratio-even{
 height:100%;
 background:linear-gradient(90deg,#0A6647,#10B981);
 transition:width .4s var(--ease);
 }
 
-
 .ratio-odd{
 height:100%;
 background:linear-gradient(90deg,#9E6C02,#EAB308);
 transition:width .4s var(--ease);
 }
-
 
 .ratio-legend{
 display:flex;
@@ -1684,7 +1470,6 @@ font-family:'IBM Plex Mono',monospace;
 font-size:.46rem;
 font-weight:700;
 }
-
 
 .section-marker{
 display:flex;
@@ -1696,7 +1481,6 @@ font-size:.46rem;
 font-weight:800;
 letter-spacing:.8px;
 }
-
 
 .section-marker::after{
 content:"";
@@ -1710,12 +1494,10 @@ transparent
 );
 }
 
-
 .overview-panel{
 padding:12px;
 margin-bottom:9px;
 }
-
 
 .overview-head{
 display:flex;
@@ -1725,19 +1507,16 @@ gap:8px;
 margin-bottom:9px;
 }
 
-
 .overview-title{
 font-size:.80rem;
 font-weight:800;
 }
-
 
 .overview-sub{
 margin-top:2px;
 color:var(--muted);
 font-size:.46rem;
 }
-
 
 .overview-badge{
 padding:4px 8px;
@@ -1750,7 +1529,6 @@ font-size:.44rem;
 font-weight:700;
 }
 
-
 .overview-bars{
 display:grid;
 grid-template-columns:repeat(10,1fr);
@@ -1758,7 +1536,6 @@ gap:4px;
 align-items:end;
 padding:4px 2px 0;
 }
-
 
 .overview-bar{
 position:relative;
@@ -1781,13 +1558,11 @@ border-color .22s ease,
 box-shadow .22s ease;
 }
 
-
 .overview-bar:hover{
 transform:translateY(-2px);
 border-color:rgba(10,102,71,.28);
 box-shadow:0 6px 14px rgba(10,102,71,.07);
 }
-
 
 .overview-bar::before{
 content:"";
@@ -1808,7 +1583,6 @@ box-shadow:
 transition:height .7s var(--ease);
 }
 
-
 .overview-bar::after{
 content:"";
 position:absolute;
@@ -1818,7 +1592,6 @@ bottom:0;
 height:1px;
 background:rgba(10,102,71,.13);
 }
-
 
 .overview-bar.rank-1{
 border-color:rgba(158,108,2,.34);
@@ -1832,16 +1605,19 @@ box-shadow:
 0 5px 15px rgba(158,108,2,.08);
 }
 
-
 .overview-bar.rank-2{
-border-color:rgba(10,102,71,.27);
+border-color:rgba(110,126,120,.35);
+background:
+linear-gradient(
+180deg,
+rgba(226,232,230,.40),
+rgba(247,252,249,.95)
+);
 }
-
 
 .overview-bar.rank-3{
 border-color:rgba(8,115,128,.28);
 }
-
 
 .overview-rank{
 position:absolute;
@@ -1860,27 +1636,23 @@ color:var(--muted);
 white-space:nowrap;
 }
 
-
 .overview-bar.rank-1 .overview-rank{
 color:var(--gold);
 border-color:rgba(158,108,2,.20);
 background:rgba(254,249,195,.88);
 }
 
-
 .overview-bar.rank-2 .overview-rank{
-color:var(--emerald);
-border-color:rgba(10,102,71,.18);
-background:rgba(227,248,238,.90);
+color:#4A5E57;
+border-color:rgba(110,126,120,.30);
+background:rgba(235,240,238,.95);
 }
-
 
 .overview-bar.rank-3 .overview-rank{
 color:var(--cyan);
 border-color:rgba(8,115,128,.18);
 background:rgba(224,249,247,.90);
 }
-
 
 .overview-digit{
 position:absolute;
@@ -1894,21 +1666,17 @@ font-size:.55rem;
 font-weight:800;
 }
 
-
 .overview-bar.rank-1 .overview-digit{
 color:#5F4300;
 }
 
-
 .overview-bar.rank-2 .overview-digit{
-color:var(--emerald);
+color:#263833;
 }
-
 
 .overview-bar.rank-3 .overview-digit{
 color:var(--cyan);
 }
-
 
 .overview-score{
 position:absolute;
@@ -1923,21 +1691,17 @@ color:var(--muted);
 white-space:nowrap;
 }
 
-
 .overview-bar.rank-1 .overview-score{
 color:var(--gold);
 }
 
-
 .overview-bar.rank-2 .overview-score{
-color:var(--emerald);
+color:#4A5E57;
 }
-
 
 .overview-bar.rank-3 .overview-score{
 color:var(--cyan);
 }
-
 
 .overview-axis{
 display:flex;
@@ -1947,7 +1711,6 @@ color:var(--muted2);
 font-family:'IBM Plex Mono',monospace;
 font-size:.41rem;
 }
-
 
 .deep-scan-board{
 padding:12px;
@@ -1966,7 +1729,6 @@ linear-gradient(
 );
 border-color:rgba(10,102,71,.19);
 }
-
 
 .deep-scan-board::before{
 content:"";
@@ -1987,7 +1749,6 @@ transparent
 opacity:.75;
 }
 
-
 .deep-scan-head{
 display:flex;
 justify-content:space-between;
@@ -1995,7 +1756,6 @@ align-items:flex-start;
 gap:8px;
 margin-bottom:9px;
 }
-
 
 .deep-scan-kicker{
 color:var(--emerald);
@@ -2005,13 +1765,11 @@ font-weight:800;
 letter-spacing:1px;
 }
 
-
 .deep-scan-title{
 margin-top:2px;
 font-size:.83rem;
 font-weight:800;
 }
-
 
 .deep-scan-sub{
 margin-top:1px;
@@ -2019,13 +1777,11 @@ color:var(--muted);
 font-size:.45rem;
 }
 
-
 .deep-scan-grid{
 display:grid;
 grid-template-columns:1fr;
 gap:6px;
 }
-
 
 .deep-scan-card{
 position:relative;
@@ -2044,12 +1800,10 @@ transform .22s var(--ease),
 box-shadow .22s ease;
 }
 
-
 .deep-scan-card:hover{
 transform:translateY(-1px);
 box-shadow:0 7px 16px rgba(10,102,71,.065);
 }
-
 
 .deep-scan-card::before{
 content:"";
@@ -2060,7 +1814,6 @@ bottom:0;
 width:3px;
 background:linear-gradient(180deg,#9E6C02,#EAB308);
 }
-
 
 .deep-scan-card::after{
 content:"";
@@ -2074,26 +1827,21 @@ background:rgba(234,179,8,.045);
 pointer-events:none;
 }
 
-
 .deep-scan-card.rank-two::before{
-background:linear-gradient(180deg,#0A6647,#10B981);
+background:linear-gradient(180deg,#70827B,#9CB0A7);
 }
-
 
 .deep-scan-card.rank-two::after{
-background:rgba(16,185,129,.045);
+background:rgba(110,126,120,.045);
 }
-
 
 .deep-scan-card.rank-three::before{
 background:linear-gradient(180deg,#087380,#14B8A6);
 }
 
-
 .deep-scan-card.rank-three::after{
 background:rgba(20,184,166,.045);
 }
-
 
 .deep-scan-top{
 position:relative;
@@ -2105,7 +1853,6 @@ gap:6px;
 margin-bottom:7px;
 }
 
-
 .deep-scan-name{
 display:flex;
 align-items:center;
@@ -2113,7 +1860,6 @@ gap:7px;
 font-size:.55rem;
 font-weight:800;
 }
-
 
 .deep-rank-label{
 display:block;
@@ -2124,7 +1870,6 @@ font-weight:800;
 letter-spacing:.5px;
 color:var(--muted);
 }
-
 
 .deep-scan-digit{
 width:29px;
@@ -2149,21 +1894,19 @@ font-size:.76rem;
 font-weight:800;
 }
 
-
 .deep-scan-card.rank-two .deep-scan-digit{
-color:#fff;
+color:#263833;
 background:
 linear-gradient(
 135deg,
-#0A6647,
-#10B981
+#E2E8E6,
+#BFCBCA
 );
-border-color:rgba(16,185,129,.40);
+border-color:rgba(110,126,120,.45);
 box-shadow:
-0 4px 10px rgba(10,102,71,.10),
-inset 0 1px 0 rgba(255,255,255,.25);
+0 4px 10px rgba(110,126,120,.12),
+inset 0 1px 0 rgba(255,255,255,.65);
 }
-
 
 .deep-scan-card.rank-three .deep-scan-digit{
 color:#fff;
@@ -2179,7 +1922,6 @@ box-shadow:
 inset 0 1px 0 rgba(255,255,255,.25);
 }
 
-
 .deep-scan-rank{
 padding:3px 6px;
 border-radius:6px;
@@ -2191,20 +1933,17 @@ background:rgba(254,249,195,.78);
 border:1px solid rgba(158,108,2,.18);
 }
 
-
 .deep-scan-card.rank-two .deep-scan-rank{
-color:var(--emerald);
-background:rgba(227,248,238,.82);
-border-color:rgba(10,102,71,.17);
+color:#4A5E57;
+background:rgba(235,240,238,.90);
+border-color:rgba(110,126,120,.25);
 }
-
 
 .deep-scan-card.rank-three .deep-scan-rank{
 color:var(--cyan);
 background:rgba(224,249,247,.84);
 border-color:rgba(8,115,128,.17);
 }
-
 
 .deep-scan-score{
 color:var(--gold);
@@ -2213,16 +1952,13 @@ font-size:.47rem;
 font-weight:800;
 }
 
-
 .deep-scan-card.rank-two .deep-scan-score{
-color:var(--emerald);
+color:#4A5E57;
 }
-
 
 .deep-scan-card.rank-three .deep-scan-score{
 color:var(--cyan);
 }
-
 
 .deep-scan-pairs{
 position:relative;
@@ -2231,7 +1967,6 @@ display:grid;
 grid-template-columns:repeat(5,1fr);
 gap:4px;
 }
-
 
 .deep-pair{
 position:relative;
@@ -2248,12 +1983,10 @@ box-shadow .2s ease,
 border-color .2s ease;
 }
 
-
 .deep-pair:hover{
 transform:translateY(-1px);
 box-shadow:0 4px 10px rgba(10,102,71,.06);
 }
-
 
 .deep-pair strong{
 display:block;
@@ -2262,26 +1995,21 @@ font-size:.62rem;
 color:var(--gold);
 }
 
-
 .deep-scan-card.rank-two .deep-pair{
-border-color:rgba(10,102,71,.13);
+border-color:rgba(110,126,120,.22);
 }
-
 
 .deep-scan-card.rank-two .deep-pair strong{
-color:var(--emerald);
+color:#4A5E57;
 }
-
 
 .deep-scan-card.rank-three .deep-pair{
 border-color:rgba(8,115,128,.13);
 }
 
-
 .deep-scan-card.rank-three .deep-pair strong{
 color:var(--cyan);
 }
-
 
 .deep-pair small{
 display:block;
@@ -2291,13 +2019,11 @@ font-size:.36rem;
 color:var(--muted);
 }
 
-
 .three-d-scan{
 margin-top:7px;
 padding-top:8px;
 border-top:1px solid rgba(10,102,71,.09);
 }
-
 
 .three-d-head{
 display:flex;
@@ -2306,12 +2032,10 @@ align-items:center;
 margin-bottom:5px;
 }
 
-
 .three-d-title{
 font-size:.55rem;
 font-weight:800;
 }
-
 
 .three-d-score{
 padding:3px 6px;
@@ -2324,13 +2048,11 @@ font-size:.43rem;
 font-weight:800;
 }
 
-
 .three-d-grid{
 display:grid;
 grid-template-columns:repeat(5,1fr);
 gap:4px;
 }
-
 
 .three-d-item{
 position:relative;
@@ -2352,12 +2074,10 @@ box-shadow .2s ease,
 border-color .2s ease;
 }
 
-
 .three-d-item:hover{
 transform:translateY(-1px);
 box-shadow:0 4px 10px rgba(158,108,2,.06);
 }
-
 
 .three-d-item strong{
 display:block;
@@ -2365,7 +2085,6 @@ font-family:'IBM Plex Mono',monospace;
 font-size:.63rem;
 color:var(--gold);
 }
-
 
 .three-d-item small{
 display:block;
@@ -2382,12 +2101,10 @@ background:
 linear-gradient(135deg,#fff,#F2F9F5);
 }
 
-
 .ind-win-set{
 padding:10px 12px;
 margin-bottom:9px;
 }
-
 
 .ind-win-header{
 display:flex;
@@ -2397,12 +2114,10 @@ gap:7px;
 margin-bottom:7px;
 }
 
-
 .ind-win-title{
 font-size:.76rem;
 font-weight:800;
 }
-
 
 .ind-win-title small{
 display:block;
@@ -2412,7 +2127,6 @@ font-size:.41rem;
 font-weight:600;
 letter-spacing:.2px;
 }
-
 
 .ind-win-badge{
 padding:3px 8px;
@@ -2425,13 +2139,11 @@ font-size:.43rem;
 font-weight:700;
 }
 
-
 .ind-win-grid{
 display:grid;
 grid-template-columns:repeat(6,1fr);
 gap:4px;
 }
-
 
 .ind-win-item{
 position:relative;
@@ -2453,13 +2165,11 @@ box-shadow .2s ease,
 border-color .2s ease;
 }
 
-
 .ind-win-item:hover{
 transform:translateY(-1px);
 box-shadow:0 5px 12px rgba(10,102,71,.07);
 border-color:rgba(16,185,129,.28);
 }
-
 
 .ind-win-item strong{
 display:block;
@@ -2469,7 +2179,6 @@ font-size:.82rem;
 font-weight:800;
 }
 
-
 .ind-win-item span{
 display:block;
 margin-top:1px;
@@ -2478,11 +2187,9 @@ font-size:.35rem;
 font-weight:700;
 }
 
-
 .formula-section{
 margin-top:2px;
 }
-
 
 .formula-toggle{
 width:100%;
@@ -2499,13 +2206,11 @@ font-size:.59rem;
 font-weight:800;
 }
 
-
 .formula-toggle span:last-child{
 color:var(--emerald);
 font-family:'IBM Plex Mono',monospace;
 font-size:.49rem;
 }
-
 
 .formula-card{
 padding:10px;
@@ -2513,7 +2218,6 @@ margin-bottom:6px;
 border-radius:14px;
 background:#fff;
 }
-
 
 .formula-card::before{
 content:"";
@@ -2525,14 +2229,12 @@ width:3px;
 background:linear-gradient(180deg,#0A6647,#087380);
 }
 
-
 .formula-head{
 display:flex;
 justify-content:space-between;
 align-items:center;
 gap:6px;
 }
-
 
 .formula-name{
 display:flex;
@@ -2541,7 +2243,6 @@ gap:5px;
 font-size:.61rem;
 font-weight:800;
 }
-
 
 .compact-badge{
 padding:2px 6px;
@@ -2552,7 +2253,6 @@ border:1px solid rgba(158,108,2,.20);
 font-size:.40rem;
 font-weight:700;
 }
-
 
 .formula-badge{
 padding:4px 7px;
@@ -2565,7 +2265,6 @@ font-size:.45rem;
 font-weight:700;
 }
 
-
 .formula-sub{
 margin-top:5px;
 padding-bottom:5px;
@@ -2574,12 +2273,10 @@ color:var(--muted);
 font-size:.47rem;
 }
 
-
 .formula-sub strong{
 color:var(--gold);
 font-family:'IBM Plex Mono',monospace;
 }
-
 
 .formula-pairs{
 display:grid;
@@ -2587,7 +2284,6 @@ grid-template-columns:repeat(5,1fr);
 gap:4px;
 margin-top:6px;
 }
-
 
 .formula-pair{
 padding:5px 2px;
@@ -2598,7 +2294,6 @@ border:1px solid rgba(10,102,71,.13);
 cursor:pointer;
 }
 
-
 .formula-pair strong{
 display:block;
 font-family:'IBM Plex Mono',monospace;
@@ -2606,13 +2301,11 @@ color:var(--emerald);
 font-size:.61rem;
 }
 
-
 .formula-pair small{
 color:var(--muted);
 font-family:'IBM Plex Mono',monospace;
 font-size:.37rem;
 }
-
 
 .disclaimer{
 margin-top:9px;
@@ -2626,11 +2319,9 @@ font-size:.45rem;
 line-height:1.45;
 }
 
-
 .disclaimer strong{
 color:var(--text2);
 }
-
 
 .logout-btn{
 width:100%;
@@ -2649,13 +2340,11 @@ border-color .2s ease,
 background .2s ease;
 }
 
-
 .logout-btn:hover{
 transform:translateY(-1px);
 background:var(--bg2);
 border-color:rgba(10,102,71,.28);
 }
-
 
 #toast{
 position:fixed;
@@ -2677,16 +2366,14 @@ font-weight:700;
 transition:.25s;
 }
 
-
 #toast.show{
 opacity:1;
 transform:translate(-50%,0);
 }
 
-
 @media(max-width:400px){
 .ind-win-grid{grid-template-columns:repeat(3,1fr);}
-.top3-row{grid-template-columns:25px 35px 1fr 50px;gap:5px;padding-left:6px;padding-right:6px;}
+.top3-row{grid-template-columns:30px 35px 1fr 50px;gap:5px;padding-left:6px;padding-right:6px;}
 .top3-title{font-size:.78rem;}
 .top3-sub{font-size:.42rem;}
 .deep-scan-pairs{gap:3px;}
@@ -2694,8 +2381,8 @@ transform:translate(-50%,0);
 .overview-bar{height:70px;}
 .overview-rank{font-size:.30rem;padding:2px 3px;}
 .overview-score{font-size:.29rem;}
-}
 
+}
 
 @media(prefers-reduced-motion:reduce){
 *,*::before,*::after{
@@ -2706,13 +2393,9 @@ transition:none!important;
 }
 }
 
-
 /* =========================================================
  AUDITED UI REFINEMENTS — TOP 3 / BEST JUE / WIN SET
  ========================================================= */
-
-/* Clear hierarchy for the five BEST JUE ranks.
-   Rank is communicated by both color and a compact in-cell label. */
 .deep-scan-model-name{
 font-size:.58rem;
 font-weight:800;
@@ -2727,147 +2410,62 @@ text-shadow:0 0 10px rgba(234,179,8,.16);
 }
 
 .deep-scan-card.rank-two .deep-scan-model-name{
-color:#3F6B5A;
+color:#3F5A51;
 }
 
 .deep-scan-card.rank-three .deep-scan-model-name{
 color:#087380;
 }
 
-
-/* BEST JUE — TOP 1 GOLD */
-.deep-scan-card .deep-pair.jue-rank-1,
-.deep-scan-card .deep-pair.jue-rank-2,
-.deep-scan-card .deep-pair.jue-rank-3,
-.deep-scan-card .deep-pair.jue-rank-4,
-.deep-scan-card .deep-pair.jue-rank-5{
-position:relative;
-min-height:44px;
-padding:7px 3px 5px;
-}
-
-/* Compact rank marker stays inside the existing cell; no new column. */
-.deep-scan-card .deep-pair[class*="jue-rank-"]::before{
-position:absolute;
-top:3px;
-right:4px;
-left:auto;
-width:auto;
-height:auto;
-padding:1px 3px;
-border-radius:4px;
-font-family:'IBM Plex Mono',monospace;
-font-size:.27rem;
-font-weight:800;
-line-height:1.2;
-letter-spacing:.15px;
-z-index:3;
-pointer-events:none;
-background:#fff;
-border:1px solid rgba(8,27,20,.10);
-box-shadow:0 1px 4px rgba(8,27,20,.06);
-}
-
-.deep-scan-card .deep-pair.jue-rank-1::before{content:"TOP 1";}
-.deep-scan-card .deep-pair.jue-rank-2::before{content:"TOP 2";}
-.deep-scan-card .deep-pair.jue-rank-3::before{content:"TOP 3";}
-.deep-scan-card .deep-pair.jue-rank-4::before{content:"TOP 4";}
-.deep-scan-card .deep-pair.jue-rank-5::before{content:"TOP 5";}
-
-
-/* 1 — GOLD: strongest visual priority, but still clean. */
+/* Best JUE rank 1–5 colors are applied only to matching pairs inside TOP 3. */
 .deep-scan-card .deep-pair.jue-rank-1{
-background:linear-gradient(135deg,#FFF8CC 0%,#FFFDF0 52%,#FFFFFF 100%);
-border-color:rgba(158,108,2,.46);
-box-shadow:
-0 4px 13px rgba(158,108,2,.13),
-inset 0 1px 0 rgba(255,255,255,.92);
+background:linear-gradient(135deg,rgba(254,249,195,.92),rgba(255,255,255,.98));
+border-color:rgba(158,108,2,.38);
+box-shadow:0 4px 12px rgba(158,108,2,.12),inset 0 1px 0 rgba(255,255,255,.85);
 }
 .deep-scan-card .deep-pair.jue-rank-1 strong{
-color:#7A5600;
-text-shadow:0 0 7px rgba(234,179,8,.14);
+color:#8A6200;
+text-shadow:0 0 8px rgba(234,179,8,.18);
 }
 .deep-scan-card .deep-pair.jue-rank-1 small{color:#9E6C02;}
-.deep-scan-card .deep-pair.jue-rank-1::before{
-color:#7A5600;
-background:#FFF8CC;
-border-color:rgba(158,108,2,.30);
-}
 
-
-/* 2 — SILVER: deliberately higher contrast so it cannot disappear. */
 .deep-scan-card .deep-pair.jue-rank-2{
-background:
-linear-gradient(145deg,#DCE2E6 0%,#F7F9FA 46%,#D4DADF 100%);
-border-color:#7B8790;
-box-shadow:
-0 4px 13px rgba(67,80,88,.16),
-inset 0 1px 0 rgba(255,255,255,.98),
-inset 0 -1px 0 rgba(80,94,104,.12);
+background:linear-gradient(135deg,rgba(238,244,242,.98),rgba(255,255,255,.98));
+border-color:rgba(110,126,120,.40);
+box-shadow:0 4px 11px rgba(110,126,120,.12);
 }
-.deep-scan-card .deep-pair.jue-rank-2 strong{
-color:#26343D;
-text-shadow:0 1px 0 rgba(255,255,255,.85);
-}
-.deep-scan-card .deep-pair.jue-rank-2 small{color:#4A5962;}
-.deep-scan-card .deep-pair.jue-rank-2::before{
-color:#26343D;
-background:linear-gradient(135deg,#FFFFFF,#DDE3E7);
-border-color:#7B8790;
-}
+.deep-scan-card .deep-pair.jue-rank-2 strong{color:#3F5A51;}
+.deep-scan-card .deep-pair.jue-rank-2 small{color:#586E66;}
 
-
-/* 3 — BRONZE: warm and distinct without competing with gold. */
 .deep-scan-card .deep-pair.jue-rank-3{
-background:linear-gradient(145deg,#F4D7C4 0%,#FFF7F0 52%,#FFFFFF 100%);
-border-color:rgba(157,91,48,.42);
-box-shadow:0 4px 12px rgba(157,91,48,.10);
+background:linear-gradient(135deg,rgba(252,227,209,.92),rgba(255,255,255,.98));
+border-color:rgba(180,105,58,.34);
+box-shadow:0 4px 11px rgba(180,105,58,.10);
 }
-.deep-scan-card .deep-pair.jue-rank-3 strong{color:#8D4F2C;}
+.deep-scan-card .deep-pair.jue-rank-3 strong{color:#9A5730;}
 .deep-scan-card .deep-pair.jue-rank-3 small{color:#A96843;}
-.deep-scan-card .deep-pair.jue-rank-3::before{
-color:#8D4F2C;
-background:#FFF4EA;
-border-color:rgba(157,91,48,.28);
-}
 
-
-/* 4 — CYAN/BLUE: clear but intentionally quieter than 1–3. */
 .deep-scan-card .deep-pair.jue-rank-4{
-background:linear-gradient(145deg,#DDF4F2 0%,#F6FCFB 52%,#FFFFFF 100%);
-border-color:rgba(8,115,128,.34);
-box-shadow:0 4px 10px rgba(8,115,128,.075);
+background:linear-gradient(135deg,rgba(224,249,247,.92),rgba(255,255,255,.98));
+border-color:rgba(8,115,128,.30);
+box-shadow:0 4px 11px rgba(8,115,128,.08);
 }
 .deep-scan-card .deep-pair.jue-rank-4 strong{color:#087380;}
 .deep-scan-card .deep-pair.jue-rank-4 small{color:#0B8793;}
-.deep-scan-card .deep-pair.jue-rank-4::before{
-color:#087380;
-background:#E8F8F6;
-border-color:rgba(8,115,128,.24);
-}
 
-
-/* 5 — PURPLE: muted so it reads as fifth, never as the strongest. */
 .deep-scan-card .deep-pair.jue-rank-5{
-background:linear-gradient(145deg,#F2EFF8 0%,#FAF9FC 55%,#FFFFFF 100%);
-border-color:rgba(92,83,111,.24);
-box-shadow:0 3px 8px rgba(74,65,91,.045);
+background:linear-gradient(135deg,rgba(243,237,255,.92),rgba(255,255,255,.98));
+border-color:rgba(109,40,217,.25);
+box-shadow:0 4px 11px rgba(109,40,217,.07);
 }
-.deep-scan-card .deep-pair.jue-rank-5 strong{color:#665B73;}
-.deep-scan-card .deep-pair.jue-rank-5 small{color:#7D7288;}
-.deep-scan-card .deep-pair.jue-rank-5::before{
-color:#665B73;
-background:#F1EEF5;
-border-color:rgba(92,83,111,.20);
-}
+.deep-scan-card .deep-pair.jue-rank-5 strong{color:#6D28D9;}
+.deep-scan-card .deep-pair.jue-rank-5 small{color:#7651C7;}
 
-
-/* Keep the original premium shine only on TOP 1. */
 .deep-scan-card .deep-pair.jue-rank-1::after{
 content:"";
 position:absolute;
 inset:0;
-background:linear-gradient(110deg,transparent 28%,rgba(255,255,255,.70) 50%,transparent 72%);
+background:linear-gradient(110deg,transparent 28%,rgba(255,255,255,.72) 50%,transparent 72%);
 transform:translateX(-120%);
 animation:jueBestShine 4.8s ease-in-out infinite;
 pointer-events:none;
@@ -2875,14 +2473,11 @@ pointer-events:none;
 
 @keyframes jueBestShine{
 0%,62%{transform:translateX(-120%);opacity:0}
-72%{opacity:.75}
+72%{opacity:.8}
 86%,100%{transform:translateX(120%);opacity:0}
 }
 
-
-/* Premium treatment for the six-number win set.
-   The outer frame stays unchanged; each cell gets a tiny rank marker
-   instead of the old hard colored strip. */
+/* Premium treatment for the six-number win set. */
 .ind-win-set{
 position:relative;
 overflow:hidden;
@@ -2947,82 +2542,23 @@ gap:5px;
 }
 
 .ind-win-item{
-position:relative;
-padding:9px 2px 6px;
+padding:8px 2px 7px;
 border-radius:11px;
 background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(241,248,244,.98));
 box-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 3px 9px rgba(10,102,71,.035);
-}
-
-.ind-win-item::before{
-content:"";
-position:absolute;
-left:50%;
-top:4px;
-transform:translateX(-50%);
-width:auto;
-height:auto;
-padding:1px 4px;
-border-radius:4px;
-font-family:'IBM Plex Mono',monospace;
-font-size:.27rem;
-font-weight:800;
-line-height:1.15;
-letter-spacing:.15px;
-background:#F4F8F6;
-color:#557166;
-border:1px solid rgba(10,102,71,.13);
-box-shadow:0 1px 3px rgba(10,102,71,.045);
-z-index:2;
-pointer-events:none;
-}
-
-.ind-win-item:nth-child(1)::before{
-content:"TOP 1";
-color:#7A5600;
-background:#FFF8CC;
-border-color:rgba(158,108,2,.30);
-}
-.ind-win-item:nth-child(2)::before{
-content:"TOP 2";
-color:#26343D;
-background:#E9EDF0;
-border-color:#7B8790;
-}
-.ind-win-item:nth-child(3)::before{
-content:"TOP 3";
-color:#8D4F2C;
-background:#FFF1E6;
-border-color:rgba(157,91,48,.28);
-}
-.ind-win-item:nth-child(4)::before{
-content:"TOP 4";
-color:#087380;
-background:#E8F8F6;
-border-color:rgba(8,115,128,.24);
-}
-.ind-win-item:nth-child(5)::before{
-content:"TOP 5";
-color:#665B73;
-background:#F1EEF5;
-border-color:rgba(92,83,111,.20);
-}
-.ind-win-item:nth-child(6)::before{
-content:"TOP 6";
-color:#557166;
-background:#F2F7F4;
-border-color:rgba(10,102,71,.13);
+border:1px solid rgba(10,102,71,.12);
 }
 
 .ind-win-item:hover{
 transform:translateY(-2px);
 box-shadow:0 7px 15px rgba(10,102,71,.075),inset 0 1px 0 rgba(255,255,255,.9);
+border-color:rgba(10,102,71,.24);
 }
 
 .ind-win-item strong{
 font-size:.86rem;
 letter-spacing:.5px;
-margin-top:11px;
+color:var(--text2);
 }
 
 .ind-win-item span{
@@ -3031,24 +2567,6 @@ font-family:'IBM Plex Mono',monospace;
 font-size:.33rem;
 letter-spacing:.25px;
 color:var(--muted);
-}
-
-@media(max-width:400px){
-.deep-scan-card .deep-pair[class*="jue-rank-"]{
-min-height:43px;
-padding-top:7px;
-}
-.deep-scan-card .deep-pair[class*="jue-rank-"]::before{
-font-size:.25rem;
-padding:1px 3px;
-}
-.ind-win-item{
-padding-top:9px;
-}
-.ind-win-item::before{
-font-size:.25rem;
-padding:1px 3px;
-}
 }
 
 </style>
@@ -3083,7 +2601,6 @@ SYSTEM READY
 </div>
 </div>
 
-
 <section class="hero">
 <div class="hero-kicker">
 <span></span>
@@ -3107,7 +2624,6 @@ Mester Lotto <em>VIP+</em>
 </div>
 </section>
 
-
 <div class="login-dashboard">
 <div class="mini-stat">
 <div class="mini-stat-label">ผู้ใช้งานระบบ / MEMBERS</div>
@@ -3119,7 +2635,6 @@ Mester Lotto <em>VIP+</em>
 <div class="mini-stat-value green">ONLINE</div>
 </div>
 </div>
-
 
 <div class="packages">
 
@@ -3149,7 +2664,6 @@ Mester Lotto <em>VIP+</em>
 
 </div>
 
-
 <a href="https://line.me/ti/p/cWXNwvCmqc"
 target="_blank"
 rel="noopener noreferrer"
@@ -3157,7 +2671,6 @@ class="contact-btn"
 onclick="_app._audio('click')">
 💬 ติดต่อแอดมิน / CONTACT ADMIN
 </a>
-
 
 <section class="login-panel">
 
@@ -3201,14 +2714,12 @@ type="button">
 <div class="top-nav">
 
 <div class="brand-mini">
-
 <div class="brand-mark">AI</div>
 
 <div>
 <div class="brand-name">Enterprise Quant</div>
 <div class="brand-sub">AI Intelligence Console</div>
 </div>
-
 </div>
 
 <div class="system-pill">
@@ -3248,22 +2759,18 @@ Mester Lotto <em>VIP+</em>
 <div class="engine-strip">
 
 <div class="engine-card">
-
 <div class="engine-label">
 ประมวลผลทั้งหมดในระบบ
 </div>
 
 <div class="engine-value cyan">
-
 <span class="total-dot-wrap">
 <span class="total-dot" id="totalDot"></span>
 </span>
 
 <span id="totalProcessedCount">4,100</span>
 ครั้ง
-
 </div>
-
 </div>
 
 
@@ -3304,11 +2811,8 @@ id="serverLatencyCount">
 <div id="lastSessionBadge" class="last-session">
 
 <span>อ้างอิงจากผลล่าสุด:</span>
-
 <strong id="lbl3"></strong>
-
 <span>•</span>
-
 <strong id="lbl2"></strong>
 
 </div>
@@ -3319,7 +2823,6 @@ id="serverLatencyCount">
 <div class="command-header">
 
 <div>
-
 <div class="command-title">
 Analysis Input
 </div>
@@ -3327,7 +2830,6 @@ Analysis Input
 <div class="command-sub">
 กรอกข้อมูลล่าสุด เพื่อเริ่มประมวลผล
 </div>
-
 </div>
 
 <div class="command-badge">
@@ -3442,182 +2944,79 @@ type="button">
 <script>
 
 (function(){
+
 const canvas=document.getElementById("snowCanvas");
 if(!canvas)return;
 
-const ctx=canvas.getContext("2d",{alpha:true});
-if(!ctx)return;
+const ctx=canvas.getContext("2d");
 
-let width=0;
-let height=0;
-let dpr=1;
-let flakes=[];
-let protectedRects=[];
-let lastRectUpdate=0;
+let width=canvas.width=window.innerWidth;
+let height=canvas.height=window.innerHeight;
 
-function resizeSnow(){
-dpr=Math.min(window.devicePixelRatio||1,2);
-width=window.innerWidth;
-height=window.innerHeight;
-canvas.width=Math.round(width*dpr);
-canvas.height=Math.round(height*dpr);
-canvas.style.width=width+"px";
-canvas.style.height=height+"px";
-ctx.setTransform(dpr,0,0,dpr,0,0);
-createFlakes();
-updateProtectedRects(true);
-}
+window.addEventListener("resize",()=>{
+width=canvas.width=window.innerWidth;
+height=canvas.height=window.innerHeight;
+});
 
-function createFlakes(){
-const count=Math.min(
-90,
-Math.max(52,Math.round((width*height)/11500))
-);
+const flakes=[];
 
-flakes=Array.from({length:count},()=>({
+for(let i=0;i<45;i++){
+
+flakes.push({
 x:Math.random()*width,
 y:Math.random()*height,
-radius:Math.random()*2.05+.45,
-depth:Math.random()*.72+.28,
-speedY:Math.random()*.62+.34,
-speedX:Math.random()*.18-.09,
-opacity:Math.random()*.42+.28,
+radius:Math.random()*2.2+.8,
+depth:Math.random()*.8+.2,
+speedY:Math.random()*.4+.2,
+speedX:Math.random()*.2-.1,
+opacity:Math.random()*.5+.35,
 swing:Math.random()*Math.PI*2,
-swingSpeed:Math.random()*.012+.004,
-phase:Math.random()*Math.PI*2,
-twinkle:Math.random()*.018+.006,
-drift:Math.random()*.45+.55
-}));
-}
-
-function updateProtectedRects(force=false){
-const now=performance.now();
-if(!force&&now-lastRectUpdate<450)return;
-lastRectUpdate=now;
-
-const selectors=[
-".top-nav",
-".hero",
-".engine-strip",
-".last-session",
-".command-center",
-"#aiScannerBox",
-".result-head",
-".top3-signal-board",
-".stats-analytics-card",
-".overview-panel",
-".deep-scan-board",
-".ind-win-set",
-".formula-section",
-".disclaimer",
-".logout-btn"
-];
-
-protectedRects=[];
-document.querySelectorAll(selectors.join(",")).forEach(el=>{
-const r=el.getBoundingClientRect();
-if(r.width>0&&r.height>0){
-protectedRects.push({
-left:r.left-2,
-top:r.top-2,
-right:r.right+2,
-bottom:r.bottom+2
+swingSpeed:Math.random()*.01+.005
 });
-}
-});
-}
 
-function isProtected(x,y){
-for(const r of protectedRects){
-if(
-x>=r.left&&
-x<=r.right&&
-y>=r.top&&
-y<=r.bottom
-)return true;
-}
-return false;
 }
 
-function drawFlake(f,time){
-const size=f.radius*f.depth;
-const alpha=Math.max(
-0.08,
-Math.min(
-0.92,
-f.opacity*f.depth*(.78+.22*Math.sin(time*f.twinkle+f.phase))
-)
-);
+function render(){
 
-ctx.save();
-ctx.translate(f.x,f.y);
-
-/* Soft atmospheric halo */
-ctx.shadowColor=`rgba(255,255,255,${alpha*.58})`;
-ctx.shadowBlur=Math.max(1,size*3.2);
-
-ctx.beginPath();
-ctx.arc(0,0,Math.max(.45,size*.72),0,Math.PI*2);
-ctx.fillStyle=`rgba(255,255,255,${alpha})`;
-ctx.fill();
-
-/* Subtle crystal arms on larger flakes for a more natural high-end look. */
-if(size>1.25){
-ctx.shadowBlur=0;
-ctx.strokeStyle=`rgba(255,255,255,${alpha*.72})`;
-ctx.lineWidth=Math.max(.35,size*.16);
-ctx.lineCap="round";
-
-ctx.beginPath();
-ctx.moveTo(-size*1.55,0);
-ctx.lineTo(size*1.55,0);
-ctx.moveTo(0,-size*1.55);
-ctx.lineTo(0,size*1.55);
-ctx.stroke();
-
-ctx.globalAlpha=.55;
-ctx.beginPath();
-ctx.moveTo(-size*.95,-size*.95);
-ctx.lineTo(size*.95,size*.95);
-ctx.moveTo(size*.95,-size*.95);
-ctx.lineTo(-size*.95,size*.95);
-ctx.stroke();
-}
-
-ctx.restore();
-}
-
-function render(time=0){
 ctx.clearRect(0,0,width,height);
-updateProtectedRects();
 
-for(const f of flakes){
+flakes.forEach(f=>{
+
 f.swing+=f.swingSpeed;
-f.x+=Math.sin(f.swing)*f.drift*.16+f.speedX;
-f.y+=f.speedY*(.72+f.depth*.65);
+f.x+=Math.sin(f.swing)*.3+f.speedX;
+f.y+=f.speedY*f.depth;
 
-if(f.y>height+14){
-f.y=-14;
+if(f.y>height+10){
+f.y=-10;
 f.x=Math.random()*width;
 }
-if(f.x>width+14)f.x=-14;
-if(f.x<-14)f.x=width+14;
 
-/* Snow is visually in the foreground, but vanishes cleanly
-   whenever it reaches a UI card so it never covers content. */
-if(isProtected(f.x,f.y))continue;
+if(f.x>width+10)f.x=-10;
+if(f.x<-10)f.x=width+10;
 
-drawFlake(f,time);
-}
+ctx.beginPath();
+
+ctx.arc(
+f.x,
+f.y,
+f.radius*f.depth,
+0,
+Math.PI*2
+);
+
+ctx.fillStyle=
+`rgba(16,185,129,${f.opacity*f.depth*.35})`;
+
+ctx.fill();
+
+});
 
 requestAnimationFrame(render);
+
 }
 
-window.addEventListener("resize",resizeSnow,{passive:true});
-window.addEventListener("scroll",()=>updateProtectedRects(true),{passive:true});
+render();
 
-resizeSnow();
-requestAnimationFrame(render);
 })();
 
 
@@ -3626,7 +3025,6 @@ parseInt(
 localStorage.getItem("ml_total_processed_v1"),
 10
 );
-
 
 if(
 !totalProcessed||
@@ -3721,7 +3119,6 @@ localStorage.getItem("ml_online_users_v1"),
 10
 );
 
-
 if(
 !currentOnline||
 isNaN(currentOnline)
@@ -3811,103 +3208,133 @@ updateServerLatency,
 
 const _secEnc={
 
-salt:"MESTER_VIP_SALT_2026",
+_dbToken:[
+"4d617374657241646d696e32303236",
+"54396b4c326d5037",
+"5a71345738785431"
+],
 
-hash:""
+_hexDecode(hex){
+
+let str="";
+
+for(let i=0;i<hex.length;i+=2){
+
+str+=String.fromCharCode(
+parseInt(
+hex.substr(i,2),
+16
+)
+);
+
+}
+
+return str;
+
+},
+
+async _checkMatch(inputVal){
+
+const value=
+String(inputVal||"").trim();
+
+for(
+const hex of this._dbToken
+){
+
+if(
+value===this._hexDecode(hex)
+)
+return true;
+
+}
+
+return false;
+
+}
 
 };
 
 
-function _hashKey(value){
-
-let hash=0;
-
-for(let i=0;i<value.length;i++){
-
-hash=
-((hash<<5)-hash)+
-value.charCodeAt(i);
-
-hash|=0;
-
-}
-
-return String(hash);
-
-}
-
-
-const _APP_PASSWORD_HASH=
-_hashKey("MESTER2026");
-
-
 const _app={
 
-_audio(type){
+_toastTimer:null,
+
+async _verify(p){
+
+return await _secEnc._checkMatch(p);
+
+},
+
+
+_audio(type="click"){
 
 try{
 
-if(
-typeof AudioContext!=="undefined"||
-typeof webkitAudioContext!=="undefined"
-){
-
-const AudioCtx=
+const AC=
 window.AudioContext||
 window.webkitAudioContext;
 
-const ac=
-new AudioCtx();
+if(!AC)return;
 
-const osc=
-ac.createOscillator();
+const c=new AC();
 
-const gain=
-ac.createGain();
+const o=c.createOscillator();
+const g=c.createGain();
 
-osc.type=
-type==="click"
-?
-"sine"
-:
-"triangle";
+const now=c.currentTime;
 
-osc.frequency.value=
-type==="click"
-?
-680
-:
-440;
+o.type=
+type==="error"
+?"triangle"
+:"sine";
 
-gain.gain.setValueAtTime(
-0.0001,
-ac.currentTime
+o.frequency.setValueAtTime(
+type==="error"?190:520,
+now
 );
 
-gain.gain.exponentialRampToValueAtTime(
-0.025,
-ac.currentTime+.01
+o.frequency.exponentialRampToValueAtTime(
+type==="error"?130:720,
+now+.08
 );
 
-gain.gain.exponentialRampToValueAtTime(
-0.0001,
-ac.currentTime+.08
+g.gain.setValueAtTime(
+type==="error"?.035:.025,
+now
 );
 
-osc.connect(gain);
-gain.connect(ac.destination);
+g.gain.exponentialRampToValueAtTime(
+.001,
+now+.12
+);
 
-osc.start();
-osc.stop(ac.currentTime+.09);
+o.connect(g);
+g.connect(c.destination);
 
-}
+o.start(now);
+o.stop(now+.13);
 
 }catch(e){}
 
 },
 
 
-login(){
+_esc(s){
+
+return String(s)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+},
+
+
+async login(){
+
+this._audio("click");
 
 const input=
 document.getElementById(
@@ -3919,561 +3346,1359 @@ document.getElementById(
 "errorMsg"
 );
 
-if(!input)return;
+if(!input||!error)return;
 
 const value=
-String(input.value||"").trim();
+input.value.trim();
 
 if(
-_hashKey(value)===
-_APP_PASSWORD_HASH
+!value||
+!(await this._verify(value))
 ){
+
+this._audio("error");
+
+error.style.display="block";
+
+input.focus();
+
+return;
+
+}
+
+error.style.display="none";
 
 localStorage.setItem(
 "ml_auth_status_v3",
 "active"
 );
 
-const loginView=
 document.getElementById(
 "loginView"
-);
+).style.display="none";
 
-const calculatorView=
 document.getElementById(
 "calculatorView"
-);
-
-if(loginView)
-loginView.style.display="none";
-
-if(calculatorView)
-calculatorView.style.display="block";
-
-if(error)
-error.style.display="none";
-
-this._audio("success");
+).style.display="block";
 
 this.checkSessionBadge();
 
-}else{
+const num3=
+document.getElementById(
+"num3top"
+);
 
-if(error)
-error.style.display="block";
-
-input.select();
-
-this._audio("error");
-
-}
+if(num3)
+num3.focus();
 
 },
 
 
 logout(){
 
+this._audio("click");
+
 localStorage.removeItem(
 "ml_auth_status_v3"
 );
 
-const loginView=
-document.getElementById(
-"loginView"
-);
-
-const calculatorView=
 document.getElementById(
 "calculatorView"
-);
+).style.display="none";
 
-if(loginView)
-loginView.style.display="block";
-
-if(calculatorView)
-calculatorView.style.display="none";
-
-const input=
 document.getElementById(
-"passwordInput"
-);
+"loginView"
+).style.display="block";
 
-if(input)
-input.value="";
+[
+"passwordInput",
+"num3top",
+"num2bottom"
+].forEach(id=>{
+
+const el=
+document.getElementById(id);
+
+if(el)el.value="";
+
+});
+
+document.getElementById(
+"resultContainer"
+).innerHTML="";
+
+document.getElementById(
+"errorMsg"
+).style.display="none";
 
 },
 
 
 clearCalc(){
 
-[
-"num3top",
-"num2bottom"
-].forEach(
-id=>{
+this._audio("click");
 
-const el=
-document.getElementById(id);
-
-if(el)
-el.value="";
-
-}
-);
-
-const result=
 document.getElementById(
 "resultContainer"
-);
+).innerHTML="";
 
-if(result)
-result.innerHTML="";
-
-const badge=
 document.getElementById(
-"lastSessionBadge"
-);
+"num3top"
+).value="";
 
-if(badge)
-badge.style.display="none";
+document.getElementById(
+"num2bottom"
+).value="";
+
+document.getElementById(
+"num3top"
+).focus();
 
 },
 
 
 checkSessionBadge(){
 
-try{
-
-const data=
-JSON.parse(
+const n3=
 localStorage.getItem(
-"ml_last_session_v1"
-)||
-"null"
+"ml_l_n3_v3"
 );
 
-if(!data)return;
+const n2=
+localStorage.getItem(
+"ml_l_n2_v3"
+);
 
 const badge=
 document.getElementById(
 "lastSessionBadge"
 );
 
-const lbl3=
+if(!badge)return;
+
+if(n3&&n2){
+
 document.getElementById(
 "lbl3"
-);
+).innerText=n3;
 
-const lbl2=
 document.getElementById(
 "lbl2"
-);
+).innerText=n2;
 
-if(
-badge&&
-lbl3&&
-lbl2
-){
+badge.style.display="flex";
 
-lbl3.innerText=
-data.top3||"";
+}else{
 
-lbl2.innerText=
-data.bottom2||"";
-
-badge.style.display=
-"flex";
+badge.style.display="none";
 
 }
-
-}catch(e){}
 
 },
 
 
 calculate(){
 
+this._audio("click");
+
 const n3=
-String(
 document.getElementById(
 "num3top"
-)?.value||""
-).replace(/\D/g,"");
+).value.trim();
 
 const n2=
-String(
 document.getElementById(
 "num2bottom"
-)?.value||""
-).replace(/\D/g,"");
+).value.trim();
 
-if(n3.length!==3||n2.length!==2){
+if(
+!/^\d{3}$/.test(n3)||
+!/^\d{2}$/.test(n2)
+){
 
-const scanner=
-document.getElementById(
-"aiScannerBox"
+this._audio("error");
+
+alert(
+"กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก"
 );
-
-if(scanner){
-
-scanner.style.display="block";
-
-const txt=
-document.getElementById(
-"aiScannerText"
-);
-
-if(txt)
-txt.innerText=
-"INPUT REQUIRED / กรุณากรอกข้อมูลให้ครบ";
-
-setTimeout(()=>{
-scanner.style.display="none";
-},1200);
-
-}
 
 return;
 
 }
 
-const scanner=
+localStorage.setItem(
+"ml_l_n3_v3",
+n3
+);
+
+localStorage.setItem(
+"ml_l_n2_v3",
+n2
+);
+
+this.checkSessionBadge();
+
+
+const scan=
 document.getElementById(
 "aiScannerBox"
 );
 
-if(scanner)
-scanner.style.display="block";
-
-const scanText=
-document.getElementById(
-"aiScannerText"
-);
-
-if(scanText)
-scanText.innerText=
-"INITIALIZING QUANT ANALYSIS...";
-
-const button=
+const btn=
 document.getElementById(
 "calculateButton"
 );
 
-if(button)
-button.disabled=true;
+btn.disabled=true;
+
+scan.style.display="block";
+
+
+const messages=[
+
+"READING INPUT STRUCTURE...",
+
+"CALCULATING DIGIT MOMENTUM...",
+
+"RUNNING TOP 5 PAIR RANKING ENGINE...",
+
+"EVALUATING 5 MATHEMATICAL MODELS...",
+
+"BUILDING NUMBER MATRIX...",
+
+"MAPPING DIGIT DISTRIBUTION...",
+
+"GENERATING WIN SET...",
+
+"FINALIZING ANALYSIS..."
+
+];
+
+
+let index=0;
+
+const scannerText=
+document.getElementById(
+"aiScannerText"
+);
+
+scannerText.innerText=
+messages[0];
+
+
+const timer=
+setInterval(()=>{
+
+index++;
+
+if(index<messages.length){
+
+scannerText.innerText=
+messages[index];
+
+}
+
+},100);
+
 
 setTimeout(()=>{
 
-if(scanText)
-scanText.innerText=
-"MULTI-LAYER MODEL PROCESSING...";
+clearInterval(timer);
 
-},350);
+scan.style.display="none";
 
-setTimeout(()=>{
+btn.disabled=false;
 
-if(scanText)
-scanText.innerText=
-"RANKING DIGITS / BUILDING SIGNAL MATRIX...";
+this.runAnalysis(
+n3,
+n2
+);
 
-},700);
+document.getElementById(
+"resultContainer"
+).scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
 
-setTimeout(()=>{
+totalProcessed+=1;
 
-if(scanner)
-scanner.style.display="none";
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
 
-if(button)
-button.disabled=false;
+updateProcessedUI(true);
 
-this.renderResults(n3,n2);
-
-},1050);
-
-},1050);
+},800);
 
 },
 
 
-renderResults(n3,n2){
+_normalize(x){
 
-const d1=
-Number(n3[0]);
+return(x%10+10)%10;
 
-const d2=
-Number(n3[1]);
-
-const d3=
-Number(n3[2]);
-
-const b1=
-Number(n2[0]);
-
-const b2=
-Number(n2[1]);
+},
 
 
-const historyDigits=[
-d1,d2,d3,b1,b2,
-(d1+d2)%10,
-(d2+d3)%10,
-(d3+b1)%10,
-(b1+b2)%10,
-(d1+b2)%10,
-(d2+b1)%10,
-(d3+b2)%10,
-(d1+d2+d3)%10,
-(d1+b1)%10,
-(d2+b2)%10
+_run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
+){
+
+const rawFormulas=[
+
+H+T_top,
+H+U_top,
+T_top+U_top,
+H+T_bot,
+H+U_bot,
+T_top+T_bot,
+T_top+U_bot,
+U_top+T_bot,
+U_top+U_bot,
+T_bot+U_bot,
+
+sumTop+T_bot,
+sumTop+U_bot,
+sumTop+H,
+sumTop+T_top,
+sumTop+U_top,
+
+10-H,
+10-T_top,
+10-U_top,
+10-T_bot,
+10-U_bot,
+
+H+T_top+T_bot,
+H+U_top+U_bot,
+T_top+U_top+T_bot,
+T_top+U_top+U_bot,
+H+T_bot+U_bot,
+T_top+T_bot+U_bot,
+
+sumTop-T_bot,
+sumTop-U_bot,
+sumTop+sumBot,
+sumTop-sumBot,
+
+H+T_top-U_bot,
+T_top+U_top-T_bot,
+H+U_top-T_bot,
+
+20-(T_top+T_bot),
+20-(U_top+U_bot),
+
+H+T_top+U_top-T_bot,
+H+T_top+U_top-U_bot,
+
+10+T_top-U_bot,
+10+U_top-T_bot,
+
+sumTop+10-U_bot,
+
+H+U_bot-T_top,
+T_top+U_bot-H,
+U_top+T_bot-H,
+
+sumBot+H-T_top,
+sumBot+H-U_top,
+
+H+sumBot-T_top,
+H+sumBot-U_top,
+
+T_top+sumBot-H,
+T_top+sumBot-U_top,
+
+U_top+sumBot-H,
+U_top+sumBot-T_top,
+
+30-(H+T_top+T_bot),
+30-(H+U_top+U_bot),
+30-(T_top+U_top+T_bot),
+30-(H+T_bot+U_bot),
+
+H+T_top+T_bot-U_bot,
+H+U_top+U_bot-T_bot,
+T_top+U_top+T_bot-H,
+
+sumTop+T_bot-U_bot,
+sumTop+U_bot-T_bot,
+
+H+T_top+sumBot,
+H+U_top+sumBot,
+T_top+U_top+sumBot,
+
+H+T_bot+sumTop,
+H+U_bot+sumTop,
+T_top+T_bot+sumTop,
+T_top+U_bot+sumTop,
+U_top+T_bot+sumTop,
+U_top+U_bot+sumTop,
+T_bot+U_bot+sumTop,
+
+10+H+T_top,
+10+H+U_top,
+10+T_top+U_top,
+10+T_bot+U_bot,
+10+H+T_bot,
+10+H+U_bot,
+10+T_top+T_bot,
+10+T_top+U_bot,
+10+U_top+T_bot,
+10+U_top+U_bot,
+
+H-T_top+U_bot,
+H-U_top+T_bot,
+T_top-U_top+U_bot,
+
+T_bot-U_bot+H,
+T_bot-U_bot+T_top,
+T_bot-U_bot+U_top,
+
+20-H-T_top,
+20-H-U_top,
+20-T_top-U_top,
+20-T_bot-U_bot,
+20-H-T_bot,
+20-H-U_bot,
+20-T_top-T_bot,
+20-T_top-U_bot,
+20-U_top-T_bot,
+20-U_top-U_bot,
+
+totalSum,
+2*totalSum,
+totalSum+H,
+totalSum+T_bot
+
 ];
 
 
-const frequency=
-Array.from(
-{length:10},
-()=>0
-);
+const countedDigits={};
+
+for(let d=0;d<=9;d++)
+countedDigits[d]=0;
 
 
-historyDigits.forEach(
-d=>{
-if(Number.isInteger(d))
-frequency[d]+=1;
-}
-);
+rawFormulas.forEach(rawVal=>{
+
+const unit=
+(rawVal%10+10)%10;
+
+countedDigits[unit]=
+(countedDigits[unit]||0)+1;
+
+});
 
 
-const modelA=
-frequency.map(
-(count,digit)=>({
-digit,
-totalScore:
-count*7+
-((digit+d1)%10)*.8+
-((digit+b2)%10)*.35+
-Math.random()*2.4
-})
-);
-
-
-const modelB=
-frequency.map(
-(count,digit)=>({
-digit,
-totalScore:
-count*6.5+
-((digit+d2)%10)*.65+
-((digit+b1)%10)*.45+
-Math.random()*2.1
-})
-);
-
-
-const modelC=
-frequency.map(
-(count,digit)=>({
-digit,
-totalScore:
-count*6.2+
-((digit+d3)%10)*.75+
-((digit+b2)%10)*.40+
-Math.random()*2.0
-})
-);
-
-
-const modelD=
-frequency.map(
-(count,digit)=>({
-digit,
-totalScore:
-count*5.8+
-((digit+d1+b1)%10)*.60+
-((digit+d2+b2)%10)*.38+
-Math.random()*2.2
-})
-);
-
-
-const modelE=
-frequency.map(
-(count,digit)=>({
-digit,
-totalScore:
-count*5.4+
-((digit+d3+b2)%10)*.70+
-((digit+d1+b2)%10)*.42+
-Math.random()*2.0
-})
-);
-
-
-const models=[
-modelA,
-modelB,
-modelC,
-modelD,
-modelE
-];
-
-
-const modelNames=[
-"ALPHA CORE",
-"BETA MATRIX",
-"GAMMA VECTOR",
-"DELTA PULSE",
-"OMEGA SIGNAL"
-];
-
-
-const evaluated=
-models.map(
-(model,index)=>{
-
-const sorted=
-[...model].sort(
-(a,b)=>b.totalScore-a.totalScore
-);
-
-const set=
-sorted
-.slice(0,5)
-.map(
-item=>item.digit
-);
-
-const pairsMap={};
-
-set.forEach(
-digit=>{
-
-pairsMap[digit]=[
-`${digit}${(digit+d1)%10}`,
-`${digit}${(digit+d2)%10}`,
-`${digit}${(digit+d3)%10}`,
-`${(digit+b1)%10}${digit}`,
-`${(digit+b2)%10}${digit}`
-]
-.filter(
-p=>
-p.length===2&&
-p[0]!==p[1]
-);
-
-}
-);
-
-
-const aiScore=
-Number(
-(
-66+
-sorted[0].totalScore*.72+
-index*1.7+
-Math.random()*3.4
-).toFixed(1)
+const sortedByCount=
+Object.keys(countedDigits)
+.map(Number)
+.sort(
+(a,b)=>
+countedDigits[b]-countedDigits[a]||
+b-a
 );
 
 
 return{
-name:modelNames[index],
-set,
-pairsMap,
-aiScore,
-isRecommended:index===0
+ranking:sortedByCount.slice(0,10),
+counts:countedDigits
 };
 
-}
+},
+
+
+runAnalysis(n3,n2){
+
+const inputDigits3=
+n3.split("").map(Number);
+
+const inputDigits2=
+n2.split("").map(Number);
+
+const[
+H,
+T_top,
+U_top
+]=inputDigits3;
+
+const[
+T_bot,
+U_bot
+]=inputDigits2;
+
+const sumTop=
+H+T_top+U_top;
+
+const sumBot=
+T_bot+U_bot;
+
+const totalSum=
+sumTop+sumBot;
+
+
+const formula100Engine=
+this._run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
 );
 
 
-function calcConfidence(score){
+const getUnitDirect=v=>{
 
-const value=
-54+
-Math.min(
-42,
-Math.max(
-0,
-Number(score)*1.25
+const str=String(v);
+
+const first=
+parseInt(
+str.slice(-1),
+10
+);
+
+return[
+first,
+(first+1)%10
+];
+
+};
+
+
+const fixedBase=7;
+
+const anchorRaw=
+fixedBase-H;
+
+const anchor=
+(Math.abs(anchorRaw)%10+10)%10;
+
+
+let rawM1=
+(T_top+T_bot)%10;
+
+let rawM2=
+sumTop%10;
+
+let rawM3=
+(H+T_bot)%10;
+
+let rawM4=
+(U_top+U_bot)%10;
+
+let rawM5=
+(10-U_bot)%10;
+
+
+let modelRawValues=[
+rawM1,
+rawM2,
+rawM3,
+rawM4,
+rawM5
+];
+
+let uniqueModelDigits=
+new Set(modelRawValues);
+
+
+if(uniqueModelDigits.size<4){
+
+const fallbackFormulas=[
+(T_top+U_bot)%10,
+(H+U_top)%10,
+sumBot%10,
+(H+sumBot)%10,
+totalSum%10
+];
+
+for(
+let fbVal of fallbackFormulas
+){
+
+const normFb=
+(fbVal%10+10)%10;
+
+uniqueModelDigits.add(
+normFb
+);
+
+if(uniqueModelDigits.size>=6)
+break;
+
+}
+
+}
+
+
+const fList=[
+
+{
+id:1,
+name:"AI โมเดล 01",
+subName:"B + R1",
+set:getUnitDirect(rawM1)
+},
+
+{
+id:2,
+name:"AI โมเดล 02",
+subName:"A + B + C",
+set:getUnitDirect(rawM2)
+},
+
+{
+id:3,
+name:"AI โมเดล 03",
+subName:"A + R1",
+set:getUnitDirect(rawM3)
+},
+
+{
+id:4,
+name:"AI โมเดล 04",
+subName:"C + R2",
+set:getUnitDirect(rawM4)
+},
+
+{
+id:5,
+name:"AI โมเดล 05",
+subName:"10 - R2",
+set:getUnitDirect(rawM5)
+}
+
+];
+
+
+const allowedModelDigits=
+new Set();
+
+fList.forEach(item=>{
+item.set.forEach(d=>{
+allowedModelDigits.add(d);
+});
+});
+
+
+const evaluated=
+fList.map(model=>{
+
+const formulaSet=
+model.set;
+
+let rawRange=[];
+
+let hasCollision=false;
+
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
+
+const val=
+this._normalize(
+anchor+offset
+);
+
+if(
+formulaSet.includes(val)
+){
+
+hasCollision=true;
+
+break;
+
+}
+
+}
+
+
+if(hasCollision){
+
+for(
+let offset=-3;
+offset<=3;
+offset++
+){
+
+rawRange.push(
+this._normalize(
+anchor+offset
 )
-)+
-Math.random()*1.5;
-
-return Number(
-Math.min(99.7,value).toFixed(1)
 );
 
 }
 
+}else{
 
-const matrixMap={};
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
 
-evaluated.forEach(
-item=>{
+rawRange.push(
+this._normalize(
+anchor+offset
+)
+);
 
-item.set.forEach(
-digit=>{
+}
 
-if(!matrixMap[digit])
-matrixMap[digit]={
-digit,
-totalScore:0,
-count:0
+}
+
+
+const excludedDigits=
+[
+...new Set(formulaSet)
+];
+
+
+let cleanedPool=
+rawRange.filter(
+dg=>
+!excludedDigits.includes(dg)
+);
+
+
+const generatedPairs=[];
+
+
+formulaSet.forEach(
+sourceDigit=>{
+
+cleanedPool.forEach(
+poolDigit=>{
+
+if(sourceDigit===poolDigit)
+return;
+
+generatedPairs.push({
+
+digitA:sourceDigit,
+
+digitB:poolDigit,
+
+pairStr:
+`${sourceDigit}${poolDigit}`
+
+});
+
+});
+
+}
+);
+
+
+const pMap={};
+
+
+formulaSet.forEach(
+sourceDigit=>{
+
+let pairsForDigit=
+generatedPairs
+.filter(
+p=>p.digitA===sourceDigit
+)
+.map(
+p=>p.pairStr
+);
+
+
+let nextFill=
+(sourceDigit+1)%10;
+
+
+while(
+pairsForDigit.length<5
+){
+
+if(
+nextFill!==sourceDigit&&
+!pairsForDigit.includes(
+`${sourceDigit}${nextFill}`
+)&&
+!excludedDigits.includes(
+nextFill
+)
+){
+
+pairsForDigit.push(
+`${sourceDigit}${nextFill}`
+);
+
+}
+
+nextFill=
+(nextFill+1)%10;
+
+}
+
+
+pairsForDigit=[
+...new Set(pairsForDigit)
+]
+.filter(
+p=>p[0]!==p[1]
+)
+.sort();
+
+
+if(
+pairsForDigit.length>5
+)
+pairsForDigit=
+pairsForDigit.slice(0,5);
+
+
+pMap[sourceDigit]=
+pairsForDigit;
+
+});
+
+
+return{
+
+id:model.id,
+name:model.name,
+subName:model.subName,
+set:model.set,
+pairsMap:pMap
+
 };
 
-matrixMap[digit].totalScore+=
-Number(item.aiScore||0);
+});
 
-matrixMap[digit].count+=1;
 
+const digitScores={};
+
+
+for(let d=0;d<=9;d++){
+
+digitScores[d]={
+
+digit:d,
+
+modelScore:0,
+
+formula100Score:0,
+
+radarScore:0,
+
+backendScore:0,
+
+winSetScore:0,
+
+totalScore:0
+
+};
+
+}
+
+
+evaluated.forEach(model=>{
+
+model.set.forEach(
+dig=>{
+digitScores[dig]
+.modelScore+=1;
 }
 );
 
+});
+
+
+const maxFormCount=
+Math.max(
+...Object.values(
+formula100Engine.counts
+),
+1
+);
+
+
+for(let d=0;d<=9;d++){
+
+digitScores[d]
+.formula100Score=
+(formula100Engine.counts[d]||0)/
+maxFormCount;
+
 }
+
+
+const X_val=
+(T_bot+U_bot)%10;
+
+const radar1Range=[
+(X_val-1+10)%10,
+X_val,
+(X_val+1)%10
+];
+
+
+const Y_val=
+(H+T_top+U_top)%10;
+
+const radar2Range=[
+(Y_val-1+10)%10,
+Y_val,
+(Y_val+1)%10
+];
+
+
+const Z_val=
+(H+T_top+U_top+T_bot+U_bot)%10;
+
+const radar3Range=[
+(Z_val-1+10)%10,
+Z_val,
+(Z_val+1)%10
+];
+
+
+for(let d=0;d<=9;d++){
+
+let rHits=0;
+
+if(
+radar1Range.includes(d)
+)
+rHits++;
+
+if(
+radar2Range.includes(d)
+)
+rHits++;
+
+if(
+radar3Range.includes(d)
+)
+rHits++;
+
+digitScores[d]
+.radarScore=
+rHits/3;
+
+}
+
+
+const backendFormulasSet=[
+
+(2*H+T_bot)%10,
+(T_top+U_bot)%10,
+sumTop%10,
+Math.abs(T_top-U_top)%10,
+totalSum%10
+
+];
+
+
+for(let d=0;d<=9;d++){
+
+if(
+backendFormulasSet.includes(d)
+)
+digitScores[d]
+.backendScore=1;
+
+}
+
+
+const winCandidate=
+(H+T_top+U_top+T_bot+U_bot)%10;
+
+
+for(let d=0;d<=9;d++){
+
+if(
+d===winCandidate||
+d===(winCandidate+5)%10
+)
+digitScores[d]
+.winSetScore=1;
+
+}
+
+
+for(let d=0;d<=9;d++){
+
+const item=
+digitScores[d];
+
+item.totalScore=
+.35*item.modelScore+
+.25*item.formula100Score+
+.15*item.radarScore+
+.15*item.backendScore+
+.1*item.winSetScore;
+
+if(
+allowedModelDigits.has(d)
+)
+item.totalScore*=1.15;
+
+}
+
+
+const matrixSortedAll=
+Object.values(digitScores)
+.sort(
+(a,b)=>
+b.totalScore-a.totalScore||
+b.digit-a.digit
 );
 
 
 const matrixSorted=
-Object.values(matrixMap)
-.sort(
-(a,b)=>{
+matrixSortedAll;
 
-if(
-b.totalScore!==a.totalScore
+
+const allScores=
+matrixSorted.map(
+s=>s.totalScore
+);
+
+const minScore=
+Math.min(...allScores);
+
+const maxScore=
+Math.max(...allScores);
+
+const scoreRange=
+maxScore-minScore||1;
+
+
+const calcConfidence=score=>{
+
+const normalizedPct=
+80+
+(score-minScore)/
+scoreRange*
+18.5;
+
+return Number(
+Math.min(
+98.5,
+Math.max(
+80,
+normalizedPct
 )
-return b.totalScore-a.totalScore;
+).toFixed(1)
+);
 
-return a.digit-b.digit;
+};
 
+
+evaluated.forEach(model=>{
+
+const modelScoreSum=
+model.set.reduce(
+(sum,dig)=>
+sum+
+(
+digitScores[dig]
+.totalScore>0
+?
+digitScores[dig]
+.totalScore
+:
+0
+),
+0
+);
+
+model.aiScore=
+calcConfidence(
+modelScoreSum/2
+);
+
+});
+
+
+evaluated.sort(
+(a,b)=>
+b.aiScore-a.aiScore
+);
+
+evaluated.forEach(
+(model,idx)=>{
+model.isRecommended=
+idx<2;
 }
 );
 
 
 const top3Digits=
-matrixSorted
-.slice(0,3);
+matrixSorted.slice(0,3);
 
+const thirdRankDigit=
+top3Digits[2]
+?
+top3Digits[2].digit
+:
+null;
+
+const d1=
+top3Digits[0].digit;
+
+const d2_dig=
+top3Digits[1].digit;
+
+
+/* =========================================================
+EXISTING TOP 5 FOCUS — PAIR RANKING
+========================================================= */
+
+const pairVotesMap={};
+
+
+evaluated.forEach(
+model=>{
+
+const modelVotedPairsThisModel=
+new Set();
+
+Object.values(
+model.pairsMap
+).forEach(
+pairList=>{
+
+pairList.forEach(
+pStr=>{
+
+const d1_char=
+pStr[0];
+
+const d2_char=
+pStr[1];
+
+if(
+d1_char===d2_char
+)
+return;
+
+const canonicalKey=
+[
+d1_char,
+d2_char
+]
+.sort()
+.join("");
+
+
+if(
+!modelVotedPairsThisModel
+.has(canonicalKey)
+){
+
+modelVotedPairsThisModel
+.add(canonicalKey);
+
+if(
+!pairVotesMap[canonicalKey]
+){
+
+pairVotesMap[canonicalKey]={
+
+canonical:
+canonicalKey,
+
+displayPair:
+pStr,
+
+votes:0,
+
+digitScoreSum:0
+
+};
+
+}
+
+pairVotesMap[
+canonicalKey
+].votes+=1;
+
+}
+
+});
+
+});
+
+});
+
+
+Object.values(
+pairVotesMap
+).forEach(
+item=>{
+
+const dX=
+parseInt(
+item.canonical[0],
+10
+);
+
+const dY=
+parseInt(
+item.canonical[1],
+10
+);
+
+item.digitScoreSum=
+(
+digitScores[dX]?.totalScore||0
+)+
+(
+digitScores[dY]?.totalScore||0
+);
+
+});
+
+
+const sortedPairsAll=
+Object.values(
+pairVotesMap
+)
+.sort(
+(a,b)=>{
+
+if(
+b.votes!==a.votes
+)
+return b.votes-a.votes;
+
+return b.digitScoreSum-
+a.digitScoreSum;
+
+}
+);
+
+
+let top5Pairs=
+sortedPairsAll.slice(0,5);
+
+
+while(
+top5Pairs.length<5&&
+sortedPairsAll.length>
+top5Pairs.length
+){
+
+const nextCandidate=
+sortedPairsAll[
+top5Pairs.length
+];
+
+if(
+nextCandidate&&
+!top5Pairs.includes(
+nextCandidate
+)
+){
+
+top5Pairs.push(
+nextCandidate
+);
+
+}else{
+
+break;
+
+}
+
+}
+
+
+const top5MaxVotes=
+top5Pairs[0]?.votes||5;
+
+
+const top5PairRankedHTML=
+top5Pairs.map(
+(item,index)=>{
+
+const rawRatio=
+item.votes/
+top5MaxVotes;
+
+const computedPct=
+Number(
+(
+86.5+
+rawRatio*11.8-
+index*.4
+).toFixed(1)
+);
+
+const secureDisplayPair=
+item.displayPair;
+
+
+return`
+
+<div
+class="deep-pair"
+data-copy="${this._esc(
+secureDisplayPair
+)}">
+
+<strong>
+${this._esc(
+secureDisplayPair
+)}
+</strong>
+
+<small>
+${computedPct}%
+</small>
+
+</div>
+
+`;
+
+}
+).join("")
+||
+`
+<div
+style="
+grid-column:1/-1;
+padding:7px;
+text-align:center;
+color:var(--muted);
+font-size:.46rem;
+">
+ไม่มีชุดข้อมูลคู่เด่น
+</div>
+`;
+
+
+/* =========================================================
+DEEP SCAN — 3 REAL TOP DIGIT SETS
+========================================================= */
 
 function findPairsForDigit(digit){
 
-const found=
-[];
-
-evaluated.forEach(
-item=>{
-
-(item.pairsMap[digit]||[])
-.forEach(
-pair=>{
-found.push(pair);
-}
-);
-
-}
-);
-
-return found;
+return evaluated.find(
+m=>m.pairsMap[digit]
+)?.pairsMap[digit]||[];
 
 }
 
@@ -4498,12 +4723,15 @@ item.digit
 );
 
 
+const deepScanHTML=
+deepSets.map(
+(set,index)=>{
+
 const rankNames=[
 "AI ALPHA SCAN",
 "AI BETA SCAN",
 "AI GAMMA SCAN"
 ];
-
 
 const rankClasses=[
 "rank-one",
@@ -4511,17 +4739,12 @@ const rankClasses=[
 "rank-three"
 ];
 
-
 const rankNumbers=[
-"#1",
-"#2",
-"#3"
+"TOP 1",
+"TOP 2",
+"TOP 3"
 ];
 
-
-const deepScanHTML=
-deepSets.map(
-(set,index)=>{
 
 const pairHTML=
 set.pairs.length
@@ -4565,10 +4788,9 @@ grid-column:1/-1;
 padding:7px;
 text-align:center;
 color:var(--muted);
-font-size:.46rem;">
-
+font-size:.46rem;
+">
 ไม่มีชุดข้อมูล
-
 </div>
 `;
 
@@ -4589,9 +4811,8 @@ ${set.digit}
 <div>
 
 <span class="deep-rank-label">
-RANK ${rankNumbers[index]}
+${rankNumbers[index]}
 </span>
-
 <div class="deep-scan-model-name">
 ${rankNames[index]}
 </div>
@@ -4623,29 +4844,13 @@ ${pairHTML}
 
 
 /* =========================================================
- NEW BEST JUE PAIR RANKING ENGINE
- =========================================================
-
- Rules:
-
- 1. Read only generated JUE pairs from all 5 main models.
- 2. 02 and 20 are treated as the same canonical pair.
- 3. Every occurrence counts as exactly 1 point.
-    No per-model de-duplication is performed.
- 4. The source digit must appear in Top 3 Single.
- 5. The pair must appear inside the existing Top 3 JUE sets.
- 6. Only the top 5 are displayed.
- 7. UI does not expose counts, scores or model names.
- 8. Display orientation is whichever exact orientation occurs
-    more frequently. If tied, lexical order is used.
- ========================================================= */
-
+NEW BEST JUE PAIR RANKING ENGINE
+========================================================= */
 
 const top3SingleDigitSet=
 new Set(
 top3Digits.map(
-item=>
-String(item.digit)
+item=>String(item.digit)
 )
 );
 
@@ -4683,11 +4888,9 @@ top3DeepPairCanonicalSet.add(
 canonical
 );
 
-}
-);
+});
 
-}
-);
+});
 
 
 const bestJuePairMap={};
@@ -4713,15 +4916,24 @@ pair[0]===pair[1]
 )
 return;
 
+const d1_char=pair[0];
+const d2_char=pair[1];
+
+if(
+!top3SingleDigitSet.has(d1_char)&&
+!top3SingleDigitSet.has(d2_char)
+)
+return;
 
 const canonical=
-[
-pair[0],
-pair[1]
-]
+[d1_char,d2_char]
 .sort()
 .join("");
 
+if(
+!top3DeepPairCanonicalSet.has(canonical)
+)
+return;
 
 if(
 !bestJuePairMap[canonical]
@@ -4729,44 +4941,35 @@ if(
 
 bestJuePairMap[canonical]={
 
-canonical,
+canonical:canonical,
 
-total:0,
+orientations:{},
 
-orientationCounts:{},
+totalCount:0,
 
-sourceCounts:{}
+sumDigitScore:0
 
 };
 
 }
 
+const entry=
+bestJuePairMap[canonical];
 
-const item=
-bestJuePairMap[
-canonical
-];
+entry.totalCount+=1;
 
-
-item.total+=1;
-
-
-item.orientationCounts[pair]=
+entry.orientations[pair]=
 (
-item.orientationCounts[pair]||0
+entry.orientations[pair]||0
 )+1;
 
-
-item.sourceCounts[
-String(sourceDigit)
-]=
+entry.sumDigitScore+=
 (
-item.sourceCounts[
-String(sourceDigit)
-]||0
-)+1;
-
-});
+digitScores[parseInt(d1_char,10)]?.totalScore||0
+)+
+(
+digitScores[parseInt(d2_char,10)]?.totalScore||0
+);
 
 });
 
@@ -4779,412 +4982,240 @@ const bestJueCandidates=
 Object.values(
 bestJuePairMap
 )
+.map(item=>{
 
-.filter(
-item=>{
-
-const sourceIsTop3=
-Object.keys(
-item.sourceCounts
-)
-.some(
-digit=>
-top3SingleDigitSet.has(
-digit
-)
-);
-
-const isInsideTop3Jue=
-top3DeepPairCanonicalSet.has(
-item.canonical
-);
-
-return(
-sourceIsTop3&&
-isInsideTop3Jue
-);
-
-}
-)
-
-.map(
-item=>{
-
-const orientations=
+const bestOrientation=
 Object.entries(
-item.orientationCounts
+item.orientations
 )
-.sort(
-(a,b)=>{
+.sort((a,b)=>{
 
-if(
-b[1]!==a[1]
-)
+if(b[1]!==a[1])
 return b[1]-a[1];
 
-return a[0].localeCompare(
-b[0]
-);
+return a[0].localeCompare(b[0]);
 
-}
-);
-
+})[0][0];
 
 return{
 
-...item,
+canonical:item.canonical,
 
-displayPair:
-orientations[0]?.[0]||
-item.canonical
+displayPair:bestOrientation,
+
+totalCount:item.totalCount,
+
+sumDigitScore:item.sumDigitScore
 
 };
 
-}
-)
+})
+.sort((a,b)=>{
 
-.sort(
-(a,b)=>{
+if(b.totalCount!==a.totalCount)
+return b.totalCount-a.totalCount;
 
-if(
-b.total!==a.total
-)
-return b.total-a.total;
+return b.sumDigitScore-a.sumDigitScore;
 
-
-const aDirect=
-a.orientationCounts[
-a.displayPair
-]||0;
-
-const bDirect=
-b.orientationCounts[
-b.displayPair
-]||0;
+});
 
 
-if(
-bDirect!==aDirect
-)
-return bDirect-aDirect;
+let bestJueTop5=
+bestJueCandidates.slice(0,5);
 
 
-return a.displayPair.localeCompare(
-b.displayPair
-);
-
-}
-)
-
-.slice(0,5);
-
-
-const arr1=
-findPairsForDigit(d1);
-
-
-const arr2=
-findPairsForDigit(d2);
-
-
-const matrixArr3d=
-arr1.slice(0,5)
-.map(
-p=>
-`${p.slice(-1)}${d1}${d2}`
-);
-
-
-const cScore3=
-Number(
-(
-50.1+
-.8*Math.random()
-).toFixed(1)
-);
-
-
-let top5Digits=
-matrixSorted
-.slice(0,5)
-.map(
-item=>item.digit
-);
-
-
-let wildcardCandidate=
-matrixSorted.find(
-item=>
-!new Set(
-evaluated.flatMap(
-m=>m.set
-)
-).has(item.digit)&&
-!top5Digits.includes(
-item.digit
-)
-);
-
-
-if(!wildcardCandidate){
-
-wildcardCandidate=
-matrixSorted.find(
-item=>
-!top5Digits.includes(
-item.digit
-)
-);
-
-}
-
-
-let currentSet=[
-...top5Digits,
-wildcardCandidate
+const bestJuePairsHTML=
+bestJueTop5.length>0
 ?
-wildcardCandidate.digit
+bestJueTop5.map((item,index)=>{
+
+const rankClass=`jue-rank-${index+1}`;
+
+return`
+
+<div
+class="deep-pair ${rankClass}"
+data-copy="${this._esc(
+item.displayPair
+)}">
+
+<strong>
+${this._esc(
+item.displayPair
+)}
+</strong>
+
+<small>
+TOP ${index+1}
+</small>
+
+</div>
+
+`;
+
+}).join("")
 :
-matrixSorted[5]?.digit
-];
+`
+<div
+style="
+grid-column:1/-1;
+padding:7px;
+text-align:center;
+color:var(--muted);
+font-size:.46rem;
+">
+ไม่มีชุดข้อมูลคู่เจาะ
+</div>
+`;
 
 
-const checkBalance=
-digits=>{
+/* =========================================================
+6-NUMBER WIN SET GENERATION
+========================================================= */
 
-const evenCount=
-digits.filter(
-d=>d%2===0
-).length;
+const winSetDigits=[];
 
-const oddCount=
-digits.length-evenCount;
-
-const lowCount=
-digits.filter(
-d=>d>=0&&d<=4
-).length;
-
-const highCount=
-digits.length-lowCount;
-
-return{
-
-isBalanced:
-evenCount>=2&&
-oddCount>=2&&
-lowCount>=2&&
-highCount>=2
-
-};
-
-};
-
+matrixSorted.forEach(
+item=>{
 
 if(
-!checkBalance(currentSet)
-.isBalanced
-){
-
-const candidatesIndex=[
-6,7,8,9
-];
-
-let bestSet=[
-...currentSet
-];
-
-let foundReplacement=false;
-
-for(
-let idx of candidatesIndex
-){
-
-if(
-idx<matrixSorted.length
-){
-
-const testSet=[
-...currentSet.slice(0,5),
-matrixSorted[idx].digit
-];
-
-if(
-checkBalance(testSet)
-.isBalanced
-){
-
-bestSet=testSet;
-
-foundReplacement=true;
-
-break;
-
-}
-
-}
-
-}
-
-if(foundReplacement)
-currentSet=bestSet;
-
-}
-
-
-const winSet=
-currentSet
-.filter(
-d=>Number.isInteger(d)
+!winSetDigits.includes(
+item.digit
 )
-.sort(
-(a,b)=>a-b
+){
+
+winSetDigits.push(
+item.digit
 );
 
+}
 
-const combinedAnalysisPool=[
-...matrixSorted
-.slice(0,5)
-.map(i=>i.digit),
-...winSet
-];
+});
 
 
-const evenCountTotal=
-combinedAnalysisPool.filter(
-d=>d%2===0
-).length;
+while(
+winSetDigits.length<6
+){
 
-
-const evenPct=
-Number(
-(
-evenCountTotal/
-combinedAnalysisPool.length*
-100
-).toFixed(1)
+const fallbackRand=
+Math.floor(
+Math.random()*10
 );
 
+if(
+!winSetDigits.includes(
+fallbackRand
+)
+){
 
-const oddPct=
-Number(
-(
-100-evenPct
-).toFixed(1)
+winSetDigits.push(
+fallbackRand
 );
 
+}
 
-const maxScoreVal=
+}
+
+
+const finalWinSet6=
+winSetDigits.slice(0,6);
+
+
+const winSetHTML=
+finalWinSet6.map(
+(d,idx)=>`
+
+<div
+class="ind-win-item"
+data-copy="${d}">
+
+<strong>
+${d}
+</strong>
+
+<span>
+#${idx+1}
+</span>
+
+</div>
+
+`
+).join("");
+
+
+/* =========================================================
+ALL 10 DIGITS RANKING OVERVIEW (0-9)
+========================================================= */
+
+const maxDigitScore=
 Math.max(
-...matrixSorted.map(
+...matrixSortedAll.map(
 s=>s.totalScore
 ),
 1
 );
 
 
-const distributionHTML=
-matrixSorted.map(
+const overviewBarsHTML=
+matrixSortedAll.map(
 (item,index)=>{
 
-const digit=
-item.digit;
-
-const height=
-item.totalScore>0
-?
+const heightPct=
 Math.max(
-12,
+16,
 Math.round(
 item.totalScore/
-maxScoreVal*
-100
+maxDigitScore*
+74
 )
-)
-:
-6;
-
-
-let barColor=
-"#0A6647";
-
-let barTop=
-"#10B981";
-
-let glow=
-"rgba(10,102,71,.10)";
+);
 
 let rankClass="";
 
-let rankLabel=
-`#${index+1}`;
+let rankText=`#${index+1}`;
+
+if(index===0){
+rankClass="rank-1";
+rankText="TOP 1";
+}else if(index===1){
+rankClass="rank-2";
+rankText="TOP 2";
+}else if(index===2){
+rankClass="rank-3";
+rankText="TOP 3";
+}else if(index===3){
+rankClass="rank-4";
+rankText="TOP 4";
+}else if(index===4){
+rankClass="rank-5";
+rankText="TOP 5";
+}
+
+
+let colorTop="#10B981";
+
+let colorMain="#0A6647";
+
+let glowColor="rgba(16,185,129,.2)";
 
 
 if(index===0){
 
-barColor="#9E6C02";
-barTop="#FEF3C7";
-glow="rgba(158,108,2,.18)";
-rankClass="rank-1";
+colorTop="#FDE68A";
+colorMain="#EAB308";
+glowColor="rgba(234,179,8,.35)";
 
-}
+}else if(index===1){
 
-else if(index===1){
+colorTop="#CFD9D6";
+colorMain="#8FA39C";
+glowColor="rgba(110,126,120,.30)";
 
-barColor="#64727A";
-barTop="#E5E9EC";
-glow="rgba(67,80,88,.14)";
-rankClass="rank-2";
+}else if(index===2){
 
-}
-
-else if(index===2){
-
-barColor="#9D5B30";
-barTop="#F4D7C4";
-glow="rgba(157,91,48,.13)";
-rankClass="rank-3";
-
-}
-
-else if(
-index===3||
-index===4
-){
-
-barColor="#0A6647";
-barTop="#A7F3D0";
-glow="rgba(10,102,71,.12)";
-
-}
-
-else if(
-index===5||
-index===6
-){
-
-barColor="#9E6C02";
-barTop="#FEF3C7";
-glow="rgba(158,108,2,.10)";
-
-}
-
-else if(
-index===7||
-index===8
-){
-
-barColor="#087380";
-barTop="#CCFBF1";
-glow="rgba(8,115,128,.10)";
-
-}
-
-else{
-
-barColor="#BE123C";
-barTop="#FFE4E6";
-glow="rgba(190,18,60,.08)";
+colorTop="#14B8A6";
+colorMain="#087380";
+glowColor="rgba(8,115,128,.30)";
 
 }
 
@@ -5200,173 +5231,28 @@ return`
 <div
 class="overview-bar ${rankClass}"
 style="
---bar-height:${height}%;
---bar-color:${barColor};
---bar-color-top:${barTop};
---bar-glow:${glow};
+--bar-height:${heightPct}px;
+--bar-color-top:${colorTop};
+--bar-color:${colorMain};
+--bar-glow:${glowColor};
 "
-data-copy="${digit}"
-title="
-Rank ${index+1}
-•
-Digit ${digit}
-•
-${scorePct.toFixed(1)}%
-">
+title="เลข ${
+item.digit
+} (คะแนน ${
+scorePct
+}%)">
 
 <span class="overview-rank">
-${rankLabel}
+${rankText}
 </span>
 
 <span class="overview-score">
-${scorePct.toFixed(1)}%
+${Math.round(scorePct)}%
 </span>
 
 <span class="overview-digit">
-${digit}
-</span>
-
-</div>
-
-`;
-
-}
-).join("");
-
-
-const indWinSetHTML=
-winSet.map(
-(digit,index)=>`
-
-<div
-class="ind-win-item"
-data-copy="${digit}">
-
-<strong>
-${digit}
-</strong>
-
-<span>
-RANK ${index+1}
-</span>
-
-</div>
-
-`
-).join("");
-
-
-const threeHTML=
-matrixArr3d.length
-?
-
-matrixArr3d.map(
-(p,index)=>{
-
-const pct=
-Number(
-(
-cScore3-
-.05*index
-).toFixed(1)
-);
-
-return`
-
-<div
-class="three-d-item"
-data-copy="${this._esc(p)}">
-
-<strong>
-${this._esc(p)}
-</strong>
-
-<small>
-${pct}%
-</small>
-
-</div>
-
-`;
-
-}
-).join("")
-
-:
-
-`
-<div
-style="
-grid-column:1/-1;
-color:var(--muted);
-font-size:.46rem;
-text-align:center;">
-ไม่มีชุดข้อมูล
-</div>
-`;
-
-
-const top3Class=[
-"rank-one",
-"rank-two",
-"rank-three"
-];
-
-
-const top3Names=[
-"ALPHA SIGNAL",
-"BETA SIGNAL",
-"GAMMA SIGNAL"
-];
-
-
-const top3HTML=
-top3Digits.map(
-(item,index)=>{
-
-const pct=
-calcConfidence(
-item.totalScore
-);
-
-
-return`
-
-<div
-class="top3-row ${top3Class[index]}"
-data-copy="${item.digit}">
-
-<div class="top3-position">
-#${index+1}
-</div>
-
-<div class="top3-digit">
 ${item.digit}
-</div>
-
-<div class="top3-info">
-
-<div class="top3-label">
-${top3Names[index]}
-<span>
-RANK ${index+1}
 </span>
-</div>
-
-<div class="top3-bar">
-
-<div
-class="top3-bar-fill"
-style="width:${pct}%;">
-</div>
-
-</div>
-
-</div>
-
-<div class="top3-score">
-${pct.toFixed(1)}%
-</div>
 
 </div>
 
@@ -5376,119 +5262,30 @@ ${pct.toFixed(1)}%
 ).join("");
 
 
-let allFormulasHTML="";
+/* =========================================================
+STATS / RATIOS
+========================================================= */
+
+const evenCount=
+matrixSortedAll.filter(
+s=>s.digit%2===0
+).length;
+
+const oddCount=
+10-evenCount;
+
+const evenPct=
+evenCount*10;
+
+const oddPct=
+oddCount*10;
 
 
-evaluated.forEach(
-item=>{
+/* =========================================================
+RENDER HTML RESULT CONTAINER
+========================================================= */
 
-let pairs=[];
-
-
-item.set.forEach(
-digit=>{
-
-(
-item.pairsMap[digit]||[]
-)
-.forEach(
-p=>{
-pairs.push({
-pair:p
-});
-}
-);
-
-});
-
-
-const pairCards=
-pairs.map(
-(obj,idx)=>{
-
-const subPct=
-Number(
-(
-item.aiScore-
-.3*idx
-).toFixed(1)
-);
-
-
-return`
-
-<div
-class="formula-pair"
-data-copy="${this._esc(obj.pair)}">
-
-<strong>
-${this._esc(obj.pair)}
-</strong>
-
-<small>
-${subPct}%
-</small>
-
-</div>
-
-`;
-
-}
-).join("");
-
-
-const badgeHtml=
-item.isRecommended
-?
-'<span class="compact-badge">สูตรแนะนำ</span>'
-:
-"";
-
-
-allFormulasHTML+=`
-
-<div class="formula-card">
-
-<div class="formula-head">
-
-<div class="formula-name">
-
-${this._esc(item.name)}
-
-${badgeHtml}
-
-</div>
-
-<div class="formula-badge">
-AI Score ${item.aiScore}%
-</div>
-
-</div>
-
-<div class="formula-sub">
-
-เลขเด่น:
-
-<strong>
-${item.set.join(" - ")}
-</strong>
-
-</div>
-
-<div class="formula-pairs">
-
-${pairCards}
-
-</div>
-
-</div>
-
-`;
-
-});
-
-
-const html=`
+const resultHTML=`
 
 <div class="result-shell">
 
@@ -5497,21 +5294,23 @@ const html=`
 <div>
 
 <div class="result-kicker">
-SCAN COMPLETE
+QUANTITATIVE NEURAL MATRIX
 </div>
 
 <div class="result-title">
-AI PROCESSING COMPLETE
+ผลการวิเคราะห์ AI ชั้นสูง
 </div>
 
 </div>
 
 <div class="result-note">
-${new Date().toLocaleTimeString("th-TH")}
+ความแม่นยำสูง
 </div>
 
 </div>
 
+
+<!-- TOP 3 SIGNAL BOARD -->
 
 <section class="top3-signal-board">
 
@@ -5520,90 +5319,165 @@ ${new Date().toLocaleTimeString("th-TH")}
 <div>
 
 <div class="top3-kicker">
-DIGIT PRIORITY MATRIX
+TOP 3 HIGH PROBABILITY
 </div>
 
 <div class="top3-title">
-🏆 ALPHA TOP 3 SIGNALS
+3 อันดับเลขเด่นสูงสุด
 </div>
 
-<div class="top3-sub"></div>
+<div class="top3-sub">
+วิเคราะห์เจาะลึกจากโมเดลโครงข่ายประสาทเทียม
+</div>
 
+</div>
+
+<div class="top3-badge">
+AI CONFIDENCE 98.5%
 </div>
 
 </div>
 
 
 <div class="top3-list">
-${top3HTML}
+
+<div class="top3-row rank-one">
+
+<div class="top3-position">
+<span>TOP 1</span>
+<span style="font-size:.32rem; color:var(--gold);">อันดับหนึ่ง</span>
+</div>
+
+<div class="top3-digit">
+${top3Digits[0]?.digit??"-"}
+</div>
+
+<div class="top3-info">
+
+<div class="top3-label">
+<span>อันดับที่ 1 (เด่นสุดในระบบ)</span>
+</div>
+
+<div class="top3-bar">
+<div class="top3-bar-fill" style="width:98%;"></div>
+</div>
+
+</div>
+
+<div class="top3-score">
+${top3Digits[0]?calcConfidence(top3Digits[0].totalScore).toFixed(1):"0"}%
+</div>
+
+</div>
+
+
+<div class="top3-row rank-two">
+
+<div class="top3-position">
+<span>TOP 2</span>
+<span style="font-size:.32rem; color:#4A5E57;">อันดับสอง</span>
+</div>
+
+<div class="top3-digit">
+${top3Digits[1]?.digit??"-"}
+</div>
+
+<div class="top3-info">
+
+<div class="top3-label">
+<span>อันดับที่ 2 (ความน่าจะเป็นสูง)</span>
+</div>
+
+<div class="top3-bar">
+<div class="top3-bar-fill" style="width:88%;"></div>
+</div>
+
+</div>
+
+<div class="top3-score">
+${top3Digits[1]?calcConfidence(top3Digits[1].totalScore).toFixed(1):"0"}%
+</div>
+
+</div>
+
+
+<div class="top3-row rank-three">
+
+<div class="top3-position">
+<span>TOP 3</span>
+<span style="font-size:.32rem; color:var(--cyan);">อันดับสาม</span>
+</div>
+
+<div class="top3-digit">
+${top3Digits[2]?.digit??"-"}
+</div>
+
+<div class="top3-info">
+
+<div class="top3-label">
+<span>อันดับที่ 3 (เสริมพลังจับคู่)</span>
+</div>
+
+<div class="top3-bar">
+<div class="top3-bar-fill" style="width:78%;"></div>
+</div>
+
+</div>
+
+<div class="top3-score">
+${top3Digits[2]?calcConfidence(top3Digits[2].totalScore).toFixed(1):"0"}%
+</div>
+
+</div>
+
 </div>
 
 
 <div class="top3-footnote">
-
 <span class="mini-live"></span>
-
-<span>
-จัดอันดับตาม
-<strong>
-AI Real-Time Score
-</strong>
-</span>
-
+ระบบประมวลผลแบบเรียลไทม์ • อ้างอิงจากฐานข้อมูลสถิติ
 </div>
 
 </section>
 
+
+<!-- STATS ANALYTICS CARD -->
 
 <section class="stats-analytics-card">
 
 <div class="stats-flex">
 
 <div class="stats-title">
-⚖️ อัตราส่วน เลขคู่ / เลขคี่
+สัดส่วนคู่/คี่ (Even / Odd Ratio)
 </div>
 
 <div class="stats-badge">
-AI BALANCE
+ANALYSIS STATS
 </div>
 
 </div>
-
 
 <div class="ratio-bar-container">
 
 <div
 class="ratio-even"
-style="width:${evenPct}%">
-</div>
+style="width:${evenPct}%"></div>
 
 <div
 class="ratio-odd"
-style="width:${oddPct}%">
-</div>
+style="width:${oddPct}%"></div>
 
 </div>
-
 
 <div class="ratio-legend">
-
-<span>
-เลขคู่: ${evenPct}%
-</span>
-
-<span>
-เลขคี่: ${oddPct}%
-</span>
-
+<span>เลขคู่ (Even): ${evenCount} ตัว (${evenPct}%)</span>
+<span>เลขคี่ (Odd): ${oddCount} ตัว (${oddPct}%)</span>
 </div>
 
 </section>
 
 
-<div class="section-marker">
-DIGIT OVERVIEW
-</div>
-
+<!-- OVERVIEW 10 DIGITS (0-9) -->
 
 <section class="overview-panel">
 
@@ -5612,50 +5486,59 @@ DIGIT OVERVIEW
 <div>
 
 <div class="overview-title">
-AI PROBABILITY RANKING
+ภาพรวมตัวเลขทั้งหมด (0 - 9)
 </div>
 
 <div class="overview-sub">
-อันดับคะแนนเลข 0-9
+จัดอันดับคะแนนความน่าจะเป็นครบทุกหลัก
 </div>
 
 </div>
 
 <div class="overview-badge">
-🟢 AI ACTIVE
+MATRIX 0-9
 </div>
 
 </div>
-
 
 <div class="overview-bars">
-${distributionHTML}
+${overviewBarsHTML}
 </div>
 
-
 <div class="overview-axis">
-
-<span>
-#1 TOP
-</span>
-
-<span>
-DIGIT SCORE
-</span>
-
-<span>
-#10
-</span>
-
+<span>0 (ต่ำสุด)</span>
+<span>5 (ปานกลาง)</span>
+<span>9 (สูงสุด)</span>
 </div>
 
 </section>
 
 
-<div class="section-marker">
-ALPHA DEEP SCAN
+<!-- 6 NUMBER WIN SET -->
+
+<section class="ind-win-set">
+
+<div class="ind-win-header">
+
+<div class="ind-win-title">
+ชุดวิน 6 ตัว 
+<small>WIN SET 6 DIGITS (คลิกที่ตัวเลขเพื่อคัดลอก)</small>
 </div>
 
+<div class="ind-win-badge">
+HIGH HIT RATE
+</div>
+
+</div>
+
+<div class="ind-win-grid">
+${winSetHTML}
+</div>
+
+</section>
+
+
+<!-- DEEP SCAN 3 DIGITS & PAIRS -->
 
 <section class="deep-scan-board">
 
@@ -5664,394 +5547,298 @@ ALPHA DEEP SCAN
 <div>
 
 <div class="deep-scan-kicker">
-TOP 3 MATRIX SIGNALS
+DEEP DIGIT PAIR SCANNING
 </div>
 
 <div class="deep-scan-title">
-🎯 ชุดเจาะ TOP 3
+เจาะลึกชุด 3 ตัวเด่น และคู่ประกบ
 </div>
 
-<div class="deep-scan-sub"></div>
-
+<div class="deep-scan-sub">
+คัดกรองชุดคู่เน้นๆ จาก 3 ตัวหลักระบบ
 </div>
 
 </div>
 
+<div class="top3-badge">
+TOP PAIRS
+</div>
+
+</div>
 
 <div class="deep-scan-grid">
 ${deepScanHTML}
 </div>
 
+</section>
 
-<div class="three-d-scan">
 
-<div class="three-d-head">
+<!-- BEST JUE PAIR 5 RANKING -->
 
-<div class="three-d-title">
-🎲 ชุด 3 ตัวบน
+<section class="deep-scan-board" style="margin-top:9px;">
+
+<div class="deep-scan-head">
+
+<div>
+
+<div class="deep-scan-kicker">
+BEST JUE PAIR RANKING
 </div>
 
-<div class="three-d-score">
-ACCURACY ${cScore3.toFixed(1)}%
+<div class="deep-scan-title">
+5 อันดับชุดเจาะที่ดีที่สุด
+</div>
+
+<div class="deep-scan-sub">
+วิเคราะห์ความคมชัดและแยกแยะระดับความสำคัญชัดเจน
 </div>
 
 </div>
 
-<div class="three-d-grid">
-${threeHTML}
+<div class="top3-badge">
+TOP 5 JUE
 </div>
 
+</div>
+
+<div class="deep-scan-pairs" style="grid-template-columns:repeat(5,1fr);">
+${bestJuePairsHTML}
 </div>
 
 </section>
 
 
-<section class="ind-win-set">
+<!-- SECTION MARKER -->
 
-<div class="ind-win-header">
-
-<div class="ind-win-title">
-
-🧩 ชุดวิน 6 ตัว
-
-<small>
-CURATED WIN SET • 6 PICKS
-</small>
-
-</div>
-
-<div class="ind-win-badge">
-✦ VIP SET
-</div>
-
+<div class="section-marker">
+รายละเอียดโมเดลการคำนวณแยกย่อย (5 AI MODELS)
 </div>
 
 
-<div class="ind-win-grid">
-${indWinSetHTML}
-</div>
-
-</section>
-
+<!-- FORMULA SECTION -->
 
 <section class="formula-section">
 
-<button
-class="formula-toggle"
-id="toggleMainFormulasBtn"
-type="button">
+${evaluated.map(model=>{
 
-<span>
-🧠 TOP 5 Model / AI ALGORITHM DETAILS
-</span>
+const isRec=
+model.isRecommended;
 
-<span>
-▼
-</span>
+return`
 
-</button>
+<div class="formula-card">
 
+<div class="formula-head">
+
+<div class="formula-name">
+${this._esc(model.name)}
+${
+isRec
+?
+'<span class="compact-badge">RECOMMENDED</span>'
+:
+''
+}
+</div>
+
+<div class="formula-badge">
+${model.aiScore.toFixed(1)}%
+</div>
+
+</div>
+
+<div class="formula-sub">
+สูตรคำนวณ: <strong>${this._esc(model.subName)}</strong> • เลขหลัก: ${model.set.join(", ")}
+</div>
+
+<div class="formula-pairs">
+${
+Object.entries(model.pairsMap)
+.flatMap(([d,pList])=>pList)
+.slice(0,5)
+.map(pair=>`
 
 <div
-id="allFormulasWrapper"
-style="
-display:none;
-margin-top:6px;">
-
-${allFormulasHTML}
-
-</div>
-
-</section>
-
-
-<div class="disclaimer">
+class="formula-pair"
+data-copy="${this._esc(pair)}">
 
 <strong>
-หมายเหตุ:
+${this._esc(pair)}
 </strong>
 
-ข้อมูลวิเคราะห์เชิงสถิติเพื่อเป็นแนวทางเท่านั้น
-โปรดใช้วิจารณญาณในการตัดสินใจ
+<small>AI</small>
 
 </div>
 
+`).join("")
+}
+</div>
 
 </div>
 
 `;
 
+}).join("")}
+
+</section>
+
+
+<div class="disclaimer">
+<strong>ข้อควรทราบ:</strong> ระบบนี้เป็นเครื่องมือช่วยวิเคราะห์ความน่าจะเป็นด้วยระบบ AI ควอนตัม<br>
+โปรดใช้วิจารณญาณในการใช้งาน เหมาะสำหรับผู้สนใจศึกษาและวิเคราะห์สถิติเท่านั้น
+</div>
+
+</div>
+
+`;
+
+
 document.getElementById(
 "resultContainer"
-).innerHTML=html;
+).innerHTML=resultHTML;
+
+this.bindCopyEvents();
+
+},
 
 
-/* =========================================================
- APPLY BEST JUE TOP 5 COLORS TO MATCHING TOP 3 PAIRS
+bindCopyEvents(){
 
- The ranking engine remains active; only the presentation moves
- into the existing TOP 3 matrix so the UI stays compact.
- ========================================================= */
-
-const bestJueRankLookup={};
-
-bestJueCandidates.forEach(
-(item,index)=>{
-bestJueRankLookup[item.canonical]=index+1;
-}
-);
-
-
-document.querySelectorAll(
-".deep-scan-card .deep-pair[data-copy]"
-).forEach(
-node=>{
-
-const pair=
-String(node.dataset.copy||"");
-
-if(
-! /^\d{2}$/.test(pair)||
-pair[0]===pair[1]
-)
-return;
-
-const canonical=
-[pair[0],pair[1]]
-.sort()
-.join("");
-
-const rank=
-bestJueRankLookup[canonical];
-
-if(rank){
-
-node.classList.add(
-`jue-rank-${rank}`
-);
-
-node.dataset.jueRank=
-String(rank);
-
-}
-
-}
-);
-
-
+const clickableElements=
 document.querySelectorAll(
 "[data-copy]"
-).forEach(
-node=>{
-
-const clone=
-node.cloneNode(true);
-
-node.parentNode.replaceChild(
-clone,
-node
 );
 
-clone.addEventListener(
-"click",
-()=>{
-this.copyText(
-clone.dataset.copy
-);
-}
-);
+clickableElements.forEach(el=>{
 
-});
-
-
-const toggleMainBtn=
-document.getElementById(
-"toggleMainFormulasBtn"
-);
-
-
-const allWrapper=
-document.getElementById(
-"allFormulasWrapper"
-);
-
-
-if(
-toggleMainBtn&&
-allWrapper
-){
-
-toggleMainBtn.addEventListener(
+el.addEventListener(
 "click",
 ()=>{
 
-this._audio("click");
-
-const isOpen=
-allWrapper.style.display==="block";
-
-allWrapper.style.display=
-isOpen
-?
-"none"
-:
-"block";
-
-toggleMainBtn
-.querySelector(
-"span:last-child"
-)
-.innerText=
-isOpen
-?
-"▼"
-:
-"▲";
-
-}
+const text=
+el.getAttribute(
+"data-copy"
 );
 
-}
-
-},
-
-
-_esc(value){
-
-return String(
-value==null
-?
-""
-:
-value
-)
-.replace(
-/[&<>"']/g,
-char=>
-({
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#039;"
-})[char]
-);
-
-},
-
-
-copyText(text){
-
-this._audio("click");
-
-if(
-navigator.clipboard&&
-navigator.clipboard.writeText
-){
+if(!text)return;
 
 navigator.clipboard
 .writeText(text)
-.then(
-()=>this.showToast()
-)
-.catch(
-()=>this.fallbackCopyText(text)
+.then(()=>{
+
+this._audio("click");
+
+this.showToast(
+`✓ คัดลอก "${text}" แล้ว`
 );
 
-}else{
+})
+.catch(()=>{});
 
-this.fallbackCopyText(text);
+});
 
-}
+});
 
 },
 
 
-fallbackCopyText(text){
-
-const ta=
-document.createElement(
-"textarea"
-);
-
-ta.value=text;
-
-ta.style.position="fixed";
-ta.style.opacity="0";
-
-document.body.appendChild(ta);
-
-ta.focus();
-ta.select();
-
-try{
-
-document.execCommand("copy");
-
-this.showToast();
-
-}catch(e){}
-
-document.body.removeChild(ta);
-
-},
-
-
-showToast(){
-
-clearTimeout(
-this._toastTimer
-);
+showToast(msg){
 
 const t=
 document.getElementById(
 "toast"
 );
 
-t.classList.add("show");
+if(!t)return;
+
+t.innerText=msg;
+
+t.classList.add(
+"show"
+);
+
+clearTimeout(
+this._toastTimer
+);
 
 this._toastTimer=
-setTimeout(
-()=>{
-t.classList.remove("show");
-},
-1600
+setTimeout(()=>{
+
+t.classList.remove(
+"show"
 );
+
+},2200);
 
 }
 
 };
 
 
-const loginButton=
-document.getElementById(
-"loginButton"
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+const authStatus=
+localStorage.getItem(
+"ml_auth_status_v3"
 );
 
-const passwordInput=
+if(authStatus==="active"){
+
+document.getElementById(
+"loginView"
+).style.display="none";
+
+document.getElementById(
+"calculatorView"
+).style.display="block";
+
+_app.checkSessionBadge();
+
+}else{
+
+document.getElementById(
+"loginView"
+).style.display="block";
+
+document.getElementById(
+"calculatorView"
+).style.display="none";
+
+}
+
+
+const passInput=
 document.getElementById(
 "passwordInput"
 );
 
-const calculateButton=
+if(passInput){
+
+passInput.addEventListener(
+"keydown",
+e=>{
+
+if(e.key==="Enter"){
+
+_app.login();
+
+}
+
+});
+
+}
+
+
+const loginBtn=
 document.getElementById(
-"calculateButton"
+"loginButton"
 );
 
-const clearButton=
-document.getElementById(
-"clearButton"
-);
+if(loginBtn){
 
-const logoutButton=
-document.getElementById(
-"logoutButton"
-);
-
-
-if(loginButton){
-
-loginButton.addEventListener(
+loginBtn.addEventListener(
 "click",
 ()=>_app.login()
 );
@@ -6059,24 +5846,14 @@ loginButton.addEventListener(
 }
 
 
-if(passwordInput){
-
-passwordInput.addEventListener(
-"keyup",
-e=>{
-
-if(e.key==="Enter")
-_app.login();
-
-}
+const calcBtn=
+document.getElementById(
+"calculateButton"
 );
 
-}
+if(calcBtn){
 
-
-if(calculateButton){
-
-calculateButton.addEventListener(
+calcBtn.addEventListener(
 "click",
 ()=>_app.calculate()
 );
@@ -6084,19 +5861,29 @@ calculateButton.addEventListener(
 }
 
 
-if(clearButton){
+const clearBtn=
+document.getElementById(
+"clearButton"
+);
 
-clearButton.addEventListener(
+if(clearBtn){
+
+clearBtn.addEventListener(
 "click",
-()=>_app.clearCalc()
+()=>_app.clearCard||_app.clearCalc()
 );
 
 }
 
 
-if(logoutButton){
+const logoutBtn=
+document.getElementById(
+"logoutButton"
+);
 
-logoutButton.addEventListener(
+if(logoutBtn){
+
+logoutBtn.addEventListener(
 "click",
 ()=>_app.logout()
 );
@@ -6104,121 +5891,39 @@ logoutButton.addEventListener(
 }
 
 
-const n3Input=
+const num3Input=
 document.getElementById(
 "num3top"
 );
 
-const n2Input=
+const num2Input=
 document.getElementById(
 "num2bottom"
 );
 
+if(num3Input&&num2Input){
 
-if(n3Input){
+[num3Input,num2Input].forEach(
+input=>{
 
-n3Input.addEventListener(
-"input",
-()=>{
-
-n3Input.value=
-n3Input.value.replace(
-/\D/g,
-""
-);
-
-if(
-n3Input.value.length>=3&&
-n2Input
-)
-n2Input.focus();
-
-}
-);
-
-}
-
-
-if(n2Input){
-
-n2Input.addEventListener(
-"input",
-()=>{
-
-n2Input.value=
-n2Input.value.replace(
-/\D/g,
-""
-);
-
-}
-);
-
-}
-
-
-[
-"num3top",
-"num2bottom"
-].forEach(
-id=>{
-
-const el=
-document.getElementById(id);
-
-if(el){
-
-el.addEventListener(
-"keyup",
+input.addEventListener(
+"keydown",
 e=>{
 
-if(e.key==="Enter")
-_app.calculate();
+if(e.key==="Enter"){
 
-}
-);
+_app.calculate();
 
 }
 
 });
 
-
-(function initApp(){
-
-try{
-
-const active=
-localStorage.getItem(
-"ml_auth_status_v3"
-);
-
-if(active==="active"){
-
-const loginView=
-document.getElementById(
-"loginView"
-);
-
-const calculatorView=
-document.getElementById(
-"calculatorView"
-);
-
-if(loginView)
-loginView.style.display="none";
-
-if(calculatorView)
-calculatorView.style.display="block";
-
-_app.checkSessionBadge();
+});
 
 }
 
-}catch(e){}
-
-})();
+});
 
 </script>
-
 </body>
- </html>
+</html>
