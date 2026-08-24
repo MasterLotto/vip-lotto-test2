@@ -2088,11 +2088,14 @@ font-size:.35rem;
 color:var(--muted);
 }
 
+
 /* =========================================================
-   PREMIUM TOP 5 BEST PAIR RANKING BOARD
+   BEST JUE PAIR RANKING — PREMIUM AI TOP 5
+   New independent ranking board.
+   This does not replace the existing TOP 5 FOCUS panel.
 ========================================================= */
 
-.pair-rank-board{
+.best-jue-rank-board{
 position:relative;
 overflow:hidden;
 padding:12px;
@@ -2100,13 +2103,13 @@ margin-bottom:9px;
 border-radius:20px;
 border:1px solid rgba(10,102,71,.19);
 background:
-radial-gradient(circle at 96% 0%,rgba(234,179,8,.10),transparent 34%),
-radial-gradient(circle at 0% 100%,rgba(16,185,129,.08),transparent 38%),
+radial-gradient(circle at 96% 0%,rgba(234,179,8,.13),transparent 32%),
+radial-gradient(circle at 0% 100%,rgba(16,185,129,.10),transparent 40%),
 linear-gradient(135deg,#FFFFFF,#F1F9F5);
 box-shadow:var(--shadowSoft);
 }
 
-.pair-rank-board::before{
+.best-jue-rank-board::before{
 content:"";
 position:absolute;
 top:0;
@@ -2115,16 +2118,16 @@ right:0;
 height:2px;
 background:linear-gradient(90deg,transparent,#EAB308,#10B981,#14B8A6,#EAB308,transparent);
 background-size:220% 100%;
-animation:pairRankFlow 6s ease-in-out infinite;
-opacity:.82;
+animation:bestJueFlow 6s ease-in-out infinite;
+opacity:.9;
 }
 
-@keyframes pairRankFlow{
-0%,100%{background-position:0 50%}
-50%{background-position:100% 50%}
+@keyframes bestJueFlow{
+0%,100%{background-position:0 50%;opacity:.62}
+50%{background-position:100% 50%;opacity:1}
 }
 
-.pair-rank-head{
+.best-jue-head{
 position:relative;
 z-index:2;
 display:flex;
@@ -2134,7 +2137,7 @@ gap:8px;
 margin-bottom:9px;
 }
 
-.pair-rank-kicker{
+.best-jue-kicker{
 color:var(--emerald);
 font-family:'IBM Plex Mono',monospace;
 font-size:.45rem;
@@ -2142,21 +2145,21 @@ font-weight:800;
 letter-spacing:1px;
 }
 
-.pair-rank-title{
+.best-jue-title{
 margin-top:2px;
 font-size:.86rem;
 font-weight:800;
 }
 
-.pair-rank-sub{
+.best-jue-sub{
 margin-top:1px;
 color:var(--muted);
 font-size:.44rem;
 font-family:'IBM Plex Mono',monospace;
-letter-spacing:.35px;
+letter-spacing:.25px;
 }
 
-.pair-rank-badge{
+.best-jue-badge{
 padding:4px 8px;
 border-radius:8px;
 color:var(--gold);
@@ -2166,9 +2169,10 @@ font-family:'IBM Plex Mono',monospace;
 font-size:.43rem;
 font-weight:800;
 white-space:nowrap;
+box-shadow:0 3px 9px rgba(158,108,2,.06);
 }
 
-.pair-rank-list{
+.best-jue-list{
 position:relative;
 z-index:2;
 display:flex;
@@ -2176,187 +2180,139 @@ flex-direction:column;
 gap:5px;
 }
 
-.pair-rank-row{
+.best-jue-row{
 position:relative;
 overflow:hidden;
 display:grid;
-grid-template-columns:30px 58px 1fr;
+grid-template-columns:32px 42px 1fr;
 align-items:center;
-gap:7px;
+gap:8px;
 min-height:44px;
 padding:5px 8px;
 border-radius:12px;
-background:rgba(255,255,255,.82);
+background:rgba(255,255,255,.84);
 border:1px solid rgba(10,102,71,.13);
 box-shadow:0 3px 10px rgba(10,102,71,.035);
-transition:
-transform .22s var(--ease),
-box-shadow .22s ease,
-border-color .22s ease;
+transition:transform .22s var(--ease),box-shadow .22s ease,border-color .22s ease;
 cursor:pointer;
 }
 
-.pair-rank-row::after{
+.best-jue-row::after{
 content:"";
 position:absolute;
 top:0;
 bottom:0;
 left:-95%;
-width:52%;
-background:
-linear-gradient(
-90deg,
-transparent,
-rgba(255,255,255,.72),
-transparent
-);
+width:48%;
+background:linear-gradient(90deg,transparent,rgba(255,255,255,.78),transparent);
 transform:skewX(-18deg);
-animation:pairRankSweep 7s ease-in-out infinite;
+animation:bestJueSweep 7s ease-in-out infinite;
 pointer-events:none;
 }
 
-.pair-rank-row:nth-child(2)::after{animation-delay:1.1s}
-.pair-rank-row:nth-child(3)::after{animation-delay:2.2s}
-.pair-rank-row:nth-child(4)::after{animation-delay:3.3s}
-.pair-rank-row:nth-child(5)::after{animation-delay:4.4s}
+.best-jue-row:nth-child(2)::after{animation-delay:1s}
+.best-jue-row:nth-child(3)::after{animation-delay:2s}
+.best-jue-row:nth-child(4)::after{animation-delay:3s}
+.best-jue-row:nth-child(5)::after{animation-delay:4s}
 
-@keyframes pairRankSweep{
+@keyframes bestJueSweep{
 0%,55%{left:-95%;opacity:0}
-62%{opacity:.75}
+62%{opacity:.72}
 82%,100%{left:135%;opacity:0}
 }
 
-.pair-rank-row:hover{
+.best-jue-row:hover{
 transform:translateY(-1px);
 box-shadow:0 7px 16px rgba(10,102,71,.075);
 border-color:rgba(16,185,129,.28);
 }
 
-.pair-rank-row.pair-rank-one{
-background:
-linear-gradient(
-90deg,
-rgba(254,249,195,.76),
-rgba(255,255,255,.92)
-);
-border-color:rgba(158,108,2,.30);
+.best-jue-row.rank-1{
+background:linear-gradient(90deg,rgba(254,249,195,.78),rgba(255,255,255,.94));
+border-color:rgba(158,108,2,.31);
 box-shadow:0 5px 16px rgba(158,108,2,.075);
 }
 
-.pair-rank-row.pair-rank-two{
-background:
-linear-gradient(
-90deg,
-rgba(232,242,238,.92),
-rgba(255,255,255,.92)
-);
-border-color:rgba(110,126,120,.23);
+.best-jue-row.rank-2{
+background:linear-gradient(90deg,rgba(239,244,242,.96),rgba(255,255,255,.94));
+border-color:rgba(110,126,120,.24);
 }
 
-.pair-rank-row.pair-rank-three{
-background:
-linear-gradient(
-90deg,
-rgba(255,237,224,.58),
-rgba(255,255,255,.92)
-);
-border-color:rgba(180,105,58,.22);
+.best-jue-row.rank-3{
+background:linear-gradient(90deg,rgba(255,237,224,.62),rgba(255,255,255,.94));
+border-color:rgba(180,105,58,.24);
 }
 
-.pair-rank-medal{
+.best-jue-rank-mark{
 position:relative;
 z-index:2;
-width:27px;
-height:27px;
 display:flex;
 align-items:center;
 justify-content:center;
+width:30px;
+height:30px;
 border-radius:9px;
-color:var(--emerald);
+color:var(--muted);
 background:var(--greenSoft);
 border:1px solid rgba(10,102,71,.15);
-font-size:.68rem;
+font-family:'IBM Plex Mono',monospace;
+font-size:.46rem;
 font-weight:800;
 }
 
-.pair-rank-one .pair-rank-medal{
+.best-jue-row.rank-1 .best-jue-rank-mark{
 color:#6B4A00;
-background:
-linear-gradient(
-135deg,
-#FEF3A6,
-#FDE68A
-);
+background:linear-gradient(135deg,#FEF3A6,#FDE68A);
 border-color:rgba(158,108,2,.34);
 box-shadow:0 3px 9px rgba(158,108,2,.10);
 }
 
-.pair-rank-two .pair-rank-medal{
+.best-jue-row.rank-2 .best-jue-rank-mark{
 color:#5F6E68;
-background:
-linear-gradient(
-135deg,
-#F1F5F3,
-#DDE7E2
-);
+background:linear-gradient(135deg,#F1F5F3,#DDE7E2);
 border-color:rgba(110,126,120,.28);
 }
 
-.pair-rank-three .pair-rank-medal{
+.best-jue-row.rank-3 .best-jue-rank-mark{
 color:#9A5730;
-background:
-linear-gradient(
-135deg,
-#FCE3D1,
-#EFC4A7
-);
+background:linear-gradient(135deg,#FCE3D1,#EFC4A7);
 border-color:rgba(180,105,58,.28);
 }
 
-.pair-rank-number{
+.best-jue-rank-label{
 position:relative;
 z-index:2;
 color:var(--muted);
 font-family:'IBM Plex Mono',monospace;
-font-size:.43rem;
+font-size:.40rem;
 font-weight:800;
-letter-spacing:.2px;
+letter-spacing:.25px;
 }
 
-.pair-rank-one .pair-rank-number{color:var(--gold)}
-.pair-rank-two .pair-rank-number{color:#65766F}
-.pair-rank-three .pair-rank-number{color:#A15D36}
-
-.pair-rank-pair{
+.best-jue-pair{
 position:relative;
 z-index:2;
 font-family:'IBM Plex Mono',monospace;
-font-size:1rem;
+font-size:1.03rem;
 font-weight:800;
 letter-spacing:1.5px;
 color:var(--text);
-text-align:right;
 }
 
-.pair-rank-one .pair-rank-pair{
+.best-jue-row.rank-1 .best-jue-pair{
 color:#6B4A00;
 text-shadow:0 1px 0 rgba(255,255,255,.7);
 }
 
-.pair-rank-two .pair-rank-pair{
+.best-jue-row.rank-2 .best-jue-pair{
 color:#34453F;
 }
 
-.pair-rank-three .pair-rank-pair{
+.best-jue-row.rank-3 .best-jue-pair{
 color:#8B4F2D;
 }
 
-.pair-rank-four .pair-rank-medal,
-.pair-rank-five .pair-rank-medal{
-background:rgba(247,252,249,.95);
-}
-
-.pair-rank-empty{
+.best-jue-empty{
 position:relative;
 z-index:2;
 padding:10px 8px;
@@ -2366,6 +2322,13 @@ color:var(--muted);
 background:rgba(247,252,249,.75);
 border:1px dashed rgba(10,102,71,.18);
 font-size:.47rem;
+}
+
+
+.ind-win-set{
+border-radius:19px;
+background:
+linear-gradient(135deg,#fff,#F2F9F5);
 }
 
 .ind-win-set{
@@ -2639,35 +2602,36 @@ transform:translate(-50%,0);
 }
 
 @media(max-width:400px){
-.ind-win-grid{
-grid-template-columns:repeat(3,1fr);
-}
+.ind-win-grid{grid-template-columns:repeat(3,1fr);}
+.top3-row{grid-template-columns:25px 35px 1fr 50px;gap:5px;padding-left:6px;padding-right:6px;}
+.top3-title{font-size:.78rem;}
+.top3-sub{font-size:.42rem;}
+.deep-scan-pairs{gap:3px;}
+.overview-bars{gap:3px;}
+.overview-bar{height:70px;}
+.overview-rank{font-size:.30rem;padding:2px 3px;}
+.overview-score{font-size:.29rem;}
 
-.pair-rank-row{
-grid-template-columns:28px 54px 1fr;
+.best-jue-row{
+grid-template-columns:30px 40px 1fr;
 gap:6px;
-padding-left:7px;
-padding-right:7px;
+padding-left:6px;
+padding-right:6px;
 }
 
-.pair-rank-pair{
-font-size:.92rem;
-letter-spacing:1.2px;
-}
-
-.pair-rank-title{
-font-size:.81rem;
-}
-
-.pair-rank-sub{
-font-size:.40rem;
-}
-
-.pair-rank-number{
-font-size:.40rem;
+.best-jue-pair{
+font-size:.96rem;
 }
 }
 
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{
+animation-duration:.001ms!important;
+animation-iteration-count:1!important;
+scroll-behavior:auto!important;
+transition:none!important;
+}
+}
 </style>
 </head>
 
@@ -2681,7 +2645,6 @@ font-size:.40rem;
 
 <div class="app-shell">
 <div class="app-card">
-
 <div class="app-inner">
 
 <div id="loginView">
@@ -2691,20 +2654,20 @@ font-size:.40rem;
 <div class="brand-mark">AI</div>
 <div>
 <div class="brand-name">Enterprise Quant</div>
-<div class="brand-sub">AI Intelligence Console</div>
+<div class="brand-sub">Predictive Data Engine</div>
 </div>
 </div>
 
 <div class="system-pill">
 <span class="live-dot"></span>
-ENGINE ONLINE
+SYSTEM READY
 </div>
 </div>
 
 <section class="hero">
 <div class="hero-kicker">
 <span></span>
-PREMIUM ANALYSIS CONSOLE
+QUANT ANALYSIS ENGINE
 </div>
 
 <h1>
@@ -2712,68 +2675,79 @@ Mester Lotto <em>VIP+</em>
 </h1>
 
 <p>
-วิเคราะห์ด้วย AI อัจฉริยะ<br>
-<b>Multi-Layer AI Processing</b>
+ระบบคำนวณและวิเคราะห์ข้อมูล AI อัจฉริยะ<br>
+<b>Predictive Data Engine</b>
 </p>
 
 <div class="hero-meta">
-<div class="meta-chip">ชุดเด่น</div>
-<div class="meta-chip">ชุดรอง</div>
-<div class="meta-chip">ชุดวิน 6 ตัว</div>
-<div class="meta-chip">AI Score</div>
+<div class="meta-chip">AI Pattern</div>
+<div class="meta-chip">Digit Ranking</div>
+<div class="meta-chip">Win Set</div>
+<div class="meta-chip">Neural Matrix</div>
 </div>
 </section>
 
 <div class="login-dashboard">
+<div class="mini-stat">
+<div class="mini-stat-label">ผู้ใช้งานระบบ / MEMBERS</div>
+<div class="mini-stat-value" id="totalUsersStat">2,637</div>
+</div>
 
 <div class="mini-stat">
-<div class="mini-stat-label">SYSTEM STATUS</div>
+<div class="mini-stat-label">สถานะระบบ / STATUS</div>
 <div class="mini-stat-value green">ONLINE</div>
 </div>
-
-<div class="mini-stat">
-<div class="mini-stat-label">AI ENGINE</div>
-<div class="mini-stat-value">READY</div>
-</div>
-
 </div>
 
 <div class="packages">
 
 <div class="package">
-<div class="package-title">PREMIUM AI</div>
-<div class="package-price">VIP+</div>
-<div class="package-desc">Multi-Layer Intelligence</div>
+<div class="package-title">7 วัน / 7 DAYS</div>
+<div class="package-price">99 ฿</div>
+<div class="package-desc">Starter Tier</div>
 </div>
 
 <div class="package">
-<div class="package-title">DIGIT MATRIX</div>
-<div class="package-price">AI</div>
-<div class="package-desc">Probability Ranking</div>
+<div class="package-title">15 วัน / 15 DAYS</div>
+<div class="package-price">199 ฿</div>
+<div class="package-desc">รายงวด / Period</div>
 </div>
 
 <div class="package">
-<div class="package-title">DEEP SCAN</div>
-<div class="package-price">TOP 3</div>
-<div class="package-desc">Signal Detection</div>
+<div class="package-title">1 เดือน / 1 MONTH</div>
+<div class="package-price">299 ฿</div>
+<div class="package-desc">ยอดนิยม / Popular</div>
 </div>
 
 <div class="package">
-<div class="package-title">PAIR INTEL</div>
-<div class="package-price">TOP 5</div>
-<div class="package-desc">Consensus Ranking</div>
+<div class="package-title">1 ปี / 1 YEAR</div>
+<div class="package-price">1,890 ฿</div>
+<div class="package-desc">VIP ระยะยาว</div>
 </div>
 
 </div>
 
-<a href="https://t.me/ti/p/cWXNwvCmqc" target="_blank" rel="noopener noreferrer" class="contact-btn" onclick="_app._audio('click')">
+<a href="https://line.me/ti/p/cWXNwvCmqc"
+target="_blank"
+rel="noopener noreferrer"
+class="contact-btn"
+onclick="_app._audio('click')">
 💬 ติดต่อแอดมิน / CONTACT ADMIN
 </a>
 
 <section class="login-panel">
-<div class="section-eyebrow">SECURE ACCESS / ระบบสมาชิก</div>
-<div class="login-heading">เชื่อมต่อ Master Engine</div>
-<div class="login-description">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบ</div>
+
+<div class="section-eyebrow">
+SECURE ACCESS / ระบบสมาชิก
+</div>
+
+<div class="login-heading">
+เชื่อมต่อ Master Engine
+</div>
+
+<div class="login-description">
+กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบ
+</div>
 
 <input
 type="password"
@@ -2783,21 +2757,28 @@ autocomplete="off"
 spellcheck="false"
 >
 
-<button class="primary-btn" id="loginButton" type="button">
+<button
+class="primary-btn"
+id="loginButton"
+type="button">
 🔐 CONNECT TO ENGINE / เข้าสู่ระบบ
 </button>
 
-<div id="errorMsg">❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED</div>
-</section>
+<div id="errorMsg">
+❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED
+</div>
 
+</section>
 </div>
 
 
 <div id="calculatorView">
 
 <div class="top-nav">
+
 <div class="brand-mini">
 <div class="brand-mark">AI</div>
+
 <div>
 <div class="brand-name">Enterprise Quant</div>
 <div class="brand-sub">AI Intelligence Console</div>
@@ -2808,10 +2789,12 @@ spellcheck="false"
 <span class="live-dot"></span>
 ENGINE ONLINE
 </div>
+
 </div>
 
 
 <section class="hero">
+
 <div class="hero-kicker">
 <span></span>
 PREMIUM ANALYSIS CONSOLE
@@ -2832,58 +2815,103 @@ Mester Lotto <em>VIP+</em>
 <div class="meta-chip">ชุดวิน 6 ตัว</div>
 <div class="meta-chip">AI Score</div>
 </div>
+
 </section>
 
 
 <div class="engine-strip">
 
 <div class="engine-card">
-<div class="engine-label">ประมวลผลทั้งหมดในระบบ</div>
+<div class="engine-label">
+ประมวลผลทั้งหมดในระบบ
+</div>
+
 <div class="engine-value cyan">
 <span class="total-dot-wrap">
 <span class="total-dot" id="totalDot"></span>
 </span>
-<span id="totalProcessedCount">4,100</span> ครั้ง
+
+<span id="totalProcessedCount">4,100</span>
+ครั้ง
 </div>
 </div>
 
-<div class="engine-card">
-<div class="engine-label"><span>👤</span> สมาชิกออนไลน์</div>
-<div class="engine-value green" id="onlineUsersCount">1,150 คน</div>
-</div>
 
 <div class="engine-card">
-<div class="engine-label"><span>🖥️</span> ความเร็วเซิร์ฟเวอร์</div>
-<div class="engine-value gold" id="serverLatencyCount">18 ms</div>
+
+<div class="engine-label">
+<span>👤</span>
+สมาชิกออนไลน์
+</div>
+
+<div
+class="engine-value green"
+id="onlineUsersCount">
+1,150 คน
+</div>
+
+</div>
+
+
+<div class="engine-card">
+
+<div class="engine-label">
+<span>🖥️</span>
+ความเร็วเซิร์ฟเวอร์
+</div>
+
+<div
+class="engine-value gold"
+id="serverLatencyCount">
+18 ms
+</div>
+
 </div>
 
 </div>
 
 
 <div id="lastSessionBadge" class="last-session">
+
 <span>อ้างอิงจากผลล่าสุด:</span>
 <strong id="lbl3"></strong>
 <span>•</span>
 <strong id="lbl2"></strong>
+
 </div>
 
 
 <section class="command-center">
 
 <div class="command-header">
+
 <div>
-<div class="command-title">Analysis Input</div>
-<div class="command-sub">กรอกข้อมูลล่าสุด เพื่อเริ่มประมวลผล</div>
+<div class="command-title">
+Analysis Input
 </div>
 
-<div class="command-badge">INPUT READY</div>
+<div class="command-sub">
+กรอกข้อมูลล่าสุด เพื่อเริ่มประมวลผล
+</div>
+</div>
+
+<div class="command-badge">
+INPUT READY
+</div>
+
 </div>
 
 
 <div class="input-grid">
 
 <div class="field-card">
-<label class="field-label" for="num3top">เลข 3 ตัวบน</label>
+
+<label
+class="field-label"
+for="num3top">
+เลข 3 ตัวบน
+</label>
+
 <input
 type="tel"
 inputmode="numeric"
@@ -2894,10 +2922,18 @@ maxlength="3"
 autocomplete="off"
 spellcheck="false"
 >
+
 </div>
 
+
 <div class="field-card">
-<label class="field-label" for="num2bottom">เลข 2 ตัวล่าง</label>
+
+<label
+class="field-label"
+for="num2bottom">
+เลข 2 ตัวล่าง
+</label>
+
 <input
 type="tel"
 inputmode="numeric"
@@ -2908,6 +2944,7 @@ maxlength="2"
 autocomplete="off"
 spellcheck="false"
 >
+
 </div>
 
 </div>
@@ -2915,11 +2952,17 @@ spellcheck="false"
 
 <div class="action-row">
 
-<button class="calculate-btn" id="calculateButton" type="button">
+<button
+class="calculate-btn"
+id="calculateButton"
+type="button">
 ⚡ RUN ANALYSIS / เริ่มประมวลผล
 </button>
 
-<button class="clear-btn" id="clearButton" type="button">
+<button
+class="clear-btn"
+id="clearButton"
+type="button">
 ล้าง / CLEAR
 </button>
 
@@ -2929,15 +2972,23 @@ spellcheck="false"
 
 
 <div id="aiScannerBox">
+
 <div class="scanner-ring"></div>
-<div id="aiScannerText">INITIALIZING QUANT ANALYSIS...</div>
+
+<div id="aiScannerText">
+INITIALIZING QUANT ANALYSIS...
+</div>
+
 </div>
 
 
 <div id="resultContainer"></div>
 
 
-<button class="logout-btn" id="logoutButton" type="button">
+<button
+class="logout-btn"
+id="logoutButton"
+type="button">
 ออกจากระบบ / LOGOUT
 </button>
 
@@ -2948,10 +2999,13 @@ spellcheck="false"
 </div>
 
 
-<div id="toast">✓ คัดลอกตัวเลขแล้ว / COPIED</div>
+<div id="toast">
+✓ คัดลอกตัวเลขแล้ว / COPIED
+</div>
 
 
 <script>
+
 (function(){
 
 const canvas=document.getElementById("snowCanvas");
@@ -2970,6 +3024,7 @@ height=canvas.height=window.innerHeight;
 const flakes=[];
 
 for(let i=0;i<45;i++){
+
 flakes.push({
 x:Math.random()*width,
 y:Math.random()*height,
@@ -2981,6 +3036,7 @@ opacity:Math.random()*.5+.35,
 swing:Math.random()*Math.PI*2,
 swingSpeed:Math.random()*.01+.005
 });
+
 }
 
 function render(){
@@ -3002,13 +3058,24 @@ if(f.x>width+10)f.x=-10;
 if(f.x<-10)f.x=width+10;
 
 ctx.beginPath();
-ctx.arc(f.x,f.y,f.radius*f.depth,0,Math.PI*2);
-ctx.fillStyle=`rgba(16,185,129,${f.opacity*f.depth*.35})`;
+
+ctx.arc(
+f.x,
+f.y,
+f.radius*f.depth,
+0,
+Math.PI*2
+);
+
+ctx.fillStyle=
+`rgba(16,185,129,${f.opacity*f.depth*.35})`;
+
 ctx.fill();
 
 });
 
 requestAnimationFrame(render);
+
 }
 
 render();
@@ -3016,33 +3083,50 @@ render();
 })();
 
 
-let totalProcessed=parseInt(
+let totalProcessed=
+parseInt(
 localStorage.getItem("ml_total_processed_v1"),
 10
 );
 
-if(!totalProcessed||isNaN(totalProcessed)||totalProcessed<35000){
+if(
+!totalProcessed||
+isNaN(totalProcessed)||
+totalProcessed<35000
+){
+
 totalProcessed=35000;
-localStorage.setItem("ml_total_processed_v1",totalProcessed);
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
 }
 
 
 function updateProcessedUI(triggerRipple=true){
 
-const el=document.getElementById("totalProcessedCount");
+const el=
+document.getElementById("totalProcessedCount");
 
-if(el){
-el.innerText=totalProcessed.toLocaleString();
-}
+if(el)
+el.innerText=
+totalProcessed.toLocaleString();
 
 if(triggerRipple){
 
-const dot=document.getElementById("totalDot");
+const dot=
+document.getElementById("totalDot");
 
 if(dot){
+
 dot.classList.remove("ripple");
+
 void dot.offsetWidth;
+
 dot.classList.add("ripple");
+
 }
 
 }
@@ -3052,11 +3136,17 @@ dot.classList.add("ripple");
 
 function scheduleProcessedIncrements(){
 
-const count=Math.floor(Math.random()*3)+5;
+const count=
+Math.floor(Math.random()*3)+5;
+
 const intervals=[];
 
 for(let i=0;i<count;i++){
-intervals.push(Math.floor(Math.random()*58000)+1000);
+
+intervals.push(
+Math.floor(Math.random()*58000)+1000
+);
+
 }
 
 intervals.sort((a,b)=>a-b);
@@ -3078,23 +3168,31 @@ updateProcessedUI(true);
 
 });
 
-setTimeout(scheduleProcessedIncrements,60000);
+setTimeout(
+scheduleProcessedIncrements,
+60000
+);
 
 }
 
 
-let currentOnline=parseInt(
+let currentOnline=
+parseInt(
 localStorage.getItem("ml_online_users_v1"),
 10
 );
 
-if(!currentOnline||isNaN(currentOnline))
+if(
+!currentOnline||
+isNaN(currentOnline)
+)
 currentOnline=1150;
 
 
 function updateOnlineUsers(){
 
-const change=Math.floor(Math.random()*100)+1;
+const change=
+Math.floor(Math.random()*100)+1;
 
 if(Math.random()>.45)
 currentOnline+=change;
@@ -3102,40 +3200,52 @@ else
 currentOnline-=change;
 
 if(currentOnline<1050)
-currentOnline+=Math.floor(Math.random()*40)+20;
+currentOnline+=
+Math.floor(Math.random()*40)+20;
 
 if(currentOnline>1280)
-currentOnline-=Math.floor(Math.random()*40)+20;
+currentOnline-=
+Math.floor(Math.random()*40)+20;
 
 localStorage.setItem(
 "ml_online_users_v1",
 currentOnline
 );
 
-const el=document.getElementById("onlineUsersCount");
+const el=
+document.getElementById(
+"onlineUsersCount"
+);
 
-if(el){
-el.innerText=currentOnline.toLocaleString()+" คน";
-}
+if(el)
+el.innerText=
+currentOnline.toLocaleString()+" คน";
 
 }
 
 
 function updateServerLatency(){
 
-const latency=Math.floor(
+const latency=
+Math.floor(
 Math.random()*(26-18+1)
 )+18;
 
-const el=document.getElementById("serverLatencyCount");
+const el=
+document.getElementById(
+"serverLatencyCount"
+);
 
 if(el)
-el.innerText=latency+" ms";
+el.innerText=
+latency+" ms";
 
 }
 
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
 
 updateProcessedUI(false);
 
@@ -3143,13 +3253,20 @@ scheduleProcessedIncrements();
 
 updateOnlineUsers();
 
-setInterval(updateOnlineUsers,60000);
+setInterval(
+updateOnlineUsers,
+60000
+);
 
 updateServerLatency();
 
-setInterval(updateServerLatency,3500);
+setInterval(
+updateServerLatency,
+3500
+);
 
-});
+}
+);
 
 
 const _secEnc={
@@ -3165,9 +3282,14 @@ _hexDecode(hex){
 let str="";
 
 for(let i=0;i<hex.length;i+=2){
+
 str+=String.fromCharCode(
-parseInt(hex.substr(i,2),16)
+parseInt(
+hex.substr(i,2),
+16
+)
 );
+
 }
 
 return str;
@@ -3176,11 +3298,16 @@ return str;
 
 async _checkMatch(inputVal){
 
-const value=String(inputVal||"").trim();
+const value=
+String(inputVal||"").trim();
 
-for(const hex of this._dbToken){
+for(
+const hex of this._dbToken
+){
 
-if(value===this._hexDecode(hex))
+if(
+value===this._hexDecode(hex)
+)
 return true;
 
 }
@@ -3196,9 +3323,10 @@ const _app={
 
 _toastTimer:null,
 
-
 async _verify(p){
+
 return await _secEnc._checkMatch(p);
+
 },
 
 
@@ -3213,11 +3341,16 @@ window.webkitAudioContext;
 if(!AC)return;
 
 const c=new AC();
+
 const o=c.createOscillator();
 const g=c.createGain();
+
 const now=c.currentTime;
 
-o.type=type==="error"?"triangle":"sine";
+o.type=
+type==="error"
+?"triangle"
+:"sine";
 
 o.frequency.setValueAtTime(
 type==="error"?190:520,
@@ -3266,14 +3399,25 @@ async login(){
 
 this._audio("click");
 
-const input=document.getElementById("passwordInput");
-const error=document.getElementById("errorMsg");
+const input=
+document.getElementById(
+"passwordInput"
+);
+
+const error=
+document.getElementById(
+"errorMsg"
+);
 
 if(!input||!error)return;
 
-const value=input.value.trim();
+const value=
+input.value.trim();
 
-if(!value||!(await this._verify(value))){
+if(
+!value||
+!(await this._verify(value))
+){
 
 this._audio("error");
 
@@ -3292,12 +3436,20 @@ localStorage.setItem(
 "active"
 );
 
-document.getElementById("loginView").style.display="none";
-document.getElementById("calculatorView").style.display="block";
+document.getElementById(
+"loginView"
+).style.display="none";
+
+document.getElementById(
+"calculatorView"
+).style.display="block";
 
 this.checkSessionBadge();
 
-const num3=document.getElementById("num3top");
+const num3=
+document.getElementById(
+"num3top"
+);
 
 if(num3)
 num3.focus();
@@ -3309,23 +3461,38 @@ logout(){
 
 this._audio("click");
 
-localStorage.removeItem("ml_auth_status_v3");
+localStorage.removeItem(
+"ml_auth_status_v3"
+);
 
-document.getElementById("calculatorView").style.display="none";
-document.getElementById("loginView").style.display="block";
+document.getElementById(
+"calculatorView"
+).style.display="none";
 
-["passwordInput","num3top","num2bottom"].forEach(id=>{
+document.getElementById(
+"loginView"
+).style.display="block";
 
-const el=document.getElementById(id);
+[
+"passwordInput",
+"num3top",
+"num2bottom"
+].forEach(id=>{
 
-if(el)
-el.value="";
+const el=
+document.getElementById(id);
+
+if(el)el.value="";
 
 });
 
-document.getElementById("resultContainer").innerHTML="";
+document.getElementById(
+"resultContainer"
+).innerHTML="";
 
-document.getElementById("errorMsg").style.display="none";
+document.getElementById(
+"errorMsg"
+).style.display="none";
 
 },
 
@@ -3334,29 +3501,53 @@ clearCalc(){
 
 this._audio("click");
 
-document.getElementById("resultContainer").innerHTML="";
+document.getElementById(
+"resultContainer"
+).innerHTML="";
 
-document.getElementById("num3top").value="";
-document.getElementById("num2bottom").value="";
+document.getElementById(
+"num3top"
+).value="";
 
-document.getElementById("num3top").focus();
+document.getElementById(
+"num2bottom"
+).value="";
+
+document.getElementById(
+"num3top"
+).focus();
 
 },
 
 
 checkSessionBadge(){
 
-const n3=localStorage.getItem("ml_l_n3_v3");
-const n2=localStorage.getItem("ml_l_n2_v3");
+const n3=
+localStorage.getItem(
+"ml_l_n3_v3"
+);
 
-const badge=document.getElementById("lastSessionBadge");
+const n2=
+localStorage.getItem(
+"ml_l_n2_v3"
+);
+
+const badge=
+document.getElementById(
+"lastSessionBadge"
+);
 
 if(!badge)return;
 
 if(n3&&n2){
 
-document.getElementById("lbl3").innerText=n3;
-document.getElementById("lbl2").innerText=n2;
+document.getElementById(
+"lbl3"
+).innerText=n3;
+
+document.getElementById(
+"lbl2"
+).innerText=n2;
 
 badge.style.display="flex";
 
@@ -3373,10 +3564,20 @@ calculate(){
 
 this._audio("click");
 
-const n3=document.getElementById("num3top").value.trim();
-const n2=document.getElementById("num2bottom").value.trim();
+const n3=
+document.getElementById(
+"num3top"
+).value.trim();
 
-if(!/^\d{3}$/.test(n3)||! /^\d{2}$/.test(n2)){
+const n2=
+document.getElementById(
+"num2bottom"
+).value.trim();
+
+if(
+!/^\d{3}$/.test(n3)||
+!/^\d{2}$/.test(n2)
+){
 
 this._audio("error");
 
@@ -3388,44 +3589,76 @@ return;
 
 }
 
-localStorage.setItem("ml_l_n3_v3",n3);
-localStorage.setItem("ml_l_n2_v3",n2);
+localStorage.setItem(
+"ml_l_n3_v3",
+n3
+);
+
+localStorage.setItem(
+"ml_l_n2_v3",
+n2
+);
 
 this.checkSessionBadge();
 
-const scan=document.getElementById("aiScannerBox");
-const btn=document.getElementById("calculateButton");
+
+const scan=
+document.getElementById(
+"aiScannerBox"
+);
+
+const btn=
+document.getElementById(
+"calculateButton"
+);
 
 btn.disabled=true;
+
 scan.style.display="block";
 
 
 const messages=[
+
 "READING INPUT STRUCTURE...",
+
 "CALCULATING DIGIT MOMENTUM...",
+
 "RUNNING TOP 5 PAIR RANKING ENGINE...",
+
 "EVALUATING 5 MATHEMATICAL MODELS...",
+
 "BUILDING NUMBER MATRIX...",
+
 "MAPPING DIGIT DISTRIBUTION...",
+
 "GENERATING WIN SET...",
+
 "FINALIZING ANALYSIS..."
+
 ];
 
 
 let index=0;
 
 const scannerText=
-document.getElementById("aiScannerText");
+document.getElementById(
+"aiScannerText"
+);
 
-scannerText.innerText=messages[0];
+scannerText.innerText=
+messages[0];
 
 
-const timer=setInterval(()=>{
+const timer=
+setInterval(()=>{
 
 index++;
 
 if(index<messages.length){
-scannerText.innerText=messages[index];
+
+scannerText.innerText=
+messages[index];
+
 }
 
 },100);
@@ -3439,11 +3672,14 @@ scan.style.display="none";
 
 btn.disabled=false;
 
-this.runAnalysis(n3,n2);
+this.runAnalysis(
+n3,
+n2
+);
 
-document
-.getElementById("resultContainer")
-.scrollIntoView({
+document.getElementById(
+"resultContainer"
+).scrollIntoView({
 behavior:"smooth",
 block:"start"
 });
@@ -3463,7 +3699,9 @@ updateProcessedUI(true);
 
 
 _normalize(x){
+
 return(x%10+10)%10;
+
 },
 
 
@@ -3613,9 +3851,11 @@ const countedDigits={};
 for(let d=0;d<=9;d++)
 countedDigits[d]=0;
 
+
 rawFormulas.forEach(rawVal=>{
 
-const unit=(rawVal%10+10)%10;
+const unit=
+(rawVal%10+10)%10;
 
 countedDigits[unit]=
 (countedDigits[unit]||0)+1;
@@ -3628,8 +3868,10 @@ Object.keys(countedDigits)
 .map(Number)
 .sort(
 (a,b)=>
-countedDigits[b]-countedDigits[a]||b-a
+countedDigits[b]-countedDigits[a]||
+b-a
 );
+
 
 return{
 ranking:sortedByCount.slice(0,10),
@@ -3641,15 +3883,31 @@ counts:countedDigits
 
 runAnalysis(n3,n2){
 
-const inputDigits3=n3.split("").map(Number);
-const inputDigits2=n2.split("").map(Number);
+const inputDigits3=
+n3.split("").map(Number);
 
-const[H,T_top,U_top]=inputDigits3;
-const[T_bot,U_bot]=inputDigits2;
+const inputDigits2=
+n2.split("").map(Number);
 
-const sumTop=H+T_top+U_top;
-const sumBot=T_bot+U_bot;
-const totalSum=sumTop+sumBot;
+const[
+H,
+T_top,
+U_top
+]=inputDigits3;
+
+const[
+T_bot,
+U_bot
+]=inputDigits2;
+
+const sumTop=
+H+T_top+U_top;
+
+const sumBot=
+T_bot+U_bot;
+
+const totalSum=
+sumTop+sumBot;
 
 
 const formula100Engine=
@@ -3669,7 +3927,8 @@ const getUnitDirect=v=>{
 
 const str=String(v);
 
-const first=parseInt(
+const first=
+parseInt(
 str.slice(-1),
 10
 );
@@ -3684,17 +3943,27 @@ first,
 
 const fixedBase=7;
 
-const anchorRaw=fixedBase-H;
+const anchorRaw=
+fixedBase-H;
 
 const anchor=
 (Math.abs(anchorRaw)%10+10)%10;
 
 
-let rawM1=(T_top+T_bot)%10;
-let rawM2=sumTop%10;
-let rawM3=(H+T_bot)%10;
-let rawM4=(U_top+U_bot)%10;
-let rawM5=(10-U_bot)%10;
+let rawM1=
+(T_top+T_bot)%10;
+
+let rawM2=
+sumTop%10;
+
+let rawM3=
+(H+T_bot)%10;
+
+let rawM4=
+(U_top+U_bot)%10;
+
+let rawM5=
+(10-U_bot)%10;
 
 
 let modelRawValues=[
@@ -3719,11 +3988,16 @@ sumBot%10,
 totalSum%10
 ];
 
-for(let fbVal of fallbackFormulas){
+for(
+let fbVal of fallbackFormulas
+){
 
-const normFb=(fbVal%10+10)%10;
+const normFb=
+(fbVal%10+10)%10;
 
-uniqueModelDigits.add(normFb);
+uniqueModelDigits.add(
+normFb
+);
 
 if(uniqueModelDigits.size>=6)
 break;
@@ -3773,7 +4047,8 @@ set:getUnitDirect(rawM5)
 ];
 
 
-const allowedModelDigits=new Set();
+const allowedModelDigits=
+new Set();
 
 fList.forEach(item=>{
 item.set.forEach(d=>{
@@ -3782,21 +4057,35 @@ allowedModelDigits.add(d);
 });
 
 
-const evaluated=fList.map(model=>{
+const evaluated=
+fList.map(model=>{
 
-const formulaSet=model.set;
+const formulaSet=
+model.set;
 
 let rawRange=[];
+
 let hasCollision=false;
 
-for(let offset=-2;offset<=2;offset++){
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
 
 const val=
-this._normalize(anchor+offset);
+this._normalize(
+anchor+offset
+);
 
-if(formulaSet.includes(val)){
+if(
+formulaSet.includes(val)
+){
+
 hasCollision=true;
+
 break;
+
 }
 
 }
@@ -3804,70 +4093,113 @@ break;
 
 if(hasCollision){
 
-for(let offset=-3;offset<=3;offset++){
+for(
+let offset=-3;
+offset<=3;
+offset++
+){
+
 rawRange.push(
-this._normalize(anchor+offset)
+this._normalize(
+anchor+offset
+)
 );
+
 }
 
 }else{
 
-for(let offset=-2;offset<=2;offset++){
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
+
 rawRange.push(
-this._normalize(anchor+offset)
+this._normalize(
+anchor+offset
+)
 );
-}
 
 }
 
+}
 
-const excludedDigits=[
+
+const excludedDigits=
+[
 ...new Set(formulaSet)
 ];
 
+
 let cleanedPool=
 rawRange.filter(
-dg=>!excludedDigits.includes(dg)
+dg=>
+!excludedDigits.includes(dg)
 );
 
 
 const generatedPairs=[];
 
-formulaSet.forEach(sourceDigit=>{
 
-cleanedPool.forEach(poolDigit=>{
+formulaSet.forEach(
+sourceDigit=>{
+
+cleanedPool.forEach(
+poolDigit=>{
 
 if(sourceDigit===poolDigit)
 return;
 
 generatedPairs.push({
+
 digitA:sourceDigit,
+
 digitB:poolDigit,
-pairStr:`${sourceDigit}${poolDigit}`
-});
+
+pairStr:
+`${sourceDigit}${poolDigit}`
 
 });
 
 });
+
+}
+);
 
 
 const pMap={};
 
-formulaSet.forEach(sourceDigit=>{
+
+formulaSet.forEach(
+sourceDigit=>{
 
 let pairsForDigit=
 generatedPairs
-.filter(p=>p.digitA===sourceDigit)
-.map(p=>p.pairStr);
+.filter(
+p=>p.digitA===sourceDigit
+)
+.map(
+p=>p.pairStr
+);
 
-let nextFill=(sourceDigit+1)%10;
 
-while(pairsForDigit.length<5){
+let nextFill=
+(sourceDigit+1)%10;
+
+
+while(
+pairsForDigit.length<5
+){
 
 if(
 nextFill!==sourceDigit&&
-!pairsForDigit.includes(`${sourceDigit}${nextFill}`)&&
-!excludedDigits.includes(nextFill)
+!pairsForDigit.includes(
+`${sourceDigit}${nextFill}`
+)&&
+!excludedDigits.includes(
+nextFill
+)
 ){
 
 pairsForDigit.push(
@@ -3876,7 +4208,8 @@ pairsForDigit.push(
 
 }
 
-nextFill=(nextFill+1)%10;
+nextFill=
+(nextFill+1)%10;
 
 }
 
@@ -3884,23 +4217,33 @@ nextFill=(nextFill+1)%10;
 pairsForDigit=[
 ...new Set(pairsForDigit)
 ]
-.filter(p=>p[0]!==p[1])
+.filter(
+p=>p[0]!==p[1]
+)
 .sort();
 
-if(pairsForDigit.length>5)
-pairsForDigit=pairsForDigit.slice(0,5);
 
-pMap[sourceDigit]=pairsForDigit;
+if(
+pairsForDigit.length>5
+)
+pairsForDigit=
+pairsForDigit.slice(0,5);
+
+
+pMap[sourceDigit]=
+pairsForDigit;
 
 });
 
 
 return{
+
 id:model.id,
 name:model.name,
 subName:model.subName,
 set:model.set,
 pairsMap:pMap
+
 };
 
 });
@@ -3908,16 +4251,25 @@ pairsMap:pMap
 
 const digitScores={};
 
+
 for(let d=0;d<=9;d++){
 
 digitScores[d]={
+
 digit:d,
+
 modelScore:0,
+
 formula100Score:0,
+
 radarScore:0,
+
 backendScore:0,
+
 winSetScore:0,
+
 totalScore:0
+
 };
 
 }
@@ -3925,29 +4277,37 @@ totalScore:0
 
 evaluated.forEach(model=>{
 
-model.set.forEach(dig=>{
-digitScores[dig].modelScore+=1;
-});
+model.set.forEach(
+dig=>{
+digitScores[dig]
+.modelScore+=1;
+}
+);
 
 });
 
 
 const maxFormCount=
 Math.max(
-...Object.values(formula100Engine.counts),
+...Object.values(
+formula100Engine.counts
+),
 1
 );
 
+
 for(let d=0;d<=9;d++){
 
-digitScores[d].formula100Score=
+digitScores[d]
+.formula100Score=
 (formula100Engine.counts[d]||0)/
 maxFormCount;
 
 }
 
 
-const X_val=(T_bot+U_bot)%10;
+const X_val=
+(T_bot+U_bot)%10;
 
 const radar1Range=[
 (X_val-1+10)%10,
@@ -3956,7 +4316,8 @@ X_val,
 ];
 
 
-const Y_val=(H+T_top+U_top)%10;
+const Y_val=
+(H+T_top+U_top)%10;
 
 const radar2Range=[
 (Y_val-1+10)%10,
@@ -3979,34 +4340,46 @@ for(let d=0;d<=9;d++){
 
 let rHits=0;
 
-if(radar1Range.includes(d))
+if(
+radar1Range.includes(d)
+)
 rHits++;
 
-if(radar2Range.includes(d))
+if(
+radar2Range.includes(d)
+)
 rHits++;
 
-if(radar3Range.includes(d))
+if(
+radar3Range.includes(d)
+)
 rHits++;
 
-digitScores[d].radarScore=
+digitScores[d]
+.radarScore=
 rHits/3;
 
 }
 
 
 const backendFormulasSet=[
+
 (2*H+T_bot)%10,
 (T_top+U_bot)%10,
 sumTop%10,
 Math.abs(T_top-U_top)%10,
 totalSum%10
+
 ];
 
 
 for(let d=0;d<=9;d++){
 
-if(backendFormulasSet.includes(d))
-digitScores[d].backendScore=1;
+if(
+backendFormulasSet.includes(d)
+)
+digitScores[d]
+.backendScore=1;
 
 }
 
@@ -4014,23 +4387,23 @@ digitScores[d].backendScore=1;
 const winCandidate=
 (H+T_top+U_top+T_bot+U_bot)%10;
 
+
 for(let d=0;d<=9;d++){
 
 if(
 d===winCandidate||
 d===(winCandidate+5)%10
-){
-
-digitScores[d].winSetScore=1;
-
-}
+)
+digitScores[d]
+.winSetScore=1;
 
 }
 
 
 for(let d=0;d<=9;d++){
 
-const item=digitScores[d];
+const item=
+digitScores[d];
 
 item.totalScore=
 .35*item.modelScore+
@@ -4039,7 +4412,9 @@ item.totalScore=
 .15*item.backendScore+
 .1*item.winSetScore;
 
-if(allowedModelDigits.has(d))
+if(
+allowedModelDigits.has(d)
+)
 item.totalScore*=1.15;
 
 }
@@ -4053,7 +4428,9 @@ b.totalScore-a.totalScore||
 b.digit-a.digit
 );
 
-const matrixSorted=matrixSortedAll;
+
+const matrixSorted=
+matrixSortedAll;
 
 
 const allScores=
@@ -4082,7 +4459,10 @@ scoreRange*
 return Number(
 Math.min(
 98.5,
-Math.max(80,normalizedPct)
+Math.max(
+80,
+normalizedPct
+)
 ).toFixed(1)
 );
 
@@ -4096,15 +4476,21 @@ model.set.reduce(
 (sum,dig)=>
 sum+
 (
-digitScores[dig].totalScore>0
-?digitScores[dig].totalScore
-:0
+digitScores[dig]
+.totalScore>0
+?
+digitScores[dig]
+.totalScore
+:
+0
 ),
 0
 );
 
 model.aiScore=
-calcConfidence(modelScoreSum/2);
+calcConfidence(
+modelScoreSum/2
+);
 
 });
 
@@ -4116,7 +4502,8 @@ b.aiScore-a.aiScore
 
 evaluated.forEach(
 (model,idx)=>{
-model.isRecommended=idx<2;
+model.isRecommended=
+idx<2;
 }
 );
 
@@ -4126,11 +4513,244 @@ matrixSorted.slice(0,3);
 
 const thirdRankDigit=
 top3Digits[2]
-?top3Digits[2].digit
-:null;
+?
+top3Digits[2].digit
+:
+null;
 
-const d1=top3Digits[0].digit;
-const d2_dig=top3Digits[1].digit;
+const d1=
+top3Digits[0].digit;
+
+const d2_dig=
+top3Digits[1].digit;
+
+
+/* =========================================================
+   EXISTING TOP 5 FOCUS — PAIR RANKING
+========================================================= */
+
+const pairVotesMap={};
+
+
+evaluated.forEach(
+model=>{
+
+const modelVotedPairsThisModel=
+new Set();
+
+Object.values(
+model.pairsMap
+).forEach(
+pairList=>{
+
+pairList.forEach(
+pStr=>{
+
+const d1_char=
+pStr[0];
+
+const d2_char=
+pStr[1];
+
+if(
+d1_char===d2_char
+)
+return;
+
+const canonicalKey=
+[
+d1_char,
+d2_char
+]
+.sort()
+.join("");
+
+
+if(
+!modelVotedPairsThisModel
+.has(canonicalKey)
+){
+
+modelVotedPairsThisModel
+.add(canonicalKey);
+
+if(
+!pairVotesMap[canonicalKey]
+){
+
+pairVotesMap[canonicalKey]={
+
+canonical:
+canonicalKey,
+
+displayPair:
+pStr,
+
+votes:0,
+
+digitScoreSum:0
+
+};
+
+}
+
+pairVotesMap[
+canonicalKey
+].votes+=1;
+
+}
+
+});
+
+});
+
+});
+
+
+Object.values(
+pairVotesMap
+).forEach(
+item=>{
+
+const dX=
+parseInt(
+item.canonical[0],
+10
+);
+
+const dY=
+parseInt(
+item.canonical[1],
+10
+);
+
+item.digitScoreSum=
+(
+digitScores[dX]?.totalScore||0
+)+
+(
+digitScores[dY]?.totalScore||0
+);
+
+});
+
+
+const sortedPairsAll=
+Object.values(
+pairVotesMap
+)
+.sort(
+(a,b)=>{
+
+if(
+b.votes!==a.votes
+)
+return b.votes-a.votes;
+
+return b.digitScoreSum-
+a.digitScoreSum;
+
+}
+);
+
+
+let top5Pairs=
+sortedPairsAll.slice(0,5);
+
+
+while(
+top5Pairs.length<5&&
+sortedPairsAll.length>
+top5Pairs.length
+){
+
+const nextCandidate=
+sortedPairsAll[
+top5Pairs.length
+];
+
+if(
+nextCandidate&&
+!top5Pairs.includes(
+nextCandidate
+)
+){
+
+top5Pairs.push(
+nextCandidate
+);
+
+}else{
+
+break;
+
+}
+
+}
+
+
+const top5MaxVotes=
+top5Pairs[0]?.votes||5;
+
+
+const top5PairRankedHTML=
+top5Pairs.map(
+(item,index)=>{
+
+const rawRatio=
+item.votes/
+top5MaxVotes;
+
+const computedPct=
+Number(
+(
+86.5+
+rawRatio*11.8-
+index*.4
+).toFixed(1)
+);
+
+const secureDisplayPair=
+item.displayPair;
+
+
+return`
+
+<div
+class="deep-pair"
+data-copy="${this._esc(
+secureDisplayPair
+)}">
+
+<strong>
+${this._esc(
+secureDisplayPair
+)}
+</strong>
+
+<small>
+${computedPct}%
+</small>
+
+</div>
+
+`;
+
+}
+).join("")
+||
+`
+<div
+style="
+grid-column:1/-1;
+padding:7px;
+text-align:center;
+color:var(--muted);
+font-size:.46rem;
+">
+ไม่มีชุดข้อมูลคู่เด่น
+</div>
+`;
 
 
 /* =========================================================
@@ -4147,270 +4767,24 @@ m=>m.pairsMap[digit]
 
 
 const deepSets=
-top3Digits.map(item=>({
+top3Digits.map(
+item=>({
 
 digit:item.digit,
 
 score:
-calcConfidence(item.totalScore),
+calcConfidence(
+item.totalScore
+),
 
 pairs:
-findPairsForDigit(item.digit)
-.slice(0,5)
-
-}));
-
-
-/* =========================================================
-   TOP 5 BEST PAIR — PREMIUM CONSENSUS RANKING
-
-   Rules:
-
-   1) Read pair candidates ONLY from the 5 main models.
-
-   2) 1 model contributes at most 1 point to the same pair.
-
-   3) Reversed pairs share the same identity:
-      04 === 40.
-
-   4) A pair is eligible only when it appears in the
-      displayed TOP 3 deep-scan sets.
-
-   5) Display orientation follows the orientation with
-      the most direct occurrences.
-========================================================= */
-
-const top3DeepPairKeys=new Set();
-
-
-deepSets.forEach(set=>{
-
-set.pairs.forEach(pair=>{
-
-const p=String(pair);
-
-if(
-p.length===2&&
-/^\d{2}$/.test(p)
-){
-
-top3DeepPairKeys.add(
-[p[0],p[1]]
-.sort()
-.join("")
-);
-
-}
-
-});
-
-});
-
-
-const pairConsensusMap={};
-
-
-evaluated.forEach(model=>{
-
-const modelSeenPairs=new Set();
-
-
-Object.values(
-model.pairsMap||{}
-)
-.forEach(pairList=>{
-
-(pairList||[])
-.forEach(rawPair=>{
-
-const p=String(rawPair);
-
-if(
-! /^\d{2}$/.test(p)||
-p[0]===p[1]
-)
-return;
-
-
-const canonical=
-[p[0],p[1]]
-.sort()
-.join("");
-
-
-if(
-!top3DeepPairKeys.has(canonical)
-)
-return;
-
-
-/* One point per model for each canonical pair. */
-
-if(modelSeenPairs.has(canonical))
-return;
-
-modelSeenPairs.add(canonical);
-
-
-if(!pairConsensusMap[canonical]){
-
-pairConsensusMap[canonical]={
-canonical,
-votes:0,
-orientationVotes:{}
-};
-
-}
-
-
-const item=
-pairConsensusMap[canonical];
-
-item.votes+=1;
-
-item.orientationVotes[p]=
-(item.orientationVotes[p]||0)+1;
-
-});
-
-});
-
-});
-
-
-const top5Pairs=
-Object.values(pairConsensusMap)
-.sort((a,b)=>{
-
-if(b.votes!==a.votes)
-return b.votes-a.votes;
-
-
-const aBestOrientation=
-Math.max(
-...Object.values(a.orientationVotes)
-);
-
-const bBestOrientation=
-Math.max(
-...Object.values(b.orientationVotes)
-);
-
-if(
-bBestOrientation!==aBestOrientation
-)
-return bBestOrientation-aBestOrientation;
-
-
-return a.canonical.localeCompare(
-b.canonical
-);
+findPairsForDigit(
+item.digit
+).slice(0,5)
 
 })
-.slice(0,5)
-.map(item=>{
-
-const orientations=
-Object.entries(
-item.orientationVotes
 );
 
-orientations.sort((a,b)=>{
-
-if(b[1]!==a[1])
-return b[1]-a[1];
-
-
-/* Prefer an orientation already shown in TOP 3 deep scan. */
-
-const aShown=
-deepSets.some(
-set=>set.pairs.includes(a[0])
-)
-?1
-:0;
-
-const bShown=
-deepSets.some(
-set=>set.pairs.includes(b[0])
-)
-?1
-:0;
-
-if(bShown!==aShown)
-return bShown-aShown;
-
-
-return a[0].localeCompare(
-b[0]
-);
-
-});
-
-
-return{
-...item,
-displayPair:
-orientations[0]?.[0]||
-item.canonical
-};
-
-});
-
-
-const pairRankClasses=[
-"pair-rank-one",
-"pair-rank-two",
-"pair-rank-three",
-"pair-rank-four",
-"pair-rank-five"
-];
-
-const pairMedals=[
-"✦",
-"✧",
-"◆",
-"◇",
-"•"
-];
-
-
-const top5PairRankedHTML=
-top5Pairs.length
-
-?top5Pairs.map(
-(item,index)=>`
-
-<div
-class="pair-rank-row ${pairRankClasses[index]}"
-data-copy="${this._esc(item.displayPair)}"
->
-
-<div class="pair-rank-medal">
-${pairMedals[index]}
-</div>
-
-<div class="pair-rank-number">
-RANK ${index+1}
-</div>
-
-<div class="pair-rank-pair">
-${this._esc(item.displayPair)}
-</div>
-
-</div>
-
-`
-).join("")
-
-:`<div class="pair-rank-empty">
-ไม่มีชุดเจาะที่ผ่านเกณฑ์ TOP 3
-</div>`;
-
-
-/* =========================================================
-   DEEP SCAN HTML
-========================================================= */
 
 const deepScanHTML=
 deepSets.map(
@@ -4437,22 +4811,23 @@ const rankNumbers=[
 
 const pairHTML=
 set.pairs.length
-
-?set.pairs.map(
+?
+set.pairs.map(
 (p,pIndex)=>{
 
 const pct=
 Number(
-(set.score-.3*pIndex)
-.toFixed(1)
+(
+set.score-
+.3*pIndex
+).toFixed(1)
 );
 
 return`
 
 <div
 class="deep-pair"
-data-copy="${this._esc(p)}"
->
+data-copy="${this._esc(p)}">
 
 <strong>
 ${this._esc(p)}
@@ -4468,23 +4843,25 @@ ${pct}%
 
 }
 ).join("")
-
-:`<div
+:
+`
+<div
 style="
 grid-column:1/-1;
 padding:7px;
 text-align:center;
 color:var(--muted);
 font-size:.46rem;
-"
->
+">
 ไม่มีชุดข้อมูล
-</div>`;
+</div>
+`;
 
 
 return`
 
-<div class="deep-scan-card ${rankClasses[index]}">
+<div
+class="deep-scan-card ${rankClasses[index]}">
 
 <div class="deep-scan-top">
 
@@ -4497,39 +4874,29 @@ ${set.digit}
 <div>
 
 <span class="deep-rank-label">
-${rankNames[index]}
+${rankNumbers[index]} / ${rankNames[index]}
 </span>
 
+<div>
+${rankNames[index]}
 </div>
 
 </div>
 
-<div class="deep-scan-rank">
-${rankNumbers[index]}
+</div>
+
+<div>
+
+<div class="deep-scan-score">
+${set.score.toFixed(1)}%
 </div>
 
 </div>
 
+</div>
 
 <div class="deep-scan-pairs">
 ${pairHTML}
-</div>
-
-
-<div class="three-d-scan">
-
-<div class="three-d-head">
-
-<div class="three-d-title">
-ชุดเจาะ
-</div>
-
-<div class="three-d-score">
-${set.score}%
-</div>
-
-</div>
-
 </div>
 
 </div>
@@ -4541,161 +4908,637 @@ ${set.score}%
 
 
 /* =========================================================
-   3D MATRIX
+   NEW BEST JUE PAIR RANKING ENGINE
+   =========================================================
+
+   Rules:
+
+   1. Read only generated JUE pairs from all 5 main models.
+   2. 02 and 20 are treated as the same canonical pair.
+   3. Every occurrence counts as exactly 1 point.
+      No per-model de-duplication is performed.
+   4. The source digit must appear in Top 3 Single.
+   5. The pair must appear inside the existing Top 3 JUE sets.
+   6. Only the top 5 are displayed.
+   7. UI does not expose counts, scores or model names.
+   8. Display orientation is whichever exact orientation occurs
+      more frequently. If tied, lexical order is used.
 ========================================================= */
 
-const matrixArr3d=[];
+
+const top3SingleDigitSet=
+new Set(
+top3Digits.map(
+item=>String(item.digit)
+)
+);
 
 
-/*
-  Preserve the original matrix behavior.
-  Build a small 3-digit candidate list from the
-  strongest matrix digits.
-*/
+const top3DeepPairCanonicalSet=
+new Set();
+
+
+deepSets.forEach(
+set=>{
+
+(set.pairs||[]).forEach(
+pairStr=>{
+
+const cleanPair=
+String(pairStr||"");
 
 if(
-top3Digits.length>=3
-){
+!/^\d{2}$/.test(cleanPair)||
+cleanPair[0]===cleanPair[1]
+)
+return;
 
-const a=top3Digits[0].digit;
-const b=top3Digits[1].digit;
-const c=top3Digits[2].digit;
 
-const candidates=[
-`${a}${b}${c}`,
-`${a}${c}${b}`,
-`${b}${a}${c}`,
-`${b}${c}${a}`,
-`${c}${a}${b}`
-];
+const canonical=
+[
+cleanPair[0],
+cleanPair[1]
+]
+.sort()
+.join("");
 
-candidates.forEach(p=>{
 
-if(!matrixArr3d.includes(p))
-matrixArr3d.push(p);
+top3DeepPairCanonicalSet.add(
+canonical
+);
 
 });
+
+});
+
+
+const bestJuePairMap={};
+
+
+evaluated.forEach(
+model=>{
+
+Object.entries(
+model.pairsMap||{}
+).forEach(
+([sourceDigit,pairList])=>{
+
+(pairList||[]).forEach(
+pairStr=>{
+
+const pair=
+String(pairStr||"");
+
+if(
+!/^\d{2}$/.test(pair)||
+pair[0]===pair[1]
+)
+return;
+
+
+const canonical=
+[
+pair[0],
+pair[1]
+]
+.sort()
+.join("");
+
+
+if(
+!bestJuePairMap[canonical]
+){
+
+bestJuePairMap[canonical]={
+
+canonical,
+
+total:0,
+
+orientationCounts:{},
+
+sourceCounts:{}
+
+};
 
 }
 
 
-const cScore3=
-top3Digits.length
-?calcConfidence(
-top3Digits.reduce(
-(sum,item)=>
-sum+item.totalScore,
-0
-)/3
-)
-:80;
+const item=
+bestJuePairMap[
+canonical
+];
 
 
-const winSet=[];
+item.total+=1;
 
-const winCandidate2=
-(H+T_top+U_top+T_bot+U_bot)%10;
 
-const winDigits=new Set([
-winCandidate2,
-(winCandidate2+5)%10
-]);
+item.orientationCounts[pair]=
+(
+item.orientationCounts[pair]||0
+)+1;
 
-matrixSorted.forEach(item=>{
 
-if(winSet.length>=6)
-return;
+item.sourceCounts[
+String(sourceDigit)
+]=
+(
+item.sourceCounts[
+String(sourceDigit)
+]||0
+)+1;
 
-if(
-!winSet.includes(item.digit)
-)
-winSet.push(item.digit);
+});
+
+});
 
 });
 
 
-if(winSet.length<6){
+const bestJueCandidates=
+Object.values(
+bestJuePairMap
+)
 
-for(let d=0;d<=9;d++){
+.filter(
+item=>{
+
+const sourceIsTop3=
+Object.keys(
+item.sourceCounts
+)
+.some(
+digit=>
+top3SingleDigitSet.has(
+digit
+)
+);
+
+const isInsideTop3Jue=
+top3DeepPairCanonicalSet.has(
+item.canonical
+);
+
+return(
+sourceIsTop3&&
+isInsideTop3Jue
+);
+
+}
+)
+
+.map(
+item=>{
+
+const orientations=
+Object.entries(
+item.orientationCounts
+)
+.sort(
+(a,b)=>{
 
 if(
-!winSet.includes(d)
+b[1]!==a[1]
 )
-winSet.push(d);
+return b[1]-a[1];
 
-if(winSet.length>=6)
+return a[0].localeCompare(
+b[0]
+);
+
+}
+);
+
+return{
+
+...item,
+
+displayPair:
+orientations[0]?.[0]||
+item.canonical
+
+};
+
+}
+)
+
+.sort(
+(a,b)=>{
+
+if(
+b.total!==a.total
+)
+return b.total-a.total;
+
+
+const aDirect=
+a.orientationCounts[
+a.displayPair
+]||0;
+
+const bDirect=
+b.orientationCounts[
+b.displayPair
+]||0;
+
+
+if(
+bDirect!==aDirect
+)
+return bDirect-aDirect;
+
+
+return a.displayPair.localeCompare(
+b.displayPair
+);
+
+}
+)
+
+.slice(0,5);
+
+
+const bestJueRankHTML=
+bestJueCandidates.length
+
+?
+
+bestJueCandidates.map(
+(item,index)=>{
+
+const rank=
+index+1;
+
+const rankClass=
+rank<=3
+?
+`rank-${rank}`
+:
+"";
+
+
+return`
+
+<div
+class="best-jue-row ${rankClass}"
+data-copy="${this._esc(item.displayPair)}"
+title="Rank ${rank}">
+
+<div class="best-jue-rank-mark">
+
+${
+rank===1
+?
+"◆"
+:
+rank===2
+?
+"◇"
+:
+rank===3
+?
+"✦"
+:
+"•"
+}
+
+</div>
+
+<div class="best-jue-rank-label">
+RANK ${rank}
+</div>
+
+<div class="best-jue-pair">
+${this._esc(
+item.displayPair
+)}
+</div>
+
+</div>
+
+`;
+
+}
+).join("")
+
+:
+
+`
+<div class="best-jue-empty">
+ยังไม่มีชุดเจาะที่ผ่านเกณฑ์การจัดอันดับ
+</div>
+`;
+
+
+const arr1=
+findPairsForDigit(d1);
+
+const arr2=
+findPairsForDigit(d2_dig);
+
+
+const matrixArr3d=
+arr1.slice(0,5)
+.map(
+p=>
+`${p.slice(-1)}${d1}${d2_dig}`
+);
+
+
+const cScore3=
+Number(
+(
+50.1+
+.8*Math.random()
+).toFixed(1)
+);
+
+
+let top5Digits=
+matrixSorted
+.slice(0,5)
+.map(
+item=>item.digit
+);
+
+
+let wildcardCandidate=
+matrixSorted.find(
+item=>
+!allowedModelDigits.has(
+item.digit
+)&&
+!top5Digits.includes(
+item.digit
+)
+);
+
+
+if(!wildcardCandidate){
+
+wildcardCandidate=
+matrixSorted.find(
+item=>
+!top5Digits.includes(
+item.digit
+)
+);
+
+}
+
+
+let currentSet=[
+...top5Digits,
+wildcardCandidate
+?
+wildcardCandidate.digit
+:
+matrixSorted[5].digit
+];
+
+
+const checkBalance=
+digits=>{
+
+const evenCount=
+digits.filter(
+d=>d%2===0
+).length;
+
+const oddCount=
+digits.length-evenCount;
+
+const lowCount=
+digits.filter(
+d=>d>=0&&d<=4
+).length;
+
+const highCount=
+digits.length-lowCount;
+
+return{
+
+isBalanced:
+evenCount>=2&&
+oddCount>=2&&
+lowCount>=2&&
+highCount>=2
+
+};
+
+};
+
+
+if(
+!checkBalance(currentSet)
+.isBalanced
+){
+
+const candidatesIndex=[
+6,7,8,9
+];
+
+let bestSet=[
+...currentSet
+];
+
+let foundReplacement=false;
+
+
+for(
+let idx of candidatesIndex
+){
+
+if(
+idx<matrixSorted.length
+){
+
+const testSet=[
+...currentSet.slice(0,5),
+matrixSorted[idx].digit
+];
+
+if(
+checkBalance(testSet)
+.isBalanced
+){
+
+bestSet=testSet;
+
+foundReplacement=true;
+
 break;
 
 }
 
 }
 
+}
 
-/* =========================================================
-   DISTRIBUTION
-========================================================= */
+
+if(foundReplacement)
+currentSet=bestSet;
+
+}
+
+
+const winSet=
+currentSet.sort(
+(a,b)=>a-b
+);
+
+
+const combinedAnalysisPool=[
+...matrixSorted
+.slice(0,5)
+.map(i=>i.digit),
+...winSet
+];
+
+
+const evenCountTotal=
+combinedAnalysisPool.filter(
+d=>d%2===0
+).length;
+
+
+const evenPct=
+Number(
+(
+evenCountTotal/
+combinedAnalysisPool.length*
+100
+).toFixed(1)
+);
+
+
+const oddPct=
+Number(
+(
+100-evenPct
+).toFixed(1)
+);
+
+
+const maxScoreVal=
+Math.max(
+...matrixSorted.map(
+s=>s.totalScore
+),
+1
+);
+
 
 const distributionHTML=
 matrixSorted.map(
 (item,index)=>{
 
-const digit=item.digit;
-
-const scorePct=
-calcConfidence(item.totalScore);
+const digit=
+item.digit;
 
 const height=
+item.totalScore>0
+?
 Math.max(
-14,
-Math.min(
-100,
-(scorePct-75)*4.4
+12,
+Math.round(
+item.totalScore/
+maxScoreVal*
+100
 )
-);
+)
+:
+6;
 
-const rankClass=
-index===0
-?"rank-1"
-:index===1
-?"rank-2"
-:index===2
-?"rank-3"
-:"";
 
-const rankLabel=
-index<3
-?`#${index+1}`
-:`#${index+1}`;
+let barColor=
+"#0A6647";
 
-let barColor="#0A6647";
-let barTop="#10B981";
-let glow="rgba(10,102,71,.08)";
+let barTop=
+"#10B981";
+
+let glow=
+"rgba(16,185,129,.12)";
+
+let rankClass="";
+
+let rankLabel=
+`#${index+1}`;
+
 
 if(index===0){
 
 barColor="#EAB308";
 barTop="#FEF3A6";
-glow="rgba(158,108,2,.10)";
+glow="rgba(234,179,8,.22)";
+rankClass="rank-1";
 
-}else if(index===1){
+}
+
+else if(index===1){
 
 barColor="#10B981";
 barTop="#D1FAE5";
-glow="rgba(16,185,129,.08)";
+glow="rgba(16,185,129,.18)";
+rankClass="rank-2";
 
-}else if(index===2){
+}
+
+else if(index===2){
 
 barColor="#14B8A6";
 barTop="#CCFBF1";
-glow="rgba(20,184,166,.08)";
+glow="rgba(20,184,166,.17)";
+rankClass="rank-3";
 
-}else if(index>=7){
+}
+
+else if(
+index===3||
+index===4
+){
+
+barColor="#0A6647";
+barTop="#A7F3D0";
+glow="rgba(10,102,71,.12)";
+
+}
+
+else if(
+index===5||
+index===6
+){
+
+barColor="#9E6C02";
+barTop="#FEF3C7";
+glow="rgba(158,108,2,.10)";
+
+}
+
+else if(
+index===7||
+index===8
+){
+
+barColor="#087380";
+barTop="#CCFBF1";
+glow="rgba(8,115,128,.10)";
+
+}
+
+else{
 
 barColor="#BE123C";
 barTop="#FFE4E6";
 glow="rgba(190,18,60,.08)";
 
 }
+
+
+const scorePct=
+calcConfidence(
+item.totalScore
+);
 
 
 return`
@@ -4709,8 +5552,13 @@ style="
 --bar-glow:${glow};
 "
 data-copy="${digit}"
-title="Rank ${index+1} • Digit ${digit} • ${scorePct.toFixed(1)}%"
->
+title="
+Rank ${index+1}
+•
+Digit ${digit}
+•
+${scorePct.toFixed(1)}%
+">
 
 <span class="overview-rank">
 ${rankLabel}
@@ -4732,18 +5580,13 @@ ${digit}
 ).join("");
 
 
-/* =========================================================
-   WIN SET HTML
-========================================================= */
-
 const indWinSetHTML=
 winSet.map(
 (digit,index)=>`
 
 <div
 class="ind-win-item"
-data-copy="${digit}"
->
+data-copy="${digit}">
 
 <strong>
 ${digit}
@@ -4759,28 +5602,28 @@ POS ${index+1}
 ).join("");
 
 
-/* =========================================================
-   3D HTML
-========================================================= */
-
 const threeHTML=
 matrixArr3d.length
 
-?matrixArr3d.map(
+?
+
+matrixArr3d.map(
 (p,index)=>{
 
 const pct=
 Number(
-(cScore3-.05*index)
-.toFixed(1)
+(
+cScore3-
+.05*index
+).toFixed(1)
 );
+
 
 return`
 
 <div
 class="three-d-item"
-data-copy="${this._esc(p)}"
->
+data-copy="${this._esc(p)}">
 
 <strong>
 ${this._esc(p)}
@@ -4797,36 +5640,112 @@ ${pct}%
 }
 ).join("")
 
-:`<div
+:
+
+`
+<div
 style="
 grid-column:1/-1;
 color:var(--muted);
 font-size:.46rem;
 text-align:center;
-"
->
+">
 ไม่มีชุดข้อมูล
-</div>`;
+</div>
+`;
 
 
-/* =========================================================
-   ALL FORMULAS
-========================================================= */
+const top3Class=[
+"rank-one",
+"rank-two",
+"rank-three"
+];
+
+const top3Names=[
+"ALPHA SIGNAL",
+"BETA SIGNAL",
+"GAMMA SIGNAL"
+];
+
+
+const top3HTML=
+top3Digits.map(
+(item,index)=>{
+
+const pct=
+calcConfidence(
+item.totalScore
+);
+
+
+return`
+
+<div
+class="top3-row ${top3Class[index]}"
+data-copy="${item.digit}">
+
+<div class="top3-position">
+#${index+1}
+</div>
+
+<div class="top3-digit">
+${item.digit}
+</div>
+
+<div class="top3-info">
+
+<div class="top3-label">
+${top3Names[index]}
+<span>
+RANK ${index+1}
+</span>
+</div>
+
+<div class="top3-bar">
+
+<div
+class="top3-bar-fill"
+style="width:${pct}%;">
+</div>
+
+</div>
+
+</div>
+
+<div class="top3-score">
+${pct.toFixed(1)}%
+</div>
+
+</div>
+
+`;
+
+}
+).join("");
+
 
 let allFormulasHTML="";
 
 
-evaluated.forEach(item=>{
+evaluated.forEach(
+item=>{
 
 let pairs=[];
 
 
-item.set.forEach(digit=>{
+item.set.forEach(
+digit=>{
 
-(item.pairsMap[digit]||[])
-.forEach(p=>{
-pairs.push({pair:p});
+(
+item.pairsMap[digit]||[]
+)
+.forEach(
+p=>{
+pairs.push({
+pair:p
 });
+}
+);
 
 });
 
@@ -4837,16 +5756,18 @@ pairs.map(
 
 const subPct=
 Number(
-(item.aiScore-.3*idx)
-.toFixed(1)
+(
+item.aiScore-
+.3*idx
+).toFixed(1)
 );
+
 
 return`
 
 <div
 class="formula-pair"
-data-copy="${this._esc(obj.pair)}"
->
+data-copy="${this._esc(obj.pair)}">
 
 <strong>
 ${this._esc(obj.pair)}
@@ -4866,8 +5787,10 @@ ${subPct}%
 
 const badgeHtml=
 item.isRecommended
-?'<span class="compact-badge">สูตรแนะนำ</span>'
-:"";
+?
+'<span class="compact-badge">สูตรแนะนำ</span>'
+:
+"";
 
 
 allFormulasHTML+=`
@@ -4877,8 +5800,11 @@ allFormulasHTML+=`
 <div class="formula-head">
 
 <div class="formula-name">
+
 ${this._esc(item.name)}
+
 ${badgeHtml}
+
 </div>
 
 <div class="formula-badge">
@@ -4887,17 +5813,20 @@ AI Score ${item.aiScore}%
 
 </div>
 
-
 <div class="formula-sub">
+
 เลขเด่น:
+
 <strong>
 ${item.set.join(" - ")}
 </strong>
+
 </div>
 
-
 <div class="formula-pairs">
+
 ${pairCards}
+
 </div>
 
 </div>
@@ -4905,31 +5834,6 @@ ${pairCards}
 `;
 
 });
-
-
-/* =========================================================
-   RESULT HTML
-========================================================= */
-
-const evenCount=
-matrixSorted
-.filter(item=>item.digit%2===0)
-.length;
-
-const oddCount=
-10-evenCount;
-
-const evenPct=
-Number(
-(evenCount/10*100)
-.toFixed(1)
-);
-
-const oddPct=
-Number(
-(oddCount/10*100)
-.toFixed(1)
-);
 
 
 const html=`
@@ -5023,13 +5927,13 @@ AI BALANCE
 
 <div
 class="ratio-even"
-style="width:${evenPct}%"
-></div>
+style="width:${evenPct}%">
+</div>
 
 <div
 class="ratio-odd"
-style="width:${oddPct}%"
-></div>
+style="width:${oddPct}%">
+</div>
 
 </div>
 
@@ -5124,15 +6028,50 @@ TOP 3 MATRIX SIGNALS
 
 </div>
 
-<div class="deep-scan-badge">
-TOP 3
-</div>
+<div class="deep-scan-badge"></div>
 
 </div>
 
 
 <div class="deep-scan-grid">
 ${deepScanHTML}
+</div>
+
+
+<!-- EXISTING TOP 5 FOCUS — PREMIUM AI PAIR RANKING -->
+
+<div
+class="three-d-scan"
+style="
+margin-top:10px;
+padding-top:10px;
+border-top:1px solid rgba(10,102,71,.15);
+">
+
+<div class="three-d-head">
+
+<div class="three-d-title">
+🔥 TOP 5 FOCUS — PAIR RANKING
+</div>
+
+<div class="three-d-score">
+CONSENSUS TOP 5
+</div>
+
+</div>
+
+
+<div
+class="deep-scan-pairs"
+style="
+grid-template-columns:repeat(5,1fr);
+margin-top:6px;
+">
+
+${top5PairRankedHTML}
+
+</div>
+
 </div>
 
 
@@ -5150,7 +6089,6 @@ ACCURACY ${cScore3.toFixed(1)}%
 
 </div>
 
-
 <div class="three-d-grid">
 ${threeHTML}
 </div>
@@ -5160,35 +6098,41 @@ ${threeHTML}
 </section>
 
 
-<section class="pair-rank-board">
+<!-- =====================================================
+     NEW BOX — BEST JUE PAIR RANKING
+===================================================== -->
 
-<div class="pair-rank-head">
+<section class="best-jue-rank-board">
+
+<div class="best-jue-head">
 
 <div>
 
-<div class="pair-rank-kicker">
-AI CONSENSUS / PAIR INTELLIGENCE
+<div class="best-jue-kicker">
+AI CONSENSUS / TOP 5
 </div>
 
-<div class="pair-rank-title">
+<div class="best-jue-title">
 🏆 ชุดเจาะ 5 อันดับที่ดีที่สุด
 </div>
 
-<div class="pair-rank-sub">
-TOP 5 BEST PAIR SIGNALS
+<div class="best-jue-sub">
+BEST JUE PAIR RANKING
 </div>
 
 </div>
 
-<div class="pair-rank-badge">
-TOP 5
+<div class="best-jue-badge">
+AI PICK
 </div>
 
 </div>
 
 
-<div class="pair-rank-list">
-${top5PairRankedHTML}
+<div class="best-jue-list">
+
+${bestJueRankHTML}
+
 </div>
 
 </section>
@@ -5199,8 +6143,11 @@ ${top5PairRankedHTML}
 <div class="ind-win-header">
 
 <div class="ind-win-title">
+
 🧩 ชุดวิน 6 ตัว
+
 <small></small>
+
 </div>
 
 <div class="ind-win-badge">
@@ -5222,8 +6169,7 @@ ${indWinSetHTML}
 <button
 class="formula-toggle"
 id="toggleMainFormulasBtn"
-type="button"
->
+type="button">
 
 <span>
 🧠 TOP 5 Model / AI ALGORITHM DETAILS
@@ -5238,8 +6184,10 @@ type="button"
 
 <div
 id="allFormulasWrapper"
-style="display:none;margin-top:6px;"
->
+style="
+display:none;
+margin-top:6px;
+">
 
 ${allFormulasHTML}
 
@@ -5270,11 +6218,13 @@ document.getElementById(
 ).innerHTML=html;
 
 
-document
-.querySelectorAll("[data-copy]")
-.forEach(node=>{
+document.querySelectorAll(
+"[data-copy]"
+).forEach(
+node=>{
 
-const clone=node.cloneNode(true);
+const clone=
+node.cloneNode(true);
 
 node.parentNode.replaceChild(
 clone,
@@ -5304,7 +6254,10 @@ document.getElementById(
 );
 
 
-if(toggleMainBtn&&allWrapper){
+if(
+toggleMainBtn&&
+allWrapper
+){
 
 toggleMainBtn.addEventListener(
 "click",
@@ -5317,8 +6270,10 @@ allWrapper.style.display==="block";
 
 allWrapper.style.display=
 isOpen
-?"none"
-:"block";
+?
+"none"
+:
+"block";
 
 toggleMainBtn
 .querySelector(
@@ -5326,8 +6281,10 @@ toggleMainBtn
 )
 .innerText=
 isOpen
-?"▼"
-:"▲";
+?
+"▼"
+:
+"▲";
 
 }
 );
@@ -5367,7 +6324,9 @@ this.fallbackCopyText(text);
 fallbackCopyText(text){
 
 const ta=
-document.createElement("textarea");
+document.createElement(
+"textarea"
+);
 
 ta.value=text;
 
@@ -5459,8 +6418,10 @@ if(passwordInput){
 passwordInput.addEventListener(
 "keyup",
 e=>{
+
 if(e.key==="Enter")
 _app.login();
+
 }
 );
 
@@ -5497,15 +6458,95 @@ logoutButton.addEventListener(
 }
 
 
-document.addEventListener(
-"DOMContentLoaded",
+const n3Input=
+document.getElementById(
+"num3top"
+);
+
+const n2Input=
+document.getElementById(
+"num2bottom"
+);
+
+
+if(n3Input){
+
+n3Input.addEventListener(
+"input",
 ()=>{
 
+n3Input.value=
+n3Input.value.replace(
+/\D/g,
+""
+);
+
 if(
+n3Input.value.length>=3&&
+n2Input
+)
+n2Input.focus();
+
+}
+);
+
+}
+
+
+if(n2Input){
+
+n2Input.addEventListener(
+"input",
+()=>{
+
+n2Input.value=
+n2Input.value.replace(
+/\D/g,
+""
+);
+
+}
+);
+
+}
+
+
+[
+"num3top",
+"num2bottom"
+].forEach(
+id=>{
+
+const el=
+document.getElementById(id);
+
+if(el){
+
+el.addEventListener(
+"keyup",
+e=>{
+
+if(e.key==="Enter")
+_app.calculate();
+
+}
+);
+
+}
+
+});
+
+
+(function initApp(){
+
+try{
+
+const active=
 localStorage.getItem(
 "ml_auth_status_v3"
-)==="active"
-){
+);
+
+if(active==="active"){
 
 const loginView=
 document.getElementById(
@@ -5527,8 +6568,9 @@ _app.checkSessionBadge();
 
 }
 
-}
-);
+}catch(e){}
+
+})();
 
 </script>
 
