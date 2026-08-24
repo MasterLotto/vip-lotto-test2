@@ -1,5 +1,118 @@
-<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><meta name="theme-color" content="#F4FBF7"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Mester Lotto VIP+ | Enterprise Quant</title><style>
-/* FULL CODE IS PROVIDED IN THE ATTACHED FINAL HTML FILE */
-</style></head><body>
-<!-- Complete 72,761-byte audited source is preserved in Mester_Lotto_VIP_Premium_Audit_vFinal.html -->
-</body></html>      </div>`;document.getElementById("resultContainer").innerHTML=html;document.querySelectorAll("[data-copy]").forEach(node=>{const newClone=node.cloneNode(!0);node.parentNode.replaceChild(newClone,node);newClone.addEventListener("click",()=>{this.copyText(newClone.dataset.copy)})});const toggleMainBtn=document.getElementById("toggleMainFormulasBtn"),allWrapper=document.getElementById("allFormulasWrapper");if(toggleMainBtn&&allWrapper){const newToggleBtn=toggleMainBtn.cloneNode(!0);toggleMainBtn.parentNode.replaceChild(newToggleBtn,toggleMainBtn);newToggleBtn.addEventListener("click",()=>{this._audio("click");const freshWrapper=document.getElementById("allFormulasWrapper"),isOpen="block"===freshWrapper.style.display;freshWrapper.style.display=isOpen?"none":"block";newToggleBtn.querySelector("span:last-child").innerText=isOpen?"▼":"▲"})}},copyText(text){this._audio("click");navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text).then(()=>this.showToast()).catch(()=>this.fallbackCopyText(text)):this.fallbackCopyText(text)},fallbackCopyText(text){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");this.showToast()}catch(e){}document.body.removeChild(ta)},showToast(){clearTimeout(this._toastTimer);const t=document.getElementById("toast");t.classList.add("show");this._toastTimer=setTimeout(()=>{t.classList.remove("show")},1600)}};document.getElementById("loginButton").addEventListener("click",()=>_app.login());document.getElementById("passwordInput").addEventListener("keyup",e=>{"Enter"===e.key&&_app.login()});document.getElementById("calculateButton").addEventListener("click",()=>_app.calculate());document.getElementById("clearButton").addEventListener("click",()=>_app.clearCalc());document.getElementById("logoutButton").addEventListener("click",()=>_app.logout());const n3Input=document.getElementById("num3top"),n2Input=document.getElementById("num2bottom");n3Input.addEventListener("input",()=>{n3Input.value.length>=3&&n2Input.focus()});["num3top","num2bottom"].forEach(id=>{document.getElementById(id).addEventListener("keyup",e=>{"Enter"===e.key&&_app.calculate()})});(function initApp(){"active"===localStorage.getItem("ml_auth_status_v3")&&(document.getElementById("loginView").style.display="none",document.getElementById("calculatorView").style.display="block",_app.checkSessionBadge())})();</script></body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F4FBF7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Mester Lotto VIP+ | Enterprise Quant</title>
+<style>
+    /* CORE & VARIABLES */
+    :root {
+        --bg-primary: #F4FBF7;
+        --text-primary: #2A2A2A;
+        --text-secondary: #5A5A5A;
+        --accent-color: #008F6C; /* Green */
+        --highlight-gold: #F4B400;
+        --highlight-silver: #A0A0A0;
+        --highlight-bronze: #CD7F32;
+        --highlight-cyan: #4DD0E1;
+        --highlight-lime: #76FF03;
+        --card-bg: #FFFFFF;
+        --border-color: #E0E0E0;
+        --font-family: 'Prompt', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --border-radius: 16px;
+        --snow-color: rgba(200, 220, 255, 0.65);
+    }
+
+    /* RESET & GLOBAL */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-family); background-color: var(--bg-primary); color: var(--text-primary); line-height: 1.5; padding-bottom: 30px; overflow-x: hidden; }
+
+    /* SNOW EFFECT */
+    canvas.snow-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 5; /* Default behind numbers */ }
+    .snow-canvas.front-layer { z-index: 150; } /* Dynamically set for elements */
+
+    /* LAYOUT */
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; position: relative; z-index: 10; }
+    .section { background: var(--card-bg); border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .section-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; }
+
+    /* HEADER */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 10px 0; }
+    .header-text { font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; }
+    .header-text span { display: block; font-size: 0.8rem; font-weight: 400; text-transform: none; opacity: 0.7; }
+    .time-display { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
+
+    /* --- ALPHA TOP 3 SIGNALS --- */
+    .priority-matrix { display: flex; flex-direction: column; gap: 15px; }
+    .priority-card { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-radius: var(--border-radius); border: 1px solid var(--border-color); transition: transform 0.2s; cursor: pointer; background: #FAFAFA; position: relative; z-index: 10; }
+    .priority-card:hover { transform: translateY(-3px); }
+    .priority-rank { font-size: 0.8rem; font-weight: 800; color: var(--accent-color); margin-right: 10px; min-width: 30px; text-align: center; }
+    .priority-num-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; color: #FFFFFF; margin-right: 15px; }
+    .priority-card[data-rank="1"] .priority-num-box { background-color: var(--highlight-gold); }
+    .priority-card[data-rank="2"] .priority-num-box { background-color: var(--accent-color); }
+    .priority-card[data-rank="3"] .priority-num-box { background-color: var(--highlight-cyan); }
+    .priority-info { flex-grow: 1; display: flex; flex-direction: column; }
+    .priority-name { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+    .priority-subtitle { font-size: 0.75rem; color: var(--text-secondary); opacity: 0.8; }
+    .priority-progress-bar { height: 6px; background: #E0E0E0; border-radius: 3px; margin-top: 6px; overflow: hidden; position: relative; }
+    .priority-progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease-out; }
+    .priority-card[data-rank="1"] .priority-progress-fill { background: linear-gradient(90deg, var(--highlight-gold), var(--highlight-lime)); }
+    .priority-card[data-rank="2"] .priority-progress-fill { background: linear-gradient(90deg, var(--accent-color), var(--highlight-cyan)); }
+    .priority-card[data-rank="3"] .priority-progress-fill { background: linear-gradient(90deg, var(--highlight-cyan), #64B5F6); }
+    .priority-percentage { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-left: 15px; }
+    .real-time-indicator { font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 15px; }
+    .real-time-indicator::before { content: ''; display: inline-block; width: 8px; height: 8px; background-color: var(--accent-color); border-radius: 50%; }
+
+    /* --- ODD/EVEN RATIO --- */
+    .ratio-section { display: flex; flex-direction: column; gap: 10px; }
+    .ratio-header { display: flex; justify-content: space-between; align-items: center; }
+    .ratio-ai-badge { background-color: #E0F2F1; color: var(--accent-color); padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+    .ratio-bar-container { height: 12px; background: var(--highlight-gold); border-radius: 6px; overflow: hidden; display: flex; }
+    .ratio-even { background-color: var(--accent-color); height: 100%; transition: width 0.5s; }
+    .ratio-labels { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+
+    /* --- AI PROBABILITY RANKING --- */
+    .ranking-scroll-container { overflow-x: auto; padding-bottom: 10px; margin: -5px; padding: 5px; }
+    .ranking-track { display: flex; gap: 10px; min-width: min-content; }
+    .ranking-item { flex: 0 0 60px; text-align: center; display: flex; flex-direction: column; gap: 5px; position: relative; z-index: 10; }
+    .rank-num { font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); opacity: 0.7; }
+    .rank-box { height: 90px; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding: 8px; position: relative; overflow: hidden; border: 1px solid transparent; }
+    .rank-box-bg { position: absolute; bottom: 0; left: 0; width: 100%; transition: height 0.5s ease-out; }
+    .rank-box-score { font-size: 0.7rem; font-weight: 700; color: var(--text-primary); position: relative; z-index: 2; margin-bottom: 2px; }
+    .rank-box-digit { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); position: relative; z-index: 2; }
+    .ranking-item[data-rank="1"] .rank-box { background-color: #FFF9C4; border-color: var(--highlight-gold); }
+    .ranking-item[data-rank="1"] .rank-box-bg { background-color: var(--highlight-gold); height: 98.5%; }
+    .ranking-item[data-rank="2"] .rank-box { background-color: #B2DFDB; border-color: var(--accent-color); }
+    .ranking-item[data-rank="2"] .rank-box-bg { background-color: var(--accent-color); height: 96.6%; }
+    .ranking-item[data-rank="3"] .rank-box { background-color: #B2EBF2; border-color: var(--highlight-cyan); }
+    .ranking-item[data-rank="3"] .rank-box-bg { background-color: var(--highlight-cyan); height: 95.5%; }
+    .ranking-item[data-rank="4"] .rank-box { background-color: #C8E6C9; border-color: #66BB6A; }
+    .ranking-item[data-rank="4"] .rank-box-bg { background-color: #66BB6A; height: 91.5%; }
+    .ranking-item[data-rank="5"] .rank-box { background-color: #DCEDC8; border-color: #9CCC65; }
+    .ranking-item[data-rank="5"] .rank-box-bg { background-color: #9CCC65; height: 90.4%; }
+    .ranking-item[data-rank="6"] .rank-box { background-color: #FFFDE7; border-color: #FFD54F; }
+    .ranking-item[data-rank="6"] .rank-box-bg { background-color: #FFD54F; height: 89.9%; }
+    .ranking-item[data-rank="7"] .rank-box { background-color: #FFF3E0; border-color: #FFB74D; }
+    .ranking-item[data-rank="7"] .rank-box-bg { background-color: #FFB74D; height: 89.3%; }
+    .ranking-item[data-rank="8"] .rank-box { background-color: #E0F2F1; border-color: #4DB6AC; }
+    .ranking-item[data-rank="8"] .rank-box-bg { background-color: #4DB6AC; height: 83.3%; }
+    .ranking-item[data-rank="9"] .rank-box { background-color: #E3F2FD; border-color: #64B5F6; }
+    .ranking-item[data-rank="9"] .rank-box-bg { background-color: #64B5F6; height: 80.9%; }
+    .ranking-item[data-rank="10"] .rank-box { background-color: #FFEBEE; border-color: #E57373; }
+    .ranking-item[data-rank="10"] .rank-box-bg { background-color: #E57373; height: 80.0%; }
+    .ai-active-badge { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: var(--accent-color); }
+    .ai-active-badge::before { content: ''; display: inline-block; width: 8px; height: 8px; background-color: var(--highlight-lime); border-radius: 50%; }
+
+    /* --- ALPHA DEEP SCAN (DRILL DOWN) --- */
+    .drilldown-section { background-color: #FDFDFD; border: 1px solid #F0F0F0; }
+    .drilldown-title { color: var(--text-primary); }
+    .matrix-group { display: flex; flex-direction: column; gap: 20px; margin-top: 15px; }
+    .matrix-card { background: #FFFFFF; border-radius: var(--border-radius); border: 1px solid var(--border-color); padding: 15px; position: relative; z-index: 10; transition: box-shadow 0.2s; }
+    .matrix-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+    .matrix-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #F5F5F5; padding-bottom: 12px; }
+    .matrix-num-box { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; color: #FFFFFF; }
+    .matrix-card
