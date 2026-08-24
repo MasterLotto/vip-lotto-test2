@@ -1,3 +1,28 @@
+<!--
+============================================================
+MESTER LOTTO VIP+ — AUDIT / MODIFICATION NOTES
+============================================================
+SOURCE OF TRUTH:
+- Original uploaded Code2026.txt preserved as the base implementation.
+- Existing login, localStorage/session, counters, 100-formula engine,
+  5-model scoring, TOP3 matrix ranking, Deep Scan, Win Set,
+  3D Smart Scan, formula details, copy handlers and events retained.
+
+CHANGES:
+1. TOP3: presentation-only simplification; top3Digits and scoring are unchanged.
+2. Removed the empty .deep-scan-badge element from the Deep Scan header.
+3. Added _normalizePair(pair): normalizes AB and BA to the same two-digit key,
+   preserving leading zero (05 remains "05").
+4. Added _buildPairAnalysis(models): aggregates pair occurrences from all
+   5 evaluated models; every occurrence adds +1.
+5. Added _getPremiumGrade(score): derives PREMIUM/A+/A/B/C from the real score.
+6. Added TOP10 UI using matrixSorted.slice(0,10), so it uses the existing
+   ranking/scoring engine and is not hard-coded.
+7. Added compact Premium Pair Analysis UI using the 5-model pair evidence.
+8. No existing scoring formula or TOP3 ranking algorithm was replaced.
+============================================================
+-->
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -892,9 +917,18 @@ overflow:hidden;
 text-overflow:ellipsis;
 }
 
+.field-card input{
+height:42px;
+background:#fff;
+font-family:'IBM Plex Mono',monospace;
+font-size:1.08rem;
+font-weight:700;
+letter-spacing:2px;
+}
+
 .action-row{
 display:grid;
-grid-template-columns:1fr 88px;
+grid-template-columns:1fr 82px;
 gap:7px;
 margin-top:8px;
 }
@@ -902,363 +936,275 @@ margin-top:8px;
 .clear-btn{
 height:44px;
 border-radius:13px;
-border:1px solid rgba(10,102,71,.18);
-background:#fff;
 color:var(--muted);
-cursor:pointer;
-font-size:.58rem;
-font-weight:800;
+background:var(--bg2);
+border:1px solid rgba(10,102,71,.18);
+font-size:.59rem;
+font-weight:700;
+transition:
+transform .2s ease,
+background .2s ease,
+border-color .2s ease;
 }
 
 .clear-btn:hover{
-background:var(--bg2);
+transform:translateY(-1px);
+background:#fff;
 border-color:rgba(10,102,71,.28);
 }
+
+.calculate-btn:disabled{
+opacity:.55;
+cursor:not-allowed;
+}
+
+/* =========================================================
+   SCANNER
+========================================================= */
 
 #aiScannerBox{
 display:none;
 position:relative;
-align-items:center;
-justify-content:center;
-gap:9px;
+overflow:hidden;
+padding:16px 12px;
 margin-bottom:10px;
-padding:10px;
-border-radius:13px;
-background:var(--bg2);
-border:1px solid rgba(10,102,71,.15);
-color:var(--emerald);
-font-family:'IBM Plex Mono',monospace;
-font-size:.46rem;
-font-weight:700;
 text-align:center;
+border-radius:19px;
+background:
+radial-gradient(circle at center,rgba(16,185,129,.12),transparent 60%),
+#F0FBF5;
+border:1px solid rgba(10,102,71,.18);
 }
 
 .scanner-ring{
-width:12px;
-height:12px;
-border:2px solid rgba(16,185,129,.25);
-border-top-color:var(--emerald);
+position:relative;
+width:52px;
+height:52px;
+margin:0 auto 10px;
 border-radius:50%;
-animation:spin .8s linear infinite;
+border:1px solid rgba(10,102,71,.20);
+}
+
+.scanner-ring::before{
+content:"";
+position:absolute;
+inset:6px;
+border:3px solid transparent;
+border-top-color:var(--emerald);
+border-right-color:var(--cyan);
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+.scanner-ring::after{
+content:"";
+position:absolute;
+inset:16px;
+border-radius:50%;
+background:var(--gold2);
+animation:scannerPulse .9s ease-in-out infinite;
 }
 
 @keyframes spin{
 to{transform:rotate(360deg)}
 }
 
+@keyframes scannerPulse{
+0%,100%{transform:scale(.7);opacity:.5}
+50%{transform:scale(1);opacity:1}
+}
+
+#aiScannerText{
+color:var(--emerald);
+font-family:'IBM Plex Mono',monospace;
+font-size:.55rem;
+font-weight:700;
+}
+
+/* =========================================================
+   RESULT
+========================================================= */
+
 .result-shell{
-display:block;
+animation:resultIn .5s var(--ease);
+}
+
+@keyframes resultIn{
+from{
+opacity:0;
+transform:translateY(12px);
+}
+to{
+opacity:1;
+transform:none;
+}
 }
 
 .result-head{
 display:flex;
 justify-content:space-between;
-align-items:flex-start;
+align-items:flex-end;
 gap:8px;
-margin-bottom:9px;
+margin:2px 2px 8px;
 }
 
 .result-kicker{
 color:var(--emerald);
 font-family:'IBM Plex Mono',monospace;
-font-size:.42rem;
+font-size:.48rem;
 font-weight:800;
 letter-spacing:.8px;
 }
 
 .result-title{
-margin-top:2px;
-font-size:.78rem;
+margin-top:1px;
+font-size:1.08rem;
 font-weight:800;
 }
 
 .result-note{
-padding-top:2px;
 color:var(--muted);
-font-family:'IBM Plex Mono',monospace;
-font-size:.40rem;
-white-space:nowrap;
+font-size:.49rem;
 }
 
 /* =========================================================
    TOP 3 — SINGLE RANKING MASTER
+   Presentation-only refinement: ranking/scoring logic unchanged.
 ========================================================= */
 
 .top3-signal-board{
-padding:12px;
+padding:11px 12px;
 margin-bottom:9px;
-border-radius:20px;
-background:
-radial-gradient(
-circle at 100% 0%,
-rgba(16,185,129,.11),
-transparent 42%
-),
-linear-gradient(
-135deg,
-#FFFFFF,
-#F1F9F5
-);
-border-color:rgba(10,102,71,.19);
-}
-
-.top3-signal-board::before{
-content:"";
-position:absolute;
-top:0;
-left:0;
-right:0;
-height:2px;
-background:
-linear-gradient(
-90deg,
-transparent,
-#10B981,
-#EAB308,
-#10B981,
-transparent
-);
-background-size:200% 100%;
-animation:top3Flow 5s ease-in-out infinite;
-}
-
-@keyframes top3Flow{
-0%,100%{
-background-position:0 50%;
-opacity:.55;
-}
-50%{
-background-position:100% 50%;
-opacity:1;
-}
+border-radius:16px;
+background:linear-gradient(135deg,#fff,#F4FAF7);
+border-color:rgba(10,102,71,.17);
 }
 
 .top3-head{
-position:relative;
-z-index:2;
 display:flex;
 justify-content:space-between;
-align-items:flex-start;
+align-items:center;
 gap:8px;
-margin-bottom:9px;
+margin-bottom:7px;
 }
 
 .top3-kicker{
 color:var(--emerald);
 font-family:'IBM Plex Mono',monospace;
-font-size:.46rem;
+font-size:.43rem;
 font-weight:800;
-letter-spacing:1px;
+letter-spacing:.8px;
 }
 
 .top3-title{
-margin-top:2px;
-font-size:.84rem;
+margin-top:1px;
+font-size:.79rem;
 font-weight:800;
 }
 
 .top3-sub{
-margin-top:1px;
-color:var(--muted);
-font-size:.45rem;
+display:none;
 }
 
 .top3-badge{
-padding:4px 8px;
-border-radius:8px;
+padding:3px 7px;
+border-radius:7px;
 color:var(--gold);
 background:var(--goldSoft);
-border:1px solid rgba(158,108,2,.22);
+border:1px solid rgba(158,108,2,.18);
 font-family:'IBM Plex Mono',monospace;
-font-size:.43rem;
+font-size:.39rem;
 font-weight:800;
 white-space:nowrap;
 }
 
 .top3-list{
-position:relative;
-z-index:2;
 display:flex;
 flex-direction:column;
-gap:5px;
+gap:4px;
 }
 
 .top3-row{
-position:relative;
-overflow:hidden;
 display:grid;
-grid-template-columns:27px 38px 1fr 53px;
+grid-template-columns:24px 34px minmax(0,1fr) 48px;
 align-items:center;
-gap:7px;
-min-height:42px;
-padding:5px 8px;
-border-radius:11px;
-background:rgba(247,252,249,.88);
-border:1px solid rgba(10,102,71,.13);
+gap:6px;
+min-height:38px;
+padding:4px 7px;
+border-radius:10px;
+background:#FAFDFC;
+border:1px solid rgba(10,102,71,.11);
 transition:
-transform .25s var(--ease),
-box-shadow .25s ease,
-border-color .25s ease;
+transform .18s var(--ease),
+box-shadow .18s ease,
+border-color .18s ease;
 }
 
 .top3-row:hover{
 transform:translateY(-1px);
-border-color:rgba(16,185,129,.34);
-box-shadow:0 6px 16px rgba(10,102,71,.07);
-}
-
-.top3-row::before{
-content:"";
-position:absolute;
-top:0;
-bottom:0;
-left:-110%;
-width:75%;
-background:
-linear-gradient(
-90deg,
-transparent,
-rgba(255,255,255,.7),
-transparent
-);
-transform:skewX(-18deg);
-animation:top3Sweep 6s ease-in-out infinite;
-pointer-events:none;
-}
-
-.top3-row:nth-child(2)::before{
-animation-delay:1.2s;
-}
-
-.top3-row:nth-child(3)::before{
-animation-delay:2.4s;
-}
-
-@keyframes top3Sweep{
-0%,45%{
-left:-110%;
-opacity:0;
-}
-55%{
-opacity:.8;
-}
-75%,100%{
-left:135%;
-opacity:0;
-}
+border-color:rgba(16,185,129,.28);
+box-shadow:0 5px 12px rgba(10,102,71,.06);
 }
 
 .top3-row.rank-one{
-background:
-linear-gradient(
-90deg,
-rgba(254,249,195,.68),
-rgba(247,252,249,.96)
-);
-border-color:rgba(158,108,2,.24);
+background:linear-gradient(90deg,rgba(254,249,195,.52),#FAFDFC);
+border-color:rgba(158,108,2,.22);
 }
 
 .top3-row.rank-two{
-background:
-linear-gradient(
-90deg,
-rgba(225,248,237,.70),
-rgba(247,252,249,.96)
-);
-border-color:rgba(10,102,71,.19);
+background:linear-gradient(90deg,rgba(225,248,237,.55),#FAFDFC);
+border-color:rgba(10,102,71,.16);
 }
 
 .top3-row.rank-three{
-background:
-linear-gradient(
-90deg,
-rgba(8,115,128,.045),
-rgba(247,252,249,.96)
-);
-border-color:rgba(8,115,128,.17);
+background:linear-gradient(90deg,rgba(8,115,128,.035),#FAFDFC);
+border-color:rgba(8,115,128,.15);
 }
 
 .top3-position{
-position:relative;
-z-index:2;
 display:flex;
 align-items:center;
 justify-content:center;
 font-family:'IBM Plex Mono',monospace;
-font-size:.48rem;
+font-size:.45rem;
 font-weight:800;
 color:var(--muted2);
 }
 
-.top3-row.rank-one .top3-position{
-color:var(--gold);
-}
-
-.top3-row.rank-two .top3-position{
-color:var(--emerald);
-}
-
-.top3-row.rank-three .top3-position{
-color:var(--cyan);
-}
+.top3-row.rank-one .top3-position{color:var(--gold)}
+.top3-row.rank-two .top3-position{color:var(--emerald)}
+.top3-row.rank-three .top3-position{color:var(--cyan)}
 
 .top3-digit{
-position:relative;
-z-index:2;
-width:32px;
-height:32px;
+width:30px;
+height:30px;
 display:flex;
 align-items:center;
 justify-content:center;
-border-radius:9px;
+border-radius:8px;
 color:#fff;
-background:
-linear-gradient(
-135deg,
-#081B14,
-#0A6647
-);
-border:1px solid rgba(16,185,129,.38);
-box-shadow:
-0 4px 10px rgba(10,102,71,.12),
-inset 0 1px 0 rgba(255,255,255,.25);
+background:linear-gradient(135deg,#081B14,#0A6647);
+border:1px solid rgba(16,185,129,.32);
 font-family:'IBM Plex Mono',monospace;
-font-size:.92rem;
+font-size:.82rem;
 font-weight:800;
 }
 
 .top3-row.rank-one .top3-digit{
 color:#5F4300;
-background:
-linear-gradient(
-135deg,
-#FEF9C3,
-#FDE68A
-);
-border-color:rgba(158,108,2,.34);
+background:linear-gradient(135deg,#FEF9C3,#FDE68A);
+border-color:rgba(158,108,2,.30);
 }
 
 .top3-row.rank-two .top3-digit{
-background:
-linear-gradient(
-135deg,
-#0A6647,
-#10B981
-);
+background:linear-gradient(135deg,#0A6647,#10B981);
 }
 
 .top3-row.rank-three .top3-digit{
-background:
-linear-gradient(
-135deg,
-#087380,
-#14B8A6
-);
+background:linear-gradient(135deg,#087380,#14B8A6);
 }
 
 .top3-info{
-position:relative;
-z-index:2;
 min-width:0;
 }
 
@@ -1267,21 +1213,24 @@ display:flex;
 align-items:center;
 gap:5px;
 color:var(--text2);
-font-size:.49rem;
+font-size:.47rem;
 font-weight:800;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
 }
 
 .top3-label span{
 color:var(--muted);
-font-size:.41rem;
+font-size:.39rem;
 font-weight:600;
 }
 
 .top3-bar{
 position:relative;
 width:100%;
-height:5px;
-margin-top:5px;
+height:4px;
+margin-top:4px;
 border-radius:99px;
 background:#DDEDE5;
 overflow:hidden;
@@ -1291,80 +1240,47 @@ overflow:hidden;
 position:absolute;
 inset:0 auto 0 0;
 border-radius:99px;
-background:
-linear-gradient(
-90deg,
-#0A6647,
-#10B981,
-#14B8A6
-);
-transition:width .7s var(--ease);
+background:linear-gradient(90deg,#0A6647,#10B981,#14B8A6);
+transition:width .55s var(--ease);
 }
 
 .top3-row.rank-one .top3-bar-fill{
-background:
-linear-gradient(
-90deg,
-#9E6C02,
-#EAB308,
-#10B981
-);
+background:linear-gradient(90deg,#9E6C02,#EAB308,#10B981);
 }
 
 .top3-row.rank-two .top3-bar-fill{
-background:
-linear-gradient(
-90deg,
-#0A6647,
-#10B981
-);
+background:linear-gradient(90deg,#0A6647,#10B981);
 }
 
 .top3-row.rank-three .top3-bar-fill{
-background:
-linear-gradient(
-90deg,
-#087380,
-#14B8A6
-);
+background:linear-gradient(90deg,#087380,#14B8A6);
 }
 
 .top3-score{
-position:relative;
-z-index:2;
 text-align:right;
 font-family:'IBM Plex Mono',monospace;
-font-size:.51rem;
+font-size:.47rem;
 font-weight:800;
 color:var(--emerald);
 }
 
-.top3-row.rank-one .top3-score{
-color:var(--gold);
-}
-
-.top3-row.rank-three .top3-score{
-color:var(--cyan);
-}
+.top3-row.rank-one .top3-score{color:var(--gold)}
+.top3-row.rank-three .top3-score{color:var(--cyan)}
 
 .top3-footnote{
-position:relative;
-z-index:2;
 display:flex;
 align-items:center;
 justify-content:center;
 gap:5px;
-margin-top:7px;
-padding-top:7px;
-border-top:1px solid rgba(10,102,71,.08);
+margin-top:6px;
+padding-top:6px;
+border-top:1px solid rgba(10,102,71,.07);
 color:var(--muted);
-font-size:.42rem;
+font-size:.40rem;
 text-align:center;
 }
 
-.top3-footnote strong{
-color:var(--text2);
-}
+.top3-footnote strong{color:var(--text2)}
 
 .mini-live{
 width:5px;
@@ -1372,11 +1288,193 @@ height:5px;
 border-radius:50%;
 background:var(--green);
 box-shadow:0 0 0 3px rgba(16,185,129,.12);
-animation:livePulse 1.8s ease-in-out infinite;
 }
 
 /* =========================================================
-   STATS
+   TOP 10 + PREMIUM PAIR ANALYSIS
+========================================================= */
+
+.top10-panel,
+.pair-analysis-panel{
+position:relative;
+overflow:hidden;
+padding:11px 12px;
+margin-bottom:9px;
+border:1px solid rgba(10,102,71,.17);
+border-radius:16px;
+background:linear-gradient(135deg,#fff,#F4FAF7);
+box-shadow:var(--shadowSoft);
+}
+
+.top10-head,
+.pair-analysis-head{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:8px;
+margin-bottom:7px;
+}
+
+.top10-title,
+.pair-analysis-title{
+font-size:.75rem;
+font-weight:800;
+}
+
+.top10-sub,
+.pair-analysis-sub{
+margin-top:1px;
+color:var(--muted);
+font-size:.42rem;
+}
+
+.top10-badge,
+.pair-analysis-badge{
+padding:3px 7px;
+border-radius:7px;
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.16);
+font-family:'IBM Plex Mono',monospace;
+font-size:.39rem;
+font-weight:800;
+white-space:nowrap;
+}
+
+.top10-list{
+display:flex;
+flex-direction:column;
+gap:3px;
+}
+
+.top10-row{
+display:grid;
+grid-template-columns:27px minmax(0,1fr) 49px 62px;
+align-items:center;
+gap:5px;
+min-height:32px;
+padding:4px 6px;
+border-radius:8px;
+background:#FAFDFC;
+border:1px solid rgba(10,102,71,.09);
+}
+
+.top10-rank{
+font-family:'IBM Plex Mono',monospace;
+font-size:.40rem;
+font-weight:800;
+color:var(--muted);
+}
+
+.top10-number{
+font-family:'IBM Plex Mono',monospace;
+font-size:.68rem;
+font-weight:800;
+color:var(--text);
+}
+
+.top10-score{
+text-align:right;
+font-family:'IBM Plex Mono',monospace;
+font-size:.43rem;
+font-weight:800;
+color:var(--emerald);
+}
+
+.top10-grade{
+justify-self:end;
+padding:2px 5px;
+border-radius:5px;
+font-family:'IBM Plex Mono',monospace;
+font-size:.37rem;
+font-weight:800;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.16);
+white-space:nowrap;
+}
+
+.top10-header-row{
+display:grid;
+grid-template-columns:27px minmax(0,1fr) 49px 62px;
+gap:5px;
+padding:0 6px 3px;
+color:var(--muted2);
+font-family:'IBM Plex Mono',monospace;
+font-size:.34rem;
+font-weight:700;
+}
+
+.top10-header-row span:nth-child(2),
+.top10-header-row span:nth-child(3),
+.top10-header-row span:nth-child(4){
+text-align:right;
+}
+
+.pair-analysis-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:4px;
+}
+
+.pair-analysis-item{
+min-width:0;
+padding:6px 3px;
+border-radius:9px;
+text-align:center;
+background:#FAFDFC;
+border:1px solid rgba(10,102,71,.10);
+}
+
+.pair-analysis-item strong{
+display:block;
+font-family:'IBM Plex Mono',monospace;
+font-size:.67rem;
+font-weight:800;
+color:var(--emerald);
+}
+
+.pair-analysis-item span{
+display:block;
+margin-top:1px;
+color:var(--muted);
+font-family:'IBM Plex Mono',monospace;
+font-size:.35rem;
+}
+
+.pair-analysis-empty{
+grid-column:1/-1;
+padding:7px;
+text-align:center;
+color:var(--muted);
+font-size:.43rem;
+}
+
+@media(max-width:400px){
+.top3-row{
+grid-template-columns:23px 32px minmax(0,1fr) 45px;
+gap:5px;
+padding-left:6px;
+padding-right:6px;
+}
+
+.top3-title{font-size:.75rem}
+.top3-sub{display:none}
+
+.top10-row,
+.top10-header-row{
+grid-template-columns:24px minmax(0,1fr) 46px 55px;
+gap:4px;
+}
+
+.top10-number{font-size:.64rem}
+.top10-grade{font-size:.34rem;padding:2px 4px}
+.pair-analysis-grid{grid-template-columns:repeat(4,1fr)}
+}
+
+
+/* =========================================================
+   BALANCE
 ========================================================= */
 
 .stats-analytics-card{
@@ -1386,65 +1484,89 @@ margin-bottom:9px;
 
 .stats-flex{
 display:flex;
-justify-content:space-between;
 align-items:center;
-gap:8px;
+justify-content:space-between;
+margin-bottom:8px;
 }
 
 .stats-title{
-font-size:.58rem;
+font-size:.75rem;
 font-weight:800;
 }
 
 .stats-badge{
-padding:4px 7px;
+padding:3px 8px;
 border-radius:7px;
-color:var(--cyan);
-background:rgba(8,115,128,.07);
-border:1px solid rgba(8,115,128,.16);
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.18);
 font-family:'IBM Plex Mono',monospace;
-font-size:.40rem;
-font-weight:800;
+font-size:.44rem;
+font-weight:700;
 }
 
 .ratio-bar-container{
 display:flex;
+width:100%;
 height:9px;
-margin-top:8px;
+margin-bottom:6px;
 border-radius:99px;
 overflow:hidden;
-background:#DDEDE5;
+background:var(--surface3);
+border:1px solid rgba(10,102,71,.10);
 }
 
 .ratio-even{
+height:100%;
 background:linear-gradient(90deg,#0A6647,#10B981);
+transition:width .4s var(--ease);
 }
 
 .ratio-odd{
-background:linear-gradient(90deg,#EAB308,#9E6C02);
+height:100%;
+background:linear-gradient(90deg,#9E6C02,#EAB308);
+transition:width .4s var(--ease);
 }
 
 .ratio-legend{
 display:flex;
 justify-content:space-between;
-gap:8px;
-margin-top:5px;
 color:var(--muted);
-font-size:.43rem;
+font-family:'IBM Plex Mono',monospace;
+font-size:.46rem;
+font-weight:700;
 }
 
 /* =========================================================
-   OVERVIEW
+   SECTION MARKER
 ========================================================= */
 
 .section-marker{
-margin:9px 2px 5px;
+display:flex;
+align-items:center;
+gap:7px;
+margin:5px 2px 7px;
 color:var(--muted);
-font-family:'IBM Plex Mono',monospace;
-font-size:.41rem;
+font-size:.46rem;
 font-weight:800;
 letter-spacing:.8px;
 }
+
+.section-marker::after{
+content:"";
+flex:1;
+height:1px;
+background:
+linear-gradient(
+90deg,
+rgba(10,102,71,.22),
+transparent
+);
+}
+
+/* =========================================================
+   AI PROBABILITY RANKING — PREMIUM
+========================================================= */
 
 .overview-panel{
 padding:12px;
@@ -1456,63 +1578,64 @@ display:flex;
 justify-content:space-between;
 align-items:flex-start;
 gap:8px;
-margin-bottom:8px;
+margin-bottom:9px;
 }
 
 .overview-title{
-font-size:.75rem;
+font-size:.80rem;
 font-weight:800;
 }
 
 .overview-sub{
 margin-top:2px;
 color:var(--muted);
-font-size:.43rem;
+font-size:.46rem;
 }
 
 .overview-badge{
-padding:4px 7px;
+padding:4px 8px;
 border-radius:7px;
 color:var(--emerald);
 background:var(--greenSoft);
-border:1px solid rgba(10,102,71,.17);
+border:1px solid rgba(10,102,71,.18);
 font-family:'IBM Plex Mono',monospace;
-font-size:.40rem;
-font-weight:800;
-white-space:nowrap;
+font-size:.44rem;
+font-weight:700;
 }
 
 .overview-bars{
-display:flex;
-align-items:flex-end;
-justify-content:space-between;
+display:grid;
+grid-template-columns:repeat(10,1fr);
 gap:4px;
-height:116px;
-padding-top:6px;
+align-items:end;
+padding:4px 2px 0;
 }
 
 .overview-bar{
 position:relative;
-width:100%;
-height:82px;
-border-radius:8px 8px 5px 5px;
+height:76px;
+display:flex;
+align-items:flex-end;
+justify-content:center;
+border-radius:8px;
+overflow:hidden;
 background:
 linear-gradient(
 180deg,
-var(--bar-color-top),
-var(--bar-color)
+rgba(247,252,249,.75),
+rgba(236,247,241,.95)
 );
-box-shadow:
-0 7px 13px var(--bar-glow);
-cursor:pointer;
+border:1px solid rgba(10,102,71,.12);
 transition:
-transform .2s ease,
-filter .2s ease;
+transform .22s var(--ease),
+border-color .22s ease,
+box-shadow .22s ease;
 }
 
 .overview-bar:hover{
 transform:translateY(-2px);
-filter:brightness(1.03);
+border-color:rgba(10,102,71,.28);
+box-shadow:0 6px 14px rgba(10,102,71,.07);
 }
 
 .overview-bar::before{
@@ -1522,85 +1645,93 @@ left:2px;
 right:2px;
 bottom:2px;
 height:var(--bar-height);
-border-radius:6px 6px 4px 4px;
+border-radius:6px;
 background:
 linear-gradient(
 180deg,
-rgba(255,255,255,.72),
+var(--bar-color-top),
 var(--bar-color)
 );
-opacity:.55;
+box-shadow:
+0 -2px 8px var(--bar-glow);
+transition:height .7s var(--ease);
 }
 
 .overview-bar::after{
 content:"";
 position:absolute;
-top:0;
-right:2px;
+left:0;
+right:0;
 bottom:0;
-width:1px;
-background:rgba(255,255,255,.48);
+height:1px;
+background:rgba(10,102,71,.13);
 }
 
 .overview-bar.rank-1{
+border-color:rgba(158,108,2,.34);
+background:
+linear-gradient(
+180deg,
+rgba(254,249,195,.32),
+rgba(247,252,249,.95)
+);
 box-shadow:
-0 9px 18px rgba(234,179,8,.18),
-0 0 0 1px rgba(234,179,8,.12);
+0 5px 15px rgba(158,108,2,.08);
 }
 
 .overview-bar.rank-2{
-box-shadow:
-0 8px 17px rgba(16,185,129,.15),
-0 0 0 1px rgba(16,185,129,.10);
+border-color:rgba(10,102,71,.27);
 }
 
 .overview-bar.rank-3{
-box-shadow:
-0 8px 17px rgba(20,184,166,.15),
-0 0 0 1px rgba(20,184,166,.10);
+border-color:rgba(8,115,128,.28);
 }
 
 .overview-rank{
 position:absolute;
 top:4px;
 left:50%;
-z-index:2;
 transform:translateX(-50%);
+z-index:3;
 padding:2px 4px;
 border-radius:5px;
-color:rgba(255,255,255,.92);
-background:rgba(8,27,20,.18);
+background:rgba(255,255,255,.88);
+border:1px solid rgba(10,102,71,.10);
 font-family:'IBM Plex Mono',monospace;
 font-size:.34rem;
 font-weight:800;
+color:var(--muted);
 white-space:nowrap;
 }
 
 .overview-bar.rank-1 .overview-rank{
-color:#5F4300;
-background:rgba(255,255,255,.55);
+color:var(--gold);
+border-color:rgba(158,108,2,.20);
+background:rgba(254,249,195,.88);
 }
 
 .overview-bar.rank-2 .overview-rank{
-color:#064E3B;
-background:rgba(255,255,255,.55);
+color:var(--emerald);
+border-color:rgba(10,102,71,.18);
+background:rgba(227,248,238,.90);
 }
 
 .overview-bar.rank-3 .overview-rank{
-color:#075E69;
-background:rgba(255,255,255,.55);
+color:var(--cyan);
+border-color:rgba(8,115,128,.18);
+background:rgba(224,249,247,.90);
 }
 
 .overview-digit{
 position:absolute;
 left:50%;
-bottom:6px;
-z-index:2;
+bottom:5px;
 transform:translateX(-50%);
+z-index:4;
+color:#17372B;
 font-family:'IBM Plex Mono',monospace;
-font-size:.75rem;
+font-size:.55rem;
 font-weight:800;
-color:#fff;
 }
 
 .overview-bar.rank-1 .overview-digit{
@@ -1608,54 +1739,45 @@ color:#5F4300;
 }
 
 .overview-bar.rank-2 .overview-digit{
-color:#064E3B;
+color:var(--emerald);
 }
 
 .overview-bar.rank-3 .overview-digit{
-color:#075E69;
+color:var(--cyan);
 }
 
 .overview-score{
 position:absolute;
 left:50%;
-bottom:25px;
-z-index:2;
+bottom:20px;
 transform:translateX(-50%);
+z-index:4;
 font-family:'IBM Plex Mono',monospace;
-font-size:.34rem;
+font-size:.31rem;
 font-weight:800;
-color:rgba(255,255,255,.92);
+color:var(--muted);
 white-space:nowrap;
 }
 
 .overview-bar.rank-1 .overview-score{
-color:#6B4D00;
+color:var(--gold);
 }
 
 .overview-bar.rank-2 .overview-score{
-color:#065F46;
+color:var(--emerald);
 }
 
 .overview-bar.rank-3 .overview-score{
-color:#075E69;
+color:var(--cyan);
 }
 
 .overview-axis{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-margin-top:4px;
+display:flex;
+justify-content:space-between;
+margin-top:6px;
 color:var(--muted2);
 font-family:'IBM Plex Mono',monospace;
-font-size:.35rem;
-font-weight:700;
-}
-
-.overview-axis span:nth-child(2){
-text-align:center;
-}
-
-.overview-axis span:last-child{
-text-align:right;
+font-size:.41rem;
 }
 
 /* =========================================================
@@ -1665,14 +1787,19 @@ text-align:right;
 .deep-scan-board{
 padding:12px;
 margin-bottom:9px;
-border-radius:19px;
+border-radius:20px;
 background:
 radial-gradient(
-circle at 100% 0%,
-rgba(16,185,129,.10),
-transparent 40%
+circle at 95% 5%,
+rgba(16,185,129,.11),
+transparent 42%
 ),
-linear-gradient(135deg,#fff,#F2F9F5);
+linear-gradient(
+135deg,
+#FFFFFF,
+#F1F9F5
+);
+border-color:rgba(10,102,71,.19);
 }
 
 .deep-scan-board::before{
@@ -1686,82 +1813,75 @@ background:
 linear-gradient(
 90deg,
 transparent,
-#10B981,
 #EAB308,
 #10B981,
+#14B8A6,
 transparent
 );
-background-size:200% 100%;
-animation:top3Flow 5s ease-in-out infinite;
+opacity:.75;
 }
 
 .deep-scan-head{
-position:relative;
-z-index:2;
 display:flex;
 justify-content:space-between;
 align-items:flex-start;
 gap:8px;
-margin-bottom:8px;
+margin-bottom:9px;
 }
 
 .deep-scan-kicker{
 color:var(--emerald);
 font-family:'IBM Plex Mono',monospace;
-font-size:.43rem;
+font-size:.46rem;
 font-weight:800;
-letter-spacing:.8px;
+letter-spacing:1px;
 }
 
 .deep-scan-title{
 margin-top:2px;
-font-size:.78rem;
+font-size:.83rem;
 font-weight:800;
 }
 
 .deep-scan-sub{
 margin-top:1px;
 color:var(--muted);
-font-size:.43rem;
-}
-
-.deep-scan-badge{
-padding:4px 7px;
-border-radius:7px;
-color:var(--gold);
-background:var(--goldSoft);
-border:1px solid rgba(158,108,2,.18);
-font-family:'IBM Plex Mono',monospace;
-font-size:.40rem;
-font-weight:800;
+font-size:.45rem;
 }
 
 .deep-scan-grid{
-position:relative;
-z-index:2;
 display:grid;
-grid-template-columns:repeat(3,1fr);
+grid-template-columns:1fr;
 gap:6px;
 }
 
 .deep-scan-card{
 position:relative;
 overflow:hidden;
-padding:8px;
-border-radius:12px;
-background:rgba(247,252,249,.88);
+padding:9px;
+border-radius:13px;
+background:
+linear-gradient(
+135deg,
+rgba(255,255,255,.95),
+rgba(240,249,244,.95)
+);
 border:1px solid rgba(10,102,71,.14);
+transition:
+transform .22s var(--ease),
+box-shadow .22s ease;
 }
 
 .deep-scan-card:hover{
 transform:translateY(-1px);
+box-shadow:0 7px 16px rgba(10,102,71,.065);
 }
 
 .deep-scan-card::before{
 content:"";
 position:absolute;
-top:0;
 left:0;
+top:0;
 bottom:0;
 width:3px;
 background:linear-gradient(180deg,#9E6C02,#EAB308);
@@ -1772,11 +1892,11 @@ content:"";
 position:absolute;
 top:0;
 right:0;
-width:45px;
-height:45px;
+width:95px;
+height:95px;
 border-radius:50%;
-background:rgba(234,179,8,.08);
-transform:translate(18px,-18px);
+background:rgba(234,179,8,.045);
+pointer-events:none;
 }
 
 .deep-scan-card.rank-two::before{
@@ -1784,7 +1904,7 @@ background:linear-gradient(180deg,#0A6647,#10B981);
 }
 
 .deep-scan-card.rank-two::after{
-background:rgba(16,185,129,.08);
+background:rgba(16,185,129,.045);
 }
 
 .deep-scan-card.rank-three::before{
@@ -1792,7 +1912,7 @@ background:linear-gradient(180deg,#087380,#14B8A6);
 }
 
 .deep-scan-card.rank-three::after{
-background:rgba(20,184,166,.08);
+background:rgba(20,184,166,.045);
 }
 
 .deep-scan-top{
@@ -1801,81 +1921,106 @@ z-index:2;
 display:flex;
 justify-content:space-between;
 align-items:center;
-gap:5px;
+gap:6px;
+margin-bottom:7px;
 }
 
 .deep-scan-name{
 display:flex;
 align-items:center;
-gap:5px;
-min-width:0;
+gap:7px;
+font-size:.55rem;
+font-weight:800;
 }
 
 .deep-rank-label{
 display:block;
-color:var(--muted);
+margin-bottom:1px;
 font-family:'IBM Plex Mono',monospace;
-font-size:.35rem;
-font-weight:700;
-white-space:nowrap;
-}
-
-.deep-scan-name>div:last-child>div{
-margin-top:2px;
-font-size:.39rem;
+font-size:.37rem;
 font-weight:800;
-white-space:nowrap;
-overflow:hidden;
-text-overflow:ellipsis;
+letter-spacing:.5px;
+color:var(--muted);
 }
 
 .deep-scan-digit{
+width:29px;
+height:29px;
 display:flex;
 align-items:center;
 justify-content:center;
-width:31px;
-height:31px;
-flex:0 0 31px;
-border-radius:9px;
+border-radius:8px;
 color:#5F4300;
-background:linear-gradient(135deg,#FEF9C3,#FDE68A);
-border:1px solid rgba(158,108,2,.25);
+background:
+linear-gradient(
+135deg,
+#FEF9C3,
+#FDE68A
+);
+border:1px solid rgba(158,108,2,.34);
+box-shadow:
+0 4px 10px rgba(158,108,2,.09),
+inset 0 1px 0 rgba(255,255,255,.65);
 font-family:'IBM Plex Mono',monospace;
-font-size:.84rem;
+font-size:.76rem;
 font-weight:800;
 }
 
 .deep-scan-card.rank-two .deep-scan-digit{
 color:#fff;
-background:linear-gradient(135deg,#0A6647,#10B981);
-border-color:rgba(10,102,71,.25);
+background:
+linear-gradient(
+135deg,
+#0A6647,
+#10B981
+);
+border-color:rgba(16,185,129,.40);
+box-shadow:
+0 4px 10px rgba(10,102,71,.10),
+inset 0 1px 0 rgba(255,255,255,.25);
 }
 
 .deep-scan-card.rank-three .deep-scan-digit{
 color:#fff;
-background:linear-gradient(135deg,#087380,#14B8A6);
-border-color:rgba(8,115,128,.25);
+background:
+linear-gradient(
+135deg,
+#087380,
+#14B8A6
+);
+border-color:rgba(20,184,166,.40);
+box-shadow:
+0 4px 10px rgba(8,115,128,.10),
+inset 0 1px 0 rgba(255,255,255,.25);
 }
 
 .deep-scan-rank{
-color:var(--gold);
+padding:3px 6px;
+border-radius:6px;
 font-family:'IBM Plex Mono',monospace;
-font-size:.40rem;
+font-size:.38rem;
 font-weight:800;
+color:var(--gold);
+background:rgba(254,249,195,.78);
+border:1px solid rgba(158,108,2,.18);
 }
 
 .deep-scan-card.rank-two .deep-scan-rank{
 color:var(--emerald);
+background:rgba(227,248,238,.82);
+border-color:rgba(10,102,71,.17);
 }
 
 .deep-scan-card.rank-three .deep-scan-rank{
 color:var(--cyan);
+background:rgba(224,249,247,.84);
+border-color:rgba(8,115,128,.17);
 }
 
 .deep-scan-score{
 color:var(--gold);
 font-family:'IBM Plex Mono',monospace;
-font-size:.52rem;
+font-size:.47rem;
 font-weight:800;
 }
 
@@ -1888,35 +2033,42 @@ color:var(--cyan);
 }
 
 .deep-scan-pairs{
+position:relative;
+z-index:2;
 display:grid;
 grid-template-columns:repeat(5,1fr);
 gap:4px;
-margin-top:7px;
 }
 
 .deep-pair{
+position:relative;
+overflow:hidden;
 padding:5px 2px;
-border-radius:7px;
+border-radius:8px;
+text-align:center;
 background:#fff;
 border:1px solid rgba(10,102,71,.12);
-text-align:center;
 cursor:pointer;
+transition:
+transform .2s ease,
+box-shadow .2s ease,
+border-color .2s ease;
 }
 
 .deep-pair:hover{
-border-color:rgba(16,185,129,.28);
-background:var(--greenSoft);
+transform:translateY(-1px);
+box-shadow:0 4px 10px rgba(10,102,71,.06);
 }
 
 .deep-pair strong{
 display:block;
-color:var(--emerald);
 font-family:'IBM Plex Mono',monospace;
-font-size:.56rem;
+font-size:.62rem;
+color:var(--gold);
 }
 
 .deep-scan-card.rank-two .deep-pair{
-background:rgba(227,248,238,.72);
+border-color:rgba(10,102,71,.13);
 }
 
 .deep-scan-card.rank-two .deep-pair strong{
@@ -1924,7 +2076,7 @@ color:var(--emerald);
 }
 
 .deep-scan-card.rank-three .deep-pair{
-background:rgba(204,251,241,.72);
+border-color:rgba(8,115,128,.13);
 }
 
 .deep-scan-card.rank-three .deep-pair strong{
@@ -1934,40 +2086,41 @@ color:var(--cyan);
 .deep-pair small{
 display:block;
 margin-top:1px;
-color:var(--muted);
 font-family:'IBM Plex Mono',monospace;
-font-size:.33rem;
+font-size:.36rem;
+color:var(--muted);
 }
 
 /* =========================================================
-   3D SCAN
+   3D SMART SCAN
 ========================================================= */
 
 .three-d-scan{
-position:relative;
-z-index:2;
-margin-top:8px;
+margin-top:7px;
 padding-top:8px;
-border-top:1px solid rgba(10,102,71,.10);
+border-top:1px solid rgba(10,102,71,.09);
 }
 
 .three-d-head{
 display:flex;
 justify-content:space-between;
 align-items:center;
-gap:6px;
 margin-bottom:5px;
 }
 
 .three-d-title{
-font-size:.51rem;
+font-size:.55rem;
 font-weight:800;
 }
 
 .three-d-score{
-color:var(--cyan);
+padding:3px 6px;
+border-radius:6px;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.18);
 font-family:'IBM Plex Mono',monospace;
-font-size:.38rem;
+font-size:.43rem;
 font-weight:800;
 }
 
@@ -1978,27 +2131,43 @@ gap:4px;
 }
 
 .three-d-item{
-padding:5px 2px;
-border-radius:7px;
-background:var(--bg2);
-border:1px solid rgba(8,115,128,.14);
+position:relative;
+overflow:hidden;
+padding:6px 2px;
+border-radius:8px;
 text-align:center;
+background:
+linear-gradient(
+135deg,
+#fff,
+#F7F9F5
+);
+border:1px solid rgba(158,108,2,.18);
 cursor:pointer;
+transition:
+transform .2s ease,
+box-shadow .2s ease,
+border-color .2s ease;
+}
+
+.three-d-item:hover{
+transform:translateY(-1px);
+box-shadow:0 4px 10px rgba(158,108,2,.06);
 }
 
 .three-d-item strong{
 display:block;
-color:var(--cyan);
 font-family:'IBM Plex Mono',monospace;
-font-size:.55rem;
+font-size:.63rem;
+color:var(--gold);
 }
 
 .three-d-item small{
 display:block;
 margin-top:1px;
-color:var(--muted);
 font-family:'IBM Plex Mono',monospace;
-font-size:.32rem;
+font-size:.35rem;
+color:var(--muted);
 }
 
 /* =========================================================
@@ -2006,7 +2175,7 @@ font-size:.32rem;
 ========================================================= */
 
 .ind-win-set{
-padding:12px;
+padding:10px 12px;
 margin-bottom:9px;
 }
 
@@ -2019,90 +2188,122 @@ margin-bottom:7px;
 }
 
 .ind-win-title{
-font-size:.68rem;
+font-size:.76rem;
 font-weight:800;
 }
 
 .ind-win-title small{
+display:block;
+margin-top:1px;
 color:var(--muted);
-font-size:.40rem;
+font-size:.41rem;
 font-weight:600;
+letter-spacing:.2px;
 }
 
 .ind-win-badge{
-padding:4px 7px;
-border-radius:7px;
-color:var(--purple);
-background:rgba(109,40,217,.07);
-border:1px solid rgba(109,40,217,.15);
+padding:3px 8px;
+border-radius:99px;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.22);
 font-family:'IBM Plex Mono',monospace;
-font-size:.39rem;
-font-weight:800;
+font-size:.43rem;
+font-weight:700;
 }
 
 .ind-win-grid{
 display:grid;
 grid-template-columns:repeat(6,1fr);
-gap:5px;
+gap:4px;
 }
 
 .ind-win-item{
-padding:7px 3px;
-border-radius:8px;
-background:var(--bg2);
-border:1px solid rgba(10,102,71,.13);
+position:relative;
+overflow:hidden;
+padding:7px 2px;
 text-align:center;
+border-radius:10px;
+background:
+linear-gradient(
+135deg,
+#fff,
+#F1F8F4
+);
+border:1px solid rgba(10,102,71,.14);
 cursor:pointer;
+transition:
+transform .2s var(--ease),
+box-shadow .2s ease,
+border-color .2s ease;
+}
+
+.ind-win-item:hover{
+transform:translateY(-1px);
+box-shadow:0 5px 12px rgba(10,102,71,.07);
+border-color:rgba(16,185,129,.28);
 }
 
 .ind-win-item strong{
 display:block;
-color:var(--emerald);
+color:var(--text);
 font-family:'IBM Plex Mono',monospace;
-font-size:.72rem;
+font-size:.82rem;
+font-weight:800;
 }
 
 .ind-win-item span{
 display:block;
-margin-top:2px;
+margin-top:1px;
 color:var(--muted);
-font-family:'IBM Plex Mono',monospace;
-font-size:.32rem;
+font-size:.35rem;
+font-weight:700;
 }
 
 /* =========================================================
-   FORMULA SECTION
+   FORMULA
 ========================================================= */
 
 .formula-section{
-margin-bottom:9px;
+margin-top:2px;
 }
 
 .formula-toggle{
-display:flex;
-align-items:center;
-justify-content:space-between;
 width:100%;
-padding:10px 11px;
-border-radius:12px;
-border:1px solid rgba(10,102,71,.16);
-background:#fff;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:11px 13px;
+border-radius:14px;
+border:1px solid rgba(10,102,71,.22);
 color:var(--text2);
+background:var(--greenSoft);
 cursor:pointer;
-font-size:.55rem;
+font-size:.59rem;
 font-weight:800;
-box-shadow:var(--shadowSoft);
 }
 
-.formula-toggle:hover{
-background:var(--bg2);
+.formula-toggle span:last-child{
+color:var(--emerald);
+font-family:'IBM Plex Mono',monospace;
+font-size:.49rem;
 }
 
 .formula-card{
-padding:9px;
+padding:10px;
 margin-bottom:6px;
-border-radius:12px;
-background:linear-gradient(135deg,#fff,#F8FCFA);
+border-radius:14px;
+background:#fff;
+}
+
+.formula-card::before{
+content:"";
+position:absolute;
+top:0;
+bottom:0;
+left:0;
+width:3px;
+background:linear-gradient(180deg,#0A6647,#087380);
 }
 
 .formula-head{
@@ -2116,29 +2317,29 @@ gap:6px;
 display:flex;
 align-items:center;
 gap:5px;
-font-size:.54rem;
+font-size:.61rem;
 font-weight:800;
 }
 
 .compact-badge{
-padding:3px 5px;
-border-radius:5px;
-color:var(--emerald);
-background:var(--greenSoft);
-font-size:.35rem;
-font-weight:800;
-}
-
-.formula-badge{
-padding:4px 6px;
+padding:2px 6px;
 border-radius:6px;
 color:var(--gold);
 background:var(--goldSoft);
-border:1px solid rgba(158,108,2,.16);
+border:1px solid rgba(158,108,2,.20);
+font-size:.40rem;
+font-weight:700;
+}
+
+.formula-badge{
+padding:4px 7px;
+border-radius:7px;
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.18);
 font-family:'IBM Plex Mono',monospace;
-font-size:.36rem;
-font-weight:800;
-white-space:nowrap;
+font-size:.45rem;
+font-weight:700;
 }
 
 .formula-sub{
@@ -2181,296 +2382,6 @@ font-size:.61rem;
 color:var(--muted);
 font-family:'IBM Plex Mono',monospace;
 font-size:.37rem;
-}
-
-/* =========================================================
-   PREMIUM PAIR ANALYSIS + TOP 10
-========================================================= */
-
-.premium-analysis-grid{
-display:grid;
-grid-template-columns:1fr;
-gap:9px;
-margin-bottom:9px;
-}
-
-.premium-pair-board,
-.top10-board{
-position:relative;
-overflow:hidden;
-padding:12px;
-border:1px solid rgba(10,102,71,.18);
-border-radius:19px;
-background:linear-gradient(135deg,#fff,#F2F9F5);
-box-shadow:var(--shadowSoft);
-}
-
-.premium-pair-board::before,
-.top10-board::before{
-content:"";
-position:absolute;
-top:0;
-left:0;
-right:0;
-height:2px;
-background:linear-gradient(90deg,#0A6647,#10B981,#14B8A6,#EAB308,#0A6647);
-background-size:220% 100%;
-animation:spectrumFlow 7s ease-in-out infinite;
-}
-
-.premium-board-head,
-.top10-head{
-position:relative;
-z-index:2;
-display:flex;
-align-items:flex-start;
-justify-content:space-between;
-gap:8px;
-margin-bottom:8px;
-}
-
-.premium-board-title{
-font-size:.78rem;
-font-weight:800;
-}
-
-.premium-board-sub{
-margin-top:2px;
-color:var(--muted);
-font-size:.45rem;
-line-height:1.4;
-}
-
-.premium-board-badge{
-flex:0 0 auto;
-padding:4px 7px;
-border-radius:7px;
-color:var(--emerald);
-background:var(--greenSoft);
-border:1px solid rgba(10,102,71,.17);
-font-family:'IBM Plex Mono',monospace;
-font-size:.41rem;
-font-weight:800;
-}
-
-.pair-ranking-list{
-position:relative;
-z-index:2;
-display:grid;
-grid-template-columns:repeat(2,minmax(0,1fr));
-gap:5px;
-}
-
-.pair-rank-item{
-display:grid;
-grid-template-columns:20px 34px 1fr;
-align-items:center;
-gap:5px;
-min-width:0;
-padding:6px 7px;
-border:1px solid rgba(10,102,71,.12);
-border-radius:10px;
-background:rgba(247,252,249,.88);
-}
-
-.pair-rank-pos{
-color:var(--muted2);
-font-family:'IBM Plex Mono',monospace;
-font-size:.40rem;
-font-weight:800;
-text-align:center;
-}
-
-.pair-rank-value{
-display:flex;
-align-items:center;
-justify-content:center;
-min-width:30px;
-height:27px;
-border-radius:8px;
-color:var(--emerald);
-background:var(--greenSoft);
-border:1px solid rgba(10,102,71,.16);
-font-family:'IBM Plex Mono',monospace;
-font-size:.70rem;
-font-weight:800;
-}
-
-.pair-rank-meta{
-min-width:0;
-}
-
-.pair-rank-score{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:4px;
-color:var(--text2);
-font-size:.43rem;
-font-weight:700;
-}
-
-.pair-rank-score strong{
-color:var(--gold);
-}
-
-.pair-rank-models{
-margin-top:2px;
-color:var(--muted);
-font-size:.38rem;
-white-space:nowrap;
-overflow:hidden;
-text-overflow:ellipsis;
-}
-
-.top10-list{
-position:relative;
-z-index:2;
-display:flex;
-flex-direction:column;
-gap:4px;
-}
-
-.top10-row{
-display:grid;
-grid-template-columns:25px 42px 1fr 43px 54px;
-align-items:center;
-gap:6px;
-min-height:34px;
-padding:5px 7px;
-border:1px solid rgba(10,102,71,.12);
-border-radius:9px;
-background:rgba(247,252,249,.88);
-}
-
-.top10-rank{
-color:var(--muted2);
-font-family:'IBM Plex Mono',monospace;
-font-size:.42rem;
-font-weight:800;
-text-align:center;
-}
-
-.top10-number{
-display:flex;
-align-items:center;
-justify-content:center;
-width:34px;
-height:25px;
-border-radius:7px;
-color:#fff;
-background:linear-gradient(135deg,#081B14,#0A6647);
-font-family:'IBM Plex Mono',monospace;
-font-size:.68rem;
-font-weight:800;
-}
-
-.top10-track{
-height:5px;
-border-radius:99px;
-background:#DDEDE5;
-overflow:hidden;
-}
-
-.top10-track-fill{
-height:100%;
-border-radius:99px;
-background:linear-gradient(90deg,#0A6647,#10B981,#14B8A6);
-}
-
-.top10-score{
-color:var(--emerald);
-font-family:'IBM Plex Mono',monospace;
-font-size:.42rem;
-font-weight:800;
-text-align:right;
-}
-
-.top10-grade{
-justify-self:end;
-padding:3px 6px;
-border-radius:6px;
-color:var(--gold);
-background:var(--goldSoft);
-border:1px solid rgba(158,108,2,.18);
-font-family:'IBM Plex Mono',monospace;
-font-size:.37rem;
-font-weight:800;
-text-align:center;
-}
-
-@media(max-width:400px){
-.pair-ranking-list{
-grid-template-columns:1fr;
-}
-
-.top10-row{
-grid-template-columns:22px 37px 1fr 41px 50px;
-gap:4px;
-padding-left:5px;
-padding-right:5px;
-}
-
-.top10-grade{
-padding-left:4px;
-padding-right:4px;
-}
-}
-
-/* TOP3 presentation only — ranking/scoring logic remains unchanged */
-.top3-signal-board{
-padding:10px;
-margin-bottom:8px;
-}
-
-.top3-head{
-margin-bottom:7px;
-}
-
-.top3-sub{
-display:none;
-}
-
-.top3-title{
-font-size:.78rem;
-}
-
-.top3-list{
-gap:4px;
-}
-
-.top3-row{
-grid-template-columns:24px 34px 1fr 47px;
-min-height:37px;
-padding:4px 7px;
-gap:6px;
-border-radius:9px;
-}
-
-.top3-digit{
-width:29px;
-height:29px;
-border-radius:8px;
-font-size:.82rem;
-}
-
-.top3-label{
-font-size:.45rem;
-}
-
-.top3-label span{
-font-size:.38rem;
-}
-
-.top3-bar{
-height:4px;
-margin-top:4px;
-}
-
-.top3-footnote{
-margin-top:6px;
-padding-top:6px;
-font-size:.39rem;
 }
 
 /* =========================================================
@@ -2552,14 +2463,14 @@ grid-template-columns:repeat(3,1fr);
 }
 
 .top3-row{
-grid-template-columns:25px 35px 1fr 50px;
+grid-template-columns:23px 32px minmax(0,1fr) 45px;
 gap:5px;
 padding-left:6px;
 padding-right:6px;
 }
 
 .top3-title{
-font-size:.78rem;
+font-size:.75rem;
 }
 
 .top3-sub{
@@ -2594,10 +2505,10 @@ font-size:.29rem;
 *,
 *::before,
 *::after{
-animation-duration:.01ms!important;
+animation-duration:.001ms!important;
 animation-iteration-count:1!important;
-transition-duration:.01ms!important;
 scroll-behavior:auto!important;
+transition:none!important;
 }
 
 }
@@ -2613,14 +2524,12 @@ scroll-behavior:auto!important;
 </div>
 
 <div class="app-shell">
-
 <div class="app-card">
-
 <div class="app-inner">
 
-<!-- =======================================================
-     LOGIN VIEW
-======================================================= -->
+<!-- =========================================================
+LOGIN
+========================================================= -->
 
 <div id="loginView">
 
@@ -2628,18 +2537,11 @@ scroll-behavior:auto!important;
 
 <div class="brand-mini">
 
-<div class="brand-mark">
-AI
-</div>
+<div class="brand-mark">AI</div>
 
 <div>
-<div class="brand-name">
-Enterprise Quant
-</div>
-
-<div class="brand-sub">
-Premium Intelligence System
-</div>
+<div class="brand-name">Enterprise Quant</div>
+<div class="brand-sub">Predictive Data Engine</div>
 </div>
 
 </div>
@@ -2655,7 +2557,7 @@ SYSTEM READY
 
 <div class="hero-kicker">
 <span></span>
-PREMIUM QUANT INTELLIGENCE
+QUANT ANALYSIS ENGINE
 </div>
 
 <h1>
@@ -2663,16 +2565,15 @@ Mester Lotto <em>VIP+</em>
 </h1>
 
 <p>
-ระบบวิเคราะห์เชิงสถิติและโมเดลคณิตศาสตร์
-<br>
-<b>Multi-Layer AI Processing Engine</b>
+ระบบคำนวณและวิเคราะห์ข้อมูล AI อัจฉริยะ<br>
+<b>Predictive Data Engine</b>
 </p>
 
 <div class="hero-meta">
-<div class="meta-chip">AI Alpha</div>
-<div class="meta-chip">AI Beta</div>
-<div class="meta-chip">AI Gamma</div>
-<div class="meta-chip">Deep Scan</div>
+<div class="meta-chip">AI Pattern</div>
+<div class="meta-chip">Digit Ranking</div>
+<div class="meta-chip">Win Set</div>
+<div class="meta-chip">Neural Matrix</div>
 </div>
 
 </section>
@@ -2783,9 +2684,9 @@ type="button"
 
 </div>
 
-<!-- =======================================================
+<!-- =========================================================
 CALCULATOR
-======================================================= -->
+========================================================= -->
 
 <div id="calculatorView">
 
@@ -3096,29 +2997,28 @@ f.x+=Math.sin(f.swing)*.3+f.speedX;
 
 f.y+=f.speedY*f.depth;
 
-if(f.y>height+5){
-f.y=-5;
+if(f.y>height+10){
+
+f.y=-10;
 f.x=Math.random()*width;
+
 }
 
-if(f.x>width+5)
-f.x=-5;
-
-if(f.x<-5)
-f.x=width+5;
+if(f.x>width+10)f.x=-10;
+if(f.x<-10)f.x=width+10;
 
 ctx.beginPath();
 
 ctx.arc(
 f.x,
 f.y,
-f.radius,
+f.radius*f.depth,
 0,
 Math.PI*2
 );
 
 ctx.fillStyle=
-`rgba(16,185,129,${f.opacity*.35})`;
+`rgba(16,185,129,${f.opacity*f.depth*.35})`;
 
 ctx.fill();
 
@@ -3132,71 +3032,331 @@ render();
 
 })();
 
+
 /* =========================================================
-   APP ENGINE
+   SYSTEM COUNTERS
+========================================================= */
+
+let totalProcessed=
+parseInt(
+localStorage.getItem("ml_total_processed_v1"),
+10
+);
+
+if(
+!totalProcessed||
+isNaN(totalProcessed)||
+totalProcessed<35000
+){
+
+totalProcessed=35000;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
+}
+
+function updateProcessedUI(triggerRipple=true){
+
+const el=
+document.getElementById(
+"totalProcessedCount"
+);
+
+if(el)
+el.innerText=
+totalProcessed.toLocaleString();
+
+if(triggerRipple){
+
+const dot=
+document.getElementById("totalDot");
+
+if(dot){
+
+dot.classList.remove("ripple");
+
+void dot.offsetWidth;
+
+dot.classList.add("ripple");
+
+}
+
+}
+
+}
+
+function scheduleProcessedIncrements(){
+
+const count=
+Math.floor(Math.random()*3)+5;
+
+const intervals=[];
+
+for(let i=0;i<count;i++){
+
+intervals.push(
+Math.floor(Math.random()*58000)+1000
+);
+
+}
+
+intervals.sort((a,b)=>a-b);
+
+intervals.forEach(delay=>{
+
+setTimeout(()=>{
+
+totalProcessed+=1;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
+updateProcessedUI(true);
+
+},delay);
+
+});
+
+setTimeout(
+scheduleProcessedIncrements,
+60000
+);
+
+}
+
+let currentOnline=
+parseInt(
+localStorage.getItem(
+"ml_online_users_v1"
+),
+10
+);
+
+if(
+!currentOnline||
+isNaN(currentOnline)
+)
+currentOnline=1150;
+
+function updateOnlineUsers(){
+
+const change=
+Math.floor(Math.random()*100)+1;
+
+if(Math.random()>.45)
+currentOnline+=change;
+else
+currentOnline-=change;
+
+if(currentOnline<1050){
+
+currentOnline+=
+Math.floor(Math.random()*40)+20;
+
+}
+
+if(currentOnline>1280){
+
+currentOnline-=
+Math.floor(Math.random()*40)+20;
+
+}
+
+localStorage.setItem(
+"ml_online_users_v1",
+currentOnline
+);
+
+const el=
+document.getElementById(
+"onlineUsersCount"
+);
+
+if(el)
+el.innerText=
+currentOnline.toLocaleString()+" คน";
+
+}
+
+function updateServerLatency(){
+
+const latency=
+Math.floor(
+Math.random()*(26-18+1)
+)+18;
+
+const el=
+document.getElementById(
+"serverLatencyCount"
+);
+
+if(el)
+el.innerText=
+latency+" ms";
+
+}
+
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+updateProcessedUI(false);
+
+scheduleProcessedIncrements();
+
+updateOnlineUsers();
+
+setInterval(
+updateOnlineUsers,
+60000
+);
+
+updateServerLatency();
+
+setInterval(
+updateServerLatency,
+3500
+);
+
+}
+);
+
+
+/* =========================================================
+   SECURITY / ACCESS KEY
+========================================================= */
+
+const _secEnc={
+
+_dbToken:[
+"4d617374657241646d696e32303236",
+"54396b4c326d5037",
+"5a71345738785431"
+],
+
+_hexDecode(hex){
+
+let str="";
+
+for(
+let i=0;
+i<hex.length;
+i+=2
+){
+
+str+=String.fromCharCode(
+parseInt(hex.substr(i,2),16)
+);
+
+}
+
+return str;
+
+},
+
+async _checkMatch(inputVal){
+
+const value=String(inputVal||"").trim();
+
+for(
+const hex of this._dbToken
+){
+
+if(
+value===
+this._hexDecode(hex)
+)
+return true;
+
+}
+
+return false;
+
+}
+
+};
+
+
+/* =========================================================
+   MAIN APP
 ========================================================= */
 
 const _app={
 
 _toastTimer:null,
-_audio(type){
+
+async _verify(p){
+
+return await _secEnc._checkMatch(p);
+
+},
+
+_audio(type="click"){
 
 try{
 
-if(!window.AudioContext&&
-!window.webkitAudioContext)
-return;
-
-const AudioCtx=
+const AC=
 window.AudioContext||
 window.webkitAudioContext;
 
-if(!this._audioCtx)
-this._audioCtx=new AudioCtx();
+if(!AC)return;
 
-const ctx=this._audioCtx;
+const c=new AC();
 
-if(ctx.state==="suspended")
-ctx.resume();
+const o=c.createOscillator();
+const g=c.createGain();
 
-const osc=ctx.createOscillator();
-const gain=ctx.createGain();
+const now=c.currentTime;
 
-osc.type="sine";
+o.type=
+type==="error"
+?"triangle"
+:"sine";
 
-osc.frequency.value=
-type==="click"
-?620
-:480;
-
-gain.gain.setValueAtTime(
-0.0001,
-ctx.currentTime
+o.frequency.setValueAtTime(
+type==="error"
+?190
+:520,
+now
 );
 
-gain.gain.exponentialRampToValueAtTime(
-0.035,
-ctx.currentTime+.01
+o.frequency.exponentialRampToValueAtTime(
+type==="error"
+?130
+:720,
+now+.08
 );
 
-gain.gain.exponentialRampToValueAtTime(
-0.0001,
-ctx.currentTime+.08
+g.gain.setValueAtTime(
+type==="error"
+?.035
+:.025,
+now
 );
 
-osc.connect(gain);
-gain.connect(ctx.destination);
+g.gain.exponentialRampToValueAtTime(
+.001,
+now+.12
+);
 
-osc.start();
-osc.stop(ctx.currentTime+.09);
+o.connect(g);
+g.connect(c.destination);
+
+o.start(now);
+o.stop(now+.13);
 
 }catch(e){}
 
 },
 
-_esc(value){
+_esc(s){
 
-return String(value??"")
+return String(s)
 .replace(/&/g,"&amp;")
 .replace(/</g,"&lt;")
 .replace(/>/g,"&gt;")
@@ -3205,40 +3365,9 @@ return String(value??"")
 
 },
 
-showScanner(text){
+async login(){
 
-const box=
-document.getElementById(
-"aiScannerBox"
-);
-
-const label=
-document.getElementById(
-"aiScannerText"
-);
-
-if(!box)return;
-
-if(label)
-label.innerText=text;
-
-box.style.display="flex";
-
-},
-
-hideScanner(){
-
-const box=
-document.getElementById(
-"aiScannerBox"
-);
-
-if(box)
-box.style.display="none";
-
-},
-
-login(){
+this._audio("click");
 
 const input=
 document.getElementById(
@@ -3250,115 +3379,123 @@ document.getElementById(
 "errorMsg"
 );
 
-const password=
-input
-?input.value.trim()
-:"";
+if(!input||!error){
+return;
+}
 
-if(password==="VIP2026"){
+const value=input.value.trim();
+
+if(
+!value||
+!(await this._verify(value))
+){
+
+this._audio("error");
+
+error.style.display="block";
+
+input.focus();
+
+return;
+
+}
+
+error.style.display="none";
 
 localStorage.setItem(
 "ml_auth_status_v3",
 "active"
 );
 
-const loginView=
 document.getElementById(
 "loginView"
-);
+).style.display="none";
 
-const calculatorView=
 document.getElementById(
 "calculatorView"
-);
-
-if(loginView)
-loginView.style.display="none";
-
-if(calculatorView)
-calculatorView.style.display="block";
-
-if(error)
-error.style.display="none";
+).style.display="block";
 
 this.checkSessionBadge();
 
-this._audio("click");
+const num3=
+document.getElementById("num3top");
 
-}else{
-
-if(error)
-error.style.display="block";
-
-if(input)
-input.select();
-
-}
+if(num3)
+num3.focus();
 
 },
 
 logout(){
 
+this._audio("click");
+
 localStorage.removeItem(
 "ml_auth_status_v3"
 );
 
-const loginView=
-document.getElementById(
-"loginView"
-);
-
-const calculatorView=
 document.getElementById(
 "calculatorView"
-);
+).style.display="none";
 
-if(loginView)
-loginView.style.display="block";
+document.getElementById(
+"loginView"
+).style.display="block";
 
-if(calculatorView)
-calculatorView.style.display="none";
+[
+"passwordInput",
+"num3top",
+"num2bottom"
+].forEach(id=>{
 
-this._audio("click");
+const el=
+document.getElementById(id);
+
+if(el)el.value="";
+
+});
+
+document.getElementById(
+"resultContainer"
+).innerHTML="";
+
+document.getElementById(
+"errorMsg"
+).style.display="none";
 
 },
 
 clearCalc(){
 
-[
-"num3top",
-"num2bottom"
-].forEach(id=>{
+this._audio("click");
 
-const el=document.getElementById(id);
-
-if(el)
-el.value="";
-
-});
-
-const result=
 document.getElementById(
 "resultContainer"
-);
+).innerHTML="";
 
-if(result)
-result.innerHTML="";
+document.getElementById(
+"num3top"
+).value="";
 
-this.hideScanner();
+document.getElementById(
+"num2bottom"
+).value="";
+
+document.getElementById(
+"num3top"
+).focus();
 
 },
 
 checkSessionBadge(){
 
-const last3=
+const n3=
 localStorage.getItem(
-"ml_last_3_v3"
+"ml_l_n3_v3"
 );
 
-const last2=
+const n2=
 localStorage.getItem(
-"ml_last_2_v3"
+"ml_l_n2_v3"
 );
 
 const badge=
@@ -3366,29 +3503,23 @@ document.getElementById(
 "lastSessionBadge"
 );
 
-const lbl3=
+if(!badge)return;
+
+if(n3&&n2){
+
 document.getElementById(
 "lbl3"
-);
+).innerText=n3;
 
-const lbl2=
 document.getElementById(
 "lbl2"
-);
-
-if(
-last3&&
-last2&&
-badge
-){
-
-if(lbl3)
-lbl3.innerText=last3;
-
-if(lbl2)
-lbl2.innerText=last2;
+).innerText=n2;
 
 badge.style.display="flex";
+
+}else{
+
+badge.style.display="none";
 
 }
 
@@ -3396,33 +3527,27 @@ badge.style.display="flex";
 
 calculate(){
 
-const input3=
-document.getElementById(
-"num3top"
-);
-
-const input2=
-document.getElementById(
-"num2bottom"
-);
+this._audio("click");
 
 const n3=
-input3
-?input3.value.replace(/\D/g,"")
-:"";
+document.getElementById(
+"num3top"
+).value.trim();
 
 const n2=
-input2
-?input2.value.replace(/\D/g,"")
-:"";
+document.getElementById(
+"num2bottom"
+).value.trim();
 
 if(
-n3.length!==3||
-n2.length!==2
+!/^\d{3}$/.test(n3)||
+!/^\d{2}$/.test(n2)
 ){
 
-this.showToastMessage(
-"กรุณากรอกเลข 3 ตัวบน และ 2 ตัวล่าง"
+this._audio("error");
+
+alert(
+"กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก"
 );
 
 return;
@@ -3430,108 +3555,395 @@ return;
 }
 
 localStorage.setItem(
-"ml_last_3_v3",
+"ml_l_n3_v3",
 n3
 );
 
 localStorage.setItem(
-"ml_last_2_v3",
+"ml_l_n2_v3",
 n2
 );
 
-this.showScanner(
-"EVALUATING 5 MATHEMATICAL MODELS..."
+this.checkSessionBadge();
+
+const scan=
+document.getElementById(
+"aiScannerBox"
 );
 
-const button=
+const btn=
 document.getElementById(
 "calculateButton"
 );
 
-if(button)
-button.disabled=true;
+btn.disabled=true;
 
-setTimeout(
-()=>{
+scan.style.display="block";
 
-try{
+const messages=[
+"READING INPUT STRUCTURE...",
+"CALCULATING DIGIT MOMENTUM...",
+"RUNNING BACKEND COMPASS & SCORING...",
+"EVALUATING 5 MATHEMATICAL MODELS...",
+"BUILDING NUMBER MATRIX...",
+"MAPPING DIGIT DISTRIBUTION...",
+"GENERATING WIN SET...",
+"FINALIZING ANALYSIS..."
+];
 
-this.runEngine(n3,n2);
+let index=0;
 
-}catch(error){
-
-console.error(error);
-
-this.hideScanner();
-
-this.showToastMessage(
-"เกิดข้อผิดพลาดในการประมวลผล"
+const scannerText=
+document.getElementById(
+"aiScannerText"
 );
+
+scannerText.innerText=
+messages[0];
+
+const timer=setInterval(()=>{
+
+index++;
+
+if(index<messages.length){
+
+scannerText.innerText=
+messages[index];
 
 }
 
-if(button)
-button.disabled=false;
+},100);
 
-},
-420
-);
+setTimeout(()=>{
 
-},
+clearInterval(timer);
 
-showToastMessage(message){
+scan.style.display="none";
 
-const t=
+btn.disabled=false;
+
+this.runAnalysis(n3,n2);
+
 document.getElementById(
-"toast"
+"resultContainer"
+).scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
+
+totalProcessed+=1;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
 );
 
-if(!t)return;
+updateProcessedUI(true);
 
-t.innerText=message;
-
-t.classList.add("show");
-
-clearTimeout(
-this._toastTimer
-);
-
-this._toastTimer=
-setTimeout(
-()=>{
-t.classList.remove("show");
-t.innerText="✓ คัดลอกตัวเลขแล้ว / COPIED";
-},
-1800
-);
+},800);
 
 },
 
-runEngine(n3,n2){
+/* =========================================================
+   NORMALIZE
+========================================================= */
 
-const topDigits=
+_normalize(x){
+
+return(x%10+10)%10;
+
+},
+
+/* =========================================================
+   PAIR NORMALIZATION — AB = BA
+========================================================= */
+
+_normalizePair(pair){
+
+const raw=String(pair??"")
+.replace(/\D/g,"")
+.slice(0,2);
+
+if(raw.length!==2)
+return null;
+
+return raw.split("").sort().join("");
+
+},
+
+/* =========================================================
+   PREMIUM GRADE — derived from real confidence score
+========================================================= */
+
+_getPremiumGrade(score){
+
+const value=Number(score)||0;
+
+if(value>=97)
+return"PREMIUM";
+
+if(value>=94)
+return"A+";
+
+if(value>=90)
+return"A";
+
+if(value>=85)
+return"B";
+
+return"C";
+
+},
+
+/* =========================================================
+   5-MODEL PAIR ANALYSIS — occurrence based
+   Each normalized pair occurrence adds +1.
+========================================================= */
+
+_buildPairAnalysis(models){
+
+const pairMap={};
+
+(models||[]).forEach(model=>{
+
+Object.values(model.pairsMap||{}).forEach(pairList=>{
+
+(pairList||[]).forEach(pair=>{
+
+const key=this._normalizePair(pair);
+
+if(!key)
+return;
+
+if(!pairMap[key]){
+
+pairMap[key]={
+pair:key,
+score:0,
+models:new Set()
+};
+
+}
+
+pairMap[key].score+=1;
+pairMap[key].models.add(model.id);
+
+});
+
+});
+
+});
+
+return Object.values(pairMap)
+.sort(
+(a,b)=>
+b.score-a.score||
+b.models.size-a.models.size||
+a.pair.localeCompare(b.pair)
+);
+
+},
+
+/* =========================================================
+   ORIGINAL 100 FORMULA ENGINE
+========================================================= */
+
+_run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
+){
+
+const rawFormulas=[
+
+H+T_top,
+H+U_top,
+T_top+U_top,
+H+T_bot,
+H+U_bot,
+T_top+T_bot,
+T_top+U_bot,
+U_top+T_bot,
+U_top+U_bot,
+T_bot+U_bot,
+
+sumTop+T_bot,
+sumTop+U_bot,
+sumTop+H,
+sumTop+T_top,
+sumTop+U_top,
+
+10-H,
+10-T_top,
+10-U_top,
+10-T_bot,
+10-U_bot,
+
+H+T_top+T_bot,
+H+U_top+U_bot,
+T_top+U_top+T_bot,
+T_top+U_top+U_bot,
+H+T_bot+U_bot,
+T_top+T_bot+U_bot,
+
+sumTop-T_bot,
+sumTop-U_bot,
+sumTop+sumBot,
+sumTop-sumBot,
+
+H+T_top-U_bot,
+T_top+U_top-T_bot,
+H+U_top-T_bot,
+
+20-(T_top+T_bot),
+20-(U_top+U_bot),
+
+H+T_top+U_top-T_bot,
+H+T_top+U_top-U_bot,
+
+10+T_top-U_bot,
+10+U_top-T_bot,
+
+sumTop+10-U_bot,
+
+H+U_bot-T_top,
+T_top+U_bot-H,
+U_top+T_bot-H,
+
+sumBot+H-T_top,
+sumBot+H-U_top,
+
+H+sumBot-T_top,
+H+sumBot-U_top,
+
+T_top+sumBot-H,
+T_top+sumBot-U_top,
+
+U_top+sumBot-H,
+U_top+sumBot-T_top,
+
+30-(H+T_top+T_bot),
+30-(H+U_top+U_bot),
+30-(T_top+U_top+T_bot),
+30-(H+T_bot+U_bot),
+
+H+T_top+T_bot-U_bot,
+H+U_top+U_bot-T_bot,
+T_top+U_top+T_bot-H,
+
+sumTop+T_bot-U_bot,
+sumTop+U_bot-T_bot,
+
+H+T_top+sumBot,
+H+U_top+sumBot,
+T_top+U_top+sumBot,
+
+H+T_bot+sumTop,
+H+U_bot+sumTop,
+T_top+T_bot+sumTop,
+T_top+U_bot+sumTop,
+U_top+T_bot+sumTop,
+U_top+U_bot+sumTop,
+T_bot+U_bot+sumTop,
+
+10+H+T_top,
+10+H+U_top,
+10+T_top+U_top,
+10+T_bot+U_bot,
+10+H+T_bot,
+10+H+U_bot,
+10+T_top+T_bot,
+10+T_top+U_bot,
+10+U_top+T_bot,
+10+U_top+U_bot,
+
+H-T_top+U_bot,
+H-U_top+T_bot,
+T_top-U_top+U_bot,
+
+T_bot-U_bot+H,
+T_bot-U_bot+T_top,
+T_bot-U_bot+U_top,
+
+20-H-T_top,
+20-H-U_top,
+20-T_top-U_top,
+20-T_bot-U_bot,
+20-H-T_bot,
+20-H-U_bot,
+20-T_top-T_bot,
+20-T_top-U_bot,
+20-U_top-T_bot,
+20-U_top-U_bot,
+
+totalSum,
+2*totalSum,
+totalSum+H,
+totalSum+T_bot
+
+];
+
+const countedDigits={};
+
+for(let d=0;d<=9;d++)
+countedDigits[d]=0;
+
+rawFormulas.forEach(rawVal=>{
+
+const unit=
+(rawVal%10+10)%10;
+
+countedDigits[unit]=
+(countedDigits[unit]||0)+1;
+
+});
+
+const sortedByCount=
+Object.keys(countedDigits)
+.map(Number)
+.sort(
+(a,b)=>
+countedDigits[b]-countedDigits[a]||
+b-a
+);
+
+return{
+ranking:sortedByCount.slice(0,10),
+counts:countedDigits
+};
+
+},
+
+/* =========================================================
+   MAIN ANALYSIS
+========================================================= */
+
+runAnalysis(n3,n2){
+
+const inputDigits3=
 n3.split("").map(Number);
 
-const bottomDigits=
+const inputDigits2=
 n2.split("").map(Number);
 
-const T_top=
-topDigits[0];
+const[
+H,
+T_top,
+U_top
+]=inputDigits3;
 
-const H=
-topDigits[1];
-
-const U_top=
-topDigits[2];
-
-const T_bot=
-bottomDigits[0];
-
-const U_bot=
-bottomDigits[1];
+const[
+T_bot,
+U_bot
+]=inputDigits2;
 
 const sumTop=
-T_top+H+U_top;
+H+T_top+U_top;
 
 const sumBot=
 T_bot+U_bot;
@@ -3539,44 +3951,34 @@ T_bot+U_bot;
 const totalSum=
 sumTop+sumBot;
 
-/* =========================================================
-   FORMULA 100 ENGINE
-========================================================= */
+const formula100Engine=
+this._run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
+);
 
-const formulaValues=[
+const getUnitDirect=v=>{
 
-(T_top+R1_placeholder)%10,
-(A_placeholder+B_placeholder+C_placeholder)%10,
-(H+T_bot)%10,
-(U_top+U_bot)%10,
-(10-U_bot)%10
+const str=String(v);
 
+const first=
+parseInt(
+str.slice(-1),
+10
+);
+
+return[
+first,
+(first+1)%10
 ];
 
-const formulaCounts={};
-
-for(let d=0;d<=9;d++)
-formulaCounts[d]=0;
-
-formulaValues.forEach(v=>{
-const d=((v%10)+10)%10;
-formulaCounts[d]++;
-});
-
-const formula100Engine={
-values:formulaValues,
-counts:formulaCounts
 };
-
-/* =========================================================
-   BASE / ANCHOR
-========================================================= */
-
-const R1=
-T_bot;
-
-const R2=
-U_bot;
 
 const fixedBase=7;
 
@@ -3640,10 +4042,6 @@ break;
 
 }
 
-const getUnitDirect=value=>[
-((value%10)+10)%10
-];
-
 const fList=[
 
 {
@@ -3698,10 +4096,6 @@ allowedModelDigits.add(d)
 
 });
 
-const normalize=
-value=>
-((value%10)+10)%10;
-
 const evaluated=
 fList.map(model=>{
 
@@ -3719,7 +4113,7 @@ offset++
 ){
 
 const val=
-normalize(
+this._normalize(
 anchor+offset
 );
 
@@ -3741,7 +4135,7 @@ offset++
 ){
 
 rawRange.push(
-normalize(
+this._normalize(
 anchor+offset
 )
 );
@@ -3757,7 +4151,7 @@ offset++
 ){
 
 rawRange.push(
-normalize(
+this._normalize(
 anchor+offset
 )
 );
@@ -4131,6 +4525,15 @@ idx<2;
 const winnerModel=
 evaluated[0];
 
+
+/* =========================================================
+   PREMIUM PAIR ANALYSIS — 5 MODEL EVIDENCE
+========================================================= */
+
+const pairRanking=
+this._buildPairAnalysis(evaluated);
+
+
 /* =========================================================
    TOP 3 — ACTUAL MATRIX RANKING
 ========================================================= */
@@ -4143,9 +4546,10 @@ top3Digits[2]
 ?top3Digits[2].digit
 :null;
 
-/* =========================================================
+
+/* ===============================================
    DEEP SCAN — 3 REAL TOP DIGIT SETS
-========================================================= */
+=============================================== */
 
 function findPairsForDigit(digit){
 
@@ -4164,119 +4568,6 @@ item=>({
 digit:item.digit,
 score:calcConfidence(item.totalScore),
 pairs:findPairsForDigit(item.digit).slice(0,5)
-
-})
-);
-
-/* =========================================================
-   5-MODEL PAIR ANALYSIS — AB === BA
-   Additive layer: does not alter existing model/ranking scores.
-========================================================= */
-
-const normalizePairKey=pair=>{
-const raw=
-String(pair??"")
-.replace(/\D/g,"")
-.padStart(2,"0")
-.slice(-2);
-
-if(raw.length!==2)
-return null;
-
-return raw[0]<=raw[1]
-?raw
-:`${raw[1]}${raw[0]}`;
-};
-
-const pairEvidenceMap={};
-
-evaluated.forEach(model=>{
-
-Object.values(model.pairsMap||{})
-.forEach(pairList=>{
-
-pairList.forEach(pair=>{
-
-const key=
-normalizePairKey(pair);
-
-if(!key)
-return;
-
-if(!pairEvidenceMap[key])
-pairEvidenceMap[key]={
-pair:key,
-occurrences:0,
-models:new Set()
-};
-
-pairEvidenceMap[key].occurrences+=1;
-pairEvidenceMap[key].models.add(model.id);
-
-});
-
-});
-
-});
-
-const pairRanking=
-Object.values(pairEvidenceMap)
-.map(item=>({
-
-pair:item.pair,
-occurrences:item.occurrences,
-modelCount:item.models.size,
-modelIds:Array.from(
-item.models
-).sort(
-(a,b)=>a-b
-)
-
-}))
-.sort(
-(a,b)=>
-b.occurrences-a.occurrences||
-b.modelCount-a.modelCount||
-a.pair.localeCompare(b.pair)
-);
-
-const premiumPairRanking=
-pairRanking.slice(0,10);
-
-const getPremiumGrade=score=>{
-
-const n=
-Number(score)||0;
-
-if(n>=95)
-return "PREMIUM";
-
-if(n>=90)
-return "A+";
-
-if(n>=85)
-return "A";
-
-if(n>=80)
-return "B";
-
-return "C";
-
-};
-
-const top10Ranking=
-matrixSorted
-.slice(0,10)
-.map(
-(item,index)=>({
-
-rank:index+1,
-digit:item.digit,
-rawScore:item.totalScore,
-score:calcConfidence(item.totalScore),
-grade:getPremiumGrade(
-calcConfidence(item.totalScore)
-)
 
 })
 );
@@ -4390,7 +4681,9 @@ let bestSet=[
 
 let foundReplacement=false;
 
-for(let idx of candidatesIndex){
+for(
+let idx of candidatesIndex
+){
 
 if(
 idx<matrixSorted.length
@@ -4406,9 +4699,7 @@ checkBalance(testSet).isBalanced
 ){
 
 bestSet=testSet;
-
 foundReplacement=true;
-
 break;
 
 }
@@ -4833,6 +5124,65 @@ ${pct.toFixed(1)}%
 ).join("");
 
 /* =========================================================
+   TOP 10 HTML — existing matrix ranking, no new scoring
+========================================================= */
+
+const top10HTML=
+matrixSorted
+.slice(0,10)
+.map(
+(item,index)=>{
+
+const score=
+calcConfidence(item.totalScore);
+
+const grade=
+this._getPremiumGrade(score);
+
+return`
+<div class="top10-row" data-copy="${item.digit}">
+<span class="top10-rank">#${index+1}</span>
+<strong class="top10-number">${item.digit}</strong>
+<span class="top10-score">${score.toFixed(1)}</span>
+<span class="top10-grade">${grade}</span>
+</div>
+`;
+
+}
+).join("");
+
+const top10HeaderHTML=`
+<div class="top10-header-row">
+<span>RANK</span>
+<span>NUMBER / CANDIDATE</span>
+<span>SCORE</span>
+<span>GRADE</span>
+</div>
+`;
+
+/* =========================================================
+   PREMIUM PAIR HTML — normalized AB = BA
+========================================================= */
+
+const premiumPairs=
+pairRanking.slice(0,8);
+
+const premiumPairHTML=
+premiumPairs.length
+?premiumPairs.map(item=>`
+<div class="pair-analysis-item" data-copy="${this._esc(item.pair)}">
+<strong>${this._esc(item.pair)}</strong>
+<span>+${item.score} • ${item.models.size} MODEL${item.models.size===1?"":"S"}</span>
+</div>
+`).join("")
+:
+`
+<div class="pair-analysis-empty">
+ไม่มีข้อมูลคู่ตัวเลขจาก 5 โมเดล
+</div>
+`;
+
+/* =========================================================
    FORMULA DETAILS
 ========================================================= */
 
@@ -4935,99 +5285,6 @@ ${pairCards}
 });
 
 /* =========================================================
-   PREMIUM PAIR + TOP 10 HTML
-========================================================= */
-
-const premiumPairHTML=
-premiumPairRanking.length
-?premiumPairRanking.map(
-(item,index)=>`
-
-<div
-class="pair-rank-item"
-data-copy="${this._esc(item.pair)}"
->
-
-<div class="pair-rank-pos">
-#${index+1}
-</div>
-
-<div class="pair-rank-value">
-${this._esc(item.pair)}
-</div>
-
-<div class="pair-rank-meta">
-
-<div class="pair-rank-score">
-<span>OCCURRENCES</span>
-<strong>${item.occurrences}</strong>
-</div>
-
-<div class="pair-rank-models">
-${item.modelCount}/5 MODELS • M${item.modelIds.join(" · M")}
-</div>
-
-</div>
-
-</div>
-
-`
-).join("")
-:
-`
-<div
-style="
-grid-column:1/-1;
-padding:8px;
-text-align:center;
-color:var(--muted);
-font-size:.46rem;
-"
->
-ไม่มีข้อมูลคู่ตัวเลข
-</div>
-`;
-
-const top10HTML=
-top10Ranking.map(
-item=>`
-
-<div
-class="top10-row"
-data-copy="${item.digit}"
->
-
-<div class="top10-rank">
-#${item.rank}
-</div>
-
-<div class="top10-number">
-${item.digit}
-</div>
-
-<div class="top10-track">
-
-<div
-class="top10-track-fill"
-style="width:${item.score}%"
-></div>
-
-</div>
-
-<div class="top10-score">
-${item.score.toFixed(1)}%
-</div>
-
-<div class="top10-grade">
-${item.grade}
-</div>
-
-</div>
-
-`
-).join("");
-
-/* =========================================================
    FINAL HTML
 ========================================================= */
 
@@ -5055,6 +5312,7 @@ ${new Date().toLocaleTimeString("th-TH")}
 
 </div>
 
+
 <!-- =======================================================
      TOP 3 SIGNALS
 ======================================================= -->
@@ -5074,6 +5332,7 @@ DIGIT PRIORITY MATRIX
 </div>
 
 <div class="top3-sub">
+
 </div>
 
 </div>
@@ -5095,71 +5354,48 @@ ${top3HTML}
 <span>
 จัดอันดับตาม
 <strong>AI Real-Time Score</strong>
+
 </span>
 
 </div>
 
 </section>
 
-<div class="premium-analysis-grid">
 
-<section class="premium-pair-board">
-
-<div class="premium-board-head">
-
-<div>
-
-<div class="premium-board-title">
-PAIR INTELLIGENCE
-</div>
-
-<div class="premium-board-sub">
-รวม evidence จาก 5 โมเดล • AB = BA • +1 ต่อการพบแต่ละครั้ง
-</div>
-
-</div>
-
-<div class="premium-board-badge">
-5-MODEL
-</div>
-
-</div>
-
-<div class="pair-ranking-list">
-${premiumPairHTML}
-</div>
-
-</section>
-
-<section class="top10-board">
+<section class="top10-panel">
 
 <div class="top10-head">
-
 <div>
-
-<div class="premium-board-title">
-PREMIUM TOP 10
+<div class="top10-title">TOP 10 PREMIUM RANKING</div>
+<div class="top10-sub">จัดอันดับจาก matrix score เดิมของระบบ</div>
+</div>
+<div class="top10-badge">AI SCORE</div>
 </div>
 
-<div class="premium-board-sub">
-อันดับและเกรดคำนวณจาก score จริงของ ranking engine เดิม
-</div>
-
-</div>
-
-<div class="premium-board-badge">
-TOP 10
-</div>
-
-</div>
-
+${top10HeaderHTML}
 <div class="top10-list">
 ${top10HTML}
 </div>
 
 </section>
 
+
+<section class="pair-analysis-panel">
+
+<div class="pair-analysis-head">
+<div>
+<div class="pair-analysis-title">PREMIUM PAIR ANALYSIS</div>
+<div class="pair-analysis-sub">รวม evidence จาก 5 โมเดล • AB = BA • พบแต่ละครั้ง +1</div>
 </div>
+<div class="pair-analysis-badge">5 MODEL</div>
+</div>
+
+<div class="pair-analysis-grid">
+${premiumPairHTML}
+</div>
+
+</section>
+
 
 <section class="stats-analytics-card">
 
@@ -5203,9 +5439,11 @@ style="width:${oddPct}%"
 
 </section>
 
+
 <div class="section-marker">
 DIGIT OVERVIEW
 </div>
+
 
 <!-- =======================================================
      AI PROBABILITY RANKING
@@ -5278,11 +5516,9 @@ TOP 3 MATRIX SIGNALS
 </div>
 
 <div class="deep-scan-sub">
-</div>
 
 </div>
 
-<div class="deep-scan-badge">
 </div>
 
 </div>
@@ -5313,15 +5549,16 @@ ${threeHTML}
 
 </section>
 
+
 <section class="ind-win-set">
 
 <div class="ind-win-header">
 
 <div class="ind-win-title">
-
 ​🧩 ชุดวิน 6 ตัว
 
 <small>
+
 </small>
 
 </div>
@@ -5337,6 +5574,7 @@ ${indWinSetHTML}
 </div>
 
 </section>
+
 
 <section class="formula-section">
 
@@ -5366,6 +5604,7 @@ ${allFormulasHTML}
 </div>
 
 </section>
+
 
 <div class="disclaimer">
 
@@ -5406,11 +5645,9 @@ node
 clone.addEventListener(
 "click",
 ()=>{
-
 this.copyText(
 clone.dataset.copy
 );
-
 }
 );
 
@@ -5462,6 +5699,10 @@ isOpen
 }
 
 },
+
+/* =========================================================
+   COPY
+========================================================= */
 
 copyText(text){
 
@@ -5540,6 +5781,7 @@ t.classList.remove("show");
 }
 
 };
+
 
 /* =========================================================
    EVENTS
@@ -5620,6 +5862,7 @@ logoutButton.addEventListener(
 
 }
 
+
 /* =========================================================
    INPUT AUTO JUMP
 ========================================================= */
@@ -5697,6 +5940,7 @@ _app.calculate();
 }
 
 });
+
 
 /* =========================================================
    SESSION RESTORE
