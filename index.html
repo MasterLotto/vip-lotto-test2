@@ -93,7 +93,7 @@ inset:0;
 width:100%;
 height:100%;
 pointer-events:none;
-z-index:3;
+z-index:1;
 }
 
 .ambient{
@@ -165,7 +165,6 @@ box-shadow:
 inset 0 1px 0 #fff;
 backdrop-filter:blur(24px);
 -webkit-backdrop-filter:blur(24px);
-z-index:2;
 }
 
 .app-card::before{
@@ -2077,6 +2076,7 @@ font-size:.35rem;
 color:var(--muted);
 }
 
+
 .ind-win-set{
 border-radius:19px;
 background:
@@ -2363,6 +2363,7 @@ transform:translate(-50%,0);
 .overview-bar{height:70px;}
 .overview-rank{font-size:.30rem;padding:2px 3px;}
 .overview-score{font-size:.29rem;}
+
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -2374,187 +2375,86 @@ transition:none!important;
 }
 }
 
-/* =========================================================
- PREMIUM AUDIT v4 — BEST JUE TOP 5 / WIN SET / SNOW
- ========================================================= */
-
-/* ---------- BEST JUE TOP 5: explicit visual hierarchy ---------- */
-.deep-scan-card .deep-pair{
-position:relative;
-overflow:hidden;
-min-height:44px;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-padding:7px 3px 5px;
-}
-
-.deep-scan-card .deep-pair::before{
-content:attr(data-jue-label);
-position:absolute;
-top:3px;
-right:3px;
-z-index:4;
-min-width:17px;
-height:13px;
-padding:0 3px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:4px;
-font-family:'IBM Plex Mono',monospace;
-font-size:.29rem;
-font-weight:900;
-line-height:1;
-letter-spacing:.15px;
-background:rgba(255,255,255,.90);
-border:1px solid rgba(20,35,30,.12);
-color:#51635B;
-box-shadow:0 1px 4px rgba(0,0,0,.06);
-pointer-events:none;
-opacity:0;
-transform:translateY(-1px);
-transition:opacity .2s ease;
-}
-
-.deep-scan-card .deep-pair[data-jue-rank]::before{
-opacity:1;
-}
-
-.deep-scan-card .deep-pair strong{
-position:relative;
-z-index:3;
-font-size:.68rem;
-line-height:1;
-letter-spacing:.15px;
-margin-top:3px;
-}
-
-.deep-scan-card .deep-pair small{
-position:relative;
-z-index:3;
-font-size:.32rem;
-margin-top:3px;
+.deep-scan-model-name{
+font-size:.58rem;
 font-weight:800;
+letter-spacing:.15px;
+line-height:1.15;
+color:var(--text2);
 }
 
-/* #1 — GOLD: strongest visual authority */
+.deep-scan-card.rank-one .deep-scan-model-name{
+color:#8A6200;
+text-shadow:0 0 10px rgba(234,179,8,.16);
+}
+
+.deep-scan-card.rank-two .deep-scan-model-name{
+color:#3F6B5A;
+}
+
+.deep-scan-card.rank-three .deep-scan-model-name{
+color:#087380;
+}
+
 .deep-scan-card .deep-pair.jue-rank-1{
-background:
-linear-gradient(145deg,rgba(255,251,218,.98),rgba(255,255,255,.98));
-border:1px solid rgba(171,121,9,.48);
-box-shadow:
-0 5px 14px rgba(158,108,2,.14),
-inset 0 1px 0 rgba(255,255,255,.95);
+background:linear-gradient(135deg,rgba(254,249,195,.92),rgba(255,255,255,.98));
+border-color:rgba(158,108,2,.38);
+box-shadow:0 4px 12px rgba(158,108,2,.12),inset 0 1px 0 rgba(255,255,255,.85);
 }
-.deep-scan-card .deep-pair.jue-rank-1::before{
-content:"#1";
-color:#6E4B00;
-background:linear-gradient(145deg,#FFF7C7,#FDE68A);
-border-color:rgba(158,108,2,.35);
+.deep-scan-card .deep-pair.jue-rank-1 strong{
+color:#8A6200;
+text-shadow:0 0 8px rgba(234,179,8,.18);
 }
-.deep-scan-card .deep-pair.jue-rank-1 strong{color:#805900;text-shadow:0 0 7px rgba(234,179,8,.16);}
 .deep-scan-card .deep-pair.jue-rank-1 small{color:#9E6C02;}
 
-/* #2 — SILVER: deliberately darker so it cannot disappear */
 .deep-scan-card .deep-pair.jue-rank-2{
-background:
-linear-gradient(145deg,#E7ECE9 0%,#F8FAF9 48%,#D6DEDA 100%);
-border:1px solid #7C8B85;
-box-shadow:
-0 5px 13px rgba(67,82,75,.16),
-inset 0 1px 0 rgba(255,255,255,.98),
-inset 0 -1px 0 rgba(85,101,94,.16);
+background:linear-gradient(135deg,rgba(243,246,244,.98),rgba(255,255,255,.98));
+border-color:rgba(110,126,120,.34);
+box-shadow:0 4px 11px rgba(110,126,120,.09);
 }
-.deep-scan-card .deep-pair.jue-rank-2::before{
-content:"#2";
-color:#26352F;
-background:linear-gradient(145deg,#F4F6F5,#C8D0CC);
-border-color:#7C8B85;
-box-shadow:0 1px 4px rgba(44,58,52,.12);
-}
-.deep-scan-card .deep-pair.jue-rank-2 strong{
-color:#273A33;
-text-shadow:0 1px 0 #fff;
-}
-.deep-scan-card .deep-pair.jue-rank-2 small{
-color:#4E6159;
-}
+.deep-scan-card .deep-pair.jue-rank-2 strong{color:#53645E;}
+.deep-scan-card .deep-pair.jue-rank-2 small{color:#687A73;}
 
-/* #3 — BRONZE/COPPER: clearly distinct from gold and silver */
 .deep-scan-card .deep-pair.jue-rank-3{
-background:
-linear-gradient(145deg,#F6E4D7 0%,#FFF9F5 52%,#EAC7B2 100%);
-border:1px solid #B77855;
-box-shadow:
-0 5px 13px rgba(160,88,51,.13),
-inset 0 1px 0 rgba(255,255,255,.92);
+background:linear-gradient(135deg,rgba(252,227,209,.92),rgba(255,255,255,.98));
+border-color:rgba(180,105,58,.34);
+box-shadow:0 4px 11px rgba(180,105,58,.10);
 }
-.deep-scan-card .deep-pair.jue-rank-3::before{
-content:"#3";
-color:#713D24;
-background:linear-gradient(145deg,#FFF1E7,#E5B89C);
-border-color:#B77855;
-}
-.deep-scan-card .deep-pair.jue-rank-3 strong{color:#874B2C;}
+.deep-scan-card .deep-pair.jue-rank-3 strong{color:#9A5730;}
 .deep-scan-card .deep-pair.jue-rank-3 small{color:#A96843;}
 
-/* #4 — BLUE/CYAN: controlled, not blended into the interface */
 .deep-scan-card .deep-pair.jue-rank-4{
-background:
-linear-gradient(145deg,#DDF3F4 0%,#F8FCFC 52%,#C5E6E8 100%);
-border:1px solid #4C9BA3;
-box-shadow:
-0 5px 13px rgba(8,115,128,.12),
-inset 0 1px 0 rgba(255,255,255,.94);
-}
-.deep-scan-card .deep-pair.jue-rank-4::before{
-content:"#4";
-color:#075B64;
-background:linear-gradient(145deg,#EFFBFC,#C5E6E8);
-border-color:#4C9BA3;
+background:linear-gradient(135deg,rgba(224,249,247,.92),rgba(255,255,255,.98));
+border-color:rgba(8,115,128,.30);
+box-shadow:0 4px 11px rgba(8,115,128,.08);
 }
 .deep-scan-card .deep-pair.jue-rank-4 strong{color:#087380;}
-.deep-scan-card .deep-pair.jue-rank-4 small{color:#0B6E78;}
+.deep-scan-card .deep-pair.jue-rank-4 small{color:#0B8793;}
 
-/* #5 — PURPLE: intentionally restrained; never louder than #1 */
 .deep-scan-card .deep-pair.jue-rank-5{
-background:
-linear-gradient(145deg,#F1ECFA 0%,#FCFAFF 54%,#E3D8F5 100%);
-border:1px solid #A18AC7;
-box-shadow:
-0 4px 11px rgba(109,40,217,.075),
-inset 0 1px 0 rgba(255,255,255,.94);
+background:linear-gradient(135deg,rgba(243,237,255,.92),rgba(255,255,255,.98));
+border-color:rgba(109,40,217,.25);
+box-shadow:0 4px 11px rgba(109,40,217,.07);
 }
-.deep-scan-card .deep-pair.jue-rank-5::before{
-content:"#5";
-color:#5A4383;
-background:linear-gradient(145deg,#FBF8FF,#E3D8F5);
-border-color:#A18AC7;
-}
-.deep-scan-card .deep-pair.jue-rank-5 strong{color:#674A91;}
-.deep-scan-card .deep-pair.jue-rank-5 small{color:#765FA0;}
+.deep-scan-card .deep-pair.jue-rank-5 strong{color:#6D28D9;}
+.deep-scan-card .deep-pair.jue-rank-5 small{color:#7651C7;}
 
-/* Only #1 receives motion emphasis. */
 .deep-scan-card .deep-pair.jue-rank-1::after{
 content:"";
 position:absolute;
 inset:0;
-z-index:2;
 background:linear-gradient(110deg,transparent 28%,rgba(255,255,255,.72) 50%,transparent 72%);
 transform:translateX(-120%);
-animation:jueBestShine 5.2s ease-in-out infinite;
+animation:jueBestShine 4.8s ease-in-out infinite;
 pointer-events:none;
 }
 
 @keyframes jueBestShine{
-0%,64%{transform:translateX(-120%);opacity:0}
-72%{opacity:.72}
-84%,100%{transform:translateX(120%);opacity:0}
+0%,62%{transform:translateX(-120%);opacity:0}
+72%{opacity:.8}
+86%,100%{transform:translateX(120%);opacity:0}
 }
 
-/* ---------- WIN SET: remove the cheap-looking rainbow top strips ---------- */
 .ind-win-set{
 position:relative;
 overflow:hidden;
@@ -2563,8 +2463,8 @@ margin-bottom:9px;
 border-radius:20px;
 border:1px solid rgba(10,102,71,.18);
 background:
-radial-gradient(circle at 100% 0%,rgba(234,179,8,.08),transparent 32%),
-radial-gradient(circle at 0% 100%,rgba(16,185,129,.055),transparent 42%),
+radial-gradient(circle at 100% 0%,rgba(234,179,8,.10),transparent 32%),
+radial-gradient(circle at 0% 100%,rgba(16,185,129,.08),transparent 42%),
 linear-gradient(135deg,#FFFFFF,#F1F9F5);
 box-shadow:var(--shadowSoft);
 }
@@ -2575,14 +2475,14 @@ position:absolute;
 top:0;
 left:0;
 right:0;
-height:1px;
-background:linear-gradient(90deg,transparent,rgba(10,102,71,.28),rgba(158,108,2,.38),rgba(10,102,71,.28),transparent);
-opacity:.75;
+height:2px;
+background:linear-gradient(90deg,transparent,#EAB308,#10B981,#14B8A6,transparent);
+opacity:.82;
 }
 
 .ind-win-header{
 position:relative;
-z-index:4;
+z-index:2;
 margin-bottom:8px;
 }
 
@@ -2614,19 +2514,15 @@ box-shadow:0 3px 9px rgba(158,108,2,.06);
 
 .ind-win-grid{
 position:relative;
-z-index:4;
+z-index:2;
 gap:5px;
 }
 
 .ind-win-item{
-position:relative;
-padding:9px 3px 8px;
+padding:8px 2px 7px;
 border-radius:11px;
-background:linear-gradient(145deg,#FFFFFF,#F4F8F6);
-border:1px solid rgba(10,102,71,.13);
-box-shadow:
-inset 0 1px 0 rgba(255,255,255,.92),
-0 3px 9px rgba(10,102,71,.035);
+background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(241,248,244,.98));
+box-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 3px 9px rgba(10,102,71,.035);
 }
 
 .ind-win-item::before{
@@ -2635,22 +2531,20 @@ position:absolute;
 left:7px;
 right:7px;
 top:0;
-height:1px;
+height:2px;
 border-radius:99px;
-background:rgba(10,102,71,.20);
-opacity:.55;
+background:linear-gradient(90deg,#0A6647,#10B981,#EAB308);
+opacity:.52;
 }
 
-.ind-win-item:nth-child(1){border-top-color:rgba(158,108,2,.38);}
-.ind-win-item:nth-child(2){border-top-color:rgba(99,113,106,.38);}
-.ind-win-item:nth-child(3){border-top-color:rgba(180,105,58,.32);}
-.ind-win-item:nth-child(n+4){border-top-color:rgba(8,115,128,.22);}
+.ind-win-item:nth-child(1)::before{opacity:.95;}
+.ind-win-item:nth-child(2)::before{opacity:.80;}
+.ind-win-item:nth-child(3)::before{opacity:.70;}
+.ind-win-item:nth-child(n+4)::before{opacity:.50;}
 
 .ind-win-item:hover{
 transform:translateY(-2px);
-box-shadow:
-0 7px 15px rgba(10,102,71,.075),
-inset 0 1px 0 rgba(255,255,255,.96);
+box-shadow:0 7px 15px rgba(10,102,71,.075),inset 0 1px 0 rgba(255,255,255,.9);
 }
 
 .ind-win-item strong{
@@ -2659,79 +2553,10 @@ letter-spacing:.5px;
 }
 
 .ind-win-item span{
-display:inline-flex;
-align-items:center;
-justify-content:center;
-min-height:12px;
-margin-top:3px;
-padding:1px 5px;
-border-radius:5px;
+margin-top:2px;
 font-family:'IBM Plex Mono',monospace;
-font-size:.30rem;
-font-weight:800;
-letter-spacing:.2px;
-color:#53645E;
-background:#F1F5F3;
-border:1px solid rgba(10,102,71,.12);
-}
-
-/* ---------- Snow layer: premium, foreground, but automatically hidden inside UI cards ---------- */
-#snowCanvas{
-position:fixed;
-inset:0;
-width:100%;
-height:100%;
-pointer-events:none;
-z-index:3;
-}
-
-.app-shell{
-z-index:2;
-}
-
-.app-card{
-position:relative;
-z-index:2;
-}
-
-.deep-scan-card,
-.top3-signal-board,
-.stats-analytics-card,
-.overview-panel,
-.ind-win-set,
-.formula-card,
-.command-center,
-.hero,
-.login-panel,
-.engine-card,
-.mini-stat,
-.package,
-.field-card,
-.aiScannerBox,
-#aiScannerBox,
-.three-d-item{
-position:relative;
-z-index:4;
-}
-
-.deep-pair,
-.ind-win-item,
-.deep-scan-digit,
-.top3-digit,
-.overview-digit,
-.overview-rank,
-.overview-score{
-position:relative;
-z-index:5;
-}
-
-@media(max-width:400px){
-.deep-scan-card .deep-pair::before{font-size:.27rem;min-width:16px;height:12px;}
-.deep-scan-card .deep-pair{min-height:42px;}
-}
-
-@media(prefers-reduced-motion:reduce){
-#snowCanvas{display:none;}
+font-size:.33rem;
+letter-spacing:.25px;
 }
 
 </style>
@@ -2873,6 +2698,7 @@ type="button">
 </section>
 </div>
 
+
 <div id="calculatorView">
 
 <div class="top-nav">
@@ -2892,6 +2718,7 @@ ENGINE ONLINE
 </div>
 
 </div>
+
 
 <section class="hero">
 
@@ -2918,6 +2745,7 @@ Mester Lotto <em>VIP+</em>
 
 </section>
 
+
 <div class="engine-strip">
 
 <div class="engine-card">
@@ -2935,6 +2763,7 @@ Mester Lotto <em>VIP+</em>
 </div>
 </div>
 
+
 <div class="engine-card">
 
 <div class="engine-label">
@@ -2949,6 +2778,7 @@ id="onlineUsersCount">
 </div>
 
 </div>
+
 
 <div class="engine-card">
 
@@ -2967,93 +2797,120 @@ id="serverLatencyCount">
 
 </div>
 
-<div id="lastSession" class="last-session">
-<span>SESSION</span>
-<strong id="lastSessionValue">—</strong>
+
+<div id="lastSessionBadge" class="last-session">
+
+<span>อ้างอิงจากผลล่าสุด:</span>
+<strong id="lbl3"></strong>
+<span>•</span>
+<strong id="lbl2"></strong>
+
 </div>
 
-<div class="command-center">
+
+<section class="command-center">
 
 <div class="command-header">
+
 <div>
 <div class="command-title">
-AI Quant Command Center
+Analysis Input
 </div>
 
 <div class="command-sub">
-กรอกผลย้อนหลังเพื่อเริ่มการประมวลผล
+กรอกข้อมูลล่าสุด เพื่อเริ่มประมวลผล
 </div>
 </div>
 
 <div class="command-badge">
-READY
+INPUT READY
 </div>
+
 </div>
+
 
 <div class="input-grid">
 
 <div class="field-card">
-<label class="field-label" for="num3top">
-ผล 3 ตัวบน
+
+<label
+class="field-label"
+for="num3top">
+เลข 3 ตัวบน
 </label>
 
 <input
-id="num3top"
+type="tel"
 inputmode="numeric"
-maxlength="3"
+pattern="[0-9]*"
+id="num3top"
 placeholder="000"
+maxlength="3"
 autocomplete="off"
+spellcheck="false"
 >
+
 </div>
+
 
 <div class="field-card">
-<label class="field-label" for="num2bottom">
-ผล 2 ตัวล่าง
+
+<label
+class="field-label"
+for="num2bottom">
+เลข 2 ตัวล่าง
 </label>
 
 <input
-id="num2bottom"
+type="tel"
 inputmode="numeric"
-maxlength="2"
+pattern="[0-9]*"
+id="num2bottom"
 placeholder="00"
+maxlength="2"
 autocomplete="off"
+spellcheck="false"
 >
+
 </div>
 
 </div>
+
 
 <div class="action-row">
+
+<button
+class="calculate-btn"
+id="calculateButton"
+type="button">
+⚡ RUN ANALYSIS / เริ่มประมวลผล
+</button>
 
 <button
 class="clear-btn"
 id="clearButton"
 type="button">
-ล้างข้อมูล
-</button>
-
-<button
-class="calculate-btn"
-id="calculateButton"
-type="button"
-disabled>
-วิเคราะห์
+ล้าง / CLEAR
 </button>
 
 </div>
 
-</div>
+</section>
+
 
 <div id="aiScannerBox">
 
 <div class="scanner-ring"></div>
 
 <div id="aiScannerText">
-PROCESSING AI MATRIX...
+INITIALIZING QUANT ANALYSIS...
 </div>
 
 </div>
+
 
 <div id="resultContainer"></div>
+
 
 <button
 class="logout-btn"
@@ -3068,308 +2925,94 @@ type="button">
 </div>
 </div>
 
+
 <div id="toast">
 ✓ คัดลอกตัวเลขแล้ว / COPIED
 </div>
 
+
 <script>
+
 (function(){
+
 const canvas=document.getElementById("snowCanvas");
 if(!canvas)return;
 
-const ctx=canvas.getContext("2d",{alpha:true});
-if(!ctx)return;
+const ctx=canvas.getContext("2d");
 
-let width=0;
-let height=0;
-let dpr=1;
+let width=canvas.width=window.innerWidth;
+let height=canvas.height=window.innerHeight;
+
+window.addEventListener("resize",()=>{
+width=canvas.width=window.innerWidth;
+height=canvas.height=window.innerHeight;
+});
+
 const flakes=[];
 
-function resize(){
-dpr=Math.min(window.devicePixelRatio||1,2);
-width=window.innerWidth;
-height=window.innerHeight;
-canvas.width=Math.floor(width*dpr);
-canvas.height=Math.floor(height*dpr);
-canvas.style.width=width+"px";
-canvas.style.height=height+"px";
-ctx.setTransform(dpr,0,0,dpr,0,0);
-}
+for(let i=0;i<45;i++){
 
-function rand(min,max){
-return Math.random()*(max-min)+min;
-}
-
-function makeFlake(initial){
-const depth=Math.random();
-
-return{
+flakes.push({
 x:Math.random()*width,
-y:initial?Math.random()*height:-rand(10,90),
-r:rand(.65,2.35)*(0.55+depth*.9),
-depth:.28+depth*.72,
-vy:rand(.45,1.45)*(0.55+depth*.7),
-vx:rand(-.16,.16),
-wind:rand(.004,.012),
-phase:rand(0,Math.PI*2),
-opacity:rand(.22,.62),
-blur:depth>.72?rand(.2,1.1):0,
-twinkle:rand(0,Math.PI*2),
-twinkleSpeed:rand(.008,.022)
-};
+y:Math.random()*height,
+radius:Math.random()*2.2+.8,
+depth:Math.random()*.8+.2,
+speedY:Math.random()*.4+.2,
+speedX:Math.random()*.2-.1,
+opacity:Math.random()*.5+.35,
+swing:Math.random()*Math.PI*2,
+swingSpeed:Math.random()*.01+.005
+});
+
 }
 
-function resetFlakes(){
-flakes.length=0;
+function render(){
 
-const count=
-Math.min(
-105,
-Math.max(
-58,
-Math.floor(width/7)
-)
-);
+ctx.clearRect(0,0,width,height);
 
-for(let i=0;i<count;i++){
-flakes.push(
-makeFlake(true)
-);
-}
+flakes.forEach(f=>{
+
+f.swing+=f.swingSpeed;
+f.x+=Math.sin(f.swing)*.3+f.speedX;
+f.y+=f.speedY*f.depth;
+
+if(f.y>height+10){
+f.y=-10;
+f.x=Math.random()*width;
 }
 
-let protectedRects=[];
-let rectTimer=0;
-
-function refreshProtectedRects(){
-const nodes=document.querySelectorAll(
-".app-card .hero,.app-card .login-panel,.app-card .command-center,"+
-".app-card .top3-signal-board,.app-card .stats-analytics-card,"+
-".app-card .overview-panel,.app-card .deep-scan-board,.app-card .ind-win-set,"+
-".app-card .formula-card,.app-card .engine-card,.app-card .mini-stat,"+
-".app-card .package,.app-card .field-card,.app-card #aiScannerBox,"+
-".app-card .three-d-item"
-);
-
-protectedRects=
-Array.from(nodes)
-.map(
-el=>el.getBoundingClientRect()
-);
-}
-
-function isInsideProtectedBox(x,y){
-for(const r of protectedRects){
-if(
-x>=r.left-1&&
-x<=r.right+1&&
-y>=r.top-1&&
-y<=r.bottom+1
-){
-return true;
-}
-}
-
-return false;
-}
-
-function drawFlake(f){
-const twinkle=.84+.16*Math.sin(f.twinkle);
-const alpha=Math.max(
-.06,
-f.opacity*twinkle
-);
-
-ctx.save();
-
-ctx.translate(
-f.x,
-f.y
-);
-
-ctx.rotate(
-f.phase*.12
-);
-
-if(f.blur>0){
-ctx.shadowColor=
-`rgba(255,255,255,${alpha*.72})`;
-
-ctx.shadowBlur=
-f.blur*4;
-}
-
-const grad=
-ctx.createRadialGradient(
--f.r*.25,
--f.r*.25,
-0,
-0,
-0,
-f.r*1.35
-);
-
-grad.addColorStop(
-0,
-`rgba(255,255,255,${Math.min(1,alpha*1.08)})`
-);
-
-grad.addColorStop(
-.55,
-`rgba(244,249,248,${alpha*.82})`
-);
-
-grad.addColorStop(
-1,
-`rgba(210,225,220,${alpha*.10})`
-);
-
-ctx.fillStyle=grad;
+if(f.x>width+10)f.x=-10;
+if(f.x<-10)f.x=width+10;
 
 ctx.beginPath();
 
-ctx.ellipse(
-0,
-0,
-f.r,
-f.r*(.72+.28*f.depth),
-0,
+ctx.arc(
+f.x,
+f.y,
+f.radius*f.depth,
 0,
 Math.PI*2
 );
 
+ctx.fillStyle=
+`rgba(16,185,129,${f.opacity*f.depth*.35})`;
+
 ctx.fill();
 
-if(
-f.depth>.72&&
-f.r>1.15
-){
-
-ctx.strokeStyle=
-`rgba(255,255,255,${alpha*.34})`;
-
-ctx.lineWidth=.45;
-
-ctx.beginPath();
-
-ctx.moveTo(
--f.r*1.45,
-0
-);
-
-ctx.lineTo(
-f.r*1.45,
-0
-);
-
-ctx.moveTo(
-0,
--f.r*1.45
-);
-
-ctx.lineTo(
-0,
-f.r*1.45
-);
-
-ctx.stroke();
-}
-
-ctx.restore();
-}
-
-function render(){
-ctx.clearRect(
-0,
-0,
-width,
-height
-);
-
-for(const f of flakes){
-
-f.phase+=f.wind;
-f.twinkle+=f.twinkleSpeed;
-
-f.x+=
-f.vx+
-Math.sin(f.phase)*.18*f.depth;
-
-f.y+=
-f.vy*f.depth;
-
-if(
-f.y>height+12||
-f.x>width+15||
-f.x<-15
-){
-
-Object.assign(
-f,
-makeFlake(false)
-);
-
-if(Math.random()<.5){
-f.x=Math.random()*width;
-}
-}
-
-if(
-isInsideProtectedBox(
-f.x,
-f.y
-)
-){
-continue;
-}
-
-drawFlake(f);
-}
+});
 
 requestAnimationFrame(render);
+
 }
-
-resize();
-resetFlakes();
-refreshProtectedRects();
-
-window.addEventListener(
-"resize",
-()=>{
-resize();
-resetFlakes();
-refreshProtectedRects();
-}
-);
-
-window.addEventListener(
-"scroll",
-()=>{
-clearTimeout(rectTimer);
-
-rectTimer=
-setTimeout(
-refreshProtectedRects,
-60
-);
-},
-{passive:true}
-);
-
-setInterval(
-refreshProtectedRects,
-500
-);
 
 render();
 
 })();
 
+
 let totalProcessed=
 parseInt(
-localStorage.getItem(
-"ml_total_processed_v1"
-),
+localStorage.getItem("ml_total_processed_v1"),
 10
 );
 
@@ -3385,16 +3028,14 @@ localStorage.setItem(
 "ml_total_processed_v1",
 totalProcessed
 );
+
 }
 
-function updateProcessedUI(
-triggerRipple=true
-){
+
+function updateProcessedUI(triggerRipple=true){
 
 const el=
-document.getElementById(
-"totalProcessedCount"
-);
+document.getElementById("totalProcessedCount");
 
 if(el)
 el.innerText=
@@ -3403,60 +3044,43 @@ totalProcessed.toLocaleString();
 if(triggerRipple){
 
 const dot=
-document.getElementById(
-"totalDot"
-);
+document.getElementById("totalDot");
 
 if(dot){
 
-dot.classList.remove(
-"ripple"
-);
+dot.classList.remove("ripple");
 
 void dot.offsetWidth;
 
-dot.classList.add(
-"ripple"
-);
+dot.classList.add("ripple");
 
 }
 
 }
 
 }
+
 
 function scheduleProcessedIncrements(){
 
 const count=
-Math.floor(
-Math.random()*3
-)+5;
+Math.floor(Math.random()*3)+5;
 
 const intervals=[];
 
-for(
-let i=0;
-i<count;
-i++
-){
+for(let i=0;i<count;i++){
 
 intervals.push(
-Math.floor(
-Math.random()*58000
-)+1000
+Math.floor(Math.random()*58000)+1000
 );
 
 }
 
-intervals.sort(
-(a,b)=>a-b
-);
+intervals.sort((a,b)=>a-b);
 
-intervals.forEach(
-delay=>{
+intervals.forEach(delay=>{
 
-setTimeout(
-()=>{
+setTimeout(()=>{
 
 totalProcessed+=1;
 
@@ -3467,12 +3091,9 @@ totalProcessed
 
 updateProcessedUI(true);
 
-},
-delay
-);
+},delay);
 
-}
-);
+});
 
 setTimeout(
 scheduleProcessedIncrements,
@@ -3481,11 +3102,10 @@ scheduleProcessedIncrements,
 
 }
 
+
 let currentOnline=
 parseInt(
-localStorage.getItem(
-"ml_online_users_v1"
-),
+localStorage.getItem("ml_online_users_v1"),
 10
 );
 
@@ -3495,12 +3115,11 @@ isNaN(currentOnline)
 )
 currentOnline=1150;
 
+
 function updateOnlineUsers(){
 
 const change=
-Math.floor(
-Math.random()*100
-)+1;
+Math.floor(Math.random()*100)+1;
 
 if(Math.random()>.45)
 currentOnline+=change;
@@ -3509,15 +3128,11 @@ currentOnline-=change;
 
 if(currentOnline<1050)
 currentOnline+=
-Math.floor(
-Math.random()*40
-)+20;
+Math.floor(Math.random()*40)+20;
 
 if(currentOnline>1280)
 currentOnline-=
-Math.floor(
-Math.random()*40
-)+20;
+Math.floor(Math.random()*40)+20;
 
 localStorage.setItem(
 "ml_online_users_v1",
@@ -3534,6 +3149,7 @@ el.innerText=
 currentOnline.toLocaleString()+" คน";
 
 }
+
 
 function updateServerLatency(){
 
@@ -3552,6 +3168,7 @@ el.innerText=
 latency+" ms";
 
 }
+
 
 document.addEventListener(
 "DOMContentLoaded",
@@ -3578,6 +3195,7 @@ updateServerLatency,
 }
 );
 
+
 const _secEnc={
 
 _dbToken:[
@@ -3590,11 +3208,7 @@ _hexDecode(hex){
 
 let str="";
 
-for(
-let i=0;
-i<hex.length;
-i+=2
-){
+for(let i=0;i<hex.length;i+=2){
 
 str+=String.fromCharCode(
 parseInt(
@@ -3612,17 +3226,14 @@ return str;
 async _checkMatch(inputVal){
 
 const value=
-String(
-inputVal||""
-).trim();
+String(inputVal||"").trim();
 
 for(
 const hex of this._dbToken
 ){
 
 if(
-value===
-this._hexDecode(hex)
+value===this._hexDecode(hex)
 )
 return true;
 
@@ -3634,13 +3245,17 @@ return false;
 
 };
 
+
 const _app={
 
 _toastTimer:null,
 
 async _verify(p){
+
 return await _secEnc._checkMatch(p);
+
 },
+
 
 _audio(type="click"){
 
@@ -3654,46 +3269,28 @@ if(!AC)return;
 
 const c=new AC();
 
-const o=
-c.createOscillator();
+const o=c.createOscillator();
+const g=c.createGain();
 
-const g=
-c.createGain();
-
-const now=
-c.currentTime;
+const now=c.currentTime;
 
 o.type=
 type==="error"
-?
-"triangle"
-:
-"sine";
+?"triangle"
+:"sine";
 
 o.frequency.setValueAtTime(
-type==="error"
-?
-190
-:
-520,
+type==="error"?190:520,
 now
 );
 
 o.frequency.exponentialRampToValueAtTime(
-type==="error"
-?
-130
-:
-720,
+type==="error"?130:720,
 now+.08
 );
 
 g.gain.setValueAtTime(
-type==="error"
-?
-.035
-:
-.025,
+type==="error"?.035:.025,
 now
 );
 
@@ -3712,6 +3309,7 @@ o.stop(now+.13);
 
 },
 
+
 _esc(s){
 
 return String(s)
@@ -3722,6 +3320,7 @@ return String(s)
 .replace(/'/g,"&#039;");
 
 },
+
 
 async login(){
 
@@ -3784,6 +3383,7 @@ num3.focus();
 
 },
 
+
 logout(){
 
 this._audio("click");
@@ -3804,406 +3404,1286 @@ document.getElementById(
 "passwordInput",
 "num3top",
 "num2bottom"
-].forEach(
-id=>{
+].forEach(id=>{
 
 const el=
 document.getElementById(id);
 
-if(el)
-el.value="";
+if(el)el.value="";
 
-}
-);
+});
+
+document.getElementById(
+"resultContainer"
+).innerHTML="";
+
+document.getElementById(
+"errorMsg"
+).style.display="none";
 
 },
 
-showScanner(){
-
-const box=
-document.getElementById(
-"aiScannerBox"
-);
-
-if(!box)return;
-
-box.style.display="block";
-
-},
-
-hideScanner(){
-
-const box=
-document.getElementById(
-"aiScannerBox"
-);
-
-if(!box)return;
-
-box.style.display="none";
-
-},
-
-checkSessionBadge(){
-
-const last=
-localStorage.getItem(
-"ml_last_session_v3"
-);
-
-const box=
-document.getElementById(
-"lastSession"
-);
-
-const value=
-document.getElementById(
-"lastSessionValue"
-);
-
-if(
-last&&
-box&&
-value
-){
-
-box.style.display="flex";
-
-value.innerText=last;
-
-}
-
-},
 
 clearCalc(){
 
 this._audio("click");
 
-[
-"num3top",
-"num2bottom"
-].forEach(
-id=>{
-
-const el=
-document.getElementById(id);
-
-if(el)
-el.value="";
-
-}
-);
-
-const result=
 document.getElementById(
 "resultContainer"
-);
+).innerHTML="";
 
-if(result)
-result.innerHTML="";
-
-const calc=
-document.getElementById(
-"calculateButton"
-);
-
-if(calc)
-calc.disabled=true;
-
-const n3=
 document.getElementById(
 "num3top"
-);
+).value="";
 
-if(n3)
-n3.focus();
+document.getElementById(
+"num2bottom"
+).value="";
+
+document.getElementById(
+"num3top"
+).focus();
 
 },
 
-async calculate(){
+
+checkSessionBadge(){
+
+const n3=
+localStorage.getItem(
+"ml_l_n3_v3"
+);
+
+const n2=
+localStorage.getItem(
+"ml_l_n2_v3"
+);
+
+const badge=
+document.getElementById(
+"lastSessionBadge"
+);
+
+if(!badge)return;
+
+if(n3&&n2){
+
+document.getElementById(
+"lbl3"
+).innerText=n3;
+
+document.getElementById(
+"lbl2"
+).innerText=n2;
+
+badge.style.display="flex";
+
+}else{
+
+badge.style.display="none";
+
+}
+
+},
+
+
+calculate(){
 
 this._audio("click");
 
-const n3Input=
+const n3=
 document.getElementById(
 "num3top"
-);
-
-const n2Input=
-document.getElementById(
-"num2bottom"
-);
-
-const result=
-document.getElementById(
-"resultContainer"
-);
-
-const calc=
-document.getElementById(
-"calculateButton"
-);
-
-if(!n3Input||!n2Input||!result)return;
-
-const n3=
-n3Input.value.trim();
+).value.trim();
 
 const n2=
-n2Input.value.trim();
+document.getElementById(
+"num2bottom"
+).value.trim();
 
 if(
-!/^\\d{3}$/.test(n3)||
-!/^\\d{2}$/.test(n2)
+!/^\d{3}$/.test(n3)||
+!/^\d{2}$/.test(n2)
 ){
 
 this._audio("error");
+
+alert(
+"กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก"
+);
 
 return;
 
 }
 
-if(calc)
-calc.disabled=true;
+localStorage.setItem(
+"ml_l_n3_v3",
+n3
+);
 
-this.showScanner();
+localStorage.setItem(
+"ml_l_n2_v3",
+n2
+);
+
+this.checkSessionBadge();
+
+
+const scan=
+document.getElementById(
+"aiScannerBox"
+);
+
+const btn=
+document.getElementById(
+"calculateButton"
+);
+
+btn.disabled=true;
+
+scan.style.display="block";
+
+
+const messages=[
+
+"READING INPUT STRUCTURE...",
+
+"CALCULATING DIGIT MOMENTUM...",
+
+"RUNNING TOP 5 PAIR RANKING ENGINE...",
+
+"EVALUATING 5 MATHEMATICAL MODELS...",
+
+"BUILDING NUMBER MATRIX...",
+
+"MAPPING DIGIT DISTRIBUTION...",
+
+"GENERATING WIN SET...",
+
+"FINALIZING ANALYSIS..."
+
+];
+
+
+let index=0;
 
 const scannerText=
 document.getElementById(
 "aiScannerText"
 );
 
-const messages=[
-"PROCESSING AI MATRIX...",
-"SCANNING DIGIT PATTERNS...",
-"CALCULATING JUE PAIRS...",
-"RANKING TOP SIGNALS...",
-"FINALIZING QUANT MODEL..."
-];
-
-for(
-let i=0;
-i<messages.length;
-i++
-){
-
-if(scannerText)
 scannerText.innerText=
-messages[i];
+messages[0];
 
-await new Promise(
-resolve=>
-setTimeout(
-resolve,
-130
-)
-);
+
+const timer=
+setInterval(()=>{
+
+index++;
+
+if(index<messages.length){
+
+scannerText.innerText=
+messages[index];
 
 }
 
-this.hideScanner();
+},100);
 
-const a=
-Number(n3[0]);
 
-const b=
-Number(n3[1]);
+setTimeout(()=>{
 
-const c=
-Number(n3[2]);
+clearInterval(timer);
 
-const d=
-Number(n2[0]);
+scan.style.display="none";
 
-const e=
-Number(n2[1]);
+btn.disabled=false;
 
-const digits=[
-a,b,c,d,e
-];
-
-const counts={};
-
-digits.forEach(
-digit=>{
-counts[digit]=
-(counts[digit]||0)+1;
-}
+this.runAnalysis(
+n3,
+n2
 );
 
-const matrix=[];
+document.getElementById(
+"resultContainer"
+).scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
 
-for(
-let digit=0;
-digit<=9;
-digit++
+totalProcessed+=1;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
+updateProcessedUI(true);
+
+},800);
+
+},
+
+
+_normalize(x){
+
+return(x%10+10)%10;
+
+},
+
+
+_run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
 ){
 
-const frequency=
-counts[digit]||0;
+const rawFormulas=[
 
-const positional=
-digits.reduce(
-(sum,v,index)=>
-sum+
-(
-v===digit
-?
-(5-index)
-:
-0
-),
-0
+H+T_top,
+H+U_top,
+T_top+U_top,
+H+T_bot,
+H+U_bot,
+T_top+T_bot,
+T_top+U_bot,
+U_top+T_bot,
+U_top+U_bot,
+T_bot+U_bot,
+
+sumTop+T_bot,
+sumTop+U_bot,
+sumTop+H,
+sumTop+T_top,
+sumTop+U_top,
+
+10-H,
+10-T_top,
+10-U_top,
+10-T_bot,
+10-U_bot,
+
+H+T_top+T_bot,
+H+U_top+U_bot,
+T_top+U_top+T_bot,
+T_top+U_top+U_bot,
+H+T_bot+U_bot,
+T_top+T_bot+U_bot,
+
+sumTop-T_bot,
+sumTop-U_bot,
+sumTop+sumBot,
+sumTop-sumBot,
+
+H+T_top-U_bot,
+T_top+U_top-T_bot,
+H+U_top-T_bot,
+
+20-(T_top+T_bot),
+20-(U_top+U_bot),
+
+H+T_top+U_top-T_bot,
+H+T_top+U_top-U_bot,
+
+10+T_top-U_bot,
+10+U_top-T_bot,
+
+sumTop+10-U_bot,
+
+H+U_bot-T_top,
+T_top+U_bot-H,
+U_top+T_bot-H,
+
+sumBot+H-T_top,
+sumBot+H-U_top,
+
+H+sumBot-T_top,
+H+sumBot-U_top,
+
+T_top+sumBot-H,
+T_top+sumBot-U_top,
+
+U_top+sumBot-H,
+U_top+sumBot-T_top,
+
+30-(H+T_top+T_bot),
+30-(H+U_top+U_bot),
+30-(T_top+U_top+T_bot),
+30-(H+T_bot+U_bot),
+
+H+T_top+T_bot-U_bot,
+H+U_top+U_bot-T_bot,
+T_top+U_top+T_bot-H,
+
+sumTop+T_bot-U_bot,
+sumTop+U_bot-T_bot,
+
+H+T_top+sumBot,
+H+U_top+sumBot,
+T_top+U_top+sumBot,
+
+H+T_bot+sumTop,
+H+U_bot+sumTop,
+T_top+T_bot+sumTop,
+T_top+U_bot+sumTop,
+U_top+T_bot+sumTop,
+U_top+U_bot+sumTop,
+T_bot+U_bot+sumTop,
+
+10+H+T_top,
+10+H+U_top,
+10+T_top+U_top,
+10+T_bot+U_bot,
+10+H+T_bot,
+10+H+U_bot,
+10+T_top+T_bot,
+10+T_top+U_bot,
+10+U_top+T_bot,
+10+U_top+U_bot,
+
+H-T_top+U_bot,
+H-U_top+T_bot,
+T_top-U_top+U_bot,
+
+T_bot-U_bot+H,
+T_bot-U_bot+T_top,
+T_bot-U_bot+U_top,
+
+20-H-T_top,
+20-H-U_top,
+20-T_top-U_top,
+20-T_bot-U_bot,
+20-H-T_bot,
+20-H-U_bot,
+20-T_top-T_bot,
+20-T_top-U_bot,
+20-U_top-T_bot,
+20-U_top-U_bot,
+
+totalSum,
+2*totalSum,
+totalSum+H,
+totalSum+T_bot
+
+];
+
+
+const countedDigits={};
+
+for(let d=0;d<=9;d++)
+countedDigits[d]=0;
+
+
+rawFormulas.forEach(rawVal=>{
+
+const unit=
+(rawVal%10+10)%10;
+
+countedDigits[unit]=
+(countedDigits[unit]||0)+1;
+
+});
+
+
+const sortedByCount=
+Object.keys(countedDigits)
+.map(Number)
+.sort(
+(a,b)=>
+countedDigits[b]-countedDigits[a]||
+b-a
 );
 
-const neighbor=
-(
-digits.includes(
-(digit+1)%10
-)
-?
-1.6
-:
-0
-)+
-(
-digits.includes(
-(digit+9)%10
-)
-?
-1.3
-:
-0
+
+return{
+ranking:sortedByCount.slice(0,10),
+counts:countedDigits
+};
+
+},
+
+
+runAnalysis(n3,n2){
+
+const inputDigits3=
+n3.split("").map(Number);
+
+const inputDigits2=
+n2.split("").map(Number);
+
+const[
+H,
+T_top,
+U_top
+]=inputDigits3;
+
+const[
+T_bot,
+U_bot
+]=inputDigits2;
+
+const sumTop=
+H+T_top+U_top;
+
+const sumBot=
+T_bot+U_bot;
+
+const totalSum=
+sumTop+sumBot;
+
+
+const formula100Engine=
+this._run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
 );
 
-const parity=
-digit%2===0
-?
-.8
-:
-.55;
 
-const totalScore=
-frequency*5+
-positional+
-neighbor+
-parity+
-Math.sin(
-digit*1.91+
-a*.41+
-b*.27
-)*.65;
+const getUnitDirect=v=>{
 
-matrix.push({
-digit,
-totalScore
+const str=String(v);
+
+const first=
+parseInt(
+str.slice(-1),
+10
+);
+
+return[
+first,
+(first+1)%10
+];
+
+};
+
+
+const fixedBase=7;
+
+const anchorRaw=
+fixedBase-H;
+
+const anchor=
+(Math.abs(anchorRaw)%10+10)%10;
+
+
+let rawM1=
+(T_top+T_bot)%10;
+
+let rawM2=
+sumTop%10;
+
+let rawM3=
+(H+T_bot)%10;
+
+let rawM4=
+(U_top+U_bot)%10;
+
+let rawM5=
+(10-U_bot)%10;
+
+
+let modelRawValues=[
+rawM1,
+rawM2,
+rawM3,
+rawM4,
+rawM5
+];
+
+let uniqueModelDigits=
+new Set(modelRawValues);
+
+
+if(uniqueModelDigits.size<4){
+
+const fallbackFormulas=[
+(T_top+U_bot)%10,
+(H+U_top)%10,
+sumBot%10,
+(H+sumBot)%10,
+totalSum%10
+];
+
+for(
+let fbVal of fallbackFormulas
+){
+
+const normFb=
+(fbVal%10+10)%10;
+
+uniqueModelDigits.add(
+normFb
+);
+
+if(uniqueModelDigits.size>=6)
+break;
+
+}
+
+}
+
+
+const fList=[
+
+{
+id:1,
+name:"AI โมเดล 01",
+subName:"B + R1",
+set:getUnitDirect(rawM1)
+},
+
+{
+id:2,
+name:"AI โมเดล 02",
+subName:"A + B + C",
+set:getUnitDirect(rawM2)
+},
+
+{
+id:3,
+name:"AI โมเดล 03",
+subName:"A + R1",
+set:getUnitDirect(rawM3)
+},
+
+{
+id:4,
+name:"AI โมเดล 04",
+subName:"C + R2",
+set:getUnitDirect(rawM4)
+},
+
+{
+id:5,
+name:"AI โมเดล 05",
+subName:"10 - R2",
+set:getUnitDirect(rawM5)
+}
+
+];
+
+
+const allowedModelDigits=
+new Set();
+
+fList.forEach(item=>{
+item.set.forEach(d=>{
+allowedModelDigits.add(d);
+});
+});
+
+
+const evaluated=
+fList.map(model=>{
+
+const formulaSet=
+model.set;
+
+let rawRange=[];
+
+let hasCollision=false;
+
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
+
+const val=
+this._normalize(
+anchor+offset
+);
+
+if(
+formulaSet.includes(val)
+){
+
+hasCollision=true;
+
+break;
+
+}
+
+}
+
+
+if(hasCollision){
+
+for(
+let offset=-3;
+offset<=3;
+offset++
+){
+
+rawRange.push(
+this._normalize(
+anchor+offset
+)
+);
+
+}
+
+}else{
+
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
+
+rawRange.push(
+this._normalize(
+anchor+offset
+)
+);
+
+}
+
+}
+
+
+const excludedDigits=
+[
+...new Set(formulaSet)
+];
+
+
+let cleanedPool=
+rawRange.filter(
+dg=>
+!excludedDigits.includes(dg)
+);
+
+
+const generatedPairs=[];
+
+
+formulaSet.forEach(
+sourceDigit=>{
+
+cleanedPool.forEach(
+poolDigit=>{
+
+if(sourceDigit===poolDigit)
+return;
+
+generatedPairs.push({
+
+digitA:sourceDigit,
+
+digitB:poolDigit,
+
+pairStr:
+`${sourceDigit}${poolDigit}`
+
+});
+
 });
 
 }
-
-const matrixSorted=
-matrix
-.sort(
-(a,b)=>
-b.totalScore-a.totalScore
 );
 
-const top3Digits=
-matrixSorted.slice(
-0,
-3
-);
 
-const top3SingleDigitSet=
-new Set(
-top3Digits.map(
-item=>String(item.digit)
+const pMap={};
+
+
+formulaSet.forEach(
+sourceDigit=>{
+
+let pairsForDigit=
+generatedPairs
+.filter(
+p=>p.digitA===sourceDigit
 )
+.map(
+p=>p.pairStr
 );
 
-const calcConfidence=score=>{
 
-const max=
+let nextFill=
+(sourceDigit+1)%10;
+
+
+while(
+pairsForDigit.length<5
+){
+
+if(
+nextFill!==sourceDigit&&
+!pairsForDigit.includes(
+`${sourceDigit}${nextFill}`
+)&&
+!excludedDigits.includes(
+nextFill
+)
+){
+
+pairsForDigit.push(
+`${sourceDigit}${nextFill}`
+);
+
+}
+
+nextFill=
+(nextFill+1)%10;
+
+}
+
+
+pairsForDigit=[
+...new Set(pairsForDigit)
+]
+.filter(
+p=>p[0]!==p[1]
+)
+.sort();
+
+
+if(
+pairsForDigit.length>5
+)
+pairsForDigit=
+pairsForDigit.slice(0,5);
+
+
+pMap[sourceDigit]=
+pairsForDigit;
+
+});
+
+
+return{
+
+id:model.id,
+name:model.name,
+subName:model.subName,
+set:model.set,
+pairsMap:pMap
+
+};
+
+});
+
+
+const digitScores={};
+
+
+for(let d=0;d<=9;d++){
+
+digitScores[d]={
+
+digit:d,
+
+modelScore:0,
+
+formula100Score:0,
+
+radarScore:0,
+
+backendScore:0,
+
+winSetScore:0,
+
+totalScore:0
+
+};
+
+}
+
+
+evaluated.forEach(model=>{
+
+model.set.forEach(
+dig=>{
+digitScores[dig]
+.modelScore+=1;
+}
+);
+
+});
+
+
+const maxFormCount=
 Math.max(
-...matrix.map(
-x=>x.totalScore
+...Object.values(
+formula100Engine.counts
 ),
 1
 );
 
-return Math.min(
-99.9,
-Math.max(
-51.0,
-61+
-(score/max)*37
+
+for(let d=0;d<=9;d++){
+
+digitScores[d]
+.formula100Score=
+(formula100Engine.counts[d]||0)/
+maxFormCount;
+
+}
+
+
+const X_val=
+(T_bot+U_bot)%10;
+
+const radar1Range=[
+(X_val-1+10)%10,
+X_val,
+(X_val+1)%10
+];
+
+
+const Y_val=
+(H+T_top+U_top)%10;
+
+const radar2Range=[
+(Y_val-1+10)%10,
+Y_val,
+(Y_val+1)%10
+];
+
+
+const Z_val=
+(H+T_top+U_top+T_bot+U_bot)%10;
+
+const radar3Range=[
+(Z_val-1+10)%10,
+Z_val,
+(Z_val+1)%10
+];
+
+
+for(let d=0;d<=9;d++){
+
+let rHits=0;
+
+if(
+radar1Range.includes(d)
 )
+rHits++;
+
+if(
+radar2Range.includes(d)
+)
+rHits++;
+
+if(
+radar3Range.includes(d)
+)
+rHits++;
+
+digitScores[d]
+.radarScore=
+rHits/3;
+
+}
+
+
+const backendFormulasSet=[
+
+(2*H+T_bot)%10,
+(T_top+U_bot)%10,
+sumTop%10,
+Math.abs(T_top-U_top)%10,
+totalSum%10
+
+];
+
+
+for(let d=0;d<=9;d++){
+
+if(
+backendFormulasSet.includes(d)
+)
+digitScores[d]
+.backendScore=1;
+
+}
+
+
+const winCandidate=
+(H+T_top+U_top+T_bot+U_bot)%10;
+
+
+for(let d=0;d<=9;d++){
+
+if(
+d===winCandidate||
+d===(winCandidate+5)%10
+)
+digitScores[d]
+.winSetScore=1;
+
+}
+
+
+for(let d=0;d<=9;d++){
+
+const item=
+digitScores[d];
+
+item.totalScore=
+.35*item.modelScore+
+.25*item.formula100Score+
+.15*item.radarScore+
+.15*item.backendScore+
+.1*item.winSetScore;
+
+if(
+allowedModelDigits.has(d)
+)
+item.totalScore*=1.15;
+
+}
+
+
+const matrixSortedAll=
+Object.values(digitScores)
+.sort(
+(a,b)=>
+b.totalScore-a.totalScore||
+b.digit-a.digit
+);
+
+
+const matrixSorted=
+matrixSortedAll;
+
+
+const allScores=
+matrixSorted.map(
+s=>s.totalScore
+);
+
+const minScore=
+Math.min(...allScores);
+
+const maxScore=
+Math.max(...allScores);
+
+const scoreRange=
+maxScore-minScore||1;
+
+
+const calcConfidence=score=>{
+
+const normalizedPct=
+80+
+(score-minScore)/
+scoreRange*
+18.5;
+
+return Number(
+Math.min(
+98.5,
+Math.max(
+80,
+normalizedPct
+)
+).toFixed(1)
 );
 
 };
 
-function canonicalPair(pair){
 
-const s=
-String(pair);
+evaluated.forEach(model=>{
 
-if(!/^\\d{2}$/.test(s))
-return s;
+const modelScoreSum=
+model.set.reduce(
+(sum,dig)=>
+sum+
+(
+digitScores[dig]
+.totalScore>0
+?
+digitScores[dig]
+.totalScore
+:
+0
+),
+0
+);
 
-return[
-s[0],
-s[1]
+model.aiScore=
+calcConfidence(
+modelScoreSum/2
+);
+
+});
+
+
+evaluated.sort(
+(a,b)=>
+b.aiScore-a.aiScore
+);
+
+evaluated.forEach(
+(model,idx)=>{
+model.isRecommended=
+idx<2;
+}
+);
+
+
+const top3Digits=
+matrixSorted.slice(0,3);
+
+const thirdRankDigit=
+top3Digits[2]
+?
+top3Digits[2].digit
+:
+null;
+
+const d1=
+top3Digits[0].digit;
+
+const d2_dig=
+top3Digits[1].digit;
+
+
+const pairVotesMap={};
+
+
+evaluated.forEach(
+model=>{
+
+const modelVotedPairsThisModel=
+new Set();
+
+Object.values(
+model.pairsMap
+).forEach(
+pairList=>{
+
+pairList.forEach(
+pStr=>{
+
+const d1_char=
+pStr[0];
+
+const d2_char=
+pStr[1];
+
+if(
+d1_char===d2_char
+)
+return;
+
+const canonicalKey=
+[
+d1_char,
+d2_char
 ]
 .sort()
 .join("");
 
+
+if(
+!modelVotedPairsThisModel
+.has(canonicalKey)
+){
+
+modelVotedPairsThisModel
+.add(canonicalKey);
+
+if(
+!pairVotesMap[canonicalKey]
+){
+
+pairVotesMap[canonicalKey]={
+
+canonical:
+canonicalKey,
+
+displayPair:
+pStr,
+
+votes:0,
+
+digitScoreSum:0
+
+};
+
 }
+
+pairVotesMap[
+canonicalKey
+].votes+=1;
+
+}
+
+});
+
+});
+
+});
+
+
+Object.values(
+pairVotesMap
+).forEach(
+item=>{
+
+const dX=
+parseInt(
+item.canonical[0],
+10
+);
+
+const dY=
+parseInt(
+item.canonical[1],
+10
+);
+
+item.digitScoreSum=
+(
+digitScores[dX]?.totalScore||0
+)+
+(
+digitScores[dY]?.totalScore||0
+);
+
+});
+
+
+const sortedPairsAll=
+Object.values(
+pairVotesMap
+)
+.sort(
+(a,b)=>{
+
+if(
+b.votes!==a.votes
+)
+return b.votes-a.votes;
+
+return b.digitScoreSum-
+a.digitScoreSum;
+
+}
+);
+
+
+let top5Pairs=
+sortedPairsAll.slice(0,5);
+
+
+while(
+top5Pairs.length<5&&
+sortedPairsAll.length>
+top5Pairs.length
+){
+
+const nextCandidate=
+sortedPairsAll[
+top5Pairs.length
+];
+
+if(
+nextCandidate&&
+!top5Pairs.includes(
+nextCandidate
+)
+){
+
+top5Pairs.push(
+nextCandidate
+);
+
+}else{
+
+break;
+
+}
+
+}
+
+
+const top5MaxVotes=
+top5Pairs[0]?.votes||5;
+
+
+const top5PairRankedHTML=
+top5Pairs.map(
+(item,index)=>{
+
+const rawRatio=
+item.votes/
+top5MaxVotes;
+
+const computedPct=
+Number(
+(
+86.5+
+rawRatio*11.8-
+index*.4
+).toFixed(1)
+);
+
+const secureDisplayPair=
+item.displayPair;
+
+
+return`
+
+<div
+class="deep-pair"
+data-copy="${this._esc(
+secureDisplayPair
+)}">
+
+<strong>
+${this._esc(
+secureDisplayPair
+)}
+</strong>
+
+<small>
+${computedPct}%
+</small>
+
+</div>
+
+`;
+
+}
+).join("")
+||
+`
+<div
+style="
+grid-column:1/-1;
+padding:7px;
+text-align:center;
+color:var(--muted);
+font-size:.46rem;
+">
+ไม่มีชุดข้อมูลคู่เด่น
+</div>
+`;
+
 
 function findPairsForDigit(digit){
 
-const resultPairs=[];
-
-for(
-let other=0;
-other<=9;
-other++
-){
-
-if(other===digit)continue;
-
-const pair=
-`${digit}${other}`;
-
-const score=
-(
-counts[digit]||0
-)*3+
-(
-counts[other]||0
-)*1.7+
-(
-10-Math.abs(
-digit-other
-)
-)*.18;
-
-resultPairs.push({
-pair,
-score
-});
+return evaluated.find(
+m=>m.pairsMap[digit]
+)?.pairsMap[digit]||[];
 
 }
 
-return resultPairs
-.sort(
-(a,b)=>
-b.score-a.score
-)
-.map(
-x=>x.pair
-);
-
-}
 
 const deepSets=
 top3Digits.map(
@@ -4223,6 +4703,7 @@ item.digit
 
 })
 );
+
 
 const deepScanHTML=
 deepSets.map(
@@ -4245,6 +4726,7 @@ const rankNumbers=[
 "#2",
 "#3"
 ];
+
 
 const pairHTML=
 set.pairs.length
@@ -4294,6 +4776,7 @@ font-size:.46rem;
 </div>
 `;
 
+
 return`
 
 <div
@@ -4312,7 +4795,6 @@ ${set.digit}
 <span class="deep-rank-label">
 RANK ${rankNumbers[index]}
 </span>
-
 <div class="deep-scan-model-name">
 ${rankNames[index]}
 </div>
@@ -4342,260 +4824,141 @@ ${pairHTML}
 }
 ).join("");
 
-const top3Class=[
-"rank-one",
-"rank-two",
-"rank-three"
-];
 
-const top3Names=[
-"ALPHA SIGNAL",
-"BETA SIGNAL",
-"GAMMA SIGNAL"
-];
-
-const top3HTML=
+const top3SingleDigitSet=
+new Set(
 top3Digits.map(
-(item,index)=>{
-
-const pct=
-calcConfidence(
-item.totalScore
-);
-
-return`
-
-<div
-class="top3-row ${top3Class[index]}"
-data-copy="${item.digit}">
-
-<div class="top3-position">
-#${index+1}
-</div>
-
-<div class="top3-digit">
-${item.digit}
-</div>
-
-<div class="top3-info">
-
-<div class="top3-label">
-${top3Names[index]}
-<span>
-RANK ${index+1}
-</span>
-</div>
-
-<div class="top3-bar">
-
-<div
-class="top3-bar-fill"
-style="width:${pct}%;">
-</div>
-
-</div>
-
-</div>
-
-<div class="top3-score">
-${pct.toFixed(1)}%
-</div>
-
-</div>
-
-`;
-
-}
-).join("");
-
-let allFormulasHTML="";
-
-const evaluated=
-top3Digits.map(
-(item,index)=>({
-
-digit:item.digit,
-
-aiScore:
-calcConfidence(
-item.totalScore
-),
-
-set:[
-item.digit,
-(item.digit+1)%10,
-(item.digit+2)%10,
-(item.digit+5)%10,
-(item.digit+7)%10
-],
-
-pairsMap:{
-[item.digit]:
-findPairsForDigit(
-item.digit
-).slice(0,5)
-}
-
-})
-);
-
-evaluated.forEach(
-item=>{
-
-let pairs=[];
-
-item.set.forEach(
-digit=>{
-
-(
-item.pairsMap[digit]||[]
+item=>String(item.digit)
 )
-.forEach(
-p=>{
-pairs.push({
-pair:p
-});
-}
 );
 
-}
-);
 
-const pairCards=
-pairs.map(
-(obj,idx)=>{
+const top3DeepPairCanonicalSet=
+new Set();
 
-const subPct=
-Number(
-(
-item.aiScore-
-.3*idx
-).toFixed(1)
-);
-
-return`
-
-<div
-class="formula-pair"
-data-copy="${this._esc(obj.pair)}">
-
-<strong>
-${this._esc(obj.pair)}
-</strong>
-
-<small>
-${subPct}%
-</small>
-
-</div>
-
-`;
-
-}
-).join("");
-
-allFormulasHTML+=`
-
-<div class="formula-card">
-
-<div class="formula-head">
-
-<div class="formula-name">
-MODEL ${item.digit}
-<span class="compact-badge">
-AI
-</span>
-</div>
-
-<div class="formula-badge">
-${item.aiScore.toFixed(1)}%
-</div>
-
-</div>
-
-<div class="formula-sub">
-Primary digit:
-<strong>
-${item.digit}
-</strong>
-</div>
-
-<div class="formula-pairs">
-${pairCards}
-</div>
-
-</div>
-
-`;
-
-}
-);
-
-const bestJuePairMap={};
 
 deepSets.forEach(
 set=>{
 
-set.pairs.forEach(
-pair=>{
+(set.pairs||[]).forEach(
+pairStr=>{
+
+const cleanPair=
+String(pairStr||"");
+
+if(
+!/^\d{2}$/.test(cleanPair)||
+cleanPair[0]===cleanPair[1]
+)
+return;
+
 
 const canonical=
-canonicalPair(pair);
+[
+cleanPair[0],
+cleanPair[1]
+]
+.sort()
+.join("");
+
+
+top3DeepPairCanonicalSet.add(
+canonical
+);
+
+});
+
+});
+
+
+const bestJuePairMap={};
+
+
+evaluated.forEach(
+model=>{
+
+Object.entries(
+model.pairsMap||{}
+).forEach(
+([sourceDigit,pairList])=>{
+
+(pairList||[]).forEach(
+pairStr=>{
+
+const pair=
+String(pairStr||"");
+
+if(
+!/^\d{2}$/.test(pair)||
+pair[0]===pair[1]
+)
+return;
+
+
+const canonical=
+[
+pair[0],
+pair[1]
+]
+.sort()
+.join("");
+
 
 if(
 !bestJuePairMap[canonical]
 ){
 
 bestJuePairMap[canonical]={
+
 canonical,
-orientations:{},
-sourceCounts:{},
-total:0
+
+total:0,
+
+orientationCounts:{},
+
+sourceCounts:{}
+
 };
 
 }
 
+
 const item=
-bestJuePairMap[canonical];
+bestJuePairMap[
+canonical
+];
+
 
 item.total+=1;
 
-item.orientations[pair]=
-(item.orientations[pair]||0)+1;
+
+item.orientationCounts[pair]=
+(
+item.orientationCounts[pair]||0
+)+1;
+
 
 item.sourceCounts[
-String(set.digit)
+String(sourceDigit)
 ]=
-(item.sourceCounts[
-String(set.digit)
+(
+item.sourceCounts[
+String(sourceDigit)
 ]||0
 )+1;
 
-}
-);
+});
 
-}
-);
+});
 
-const top3DeepPairCanonicalSet=
-new Set();
+});
 
-deepSets.forEach(
-set=>{
-set.pairs.forEach(
-pair=>{
-top3DeepPairCanonicalSet.add(
-canonicalPair(pair)
-);
-}
-);
-}
-);
 
 const bestJueCandidates=
 Object.values(
 bestJuePairMap
 )
+
 .filter(
 item=>{
 
@@ -4622,80 +4985,109 @@ isInsideTop3Jue
 
 }
 )
+
 .map(
 item=>{
 
 const orientations=
 Object.entries(
-item.orientations
+item.orientationCounts
 )
 .sort(
 (a,b)=>{
-if(b[1]!==a[1])
+
+if(
+b[1]!==a[1]
+)
 return b[1]-a[1];
 
 return a[0].localeCompare(
 b[0]
 );
+
 }
 );
 
 return{
+
 ...item,
-display:
-orientations.length
-?
-orientations[0][0]
-:
+
+displayPair:
+orientations[0]?.[0]||
 item.canonical
+
 };
 
 }
 )
+
 .sort(
-(a,b)=>
-b.total-a.total||
-a.canonical.localeCompare(
-b.canonical
+(a,b)=>{
+
+if(
+b.total!==a.total
 )
+return b.total-a.total;
+
+
+const aDirect=
+a.orientationCounts[
+a.displayPair
+]||0;
+
+const bDirect=
+b.orientationCounts[
+b.displayPair
+]||0;
+
+
+if(
+bDirect!==aDirect
 )
-.slice(
-0,
-5
+return bDirect-aDirect;
+
+
+return a.displayPair.localeCompare(
+b.displayPair
 );
+
+}
+)
+
+.slice(0,5);
+
+
+const arr1=
+findPairsForDigit(d1);
+
+const arr2=
+findPairsForDigit(d2_dig);
+
 
 const matrixArr3d=
-matrixSorted
-.slice(
-0,
-5
-)
+arr1.slice(0,5)
 .map(
-(item,index)=>
-`${item.digit}${(item.digit+index+3)%10}${(item.digit+index+7)%10}`
+p=>
+`${p.slice(-1)}${d1}${d2_dig}`
 );
+
 
 const cScore3=
-calcConfidence(
-matrixSorted[0].totalScore
+Number(
+(
+50.1+
+.8*Math.random()
+).toFixed(1)
 );
 
-const top5Digits=
+
+let top5Digits=
 matrixSorted
-.slice(
-0,
-5
-)
+.slice(0,5)
 .map(
 item=>item.digit
 );
 
-const allowedModelDigits=
-new Set(
-top3Digits.map(
-x=>x.digit
-)
-);
 
 let wildcardCandidate=
 matrixSorted.find(
@@ -4707,6 +5099,7 @@ item.digit
 item.digit
 )
 );
+
 
 if(!wildcardCandidate){
 
@@ -4720,272 +5113,118 @@ item.digit
 
 }
 
-let currentSet=[
-...top5Digits,
-wildcardCandidate
-?
-wildcardCandidate.digit
-:
-matrixSorted[5].digit
-];
-
-const checkBalance=
-digits=>{
-
-const evenCount=
-digits.filter(
-d=>d%2===0
-).length;
-
-const oddCount=
-digits.length-evenCount;
-
-const lowCount=
-digits.filter(
-d=>d>=0&&d<=4
-).length;
-
-const highCount=
-digits.length-lowCount;
-
-return{
-
-isBalanced:
-evenCount>=2&&
-oddCount>=2&&
-lowCount>=2&&
-highCount>=2
-
-};
-
-};
 
 if(
-!checkBalance(currentSet)
-.isBalanced
+wildcardCandidate&&
+top5Digits.length>=5
 ){
 
-const candidatesIndex=[
-6,7,8,9
+top5Digits[4]=
+wildcardCandidate.digit;
+
+}
+
+
+top5Digits=
+[
+...new Set(top5Digits)
+].slice(0,5);
+
+
+const winSetArray=[];
+
+winSetArray.push(
+top3Digits[0].digit
+);
+
+winSetArray.push(
+top3Digits[1].digit
+);
+
+if(
+top3Digits[2]
+){
+
+winSetArray.push(
+top3Digits[2].digit
+);
+
+}
+
+
+top5Digits.forEach(
+dg=>{
+
+if(
+!winSetArray.includes(dg)
+){
+
+winSetArray.push(dg);
+
+}
+
+});
+
+
+const fallbackPoolSet=[
+0,1,2,3,4,5,6,7,8,9
 ];
 
-let bestSet=[
-...currentSet
-];
-
-let foundReplacement=false;
 
 for(
-let idx of candidatesIndex
+let idx=0;
+idx<fallbackPoolSet.length;
+idx++
 ){
 
 if(
-idx<matrixSorted.length
-){
-
-const testSet=[
-...currentSet.slice(0,5),
-matrixSorted[idx].digit
-];
-
-if(
-checkBalance(testSet)
-.isBalanced
-){
-
-bestSet=testSet;
-foundReplacement=true;
+winSetArray.length>=6
+)
 break;
 
-}
+const candidate=
+fallbackPoolSet[idx];
+
+if(
+!winSetArray.includes(candidate)
+){
+
+winSetArray.push(candidate);
 
 }
 
 }
 
-if(foundReplacement)
-currentSet=bestSet;
 
-}
+const finalWinSet6=
+winSetArray.slice(0,6);
 
-const winSet=
-currentSet.sort(
-(a,b)=>a-b
-);
 
-const combinedAnalysisPool=[
-...matrixSorted
-.slice(0,5)
-.map(i=>i.digit),
-...winSet
+const winSetHTML=
+finalWinSet6.map(
+(d,index)=>{
+
+const labels=[
+"ALPHA LEAD",
+"BETA LEAD",
+"GAMMA CORE",
+"QUANT 04",
+"QUANT 05",
+"NEURAL 06"
 ];
-
-const evenCountTotal=
-combinedAnalysisPool.filter(
-d=>d%2===0
-).length;
-
-const evenPct=
-Number(
-(
-evenCountTotal/
-combinedAnalysisPool.length*
-100
-).toFixed(1)
-);
-
-const oddPct=
-Number(
-(
-100-evenPct
-).toFixed(1)
-);
-
-const maxScoreVal=
-Math.max(
-...matrixSorted.map(
-s=>s.totalScore
-),
-1
-);
-
-const distributionHTML=
-matrixSorted.map(
-(item,index)=>{
-
-const digit=
-item.digit;
-
-const height=
-item.totalScore>0
-?
-Math.max(
-12,
-Math.round(
-item.totalScore/
-maxScoreVal*
-100
-)
-)
-:
-6;
-
-let barColor=
-"#0A6647";
-
-let barTop=
-"#10B981";
-
-let glow=
-"rgba(16,185,129,.12)";
-
-let rankClass="";
-
-let rankLabel=
-`#${index+1}`;
-
-if(index===0){
-
-barColor="#EAB308";
-barTop="#FEF3A6";
-glow="rgba(234,179,8,.22)";
-rankClass="rank-1";
-
-}
-
-else if(index===1){
-
-barColor="#10B981";
-barTop="#D1FAE5";
-glow="rgba(16,185,129,.18)";
-rankClass="rank-2";
-
-}
-
-else if(index===2){
-
-barColor="#14B8A6";
-barTop="#CCFBF1";
-glow="rgba(20,184,166,.17)";
-rankClass="rank-3";
-
-}
-
-else if(
-index===3||
-index===4
-){
-
-barColor="#0A6647";
-barTop="#A7F3D0";
-glow="rgba(10,102,71,.12)";
-
-}
-
-else if(
-index===5||
-index===6
-){
-
-barColor="#9E6C02";
-barTop="#FEF3C7";
-glow="rgba(158,108,2,.10)";
-
-}
-
-else if(
-index===7||
-index===8
-){
-
-barColor="#087380";
-barTop="#CCFBF1";
-glow="rgba(8,115,128,.10)";
-
-}
-
-else{
-
-barColor="#BE123C";
-barTop="#FFE4E6";
-glow="rgba(190,18,60,.08)";
-
-}
-
-const scorePct=
-calcConfidence(
-item.totalScore
-);
 
 return`
 
 <div
-class="overview-bar ${rankClass}"
-style="
---bar-height:${height}%;
---bar-color:${barColor};
---bar-color-top:${barTop};
---bar-glow:${glow};
-"
-data-copy="${digit}"
-title="
-Rank ${index+1}
-•
-Digit ${digit}
-•
-${scorePct.toFixed(1)}%
-">
+class="ind-win-item"
+data-copy="${d}">
 
-<span class="overview-rank">
-${rankLabel}
-</span>
+<strong>
+${d}
+</strong>
 
-<span class="overview-score">
-${scorePct.toFixed(1)}%
-</span>
-
-<span class="overview-digit">
-${digit}
+<span>
+${labels[index]||"WIN DIGIT"}
 </span>
 
 </div>
@@ -4995,45 +5234,152 @@ ${digit}
 }
 ).join("");
 
-const indWinSetHTML=
-winSet.map(
-(digit,index)=>`
 
-<div
-class="ind-win-item"
-data-copy="${digit}">
+const evenCount=
+matrixSorted.filter(
+s=>s.digit%2===0
+).length;
 
-<strong>
-${digit}
-</strong>
+const oddCount=
+10-evenCount;
 
-<span>
-POS ${index+1}
-</span>
+const evenPct=
+(evenCount/10)*100;
 
-</div>
+const oddPct=
+(oddCount/10)*100;
 
-`
-).join("");
 
-const threeHTML=
-matrixArr3d.length
-?
-matrixArr3d.map(
-(p,index)=>{
+const overviewBarsHTML=
+matrixSorted.map(
+(item,index)=>{
 
-const pct=
+const rankClass=
+index===0
+?"rank-1"
+:index===1
+?"rank-2"
+:index===2
+?"rank-3"
+:"";
+
+const rankLabel=
+index===0
+?"#1"
+:index===1
+?"#2"
+:index===2
+?"#3"
+:`#${index+1}`;
+
+
+const scoreNorm=
 Number(
 (
-cScore3-
-.05*index
-).toFixed(1)
+item.totalScore*100
+).toFixed(0)
 );
+
+const heightPct=
+Math.max(
+18,
+Math.min(
+92,
+scoreNorm
+)
+);
+
+
+const barColor=
+index===0
+?"var(--gold)"
+:index===1
+?"var(--emerald)"
+:index===2
+?"var(--cyan)"
+:"var(--muted2)";
+
+const barColorTop=
+index===0
+?"var(--gold2)"
+:index===1
+?"var(--green)"
+:index===2
+?"var(--cyan2)"
+:"var(--muted)";
+
+const barGlow=
+index===0
+?"rgba(234,179,8,.25)"
+:index===1
+?"rgba(16,185,129,.22)"
+:index===2
+?"rgba(8,115,128,.22)"
+:"transparent";
+
 
 return`
 
 <div
-class="three-d-item"
+class="overview-bar ${rankClass}"
+style="
+--bar-height:${heightPct}%;
+--bar-color:${barColor};
+--bar-color-top:${barColorTop};
+--bar-glow:${barGlow};
+">
+
+<div class="overview-rank">
+${rankLabel}
+</div>
+
+<div class="overview-score">
+${scoreNorm}%
+</div>
+
+<div class="overview-digit">
+${item.digit}
+</div>
+
+</div>
+
+`;
+
+}
+).join("");
+
+
+const formulaCardsHTML=
+evaluated.map(
+model=>{
+
+const badgeText=
+model.isRecommended
+?"RECOMMENDED"
+:`AI SCORE ${model.aiScore.toFixed(1)}%`;
+
+const badgeClass=
+model.isRecommended
+?"formula-badge"
+:"compact-badge";
+
+
+const pairsArr=
+Object.values(
+model.pairsMap
+)
+.flat()
+.slice(0,5);
+
+
+const pairsHTML=
+pairsArr.length
+?
+pairsArr.map(
+p=>`
+
+<div
+class="formula-pair"
 data-copy="${this._esc(p)}">
 
 <strong>
@@ -5041,29 +5387,62 @@ ${this._esc(p)}
 </strong>
 
 <small>
-${pct}%
+${model.aiScore.toFixed(0)}%
 </small>
 
 </div>
 
-`;
-
-}
+`
 ).join("")
 :
 `
 <div
 style="
 grid-column:1/-1;
-color:var(--muted);
-font-size:.46rem;
+padding:6px;
 text-align:center;
+color:var(--muted);
+font-size:.45rem;
 ">
 ไม่มีชุดข้อมูล
 </div>
 `;
 
-const html=`
+
+return`
+
+<div class="formula-card">
+
+<div class="formula-head">
+
+<div class="formula-name">
+<span>⚡</span>
+<span>${this._esc(model.name)}</span>
+</div>
+
+<div class="${badgeClass}">
+${badgeText}
+</div>
+
+</div>
+
+<div class="formula-sub">
+สูตรคำนวณ: <strong>${this._esc(model.subName)}</strong> • ผลลัพธ์หลัก: <strong>${model.set.join(", ")}</strong>
+</div>
+
+<div class="formula-pairs">
+${pairsHTML}
+</div>
+
+</div>
+
+`;
+
+}
+).join("");
+
+
+const finalHTML=`
 
 <div class="result-shell">
 
@@ -5072,20 +5451,21 @@ const html=`
 <div>
 
 <div class="result-kicker">
-QUANT RESULT / AI OUTPUT
+QUANTITATIVE AI INTELLIGENCE REPORT
 </div>
 
 <div class="result-title">
-ผลการวิเคราะห์
+ผลการวิเคราะห์ระดับสูง
 </div>
 
 </div>
 
 <div class="result-note">
-${n3} / ${n2}
+ระบบประมวลผลเสร็จสิ้น
 </div>
 
 </div>
+
 
 <section class="top3-signal-board">
 
@@ -5094,47 +5474,105 @@ ${n3} / ${n2}
 <div>
 
 <div class="top3-kicker">
-TOP 3 SINGLE DIGIT
+MASTER DIGIT MATRIX
 </div>
 
 <div class="top3-title">
-🎯 เลขเด่น TOP 3
+3 อันดับเลขเด่นสูงสุด
 </div>
 
 <div class="top3-sub">
-อันดับสูงสุดจาก Multi-Layer AI
+คัดกรองจาก 100 สูตรคำนวณและ Multi-Layer AI
 </div>
 
 </div>
 
 <div class="top3-badge">
-${cScore3.toFixed(1)}% AI
+TOP 3 SIGNALS
 </div>
 
 </div>
+
 
 <div class="top3-list">
-${top3HTML}
+
+${top3Digits.map((item,index)=>{
+
+const rankClass=
+index===0
+?"rank-one"
+:index===1
+?"rank-two"
+:"rank-three";
+
+const rankLabel=
+index===0
+?"อันดับ 1"
+:index===1
+?"อันดับ 2"
+:"อันดับ 3";
+
+const conf=
+calcConfidence(item.totalScore);
+
+return`
+
+<div class="top3-row ${rankClass}">
+
+<div class="top3-position">
+#${index+1}
+</div>
+
+<div class="top3-digit" data-copy="${item.digit}">
+${item.digit}
+</div>
+
+<div class="top3-info">
+
+<div class="top3-label">
+${rankLabel}
+<span>(${conf.toFixed(1)}%)</span>
+</div>
+
+<div class="top3-bar">
+<div
+class="top3-bar-fill"
+style="width:${conf}%">
+</div>
+</div>
+
+</div>
+
+<div class="top3-score">
+${conf.toFixed(1)}%
+</div>
+
+</div>
+
+`;
+
+}).join("")}
+
 </div>
 
 <div class="top3-footnote">
 <span class="mini-live"></span>
-<strong>TOP 1</strong>
-คือสัญญาณหลัก • TOP 2–3 คือสัญญาณรอง
+แตะที่ตัวเลขเพื่อคัดลอก • อัปเดตแบบเรียลไทม์
 </div>
 
 </section>
+
 
 <section class="stats-analytics-card">
 
 <div class="stats-flex">
 
 <div class="stats-title">
-สมดุลเลขคู่ / เลขคี่
+สัดส่วนคู่ / คี่ (Even / Odd Ratio)
 </div>
 
 <div class="stats-badge">
-${evenPct}% / ${oddPct}%
+RATIO ANALYSIS
 </div>
 
 </div>
@@ -5154,15 +5592,12 @@ style="width:${oddPct}%">
 </div>
 
 <div class="ratio-legend">
-<span>EVEN ${evenPct}%</span>
-<span>ODD ${oddPct}%</span>
+<span>เลขคู่ (Even): ${evenCount} ตัว (${evenPct.toFixed(0)}%)</span>
+<span>เลขคี่ (Odd): ${oddCount} ตัว (${oddPct.toFixed(0)}%)</span>
 </div>
 
 </section>
 
-<div class="section-marker">
-DIGIT DISTRIBUTION
-</div>
 
 <section class="overview-panel">
 
@@ -5171,31 +5606,45 @@ DIGIT DISTRIBUTION
 <div>
 
 <div class="overview-title">
-ภาพรวมอันดับเลข 0–9
+ภาพรวมตัวเลขทั้ง 0–9
 </div>
 
 <div class="overview-sub">
-เรียงจากคะแนนวิเคราะห์สูง → ต่ำ
+น้ำหนักคะแนนสะสมจากทุกโมเดล AI
 </div>
 
 </div>
 
 <div class="overview-badge">
-RANK MATRIX
+FULL MATRIX
 </div>
 
 </div>
 
 <div class="overview-bars">
-${distributionHTML}
+${overviewBarsHTML}
 </div>
 
 <div class="overview-axis">
-<span>LOW</span>
-<span>HIGH</span>
+<span>0</span>
+<span>1</span>
+<span>2</span>
+<span>3</span>
+<span>4</span>
+<span>5</span>
+<span>6</span>
+<span>7</span>
+<span>8</span>
+<span>9</span>
 </div>
 
 </section>
+
+
+<div class="section-marker">
+DEEP SCAN &amp; MODEL ANALYSIS
+</div>
+
 
 <section class="deep-scan-board">
 
@@ -5204,546 +5653,302 @@ ${distributionHTML}
 <div>
 
 <div class="deep-scan-kicker">
-TOP 3 MATRIX SIGNALS
+NEURAL DEEP SCAN MATRIX
 </div>
 
 <div class="deep-scan-title">
-🎯 ชุดเจาะ TOP 3
+เจาะลึก 3 อันดับเลขเด่นหลัก
 </div>
 
 <div class="deep-scan-sub">
-BEST JUE TOP 5 • #1 → #5
+วิเคราะห์เจาะลึกคู่ชุดเด่นพิเศษจากโมเดลแกนกลาง
 </div>
 
 </div>
 
+<div class="top3-badge">
+DEEP SCAN
 </div>
+
+</div>
+
 
 <div class="deep-scan-grid">
 ${deepScanHTML}
 </div>
+
 
 <div class="three-d-scan">
 
 <div class="three-d-head">
 
 <div class="three-d-title">
-🎲 ชุด 3 ตัวบน
+⚡ เจาะลึกเลขชุด 3 ตัวตรง (3D Matrix)
 </div>
 
 <div class="three-d-score">
-ACCURACY ${cScore3.toFixed(1)}%
+CONFIDENCE ${cScore3}%
 </div>
 
 </div>
 
 <div class="three-d-grid">
-${threeHTML}
+
+${matrixArr3d.length?matrixArr3d.map(val=>`
+
+<div class="three-d-item" data-copy="${this._esc(val)}">
+<strong>${this._esc(val)}</strong>
+<small>3D Direct</small>
+</div>
+
+`).join(""):`
+
+<div style="grid-column:1/-1;text-align:center;padding:6px;color:var(--muted);font-size:.45rem;">
+ไม่มีข้อมูลชุด 3 ตัว
+</div>
+
+`}
+
 </div>
 
 </div>
 
 </section>
+
 
 <section class="ind-win-set">
 
 <div class="ind-win-header">
 
+<div>
+
 <div class="ind-win-title">
-🧩 ชุดวิน 6 ตัว
-<small>CURATED WIN SET • 6 PICKS</small>
+🎯 ชุดวินเนอร์ 6 ตัว (Win Set)
+<small>ชุดตัวเลขความน่าจะเป็นสูงสุดสำหรับการลงทุน</small>
+</div>
+
 </div>
 
 <div class="ind-win-badge">
-✦ VIP SET
+WIN SET 6
 </div>
 
 </div>
 
 <div class="ind-win-grid">
-${indWinSetHTML}
+${winSetHTML}
 </div>
 
 </section>
+
+
+<div class="section-marker">
+AI MATHEMATICAL MODELS
+</div>
+
 
 <section class="formula-section">
 
-<button
-class="formula-toggle"
-id="toggleMainFormulasBtn"
-type="button">
+<div class="formula-toggle" onclick="_app._audio('click')">
+<span>⚡ รายละเอียด 5 โมเดล AI หลัก</span>
+<span>ACTIVE MODELS</span>
+</div>
 
-<span>
-🧠 TOP 5 Model / AI ALGORITHM DETAILS
-</span>
-
-<span>
-▼
-</span>
-
-</button>
-
-<div
-id="allFormulasWrapper"
-style="
-display:none;
-margin-top:6px;
-">
-
-${allFormulasHTML}
-
+<div style="margin-top:6px;">
+${formulaCardsHTML}
 </div>
 
 </section>
 
+
 <div class="disclaimer">
-
-<strong>
-หมายเหตุ:
-</strong>
-
-ข้อมูลวิเคราะห์เชิงสถิติเพื่อเป็นแนวทางเท่านั้น
-โปรดใช้วิจารณญาณในการตัดสินใจ
-
+<strong>คำเตือนเชิงปริมาณ (Quantitative Disclaimer):</strong> ระบบนี้เป็นเครื่องมือวิเคราะห์ทางสถิติและคณิตศาสตร์ขั้นสูงเพื่อประกอบการตัดสินใจเท่านั้น ไม่การันตีผลลัพธ์ 100% โปรดใช้วิจารณญาณในการลงทุน
 </div>
 
 </div>
 
 `;
 
+
 document.getElementById(
 "resultContainer"
-).innerHTML=html;
+).innerHTML=finalHTML;
 
-/* =========================================================
- APPLY BEST JUE TOP 5 COLORS TO MATCHING TOP 3 PAIRS
- Ranking remains data-driven; only presentation is changed.
- ========================================================= */
-
-const bestJueRankLookup={};
-
-bestJueCandidates.forEach(
-(item,index)=>{
-
-bestJueRankLookup[
-item.canonical
-]=index+1;
-
-}
-);
-
-document.querySelectorAll(
-".deep-scan-card .deep-pair[data-copy]"
-).forEach(
-node=>{
-
-const pair=
-String(
-node.dataset.copy||""
-);
-
-if(
-!/^\\d{2}$/.test(pair)||
-pair[0]===pair[1]
-)
-return;
-
-const canonical=
-[pair[0],pair[1]]
-.sort()
-.join("");
-
-const rank=
-bestJueRankLookup[
-canonical
-];
-
-if(rank){
-
-node.classList.add(
-`jue-rank-${rank}`
-);
-
-node.dataset.jueRank=
-String(rank);
-
-node.dataset.jueLabel=
-`#${rank}`;
-
-}
-
-}
-);
-
-document.querySelectorAll(
-"[data-copy]"
-).forEach(
-node=>{
-
-const clone=
-node.cloneNode(true);
-
-node.parentNode.replaceChild(
-clone,
-node
-);
-
-clone.addEventListener(
-"click",
-()=>{
-this.copyText(
-clone.dataset.copy
-);
-}
-);
-
-}
-);
-
-const toggleMainBtn=
-document.getElementById(
-"toggleMainFormulasBtn"
-);
-
-const allWrapper=
-document.getElementById(
-"allFormulasWrapper"
-);
-
-if(
-toggleMainBtn&&
-allWrapper
-){
-
-toggleMainBtn.addEventListener(
-"click",
-()=>{
-
-this._audio("click");
-
-const isOpen=
-allWrapper.style.display==="block";
-
-allWrapper.style.display=
-isOpen
-?
-"none"
-:
-"block";
-
-toggleMainBtn
-.querySelector(
-"span:last-child"
-)
-.innerText=
-isOpen
-?
-"▼"
-:
-"▲";
-
-}
-);
-
-}
-
-localStorage.setItem(
-"ml_last_session_v3",
-`${n3} / ${n2}`
-);
-
-this.checkSessionBadge();
-
-if(calc)
-calc.disabled=false;
+this.bindCopyEvents();
 
 },
 
-copyText(text){
 
-this._audio("click");
+bindCopyEvents(){
 
-if(
-navigator.clipboard&&
-navigator.clipboard.writeText
-){
+const targets=
+document.querySelectorAll(
+"[data-copy]"
+);
+
+targets.forEach(el=>{
+
+el.addEventListener("click",()=>{
+
+const text=
+el.getAttribute("data-copy");
+
+if(!text)return;
 
 navigator.clipboard
 .writeText(text)
-.then(
-()=>this.showToast()
-)
-.catch(
-()=>this.fallbackCopyText(text)
+.then(()=>{
+
+this._audio("click");
+
+this.showToast(
+`✓ คัดลอกแล้ว: ${text}`
 );
 
-}else{
+})
+.catch(()=>{});
 
-this.fallbackCopyText(text);
+});
 
-}
+});
 
 },
 
-fallbackCopyText(text){
 
-const ta=
-document.createElement(
-"textarea"
-);
+showToast(msg){
 
-ta.value=text;
+const t=
+document.getElementById("toast");
 
-ta.style.position="fixed";
-ta.style.opacity="0";
+if(!t)return;
 
-document.body.appendChild(ta);
+t.innerText=msg;
 
-ta.focus();
-ta.select();
-
-try{
-
-document.execCommand("copy");
-
-this.showToast();
-
-}catch(e){}
-
-document.body.removeChild(ta);
-
-},
-
-showToast(){
+t.classList.add("show");
 
 clearTimeout(
 this._toastTimer
 );
 
-const t=
-document.getElementById(
-"toast"
-);
-
-t.classList.add("show");
-
 this._toastTimer=
-setTimeout(
-()=>{
+setTimeout(()=>{
+
 t.classList.remove("show");
-},
-1600
-);
+
+},2200);
 
 }
 
 };
 
-const loginButton=
+
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+const loginBtn=
 document.getElementById(
 "loginButton"
 );
 
-const passwordInput=
-document.getElementById(
-"passwordInput"
-);
+if(loginBtn){
 
-const calculateButton=
-document.getElementById(
-"calculateButton"
-);
-
-const clearButton=
-document.getElementById(
-"clearButton"
-);
-
-const logoutButton=
-document.getElementById(
-"logoutButton"
-);
-
-if(loginButton){
-
-loginButton.addEventListener(
+loginBtn.addEventListener(
 "click",
 ()=>_app.login()
 );
 
 }
 
-if(passwordInput){
+const pwdInput=
+document.getElementById(
+"passwordInput"
+);
 
-passwordInput.addEventListener(
-"keyup",
+if(pwdInput){
+
+pwdInput.addEventListener(
+"keypress",
 e=>{
 
-if(e.key==="Enter")
+if(
+e.key==="Enter"
+){
+
 _app.login();
 
 }
-);
+
+});
 
 }
 
-if(calculateButton){
+const calcBtn=
+document.getElementById(
+"calculateButton"
+);
 
-calculateButton.addEventListener(
+if(calcBtn){
+
+calcBtn.addEventListener(
 "click",
 ()=>_app.calculate()
 );
 
 }
 
-if(clearButton){
+const clearBtn=
+document.getElementById(
+"clearButton"
+);
 
-clearButton.addEventListener(
+if(clearBtn){
+
+clearBtn.addEventListener(
 "click",
 ()=>_app.clearCalc()
 );
 
 }
 
-if(logoutButton){
+const logoutBtn=
+document.getElementById(
+"logoutButton"
+);
 
-logoutButton.addEventListener(
+if(logoutBtn){
+
+logoutBtn.addEventListener(
 "click",
 ()=>_app.logout()
 );
 
 }
 
-const n3Input=
-document.getElementById(
-"num3top"
-);
-
-const n2Input=
-document.getElementById(
-"num2bottom"
-);
-
-if(n3Input){
-
-n3Input.addEventListener(
-"input",
-()=>{
-
-n3Input.value=
-n3Input.value.replace(
-/\D/g,
-""
-);
-
-if(
-n3Input.value.length>=3&&
-n2Input
-)
-n2Input.focus();
-
-if(calculateButton){
-calculateButton.disabled=
-!(
-n3Input.value.length===3&&
-n2Input&&
-n2Input.value.length===2
-);
-}
-
-}
-);
-
-}
-
-if(n2Input){
-
-n2Input.addEventListener(
-"input",
-()=>{
-
-n2Input.value=
-n2Input.value.replace(
-/\D/g,
-""
-);
-
-if(calculateButton){
-calculateButton.disabled=
-!(
-n3Input&&
-n3Input.value.length===3&&
-n2Input.value.length===2
-);
-}
-
-}
-);
-
-}
-
-[
-"num3top",
-"num2bottom"
-].forEach(
-id=>{
-
-const el=
-document.getElementById(id);
-
-if(el){
-
-el.addEventListener(
-"keyup",
-e=>{
-
-if(e.key==="Enter")
-_app.calculate();
-
-}
-);
-
-}
-
-}
-);
-
-(function initApp(){
-
-try{
-
-const active=
+const savedAuth=
 localStorage.getItem(
 "ml_auth_status_v3"
 );
 
-if(active==="active"){
+if(
+savedAuth==="active"
+){
 
-const loginView=
 document.getElementById(
 "loginView"
-);
+).style.display="none";
 
-const calculatorView=
 document.getElementById(
 "calculatorView"
-);
-
-if(loginView)
-loginView.style.display="none";
-
-if(calculatorView)
-calculatorView.style.display="block";
+).style.display="block";
 
 _app.checkSessionBadge();
 
 }
 
-}catch(e){}
-
-})();
+});
 
 </script>
 
 </body>
- </html>
+</html>
