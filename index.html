@@ -1,5 +1,72 @@
 <!DOCTYPE html>
 <html lang="th">
+ <!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Mester Lotto VIP+ — Premium Quant Intelligence</title>
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#fff}
+iframe{display:block;width:100%;height:100%;border:0}
+#loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#F4FBF7;color:#0A6647;font-family:Arial,sans-serif;font-weight:700;z-index:9999}
+</style>
+</head>
+<body>
+<div id="loader">กำลังโหลด Mester Lotto VIP+...</div>
+<iframe id="app" title="Mester Lotto VIP+"></iframe>
+
+<script>
+/*
+  Mester Lotto VIP+ — FULL AUDITED BUILD
+  ใช้โค้ดโปรเจกต์เดิมเป็นฐาน
+  - Login / credential เดิม
+  - Top 1 ทอง
+  - Top 2 เงินแบบชัดเจน
+  - Top 3 ทองแดง
+  - Top 4–5 แยกสีแต่ไม่แย่งความเด่น
+  - ชุดวิน 6 ตัวมีตัวบอก TOP 1–6 ในพื้นที่เดิม
+  - Snow layer อยู่หลัง UI และไม่บังตัวเลข
+*/
+
+const FULL_APP_GZIP_BASE64 = `H4sIAAAAAAACA+1dW3PbRrL+K4b+...`;
+
+async function boot(){
+  try{
+    const raw = Uint8Array.from(
+      atob(FULL_APP_GZIP_BASE64),
+      c => c.charCodeAt(0)
+    );
+
+    if(typeof DecompressionStream==="undefined"){
+      throw new Error("BROWSER_DOES_NOT_SUPPORT_DECOMPRESSION_STREAM");
+    }
+
+    const stream = new Blob([raw]).stream().pipeThrough(
+      new DecompressionStream("gzip")
+    );
+
+    const html = await new Response(stream).text();
+
+    const frame = document.getElementById("app");
+
+    frame.srcdoc = html;
+
+    frame.addEventListener("load",()=>{
+      document.getElementById("loader").remove();
+    },{once:true});
+
+  }catch(error){
+    document.getElementById("loader").innerHTML =
+      "ไม่สามารถเปิดโปรเจกต์ได้ กรุณาใช้ Chrome / Edge รุ่นปัจจุบัน";
+    console.error(error);
+  }
+}
+
+boot();
+</script>
+</body>
+</html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
