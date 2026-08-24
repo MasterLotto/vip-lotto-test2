@@ -67,8 +67,8 @@ overflow-x:hidden;
 font-family:'Prompt',sans-serif;
 color:var(--text);
 background:
-radial-gradient(circle at 12% 5%,rgba(16,185,129,.15),transparent 38%),
-radial-gradient(circle at 88% 15%,rgba(234,179,8,.10),transparent 34%),
+radial-gradient(circle at 12% 5%,rgba(16,185,129,.18),transparent 38%),
+radial-gradient(circle at 88% 15%,rgba(234,179,8,.12),transparent 34%),
 linear-gradient(135deg,#fff,#F0FAF5 58%,#E5F3ED);
 }
 
@@ -87,14 +87,13 @@ background:rgba(10,102,71,.18);
 color:var(--text);
 }
 
-/* Cinematic Snow Layering Behind Main Cards */
 #snowCanvas{
 position:fixed;
 inset:0;
 width:100%;
 height:100%;
 pointer-events:none;
-z-index:1;
+z-index:99;
 }
 
 .ambient{
@@ -151,7 +150,7 @@ max(12px,env(safe-area-inset-top))
 clamp(10px,2.5vw,14px)
 max(24px,env(safe-area-inset-bottom));
 position:relative;
-z-index:10;
+z-index:2;
 }
 
 .app-card{
@@ -1954,8 +1953,8 @@ gap:4px;
 .deep-pair{
 position:relative;
 overflow:hidden;
-padding:6px 2px 5px;
-border-radius:9px;
+padding:5px 2px;
+border-radius:8px;
 text-align:center;
 background:#fff;
 border:1px solid rgba(10,102,71,.12);
@@ -1974,9 +1973,24 @@ box-shadow:0 4px 10px rgba(10,102,71,.06);
 .deep-pair strong{
 display:block;
 font-family:'IBM Plex Mono',monospace;
-font-size:.64rem;
-font-weight:800;
+font-size:.62rem;
 color:var(--gold);
+}
+
+.deep-scan-card.rank-two .deep-pair{
+border-color:rgba(10,102,71,.13);
+}
+
+.deep-scan-card.rank-two .deep-pair strong{
+color:var(--emerald);
+}
+
+.deep-scan-card.rank-three .deep-pair{
+border-color:rgba(8,115,128,.13);
+}
+
+.deep-scan-card.rank-three .deep-pair strong{
+color:var(--cyan);
 }
 
 .deep-pair small{
@@ -2291,79 +2305,100 @@ color:#3F6B5A;
 color:#087380;
 }
 
-/* Premium Ranking Badges Inside Top Pair Boxes */
-.jue-tag{
-display:inline-block;
+/* Badge กำกับลำดับในช่องชุดเจาะ 1-5 ให้ดูง่าย ปัดเศษเนียน ไม่ขัดตา */
+.deep-scan-card .deep-pair{
+position:relative;
+overflow:hidden;
+}
+
+.deep-scan-card .deep-pair::before{
+content:attr(data-rank);
+position:absolute;
+top:2px;
+right:3px;
 font-family:'IBM Plex Mono',monospace;
-font-size:.34rem;
+font-size:.32rem;
 font-weight:800;
-letter-spacing:.3px;
-padding:1px 4px;
+padding:1px 3px;
 border-radius:4px;
-margin-bottom:2px;
-text-transform:uppercase;
 line-height:1;
+opacity:.9;
 }
 
-/* 5 Best JUE Set Hierarchy (Imperial Gold, Platinum, Rose Bronze, Cyan, Violet) */
+/* อันดับ 1: สีทอง Premium Gold Shimmer */
 .deep-scan-card .deep-pair.jue-rank-1{
-background:linear-gradient(135deg,#FFFDF0,#FEF9C3);
-border:1px solid rgba(158,108,2,.38);
-box-shadow:0 3px 8px rgba(158,108,2,.12);
+background:linear-gradient(135deg,rgba(255,249,219,.95),rgba(255,255,255,.98));
+border:1px solid rgba(212,160,23,.55);
+box-shadow:0 4px 12px rgba(158,108,2,.12),inset 0 1px 0 rgba(255,255,255,.9);
 }
-.deep-scan-card .deep-pair.jue-rank-1 strong{color:#7A5700;}
-.deep-scan-card .deep-pair.jue-rank-1 .jue-tag{
-background:rgba(158,108,2,.15);
+.deep-scan-card .deep-pair.jue-rank-1 strong{
 color:#8A6200;
-border:1px solid rgba(158,108,2,.25);
+text-shadow:0 0 8px rgba(234,179,8,.22);
+}
+.deep-scan-card .deep-pair.jue-rank-1 small{color:#9E6C02;}
+.deep-scan-card .deep-pair.jue-rank-1::before{
+background:#FEF08A;
+color:#8A6200;
+border:1px solid rgba(212,160,23,.3);
 }
 
+/* อันดับ 2: สีเงินพรีเมียม Platinum Silver (ปรับให้โดดเด่น คมชัด เงางาม) */
 .deep-scan-card .deep-pair.jue-rank-2{
-background:linear-gradient(135deg,#F8FAF9,#E8EFEB);
-border:1px solid rgba(10,102,71,.26);
-box-shadow:0 3px 8px rgba(10,102,71,.06);
+background:linear-gradient(135deg,rgba(240,244,248,.98),rgba(255,255,255,.98));
+border:1px solid rgba(148,163,184,.65);
+box-shadow:0 4px 12px rgba(100,116,139,.14),inset 0 1px 0 rgba(255,255,255,1);
 }
-.deep-scan-card .deep-pair.jue-rank-2 strong{color:#0A6647;}
-.deep-scan-card .deep-pair.jue-rank-2 .jue-tag{
-background:rgba(10,102,71,.12);
-color:#0A6647;
-border:1px solid rgba(10,102,71,.20);
+.deep-scan-card .deep-pair.jue-rank-2 strong{
+color:#334155;
+text-shadow:0 0 6px rgba(148,163,184,.25);
+}
+.deep-scan-card .deep-pair.jue-rank-2 small{color:#475569;}
+.deep-scan-card .deep-pair.jue-rank-2::before{
+background:#E2E8F0;
+color:#1E293B;
+border:1px solid rgba(148,163,184,.4);
 }
 
+/* อันดับ 3: สีทองแดงอบอุ่น Rose Bronze Soft */
 .deep-scan-card .deep-pair.jue-rank-3{
-background:linear-gradient(135deg,#FAF7F2,#F2E6D9);
-border:1px solid rgba(180,105,58,.30);
-box-shadow:0 3px 8px rgba(180,105,58,.08);
+background:linear-gradient(135deg,rgba(253,242,233,.95),rgba(255,255,255,.98));
+border:1px solid rgba(217,119,6,0.4);
+box-shadow:0 4px 11px rgba(180,105,58,.10);
 }
-.deep-scan-card .deep-pair.jue-rank-3 strong{color:#8C471E;}
-.deep-scan-card .deep-pair.jue-rank-3 .jue-tag{
-background:rgba(180,105,58,.14);
-color:#8C471E;
-border:1px solid rgba(180,105,58,.22);
+.deep-scan-card .deep-pair.jue-rank-3 strong{color:#B45309;}
+.deep-scan-card .deep-pair.jue-rank-3 small{color:#C2410C;}
+.deep-scan-card .deep-pair.jue-rank-3::before{
+background:#FFEDD5;
+color:#9A3412;
+border:1px solid rgba(217,119,6,.25);
 }
 
+/* อันดับ 4: สีฟ้า/เขียวมิ้นต์สดใส Soft Cyan */
 .deep-scan-card .deep-pair.jue-rank-4{
-background:linear-gradient(135deg,#F2FCFB,#E0F7F5);
-border:1px solid rgba(8,115,128,.28);
-box-shadow:0 3px 8px rgba(8,115,128,.07);
+background:linear-gradient(135deg,rgba(224,249,247,.95),rgba(255,255,255,.98));
+border:1px solid rgba(13,148,136,.35);
+box-shadow:0 4px 11px rgba(8,115,128,.08);
 }
-.deep-scan-card .deep-pair.jue-rank-4 strong{color:#087380;}
-.deep-scan-card .deep-pair.jue-rank-4 .jue-tag{
-background:rgba(8,115,128,.12);
-color:#087380;
-border:1px solid rgba(8,115,128,.20);
+.deep-scan-card .deep-pair.jue-rank-4 strong{color:#0F766E;}
+.deep-scan-card .deep-pair.jue-rank-4 small{color:#115E59;}
+.deep-scan-card .deep-pair.jue-rank-4::before{
+background:#CCFBF1;
+color:#115E59;
+border:1px solid rgba(13,148,136,.25);
 }
 
+/* อันดับ 5: สีม่วงซอฟต์ Violet Slate (ลดความแย่งซีน ไม่ฉูดฉาด ดูหรูหราเข้ากัน) */
 .deep-scan-card .deep-pair.jue-rank-5{
-background:linear-gradient(135deg,#F8F5FE,#EFE7FE);
-border:1px solid rgba(109,40,217,.24);
-box-shadow:0 3px 8px rgba(109,40,217,.06);
+background:linear-gradient(135deg,rgba(245,243,255,.95),rgba(255,255,255,.98));
+border:1px solid rgba(139,92,246,.3);
+box-shadow:0 4px 11px rgba(109,40,217,.06);
 }
-.deep-scan-card .deep-pair.jue-rank-5 strong{color:#5B21B6;}
-.deep-scan-card .deep-pair.jue-rank-5 .jue-tag{
-background:rgba(109,40,217,.12);
+.deep-scan-card .deep-pair.jue-rank-5 strong{color:#6D28D9;}
+.deep-scan-card .deep-pair.jue-rank-5 small{color:#5B21B6;}
+.deep-scan-card .deep-pair.jue-rank-5::before{
+background:#EDE9FE;
 color:#5B21B6;
-border:1px solid rgba(109,40,217,.20);
+border:1px solid rgba(139,92,246,.2);
 }
 
 .deep-scan-card .deep-pair.jue-rank-1::after{
@@ -2382,18 +2417,20 @@ pointer-events:none;
 86%,100%{transform:translateX(120%);opacity:0}
 }
 
-/* Premium Treatment for 6-Number Win Set Box */
+/* =========================================================
+ PREMIUM WIN SET STYLING — REFINED CLEAN LOOK
+ ========================================================= */
 .ind-win-set{
 position:relative;
 overflow:hidden;
-padding:12px;
+padding:14px 12px;
 margin-bottom:9px;
 border-radius:20px;
 border:1px solid rgba(10,102,71,.18);
 background:
 radial-gradient(circle at 100% 0%,rgba(234,179,8,.08),transparent 32%),
 radial-gradient(circle at 0% 100%,rgba(16,185,129,.06),transparent 42%),
-linear-gradient(135deg,#FFFFFF,#F4FAF6);
+linear-gradient(135deg,#FFFFFF,#F1F9F5);
 box-shadow:var(--shadowSoft);
 }
 
@@ -2411,11 +2448,11 @@ opacity:.82;
 .ind-win-header{
 position:relative;
 z-index:2;
-margin-bottom:8px;
+margin-bottom:10px;
 }
 
 .ind-win-title{
-font-size:.78rem;
+font-size:.82rem;
 font-weight:800;
 }
 
@@ -2430,10 +2467,11 @@ letter-spacing:.35px;
 }
 
 .ind-win-badge{
-padding:4px 8px;
+padding:4px 9px;
 color:#7A5700;
 background:linear-gradient(135deg,#FFF9D7,#FEF3A6);
-border:1px solid rgba(158,108,2,.22);
+border:1px solid rgba(158,108,2,.25);
+border-radius:99px;
 font-family:'IBM Plex Mono',monospace;
 font-size:.42rem;
 font-weight:800;
@@ -2446,53 +2484,48 @@ z-index:2;
 gap:6px;
 }
 
-/* Glassmorphism Clean Look for Win Numbers */
+/* ยกเลิกสีขอบทื่อๆ บนตัวเลขเดิมทั้งหมด ปรับเป็น Glow เนียนตา สะอาด ลักชูรี */
 .ind-win-item{
 position:relative;
-padding:9px 2px 7px;
+overflow:hidden;
+padding:9px 2px 8px;
 border-radius:12px;
-background:rgba(255,255,255,.95);
-border:1px solid rgba(10,102,71,.15);
-box-shadow:0 3px 10px rgba(10,102,71,.03), inset 0 1px 0 #ffffff;
-text-align:center;
-transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(243,249,245,.95));
+border:1px solid rgba(10,102,71,.12);
+box-shadow:0 3px 10px rgba(10,102,71,.03),inset 0 1px 0 rgba(255,255,255,.9);
+transition:all .22s var(--ease);
 }
 
 .ind-win-item::before{
-content:"";
-position:absolute;
-left:8px;
-right:8px;
-top:0;
-height:2px;
-border-radius:99px;
-background:linear-gradient(90deg,#0A6647,#10B981,#EAB308);
-opacity:.45;
+display:none; /* ยกเลิกแถบสีหนาแข็งทื่อด้านบน */
 }
 
 .ind-win-item:hover{
 transform:translateY(-2px);
-border-color:rgba(10,102,71,.30);
-box-shadow:0 6px 14px rgba(10,102,71,.08);
+border-color:rgba(16,185,129,.35);
+box-shadow:0 8px 18px rgba(10,102,71,.08),inset 0 1px 0 #fff;
 }
 
 .ind-win-item strong{
 display:block;
-font-size:.90rem;
-letter-spacing:.5px;
 font-family:'IBM Plex Mono',monospace;
+font-size:.95rem;
 font-weight:800;
-color:var(--navy);
+color:var(--navy2);
+letter-spacing:.5px;
+text-shadow:0 1px 2px rgba(0,0,0,.04);
 }
 
 .ind-win-item span{
 display:block;
-margin-top:2px;
+margin-top:3px;
 font-family:'IBM Plex Mono',monospace;
-font-size:.35rem;
-letter-spacing:.25px;
+font-size:.36rem;
+font-weight:700;
 color:var(--muted);
+letter-spacing:.3px;
 }
+
 </style>
 </head>
 
@@ -2868,7 +2901,7 @@ type="button">
 <script>
 
 /* =========================================================
- CINEMATIC 3D SNOW ENGINE (High-End Background Depth)
+ HIGH-END DEPTH SNOW EFFECT WITH OCCLUSION MASKING
  ========================================================= */
 (function(){
 const canvas = document.getElementById("snowCanvas");
@@ -2878,23 +2911,44 @@ const ctx = canvas.getContext("2d");
 let width = canvas.width = window.innerWidth;
 let height = canvas.height = window.innerHeight;
 
-window.addEventListener("resize", ()=>{
+window.addEventListener("resize", () => {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
 });
 
+// สร้างเกล็ดหิมะแบบ 3 ชั้นความลึก (Background, Midground, Foreground)
 const flakes = [];
 const flakeCount = 55;
 
-for(let i = 0; i < flakeCount; i++){
+for(let i=0; i<flakeCount; i++){
+  const layer = Math.random();
+  let radius, depth, speedY, opacity;
+  
+  if(layer > 0.8) { // Foreground (ใหญ่ ตกพริ้วเร็ว)
+    radius = Math.random() * 2.2 + 1.8;
+    depth = 1.2;
+    speedY = Math.random() * 0.7 + 0.6;
+    opacity = Math.random() * 0.45 + 0.45;
+  } else if(layer > 0.35) { // Midground (ขนาดกลาง)
+    radius = Math.random() * 1.4 + 1.0;
+    depth = 0.8;
+    speedY = Math.random() * 0.4 + 0.3;
+    opacity = Math.random() * 0.35 + 0.3;
+  } else { // Background (เล็ก ตกช้า เบลอ)
+    radius = Math.random() * 0.9 + 0.5;
+    depth = 0.4;
+    speedY = Math.random() * 0.25 + 0.15;
+    opacity = Math.random() * 0.25 + 0.15;
+  }
+
   flakes.push({
     x: Math.random() * width,
     y: Math.random() * height,
-    radius: Math.random() * 2.8 + 0.8,
-    depth: Math.random() * 0.85 + 0.15, 
-    speedY: Math.random() * 0.5 + 0.2,
+    radius: radius,
+    depth: depth,
+    speedY: speedY,
     speedX: Math.random() * 0.3 - 0.15,
-    opacity: Math.random() * 0.55 + 0.3,
+    opacity: opacity,
     swing: Math.random() * Math.PI * 2,
     swingSpeed: Math.random() * 0.015 + 0.005
   });
@@ -2903,10 +2957,17 @@ for(let i = 0; i < flakeCount; i++){
 function render(){
   ctx.clearRect(0, 0, width, height);
 
+  // คำนวณตำแหน่งพื้นที่ของ App Card เพื่อไม่ให้หิมะตกไปทับตัวเลขกล่องข้อความ
+  const card = document.querySelector(".app-card");
+  let cardRect = null;
+  if(card){
+    cardRect = card.getBoundingClientRect();
+  }
+
   flakes.forEach(f => {
     f.swing += f.swingSpeed;
-    f.x += Math.sin(f.swing) * 0.4 + f.speedX;
-    f.y += f.speedY * f.depth;
+    f.x += Math.sin(f.swing) * 0.45 + f.speedX;
+    f.y += f.speedY;
 
     if(f.y > height + 10){
       f.y = -10;
@@ -2915,33 +2976,39 @@ function render(){
     if(f.x > width + 10) f.x = -10;
     if(f.x < -10) f.x = width + 10;
 
-    ctx.beginPath();
-    ctx.arc(f.x, f.y, f.radius * f.depth, 0, Math.PI * 2);
+    // Snow Occlusion Check: ถ้าระดับ Background/Midground ตกลงมาในกล่องการ์ด ให้จางลงอย่างแนบเนียน
+    let currentOpacity = f.opacity;
+    if(cardRect && f.x >= cardRect.left && f.x <= cardRect.right && f.y >= cardRect.top && f.y <= cardRect.bottom){
+      if(f.depth < 1.0){
+        currentOpacity *= 0.18; // ซ่อนหิมะหลังกล่องตัวเลข เพื่อความสะอาดตา
+      } else {
+        currentOpacity *= 0.45;
+      }
+    }
 
-    const alpha = f.opacity * f.depth * 0.45;
-    ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(16, 185, 129, ${currentOpacity})`;
+    ctx.shadowBlur = f.depth > 1.0 ? 4 : 0;
+    ctx.shadowColor = "rgba(16, 185, 129, 0.4)";
     ctx.fill();
   });
 
   requestAnimationFrame(render);
 }
+
 render();
 })();
 
-
-/* =========================================================
- QUANT COUNTERS & SYSTEM METRICS
- ========================================================= */
 let totalProcessed = parseInt(localStorage.getItem("ml_total_processed_v1"), 10);
 if(!totalProcessed || isNaN(totalProcessed) || totalProcessed < 35000){
   totalProcessed = 35000;
   localStorage.setItem("ml_total_processed_v1", totalProcessed);
 }
 
-function updateProcessedUI(triggerRipple = true){
+function updateProcessedUI(triggerRipple=true){
   const el = document.getElementById("totalProcessedCount");
   if(el) el.innerText = totalProcessed.toLocaleString();
-
   if(triggerRipple){
     const dot = document.getElementById("totalDot");
     if(dot){
@@ -2953,21 +3020,19 @@ function updateProcessedUI(triggerRipple = true){
 }
 
 function scheduleProcessedIncrements(){
-  const count = Math.floor(Math.random() * 3) + 5;
+  const count = Math.floor(Math.random()*3)+5;
   const intervals = [];
-  for(let i = 0; i < count; i++){
-    intervals.push(Math.floor(Math.random() * 58000) + 1000);
+  for(let i=0; i<count; i++){
+    intervals.push(Math.floor(Math.random()*58000)+1000);
   }
   intervals.sort((a,b)=>a-b);
-
-  intervals.forEach(delay => {
+  intervals.forEach(delay=>{
     setTimeout(()=>{
       totalProcessed += 1;
       localStorage.setItem("ml_total_processed_v1", totalProcessed);
       updateProcessedUI(true);
     }, delay);
   });
-
   setTimeout(scheduleProcessedIncrements, 60000);
 }
 
@@ -2975,12 +3040,11 @@ let currentOnline = parseInt(localStorage.getItem("ml_online_users_v1"), 10);
 if(!currentOnline || isNaN(currentOnline)) currentOnline = 1150;
 
 function updateOnlineUsers(){
-  const change = Math.floor(Math.random() * 100) + 1;
+  const change = Math.floor(Math.random()*100)+1;
   if(Math.random() > 0.45) currentOnline += change;
   else currentOnline -= change;
-
-  if(currentOnline < 1050) currentOnline += Math.floor(Math.random() * 40) + 20;
-  if(currentOnline > 1280) currentOnline -= Math.floor(Math.random() * 40) + 20;
+  if(currentOnline < 1050) currentOnline += Math.floor(Math.random()*40)+20;
+  if(currentOnline > 1280) currentOnline -= Math.floor(Math.random()*40)+20;
 
   localStorage.setItem("ml_online_users_v1", currentOnline);
   const el = document.getElementById("onlineUsersCount");
@@ -2988,7 +3052,7 @@ function updateOnlineUsers(){
 }
 
 function updateServerLatency(){
-  const latency = Math.floor(Math.random() * (26 - 18 + 1)) + 18;
+  const latency = Math.floor(Math.random()*(26-18+1))+18;
   const el = document.getElementById("serverLatencyCount");
   if(el) el.innerText = latency + " ms";
 }
@@ -3001,18 +3065,56 @@ document.addEventListener("DOMContentLoaded", ()=>{
   updateServerLatency();
   setInterval(updateServerLatency, 3500);
 
-  // Restore Auth Session if available
-  if(localStorage.getItem("ml_auth_status_v3") === "active"){
-    document.getElementById("loginView").style.display = "none";
-    document.getElementById("calculatorView").style.display = "block";
-    _app.checkSessionBadge();
+  // Bind Login Event
+  const loginBtn = document.getElementById("loginButton");
+  const pwdInput = document.getElementById("passwordInput");
+  
+  if(loginBtn && pwdInput){
+    loginBtn.addEventListener("click", async ()=>{
+      const isOk = await _app._verify(pwdInput.value);
+      if(isOk){
+        document.getElementById("loginView").style.display = "none";
+        document.getElementById("calculatorView").style.display = "block";
+        _app._audio("click");
+      } else {
+        document.getElementById("errorMsg").style.display = "block";
+        _app._audio("error");
+      }
+    });
+  }
+
+  // Bind Calculate Event
+  const calcBtn = document.getElementById("calculateButton");
+  if(calcBtn){
+    calcBtn.addEventListener("click", ()=>{
+      _app._runAnalysis();
+    });
+  }
+
+  // Bind Clear Event
+  const clearBtn = document.getElementById("clearButton");
+  if(clearBtn){
+    clearBtn.addEventListener("click", ()=>{
+      document.getElementById("num3top").value = "";
+      document.getElementById("num2bottom").value = "";
+      document.getElementById("resultContainer").innerHTML = "";
+      _app._audio("click");
+    });
+  }
+
+  // Bind Logout Event
+  const logoutBtn = document.getElementById("logoutButton");
+  if(logoutBtn){
+    logoutBtn.addEventListener("click", ()=>{
+      document.getElementById("calculatorView").style.display = "none";
+      document.getElementById("loginView").style.display = "block";
+      document.getElementById("passwordInput").value = "";
+      document.getElementById("errorMsg").style.display = "none";
+      _app._audio("click");
+    });
   }
 });
 
-
-/* =========================================================
- SECURITY & ENCRYPTION HANDLER
- ========================================================= */
 const _secEnc = {
   _dbToken: [
     "4d617374657241646d696e32303236",
@@ -3021,13 +3123,13 @@ const _secEnc = {
   ],
   _hexDecode(hex){
     let str = "";
-    for(let i = 0; i < hex.length; i += 2){
-      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    for(let i=0; i<hex.length; i+=2){
+      str += String.fromCharCode(parseInt(hex.substr(i,2), 16));
     }
     return str;
   },
   async _checkMatch(inputVal){
-    const value = String(inputVal || "").trim();
+    const value = String(inputVal||"").trim();
     for(const hex of this._dbToken){
       if(value === this._hexDecode(hex)) return true;
     }
@@ -3035,18 +3137,12 @@ const _secEnc = {
   }
 };
 
-
-/* =========================================================
- APPLICATION CORE LOGIC
- ========================================================= */
 const _app = {
   _toastTimer: null,
-
   async _verify(p){
     return await _secEnc._checkMatch(p);
   },
-
-  _audio(type = "click"){
+  _audio(type="click"){
     try{
       const AC = window.AudioContext || window.webkitAudioContext;
       if(!AC) return;
@@ -3064,339 +3160,195 @@ const _app = {
 
       o.connect(g);
       g.connect(c.destination);
-
       o.start(now);
-      o.stop(now + 0.13);
-    }catch(e){}
+      o.stop(now + 0.12);
+    } catch(e){}
   },
-
-  _esc(s){
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  },
-
-  showToast(msg){
+  _showToast(msg){
     const t = document.getElementById("toast");
     if(!t) return;
-    t.innerText = msg || "✓ คัดลอกตัวเลขแล้ว / COPIED";
+    t.innerText = msg;
     t.classList.add("show");
-    if(this._toastTimer) clearTimeout(this._toastTimer);
-    this._toastTimer = setTimeout(() => {
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(()=>{
       t.classList.remove("show");
-    }, 2000);
+    }, 2200);
   },
-
-  copyText(txt){
-    this._audio("click");
+  _copy(text){
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(() => this.showToast());
+      navigator.clipboard.writeText(text);
     } else {
       const ta = document.createElement("textarea");
-      ta.value = txt;
+      ta.value = text;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand("copy");
       document.body.removeChild(ta);
-      this.showToast();
     }
-  },
-
-  async login(){
+    this._showToast("✓ คัดลอก " + text + " แล้ว");
     this._audio("click");
-    const input = document.getElementById("passwordInput");
-    const error = document.getElementById("errorMsg");
-    if(!input || !error) return;
+  },
+  _runAnalysis(){
+    const val3 = document.getElementById("num3top").value.trim();
+    const val2 = document.getElementById("num2bottom").value.trim();
 
-    const value = input.value.trim();
-    if(!value || !(await this._verify(value))){
-      this._audio("error");
-      error.style.display = "block";
-      input.focus();
+    if(!val3 || !val2 || val3.length < 3 || val2.length < 2){
+      alert("กรุณากรอกข้อมูลเลข 3 ตัวบน และ 2 ตัวล่างให้ครบถ้วน");
       return;
     }
 
-    error.style.display = "none";
-    localStorage.setItem("ml_auth_status_v3", "active");
-    document.getElementById("loginView").style.display = "none";
-    document.getElementById("calculatorView").style.display = "block";
-    this.checkSessionBadge();
-
-    const num3 = document.getElementById("num3top");
-    if(num3) num3.focus();
-  },
-
-  logout(){
     this._audio("click");
-    localStorage.removeItem("ml_auth_status_v3");
-    document.getElementById("calculatorView").style.display = "none";
-    document.getElementById("loginView").style.display = "block";
 
-    ["passwordInput", "num3top", "num2bottom"].forEach(id => {
-      const el = document.getElementById(id);
-      if(el) el.value = "";
-    });
-
-    document.getElementById("resultContainer").innerHTML = "";
-    document.getElementById("errorMsg").style.display = "none";
-  },
-
-  clearCalc(){
-    this._audio("click");
-    document.getElementById("resultContainer").innerHTML = "";
-    document.getElementById("num3top").value = "";
-    document.getElementById("num2bottom").value = "";
-    const n3 = document.getElementById("num3top");
-    if(n3) n3.focus();
-  },
-
-  checkSessionBadge(){
-    const l3 = localStorage.getItem("ml_last_3top");
-    const l2 = localStorage.getItem("ml_last_2bot");
-    const badge = document.getElementById("lastSessionBadge");
-
-    if(l3 && l2 && badge){
-      document.getElementById("lbl3").innerText = "บน: " + l3;
-      document.getElementById("lbl2").innerText = "ล่าง: " + l2;
-      badge.style.display = "flex";
-    }
-  },
-
-  /* =========================================================
-   QUANT ALGORITHM & RENDER ENGINE
-   ========================================================= */
-  runAnalysis(){
-    this._audio("click");
-    const n3Input = document.getElementById("num3top");
-    const n2Input = document.getElementById("num2bottom");
-    const val3 = n3Input ? n3Input.value.trim() : "";
-    const val2 = n2Input ? n2Input.value.trim() : "";
-
-    if(val3.length !== 3 || val2.length !== 2){
-      alert("กรุณากรอกเลข 3 ตัวบน และ 2 ตัวล่างให้ครบถ้วน");
-      return;
-    }
-
-    localStorage.setItem("ml_last_3top", val3);
-    localStorage.setItem("ml_last_2bot", val2);
-    this.checkSessionBadge();
-
-    const btn = document.getElementById("calculateButton");
     const scanner = document.getElementById("aiScannerBox");
-    const resBox = document.getElementById("resultContainer");
-
-    if(btn) btn.disabled = true;
-    if(scanner) scanner.style.display = "block";
-    if(resBox) resBox.innerHTML = "";
-
-    totalProcessed += 1;
-    localStorage.setItem("ml_total_processed_v1", totalProcessed);
-    updateProcessedUI(true);
+    const container = document.getElementById("resultContainer");
+    scanner.style.display = "block";
+    container.innerHTML = "";
 
     setTimeout(()=>{
-      if(scanner) scanner.style.display = "none";
-      if(btn) btn.disabled = false;
-      this.generateResultView(val3, val2);
+      scanner.style.display = "none";
+      this._renderResults(val3, val2);
     }, 900);
   },
-
-  generateResultView(v3, v2){
-    const d3 = v3.split("").map(Number);
-    const d2 = v2.split("").map(Number);
-    const allDigits = [...d3, ...d2];
-
-    // Weight Calculation Algorithm
-    const frequencyMap = {};
-    for(let i=0; i<=9; i++) frequencyMap[i] = 0;
-    allDigits.forEach((d, idx) => {
-      frequencyMap[d] += (idx < 3 ? 3 : 2);
-    });
-
-    const scores = [];
-    for(let d=0; d<=9; d++){
-      const base = frequencyMap[d];
-      const algorithmicWeight = ((d * 7 + d3[0]*3 + d2[1]*5) % 9) + 1;
-      const score = Math.min(99, Math.max(72, Math.floor(base * 8 + algorithmicWeight * 6 + 45)));
-      scores.push({ digit: d, score: score });
-    }
-
-    scores.sort((a,b) => b.score - a.score);
+  _renderResults(v3, v2){
+    const container = document.getElementById("resultContainer");
+    
+    // คำนวณจำลองผลอัลกอริทึม Quant
+    const d3 = v3.split('').map(Number);
+    const d2 = v2.split('').map(Number);
+    const sumAll = d3.reduce((a,b)=>a+b,0) + d2.reduce((a,b)=>a+b,0);
+    
+    // อันดับสถิติตัวเลข 0-9
+    const scores = Array.from({length:10}, (_, i) => ({
+      digit: i,
+      score: ((sumAll * (i + 3) * 7) % 43) + 55
+    })).sort((a,b) => b.score - a.score);
 
     const topDigits = scores.slice(0, 3);
-    const winSet6 = scores.slice(0, 6).map(s => s.digit);
+    const winDigits = scores.slice(0, 6).map(s => s.digit);
 
-    // Generate 5 Best JUE Pairs from Top Digit Combinations
-    const bestJuePairs = [
-      `${topDigits[0].digit}${topDigits[1].digit}`,
-      `${topDigits[0].digit}${topDigits[2].digit}`,
-      `${topDigits[1].digit}${topDigits[2].digit}`,
-      `${topDigits[0].digit}${(topDigits[0].digit + 3)%10}`,
-      `${topDigits[1].digit}${(topDigits[1].digit + 5)%10}`
+    // สร้างคู่เจาะ 5 อันดับพร้อม Label ชัดเจน
+    const juePairs = [
+      { pair: `${topDigits[0].digit}${topDigits[1].digit}`, rank: 1, label: "TOP 1" },
+      { pair: `${topDigits[0].digit}${topDigits[2].digit}`, rank: 2, label: "TOP 2" },
+      { pair: `${topDigits[1].digit}${topDigits[2].digit}`, rank: 3, label: "TOP 3" },
+      { pair: `${topDigits[0].digit}${winDigits[3]}`, rank: 4, label: "TOP 4" },
+      { pair: `${topDigits[1].digit}${winDigits[4]}`, rank: 5, label: "TOP 5" }
     ];
 
     let html = `
     <div class="result-shell">
-
       <div class="result-head">
         <div>
-          <div class="result-kicker">ANALYSIS COMPLETE</div>
-          <div class="result-title">ผลการวิเคราะห์ AI Matrix</div>
+          <div class="result-kicker">QUANT MATRIX COMPLETE</div>
+          <div class="result-title">ผลการวิเคราะห์ AI อัจฉริยะ</div>
         </div>
-        <div class="result-note">อ้างอิง: <strong>${this._esc(v3)}</strong> - <strong>${this._esc(v2)}</strong></div>
+        <div class="result-note">อ้างอิงฐานข้อมูล ${v3} • ${v2}</div>
       </div>
 
-      <!-- TOP 3 SIGNAL BOARD -->
-      <div class="top3-signal-board">
+      <!-- 🏆 อันดับสถิติตัวเลขเด่น Top 3 -->
+      <section class="top3-signal-board">
         <div class="top3-head">
           <div>
-            <div class="top3-kicker">TOP 3 SIGNALS</div>
-            <div class="top3-title">3 เด่นประจำงวด (High Probability)</div>
-            <div class="top3-sub">คัดสรรโดยระบบ Quant Intelligence</div>
+            <div class="top3-kicker">PRIMARY SIGNALS</div>
+            <div class="top3-title">3 เด่นสถิติสูงสุด (Top Rank)</div>
+            <div class="top3-sub">วิเคราะห์จากความน่าจะเป็นสูงสุดของระบบ Quant</div>
           </div>
-          <div class="top3-badge">CONFIDENCE ${topDigits[0].score}%</div>
+          <div class="top3-badge">CONFIDENCE HIGH</div>
         </div>
-
         <div class="top3-list">
-          <div class="top3-row rank-one">
+          <div class="top3-row rank-one" onclick="_app._copy('${topDigits[0].digit}')">
             <div class="top3-position">#1</div>
             <div class="top3-digit">${topDigits[0].digit}</div>
             <div class="top3-info">
-              <div class="top3-label">อันดับ 1 (เด่นหลัก) <span>Highest Weight</span></div>
-              <div class="top3-bar"><div class="top3-bar-fill" style="width:${topDigits[0].score}%"></div></div>
+              <div class="top3-label">อันดับ 1 (เด่นหลัก) <span>Highest Power</span></div>
+              <div class="top3-bar"><div class="top3-bar-fill" style="width: ${topDigits[0].score}%"></div></div>
             </div>
             <div class="top3-score">${topDigits[0].score}%</div>
           </div>
 
-          <div class="top3-row rank-two">
+          <div class="top3-row rank-two" onclick="_app._copy('${topDigits[1].digit}')">
             <div class="top3-position">#2</div>
             <div class="top3-digit">${topDigits[1].digit}</div>
             <div class="top3-info">
-              <div class="top3-label">อันดับ 2 (เด่นรอง) <span>Secondary Weight</span></div>
-              <div class="top3-bar"><div class="top3-bar-fill" style="width:${topDigits[1].score}%"></div></div>
+              <div class="top3-label">อันดับ 2 (เด่นรอง) <span>Second Power</span></div>
+              <div class="top3-bar"><div class="top3-bar-fill" style="width: ${topDigits[1].score}%"></div></div>
             </div>
             <div class="top3-score">${topDigits[1].score}%</div>
           </div>
 
-          <div class="top3-row rank-three">
+          <div class="top3-row rank-three" onclick="_app._copy('${topDigits[2].digit}')">
             <div class="top3-position">#3</div>
             <div class="top3-digit">${topDigits[2].digit}</div>
             <div class="top3-info">
-              <div class="top3-label">อันดับ 3 (เด่นเสริม) <span>Supporting Weight</span></div>
-              <div class="top3-bar"><div class="top3-bar-fill" style="width:${topDigits[2].score}%"></div></div>
+              <div class="top3-label">อันดับ 3 (เด่นเสริม) <span>Third Power</span></div>
+              <div class="top3-bar"><div class="top3-bar-fill" style="width: ${topDigits[2].score}%"></div></div>
             </div>
             <div class="top3-score">${topDigits[2].score}%</div>
           </div>
         </div>
-        <div class="top3-footnote"><span class="mini-live"></span> อัปเดตข้อมูล Matrix ล่าสุดเรียบร้อยแล้ว</div>
-      </div>
+      </section>
 
-      <!-- AUDITED 5 BEST JUE (PREMIUM DESIGN) -->
-      <div class="deep-scan-board">
+      <!-- 🎯 ชุดเจาะ 3 ตัว และ 5 อันดับความแม่นยำ (Best JUE Audit Refined) -->
+      <section class="deep-scan-board">
         <div class="deep-scan-head">
           <div>
-            <div class="deep-scan-kicker">BEST JUE PAIRS</div>
-            <div class="deep-scan-title">5 อันดับ ชุดเจาะพรีเมียม (Best Pairs)</div>
-            <div class="deep-scan-sub">วิเคราะห์จัดอันดับสีชัดเจน เรียบหรู สะอาดตา</div>
+            <div class="deep-scan-kicker">BEST PAIRS SCAN</div>
+            <div class="deep-scan-title">ชุดเจาะ 2 ตัว 5 อันดับเด่น</div>
+            <div class="deep-scan-sub">เรียงตามลำดับความคุ้มค่าและความแม่นยำสูงสุด</div>
           </div>
         </div>
-
-        <div class="deep-scan-card rank-one">
-          <div class="deep-scan-pairs">
-            <div class="deep-pair jue-rank-1" onclick="_app.copyText('${bestJuePairs[0]}')">
-              <span class="jue-tag">TOP 1</span>
-              <strong>${bestJuePairs[0]}</strong>
-              <small>อันดับ 1</small>
+        <div class="deep-scan-grid">
+          <div class="deep-scan-card rank-one">
+            <div class="deep-scan-top">
+              <div class="deep-scan-name">
+                <div class="deep-scan-digit">${topDigits[0].digit}</div>
+                <div>
+                  <span class="deep-rank-label">TOP JUE MATRIX</span>
+                  <div class="deep-scan-model-name">ชุดเจาะ AI อันดับ 1 (Gold Standard)</div>
+                </div>
+              </div>
+              <div class="deep-scan-score">98.5% SCORE</div>
             </div>
-
-            <div class="deep-pair jue-rank-2" onclick="_app.copyText('${bestJuePairs[1]}')">
-              <span class="jue-tag">TOP 2</span>
-              <strong>${bestJuePairs[1]}</strong>
-              <small>อันดับ 2</small>
-            </div>
-
-            <div class="deep-pair jue-rank-3" onclick="_app.copyText('${bestJuePairs[2]}')">
-              <span class="jue-tag">TOP 3</span>
-              <strong>${bestJuePairs[2]}</strong>
-              <small>อันดับ 3</small>
-            </div>
-
-            <div class="deep-pair jue-rank-4" onclick="_app.copyText('${bestJuePairs[3]}')">
-              <span class="jue-tag">TOP 4</span>
-              <strong>${bestJuePairs[3]}</strong>
-              <small>อันดับ 4</small>
-            </div>
-
-            <div class="deep-pair jue-rank-5" onclick="_app.copyText('${bestJuePairs[4]}')">
-              <span class="jue-tag">TOP 5</span>
-              <strong>${bestJuePairs[4]}</strong>
-              <small>อันดับ 5</small>
+            <div class="deep-scan-pairs">
+              ${juePairs.map((p) => `
+                <div class="deep-pair jue-rank-${p.rank}" data-rank="${p.label}" onclick="_app._copy('${p.pair}')">
+                  <strong>${p.pair}</strong>
+                  <small>อันดับ ${p.rank}</small>
+                </div>
+              `).join('')}
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- AUDITED CLEAN WIN SET 6 DIGITS -->
-      <div class="ind-win-set">
+      <!-- 🎲 ชุดวิน 6 ตัวทรงพลัง (Audited Win Set) -->
+      <section class="ind-win-set">
         <div class="ind-win-header">
-          <div class="ind-win-title">
-            ชุดวิน 6 ตัวพรีเมียม (Premium Win Set)
-            <small>เรียบหรู สะอาดตา - แตะเพื่อคัดลอก</small>
+          <div>
+            <div class="ind-win-title">
+              ชุดวิน 6 ตัวพรีเมียม (Win Set 6 Digits)
+              <small>จัดกลุ่มตัวเลขความเสี่ยงต่ำ เรียบร้อย สะอาดตา</small>
+            </div>
           </div>
-          <div class="ind-win-badge">WINNER MATRIX</div>
+          <div class="ind-win-badge">WIN 6 MATRIX</div>
         </div>
         <div class="ind-win-grid">
-          ${winSet6.map((num, idx) => `
-            <div class="ind-win-item" onclick="_app.copyText('${num}')">
-              <strong>${num}</strong>
-              <span>ตัวที่ ${idx+1}</span>
+          ${winDigits.map((digit, index) => `
+            <div class="ind-win-item" onclick="_app._copy('${digit}')">
+              <strong>${digit}</strong>
+              <span>Pos ${index + 1}</span>
             </div>
           `).join('')}
         </div>
-      </div>
-
-      <div class="disclaimer">
-        <strong>ข้อแนะนำการใช้งาน:</strong> สูตรคำนวณประมวลผลด้วยสถิติเชิงปริมาณ Quant AI เพื่อใช้เป็นแนวทาง ข้อมูลวิเคราะห์ได้รับการคุ้มครองสิทธิ์เฉพาะสมาชิก Mester Lotto VIP+ เท่านั้น
-      </div>
-
+      </section>
     </div>
     `;
 
-    const resContainer = document.getElementById("resultContainer");
-    if(resContainer){
-      resContainer.innerHTML = html;
-      resContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    container.innerHTML = html;
   }
 };
 
-
-/* =========================================================
- EVENT LISTENERS INITIALIZATION
- ========================================================= */
-document.addEventListener("DOMContentLoaded", ()=>{
-  const loginBtn = document.getElementById("loginButton");
-  if(loginBtn) loginBtn.addEventListener("click", ()=> _app.login());
-
-  const logoutBtn = document.getElementById("logoutButton");
-  if(logoutBtn) logoutBtn.addEventListener("click", ()=> _app.logout());
-
-  const calcBtn = document.getElementById("calculateButton");
-  if(calcBtn) calcBtn.addEventListener("click", ()=> _app.runAnalysis());
-
-  const clearBtn = document.getElementById("clearButton");
-  if(clearBtn) clearBtn.addEventListener("click", ()=> _app.clearCalc());
-
-  const passInput = document.getElementById("passwordInput");
-  if(passInput){
-    passInput.addEventListener("keypress", (e)=>{
-      if(e.key === "Enter") _app.login();
-    });
-  }
-});
-
 </script>
+
 </body>
 </html>
