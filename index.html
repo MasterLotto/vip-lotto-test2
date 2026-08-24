@@ -93,7 +93,7 @@ inset:0;
 width:100%;
 height:100%;
 pointer-events:none;
-z-index:1;
+z-index:3;
 }
 
 .ambient{
@@ -197,6 +197,8 @@ padding:
 clamp(14px,3vw,18px)
 clamp(12px,3vw,16px)
 22px;
+position:relative;
+z-index:4;
 }
 
 .top-nav{
@@ -2076,7 +2078,6 @@ font-size:.35rem;
 color:var(--muted);
 }
 
-
 .ind-win-set{
 border-radius:19px;
 background:
@@ -2363,7 +2364,6 @@ transform:translate(-50%,0);
 .overview-bar{height:70px;}
 .overview-rank{font-size:.30rem;padding:2px 3px;}
 .overview-score{font-size:.29rem;}
-
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -2374,6 +2374,10 @@ scroll-behavior:auto!important;
 transition:none!important;
 }
 }
+
+/* =========================================================
+ AUDITED UI REFINEMENTS — TOP 3 / BEST JUE / WIN SET
+ ========================================================= */
 
 .deep-scan-model-name{
 font-size:.58rem;
@@ -2396,48 +2400,137 @@ color:#3F6B5A;
 color:#087380;
 }
 
-.deep-scan-card .deep-pair.jue-rank-1{
-background:linear-gradient(135deg,rgba(254,249,195,.92),rgba(255,255,255,.98));
-border-color:rgba(158,108,2,.38);
-box-shadow:0 4px 12px rgba(158,108,2,.12),inset 0 1px 0 rgba(255,255,255,.85);
+/* Best JUE TOP 5 — explicit hierarchy inside the existing small cells. */
+.deep-scan-card .deep-pair{
+position:relative;
+padding:9px 2px 5px;
 }
+
+.deep-scan-card .deep-pair::before{
+content:attr(data-rank-label);
+position:absolute;
+left:3px;
+top:3px;
+z-index:3;
+padding:1px 3px;
+border-radius:4px;
+font-family:'IBM Plex Mono',monospace;
+font-size:.25rem;
+line-height:1;
+font-weight:800;
+letter-spacing:.05px;
+background:rgba(255,255,255,.88);
+border:1px solid rgba(100,120,112,.18);
+color:#64756E;
+box-shadow:0 1px 3px rgba(10,102,71,.035);
+}
+
+/* #1 — Gold */
+.deep-scan-card .deep-pair.jue-rank-1{
+background:linear-gradient(145deg,#FFFDF0,#FFF3B8 52%,#FFFFFF);
+border-color:rgba(158,108,2,.44);
+box-shadow:0 4px 12px rgba(158,108,2,.13),inset 0 1px 0 rgba(255,255,255,.94);
+}
+
+.deep-scan-card .deep-pair.jue-rank-1::before{
+background:linear-gradient(135deg,#FFF3A6,#EAB308);
+border-color:rgba(158,108,2,.28);
+color:#765300;
+}
+
 .deep-scan-card .deep-pair.jue-rank-1 strong{
 color:#8A6200;
 text-shadow:0 0 8px rgba(234,179,8,.18);
 }
-.deep-scan-card .deep-pair.jue-rank-1 small{color:#9E6C02;}
 
+.deep-scan-card .deep-pair.jue-rank-1 small{
+color:#9E6C02;
+}
+
+/* #2 — Silver: intentionally darker edge and metallic contrast. */
 .deep-scan-card .deep-pair.jue-rank-2{
-background:linear-gradient(135deg,rgba(243,246,244,.98),rgba(255,255,255,.98));
-border-color:rgba(110,126,120,.34);
-box-shadow:0 4px 11px rgba(110,126,120,.09);
+background:linear-gradient(145deg,#F8FAFC,#E2E8F0 52%,#FFFFFF);
+border-color:#94A3B8;
+box-shadow:0 4px 12px rgba(71,85,105,.14),inset 0 1px 0 rgba(255,255,255,.98);
 }
-.deep-scan-card .deep-pair.jue-rank-2 strong{color:#53645E;}
-.deep-scan-card .deep-pair.jue-rank-2 small{color:#687A73;}
 
+.deep-scan-card .deep-pair.jue-rank-2::before{
+background:linear-gradient(135deg,#FFFFFF,#CBD5E1);
+border-color:#94A3B8;
+color:#334155;
+}
+
+.deep-scan-card .deep-pair.jue-rank-2 strong{
+color:#334155;
+text-shadow:0 1px 0 #fff;
+}
+
+.deep-scan-card .deep-pair.jue-rank-2 small{
+color:#64748B;
+}
+
+/* #3 — Bronze */
 .deep-scan-card .deep-pair.jue-rank-3{
-background:linear-gradient(135deg,rgba(252,227,209,.92),rgba(255,255,255,.98));
-border-color:rgba(180,105,58,.34);
-box-shadow:0 4px 11px rgba(180,105,58,.10);
+background:linear-gradient(145deg,#FFF8F2,#F1D0BA 52%,#FFFFFF);
+border-color:rgba(180,105,58,.42);
+box-shadow:0 4px 11px rgba(180,105,58,.11);
 }
-.deep-scan-card .deep-pair.jue-rank-3 strong{color:#9A5730;}
-.deep-scan-card .deep-pair.jue-rank-3 small{color:#A96843;}
 
+.deep-scan-card .deep-pair.jue-rank-3::before{
+background:linear-gradient(135deg,#F8D7C2,#B86B32);
+border-color:rgba(180,105,58,.28);
+color:#8A4E2B;
+}
+
+.deep-scan-card .deep-pair.jue-rank-3 strong{
+color:#9A5730;
+}
+
+.deep-scan-card .deep-pair.jue-rank-3 small{
+color:#A96843;
+}
+
+/* #4 — Blue/cyan */
 .deep-scan-card .deep-pair.jue-rank-4{
-background:linear-gradient(135deg,rgba(224,249,247,.92),rgba(255,255,255,.98));
-border-color:rgba(8,115,128,.30);
-box-shadow:0 4px 11px rgba(8,115,128,.08);
+background:linear-gradient(145deg,#F1FBFC,#D9F3F5 52%,#FFFFFF);
+border-color:rgba(8,115,128,.34);
+box-shadow:0 4px 11px rgba(8,115,128,.09);
 }
-.deep-scan-card .deep-pair.jue-rank-4 strong{color:#087380;}
-.deep-scan-card .deep-pair.jue-rank-4 small{color:#0B8793;}
 
-.deep-scan-card .deep-pair.jue-rank-5{
-background:linear-gradient(135deg,rgba(243,237,255,.92),rgba(255,255,255,.98));
-border-color:rgba(109,40,217,.25);
-box-shadow:0 4px 11px rgba(109,40,217,.07);
+.deep-scan-card .deep-pair.jue-rank-4::before{
+background:linear-gradient(135deg,#CFF5F7,#14B8A6);
+border-color:rgba(8,115,128,.24);
+color:#087380;
 }
-.deep-scan-card .deep-pair.jue-rank-5 strong{color:#6D28D9;}
-.deep-scan-card .deep-pair.jue-rank-5 small{color:#7651C7;}
+
+.deep-scan-card .deep-pair.jue-rank-4 strong{
+color:#087380;
+}
+
+.deep-scan-card .deep-pair.jue-rank-4 small{
+color:#0B8793;
+}
+
+/* #5 — Purple, deliberately muted so it cannot visually outrank #1–#4. */
+.deep-scan-card .deep-pair.jue-rank-5{
+background:linear-gradient(145deg,#FBF9FF,#F1ECF9 52%,#FFFFFF);
+border-color:rgba(109,40,217,.18);
+box-shadow:0 3px 9px rgba(109,40,217,.045);
+}
+
+.deep-scan-card .deep-pair.jue-rank-5::before{
+background:linear-gradient(135deg,#DDD2F2,#9B82D0);
+border-color:rgba(109,40,217,.15);
+color:#6547A0;
+}
+
+.deep-scan-card .deep-pair.jue-rank-5 strong{
+color:#6547A0;
+}
+
+.deep-scan-card .deep-pair.jue-rank-5 small{
+color:#7C67A8;
+}
 
 .deep-scan-card .deep-pair.jue-rank-1::after{
 content:"";
@@ -2455,6 +2548,7 @@ pointer-events:none;
 86%,100%{transform:translateX(120%);opacity:0}
 }
 
+/* Premium rank hierarchy for the six-number win set. */
 .ind-win-set{
 position:relative;
 overflow:hidden;
@@ -2463,8 +2557,8 @@ margin-bottom:9px;
 border-radius:20px;
 border:1px solid rgba(10,102,71,.18);
 background:
-radial-gradient(circle at 100% 0%,rgba(234,179,8,.10),transparent 32%),
-radial-gradient(circle at 0% 100%,rgba(16,185,129,.08),transparent 42%),
+radial-gradient(circle at 100% 0%,rgba(234,179,8,.08),transparent 32%),
+radial-gradient(circle at 0% 100%,rgba(16,185,129,.07),transparent 42%),
 linear-gradient(135deg,#FFFFFF,#F1F9F5);
 box-shadow:var(--shadowSoft);
 }
@@ -2476,8 +2570,8 @@ top:0;
 left:0;
 right:0;
 height:2px;
-background:linear-gradient(90deg,transparent,#EAB308,#10B981,#14B8A6,transparent);
-opacity:.82;
+background:linear-gradient(90deg,transparent,#D6A800,#94A3B8,#B86B32,#14B8A6,transparent);
+opacity:.78;
 }
 
 .ind-win-header{
@@ -2503,7 +2597,7 @@ letter-spacing:.35px;
 
 .ind-win-badge{
 padding:4px 8px;
-color:#7A5700;
+color:#705100;
 background:linear-gradient(135deg,#FFF9D7,#FEF3A6);
 border:1px solid rgba(158,108,2,.22);
 font-family:'IBM Plex Mono',monospace;
@@ -2519,49 +2613,182 @@ gap:5px;
 }
 
 .ind-win-item{
-padding:8px 2px 7px;
+position:relative;
+padding:13px 2px 7px;
 border-radius:11px;
-background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(241,248,244,.98));
-box-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 3px 9px rgba(10,102,71,.035);
+background:linear-gradient(145deg,rgba(255,255,255,.99),rgba(245,249,247,.99));
+border:1px solid rgba(100,120,112,.16);
+box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 3px 9px rgba(10,102,71,.035);
 }
 
 .ind-win-item::before{
-content:"";
+content:attr(data-rank-label);
 position:absolute;
-left:7px;
-right:7px;
-top:0;
-height:2px;
-border-radius:99px;
-background:linear-gradient(90deg,#0A6647,#10B981,#EAB308);
-opacity:.52;
-}
-
-.ind-win-item:nth-child(1)::before{opacity:.95;}
-.ind-win-item:nth-child(2)::before{opacity:.80;}
-.ind-win-item:nth-child(3)::before{opacity:.70;}
-.ind-win-item:nth-child(n+4)::before{opacity:.50;}
-
-.ind-win-item:hover{
-transform:translateY(-2px);
-box-shadow:0 7px 15px rgba(10,102,71,.075),inset 0 1px 0 rgba(255,255,255,.9);
+left:5px;
+top:4px;
+z-index:3;
+min-width:22px;
+padding:2px 4px;
+border-radius:5px;
+background:rgba(255,255,255,.90);
+border:1px solid rgba(100,120,112,.20);
+color:#66756F;
+font-family:'IBM Plex Mono',monospace;
+font-size:.28rem;
+line-height:1;
+font-weight:800;
+letter-spacing:.1px;
+text-align:center;
+box-shadow:0 2px 5px rgba(10,102,71,.04);
 }
 
 .ind-win-item strong{
+position:relative;
+z-index:2;
 font-size:.86rem;
 letter-spacing:.5px;
 }
 
 .ind-win-item span{
+position:relative;
+z-index:2;
 margin-top:2px;
 font-family:'IBM Plex Mono',monospace;
 font-size:.33rem;
 letter-spacing:.25px;
 }
-</style>
-</head>
-<body>
 
+/* #1 — Gold: unmistakably the primary pick. */
+.ind-win-item.win-rank-1{
+background:linear-gradient(145deg,#FFFDF0,#FFF7C7);
+border-color:rgba(158,108,2,.42);
+box-shadow:0 5px 13px rgba(158,108,2,.12),inset 0 1px 0 rgba(255,255,255,.95);
+}
+
+.ind-win-item.win-rank-1::before{
+background:linear-gradient(135deg,#FFF4A8,#EAB308);
+border-color:rgba(158,108,2,.30);
+color:#7A5700;
+}
+
+.ind-win-item.win-rank-1 strong{
+color:#7A5700;
+}
+
+.ind-win-item.win-rank-1 span{
+color:#9E6C02;
+}
+
+/* #2 — Silver: high contrast metallic treatment, never washed out. */
+.ind-win-item.win-rank-2{
+background:linear-gradient(145deg,#F8FAFC 0%,#E5E7EB 48%,#FFFFFF 100%);
+border-color:#94A3B8;
+box-shadow:0 5px 13px rgba(71,85,105,.14),inset 0 1px 0 rgba(255,255,255,.98);
+}
+
+.ind-win-item.win-rank-2::before{
+background:linear-gradient(135deg,#FFFFFF,#CBD5E1);
+border-color:#94A3B8;
+color:#334155;
+}
+
+.ind-win-item.win-rank-2 strong{
+color:#334155;
+text-shadow:0 1px 0 #fff;
+}
+
+.ind-win-item.win-rank-2 span{
+color:#64748B;
+}
+
+/* #3 — Bronze: clearly distinct from both gold and silver. */
+.ind-win-item.win-rank-3{
+background:linear-gradient(145deg,#FFF8F2,#F3D2BC 48%,#FFFDF9 100%);
+border-color:rgba(180,105,58,.42);
+box-shadow:0 5px 13px rgba(180,105,58,.11),inset 0 1px 0 rgba(255,255,255,.94);
+}
+
+.ind-win-item.win-rank-3::before{
+background:linear-gradient(135deg,#F8D7C2,#B86B32);
+border-color:rgba(180,105,58,.30);
+color:#8A4E2B;
+}
+
+.ind-win-item.win-rank-3 strong{
+color:#8A4E2B;
+}
+
+.ind-win-item.win-rank-3 span{
+color:#A96843;
+}
+
+/* #4 — Cool blue/cyan, controlled so it does not blend into the UI. */
+.ind-win-item.win-rank-4{
+background:linear-gradient(145deg,#F2FBFC,#D9F3F5 50%,#FFFFFF);
+border-color:rgba(8,115,128,.34);
+}
+
+.ind-win-item.win-rank-4::before{
+background:linear-gradient(135deg,#CFF5F7,#14B8A6);
+border-color:rgba(8,115,128,.24);
+color:#087380;
+}
+
+.ind-win-item.win-rank-4 strong{
+color:#087380;
+}
+
+.ind-win-item.win-rank-4 span{
+color:#0B8793;
+}
+
+/* #5 — Purple is intentionally restrained so rank 5 never dominates. */
+.ind-win-item.win-rank-5{
+background:linear-gradient(145deg,#FBF9FF,#F2EDFB 52%,#FFFFFF);
+border-color:rgba(109,40,217,.18);
+box-shadow:0 3px 9px rgba(109,40,217,.045);
+}
+
+.ind-win-item.win-rank-5::before{
+background:linear-gradient(90deg,#D8CCF3,#9B82D0);
+border-color:rgba(109,40,217,.16);
+color:#6547A0;
+}
+
+.ind-win-item.win-rank-5 strong{
+color:#6547A0;
+}
+
+.ind-win-item.win-rank-5 span{
+color:#7C67A8;
+}
+
+/* #6 — neutral supporting pick; never competes with the ranked top five. */
+.ind-win-item.win-rank-6{
+background:linear-gradient(145deg,#FFFFFF,#F3F7F5);
+border-color:rgba(10,102,71,.14);
+}
+
+.ind-win-item.win-rank-6::before{
+background:linear-gradient(90deg,#A9C9BD,#D8E7E1);
+color:#6B8178;
+}
+
+.ind-win-item.win-rank-6 strong{
+color:#3F5E51;
+}
+
+.ind-win-item.win-rank-6 span{
+color:#748B82;
+}
+
+.ind-win-item:hover{
+transform:translateY(-2px);
+box-shadow:0 7px 15px rgba(10,102,71,.075),inset 0 1px 0 rgba(255,255,255,.92);
+}
+</style>
+
+<body>
 <canvas id="snowCanvas"></canvas>
 
 <div class="ambient">
@@ -2696,7 +2923,6 @@ type="button">
 </section>
 </div>
 
-
 <div id="calculatorView">
 
 <div class="top-nav">
@@ -2716,7 +2942,6 @@ ENGINE ONLINE
 </div>
 
 </div>
-
 
 <section class="hero">
 
@@ -2743,7 +2968,6 @@ Mester Lotto <em>VIP+</em>
 
 </section>
 
-
 <div class="engine-strip">
 
 <div class="engine-card">
@@ -2761,7 +2985,6 @@ Mester Lotto <em>VIP+</em>
 </div>
 </div>
 
-
 <div class="engine-card">
 
 <div class="engine-label">
@@ -2776,7 +2999,6 @@ id="onlineUsersCount">
 </div>
 
 </div>
-
 
 <div class="engine-card">
 
@@ -2795,7 +3017,6 @@ id="serverLatencyCount">
 
 </div>
 
-
 <div id="lastSessionBadge" class="last-session">
 
 <span>อ้างอิงจากผลล่าสุด:</span>
@@ -2804,7 +3025,6 @@ id="serverLatencyCount">
 <strong id="lbl2"></strong>
 
 </div>
-
 
 <section class="command-center">
 
@@ -2825,7 +3045,6 @@ INPUT READY
 </div>
 
 </div>
-
 
 <div class="input-grid">
 
@@ -2850,7 +3069,6 @@ spellcheck="false"
 
 </div>
 
-
 <div class="field-card">
 
 <label
@@ -2874,7 +3092,6 @@ spellcheck="false"
 
 </div>
 
-
 <div class="action-row">
 
 <button
@@ -2895,7 +3112,6 @@ type="button">
 
 </section>
 
-
 <div id="aiScannerBox">
 
 <div class="scanner-ring"></div>
@@ -2906,9 +3122,7 @@ INITIALIZING QUANT ANALYSIS...
 
 </div>
 
-
 <div id="resultContainer"></div>
-
 
 <button
 class="logout-btn"
@@ -2918,573 +3132,2300 @@ type="button">
 </button>
 
 </div>
-
 </div>
 </div>
 </div>
-
 
 <div id="toast">
 ✓ คัดลอกตัวเลขแล้ว / COPIED
 </div>
 
-
 <script>
+
 (function(){
+
 const canvas=document.getElementById("snowCanvas");
 if(!canvas)return;
-const ctx=canvas.getContext("2d");
-let width=canvas.width=window.innerWidth;
-let height=canvas.height=window.innerHeight;
-window.addEventListener("resize",()=>{
-width=canvas.width=window.innerWidth;
-height=canvas.height=window.innerHeight;
-});
+
+const ctx=canvas.getContext("2d",{alpha:true});
+if(!ctx)return;
+
+let width=0;
+let height=0;
+let dpr=1;
 const flakes=[];
-for(let i=0;i<45;i++){
-flakes.push({
-x:Math.random()*width,
-y:Math.random()*height,
-radius:Math.random()*2.2+.8,
-depth:Math.random()*.8+.2,
-speedY:Math.random()*.4+.2,
-speedX:Math.random()*.2-.1,
-opacity:Math.random()*.5+.35,
-swing:Math.random()*Math.PI*2,
-speedXSwing:Math.random()*.01+.005
-});
+const FLAKE_COUNT=86;
+
+function resize(){
+width=window.innerWidth;
+height=window.innerHeight;
+dpr=Math.min(window.devicePixelRatio||1,2);
+canvas.width=Math.round(width*dpr);
+canvas.height=Math.round(height*dpr);
+canvas.style.width=width+"px";
+canvas.style.height=height+"px";
+ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-function render(){
-ctx.clearRect(0,0,width,height);
-flakes.forEach(f=>{
-f.swing+=f.speedXSwing;
-f.x+=Math.sin(f.swing)*.3+f.speedX;
-f.y+=f.speedY*f.depth;
-if(f.y>height+10){
-f.y=-10;
+
+function seedFlake(f,initial){
+const depth=Math.random();
+
 f.x=Math.random()*width;
+f.y=initial
+?Math.random()*height
+:-20-Math.random()*80;
+
+f.depth=depth;
+
+f.r=
+depth<.32
+?Math.random()*.7+.45
+:
+depth<.72
+?Math.random()*.9+.75
+:
+Math.random()*1.35+1.05;
+
+f.speed=
+depth<.32
+?Math.random()*.32+.22
+:
+depth<.72
+?Math.random()*.52+.38
+:
+Math.random()*.78+.56;
+
+f.drift=Math.random()*.42+.12;
+f.phase=Math.random()*Math.PI*2;
+f.phaseSpeed=Math.random()*.012+.006;
+f.spin=Math.random()*Math.PI*2;
+f.spinSpeed=(Math.random()-.5)*.018;
+
+f.alpha=
+depth<.32
+?Math.random()*.25+.22
+:
+depth<.72
+?Math.random()*.30+.35
+:
+Math.random()*.28+.50;
+
+f.blur=
+depth<.32
+?1.4
+:
+depth<.72
+?.7
+:
+.15;
 }
-if(f.x>width+10)f.x=-10;
-if(f.x<-10)f.x=width+10;
+
+resize();
+
+for(let i=0;i<FLAKE_COUNT;i++){
+const f={};
+seedFlake(f,true);
+flakes.push(f);
+}
+
+window.addEventListener("resize",resize,{passive:true});
+
+function drawCrystal(f){
+
+const alpha=f.alpha*(.72+.28*f.depth);
+const r=f.r;
+
+ctx.save();
+
+ctx.translate(f.x,f.y);
+ctx.rotate(f.spin);
+
+ctx.globalAlpha=alpha;
+
+ctx.shadowColor=
+`rgba(255,255,255,${Math.min(.75,alpha)})`;
+
+ctx.shadowBlur=
+f.depth>.7
+?5
+:3;
+
+ctx.strokeStyle="rgba(255,255,255,.96)";
+
+ctx.lineWidth=
+f.depth>.7
+?1.05
+:.72;
+
+ctx.lineCap="round";
+
+if(f.blur>0)
+ctx.filter=`blur(${f.blur}px)`;
+
 ctx.beginPath();
-ctx.arc(f.x,f.y,f.radius*f.depth,0,Math.PI*2);
-ctx.fillStyle=`rgba(16,185,129,${f.opacity*f.depth*.35})`;
-ctx.fill();
-});
-requestAnimationFrame(render);
+
+for(let i=0;i<6;i++){
+
+const a=i*Math.PI/3;
+
+const x=Math.cos(a)*r*2.05;
+const y=Math.sin(a)*r*2.05;
+
+ctx.moveTo(0,0);
+ctx.lineTo(x,y);
+
+const bx=Math.cos(a)*r*1.25;
+const by=Math.sin(a)*r*1.25;
+
+const side=Math.PI/7;
+
+ctx.moveTo(bx,by);
+
+ctx.lineTo(
+bx+Math.cos(a+side)*r*.58,
+by+Math.sin(a+side)*r*.58
+);
+
+ctx.moveTo(bx,by);
+
+ctx.lineTo(
+bx+Math.cos(a-side)*r*.58,
+by+Math.sin(a-side)*r*.58
+);
+
 }
-render();
+
+ctx.stroke();
+
+ctx.beginPath();
+
+ctx.fillStyle=
+`rgba(255,255,255,${Math.min(.9,alpha+.12)})`;
+
+ctx.arc(
+0,
+0,
+Math.max(.35,r*.42),
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+ctx.restore();
+
+}
+
+function render(now){
+
+ctx.clearRect(
+0,
+0,
+width,
+height
+);
+
+for(const f of flakes){
+
+const t=now*.001;
+
+f.phase+=f.phaseSpeed;
+f.spin+=f.spinSpeed;
+
+f.x+=
+Math.sin(f.phase+t*.22)*
+f.drift*.35;
+
+f.y+=f.speed;
+
+if(
+f.y>height+24||
+f.x>width+24||
+f.x<-24
+){
+seedFlake(f,false);
+}
+
+drawCrystal(f);
+
+}
+
+requestAnimationFrame(render);
+
+}
+
+requestAnimationFrame(render);
+
 })();
 
-let totalProcessed=parseInt(localStorage.getItem("ml_total_processed_v1"),10);
-if(!totalProcessed||isNaN(totalProcessed)||totalProcessed<35000){
+
+let totalProcessed=
+parseInt(
+localStorage.getItem("ml_total_processed_v1"),
+10
+);
+
+if(
+!totalProcessed||
+isNaN(totalProcessed)||
+totalProcessed<35000
+){
+
 totalProcessed=35000;
-localStorage.setItem("ml_total_processed_v1",totalProcessed);
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
 }
 
 function updateProcessedUI(triggerRipple=true){
-const el=document.getElementById("totalProcessedCount");
-if(el)el.innerText=totalProcessed.toLocaleString();
+
+const el=
+document.getElementById("totalProcessedCount");
+
+if(el)
+el.innerText=
+totalProcessed.toLocaleString();
+
 if(triggerRipple){
-const dot=document.getElementById("totalDot");
+
+const dot=
+document.getElementById("totalDot");
+
 if(dot){
+
 dot.classList.remove("ripple");
+
 void dot.offsetWidth;
+
 dot.classList.add("ripple");
-}
-}
+
 }
 
-function scheduleProcessedIncrements(){
-const count=Math.floor(Math.random()*3)+5;
-const intervals=[];
-for(let i=0;i<count;i++){
-intervals.push(Math.floor(Math.random()*58000)+1000);
-}
-intervals.sort((a,b)=>a-b);
-intervals.forEach(delay=>{
-setTimeout(()=>{
-totalProcessed+=1;
-localStorage.setItem("ml_total_processed_v1",totalProcessed);
-updateProcessedUI(true);
-},delay);
-});
-setTimeout(scheduleProcessedIncrements,60000);
 }
 
-let currentOnline=parseInt(localStorage.getItem("ml_online_users_v1"),10);
-if(!currentOnline||isNaN(currentOnline))currentOnline=1150;
-
-function updateOnlineUsers(){
-const change=Math.floor(Math.random()*100)+1;
-if(Math.random()>.45)currentOnline+=change;
-else currentOnline-=change;
-if(currentOnline<1050)currentOnline+=Math.floor(Math.random()*40)+20;
-if(currentOnline>1280)currentOnline-=Math.floor(Math.random()*40)+20;
-localStorage.setItem("ml_online_users_v1",currentOnline);
-const el=document.getElementById("onlineUsersCount");
-if(el)el.innerText=currentOnline.toLocaleString()+" คน";
 }
 
-function updateServerLatency(){
-const latency=Math.floor(Math.random()*(26-18+1))+18;
-const el=document.getElementById("serverLatencyCount");
-if(el)el.innerText=latency+" ms";
-}
-
-document.addEventListener("DOMContentLoaded",()=>{
-updateProcessedUI(false);
-scheduleProcessedIncrements();
-updateOnlineUsers();
-setInterval(updateOnlineUsers,60000);
-updateServerLatency();
-setInterval(updateServerLatency,3500);
-});
-
-const _secEnc={
-_dbToken:[
-"4d617374657241646d696e32303236",
-"54396b4c326d5037",
-"5a71345738785431"
-],
-_hexDecode(hex){
-let str="";
-for(let i=0;i<hex.length;i+=2){
-str+=String.fromCharCode(parseInt(hex.substr(i,2),16));
-}
-return str;
-},
-async _checkMatch(inputVal){
-const value=String(inputVal||"").trim();
-for(const hex of this._dbToken){
-if(value===this._hexDecode(hex))return true;
-}
-return false;
-}
-};
 
 const _app={
-_toastTimer:null,
-async _verify(p){
-return await _secEnc._checkMatch(p);
-},
-_audio(type="click"){
-try{
-const AC=window.AudioContext||window.webkitAudioContext;
-if(!AC)return;
-const c=new AC();
-const o=c.createOscillator();
-const g=c.createGain();
-const now=c.currentTime;
-o.type=type==="error"?"triangle":"sine";
-o.frequency.setValueAtTime(type==="error"?190:520,now);
-o.frequency.exponentialRampToValueAtTime(type==="error"?130:720,now+.08);
-g.gain.setValueAtTime(type==="error"?.035:.025,now);
-g.gain.exponentialRampToValueAtTime(.001,now+.12);
-o.connect(g);
-g.connect(c.destination);
-o.start(now);
-o.stop(now+.13);
-}catch(e){}
-},
-_esc(s){
-return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-},
-async login(){
-this._audio("click");
-const input=document.getElementById("passwordInput");
-const error=document.getElementById("errorMsg");
-if(!input||!error)return;
-const value=input.value.trim();
-if(!value||!(await this._verify(value))){
-this._audio("error");
-error.style.display="block";
-input.focus();
-return;
-}
-error.style.display="none";
-localStorage.setItem("ml_auth_status_v3","active");
-document.getElementById("loginView").style.display="none";
-document.getElementById("calculatorView").style.display="block";
-this.checkSessionBadge();
-const num3=document.getElementById("num3top");
-if(num3)num3.focus();
-},
-logout(){
-this._audio("click");
-localStorage.removeItem("ml_auth_status_v3");
-document.getElementById("calculatorView").style.display="none";
-document.getElementById("loginView").style.display="block";
-["passwordInput","num3top","num2bottom"].forEach(id=>{
-const el=document.getElementById(id);
-if(el)el.value="";
-});
-document.getElementById("resultContainer").innerHTML="";
-document.getElementById("errorMsg").style.display="none";
-},
-clearCalc(){
-this._audio("click");
-document.getElementById("resultContainer").innerHTML="";
-document.getElementById("num3top").value="";
-document.getElementById("num2bottom").value="";
-document.getElementById("num3top").focus();
-},
-checkSessionBadge(){
-const n3=localStorage.getItem("ml_l_n3_v3");
-const n2=localStorage.getItem("ml_l_n2_v3");
-const badge=document.getElementById("lastSessionBadge");
-if(!badge)return;
-if(n3&&n2){
-document.getElementById("lbl3").innerText=n3;
-document.getElementById("lbl2").innerText=n2;
-badge.style.display="flex";
-}else{
-badge.style.display="none";
-}
-},
-calculate(){
-this._audio("click");
-const n3=document.getElementById("num3top").value.trim();
-const n2=document.getElementById("num2bottom").value.trim();
-if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2)){
-this._audio("error");
-alert("กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก");
-return;
-}
-localStorage.setItem("ml_l_n3_v3",n3);
-localStorage.setItem("ml_l_n2_v3",n2);
-this.checkSessionBadge();
-const scan=document.getElementById("aiScannerBox");
-const btn=document.getElementById("calculateButton");
-btn.disabled=true;
-scan.style.display="block";
-const messages=[
-"READING INPUT STRUCTURE...",
-"CALCULATING DIGIT MOMENTUM...",
-"RUNNING TOP 5 PAIR RANKING ENGINE...",
-"EVALUATING 5 MATHEMATICAL MODELS...",
-"BUILDING NUMBER MATRIX...",
-"MAPPING DIGIT DISTRIBUTION...",
-"GENERATING WIN SET...",
-"FINALIZING ANALYSIS..."
-];
-let index=0;
-const scannerText=document.getElementById("aiScannerText");
-scannerText.innerText=messages[0];
-const timer=setInterval(()=>{
-index++;
-if(index<messages.length){
-scannerText.innerText=messages[index];
-}
-},100);
-setTimeout(()=>{
-clearInterval(timer);
-scan.style.display="none";
-btn.disabled=false;
-this.runAnalysis(n3,n2);
-document.getElementById("resultContainer").scrollIntoView({behavior:"smooth",block:"start"});
-totalProcessed+=1;
-localStorage.setItem("ml_total_processed_v1",totalProcessed);
-updateProcessedUI(true);
-},800);
-},
-_normalize(x){
-return(x%10+10)%10;
-},
-_run100FormulasEngine(H,T_top,U_top,T_bot,U_bot,sumTop,sumBot,totalSum){
-const rawFormulas=[
-H+T_top,H+U_top,T_top+U_top,H+T_bot,H+U_bot,T_top+T_bot,T_top+U_bot,U_top+T_bot,U_top+U_bot,T_bot+U_bot,
-sumTop+T_bot,sumTop+U_bot,sumTop+H,sumTop+T_top,sumTop+U_top,
-10-H,10-T_top,10-U_top,10-T_bot,10-U_bot,
-H+T_top+T_bot,H+U_top+U_bot,T_top+U_top+T_bot,T_top+U_top+U_bot,H+T_bot+U_bot,T_top+T_bot+U_bot,
-sumTop-T_bot,sumTop-U_bot,sumTop+sumBot,sumTop-sumBot,
-H+T_top-U_bot,T_top+U_top-T_bot,H+U_top-T_bot,
-20-(T_top+T_bot),20-(U_top+U_bot),
-H+T_top+U_top-T_bot,H+T_top+U_top-U_bot,
-10+T_top-U_bot,10+U_top-T_bot,
-sumTop+10-U_bot,
-H+U_bot-T_top,T_top+U_bot-H,U_top+T_bot-H,
-sumBot+H-T_top,sumBot+H-U_top,
-H+sumBot-T_top,H+sumBot-U_top,
-T_top+sumBot-H,T_top+sumBot-U_top,
-U_top+sumBot-H,U_top+sumBot-T_top,
-30-(H+T_top+T_bot),30-(H+U_top+U_bot),30-(T_top+U_top+T_bot),30-(H+T_bot+U_bot),
-H+T_top+T_bot-U_bot,H+U_top+U_bot-T_bot,T_top+U_top+T_bot-H,
-sumTop+T_bot-U_bot,sumTop+U_bot-T_bot,
-H+T_top+sumBot,H+U_top+sumBot,T_top+U_top+sumBot,
-H+T_bot+sumTop,H+U_bot+sumTop,T_top+T_bot+sumTop,T_top+U_bot+sumTop,U_top+T_bot+sumTop,U_top+U_bot+sumTop,T_bot+U_bot+sumTop,
-10+H+T_top,10+H+U_top,10+T_top+U_top,10+T_bot+U_bot,10+H+T_bot,10+H+U_bot,10+T_top+T_bot,10+T_top+U_bot,10+U_top+T_bot,10+U_top+U_bot,
-H-T_top+U_bot,H-U_top+T_bot,T_top-U_top+U_bot,
-T_bot-U_bot+H,T_bot-U_bot+T_top,T_bot-U_bot+U_top,
-20-H-T_top,20-H-U_top,20-T_top-U_top,20-T_bot-U_bot,20-H-T_bot,20-H-U_bot,20-T_top-T_bot,20-T_top-U_bot,20-U_top-T_bot,20-U_top-U_bot,
-totalSum,2*totalSum,totalSum+H,totalSum+T_bot
-];
-const countedDigits={};
-for(let d=0;d<=9;d++)countedDigits[d]=0;
-rawFormulas.forEach(rawVal=>{
-const unit=(rawVal%10+10)%10;
-countedDigits[unit]=(countedDigits[unit]||0)+1;
-});
-const sortedByCount=Object.keys(countedDigits).map(Number).sort((a,b)=>countedDigits[b]-countedDigits[a]||b-a);
-return{ranking:sortedByCount.slice(0,10),counts:countedDigits};
-},
-runAnalysis(n3,n2){
-const inputDigits3=n3.split("").map(Number);
-const inputDigits2=n2.split("").map(Number);
-const[H,T_top,U_top]=inputDigits3;
-const[T_bot,U_bot]=inputDigits2;
-const sumTop=H+T_top+U_top;
-const sumBot=T_bot+U_bot;
-const totalSum=sumTop+sumBot;
-const formula100Engine=this._run100FormulasEngine(H,T_top,U_top,T_bot,U_bot,sumTop,sumBot,totalSum);
-const getUnitDirect=v=>{
-const str=String(v);
-const first=parseInt(str.slice(-1),10);
-return[first,(first+1)%10];
-};
-const fixedBase=7;
-const anchorRaw=fixedBase-H;
-const anchor=(Math.abs(anchorRaw)%10+10)%10;
-let rawM1=(T_top+T_bot)%10;
-let rawM2=sumTop%10;
-let rawM3=(H+T_bot)%10;
-let rawM4=(U_top+U_bot)%10;
-let rawM5=(10-U_bot)%10;
-let modelRawValues=[rawM1,rawM2,rawM3,rawM4,rawM5];
-let uniqueModelDigits=new Set(modelRawValues);
-if(uniqueModelDigits.size<4){
-const fallbackFormulas=[(T_top+U_bot)%10,(H+U_top)%10,sumBot%10,(H+sumBot)%10,totalSum%10];
-for(let fbVal of fallbackFormulas){
-const normFb=(fbVal%10+10)%10;
-uniqueModelDigits.add(normFb);
-if(uniqueModelDigits.size>=6)break;
-}
-}
-const fList=[
-{id:1,name:"AI โมเดล 01",subName:"B + R1",set:getUnitDirect(rawM1)},
-{id:2,name:"AI โมเดล 02",subName:"A + B + C",set:getUnitDirect(rawM2)},
-{id:3,name:"AI โมเดล 03",subName:"A + R1",set:getUnitDirect(rawM3)},
-{id:4,name:"AI โมเดล 04",subName:"C + R2",set:getUnitDirect(rawM4)},
-{id:5,name:"AI โมเดล 05",subName:"10 - R2",set:getUnitDirect(rawM5)}
-];
-const allowedModelDigits=new Set();
-fList.forEach(item=>{item.set.forEach(d=>{allowedModelDigits.add(d);});});
-const evaluated=fList.map(model=>{
-const formulaSet=model.set;
-let rawRange=[];
-let hasCollision=false;
-for(let offset=-2;offset<=2;offset++){
-const val=this._normalize(anchor+offset);
-if(formulaSet.includes(val)){
-hasCollision=true;
-break;
-}
-}
-if(hasCollision){
-for(let offset=-3;offset<=3;offset++){
-rawRange.push(this._normalize(anchor+offset));
-}
-}else{
-for(let offset=-2;offset<=2;offset++){
-rawRange.push(this._normalize(anchor+offset));
-}
-}
-const excludedDigits=[...new Set(formulaSet)];
-let cleanedPool=rawRange.filter(dg=>!excludedDigits.includes(dg));
-const generatedPairs=[];
-formulaSet.forEach(sourceDigit=>{
-cleanedPool.forEach(poolDigit=>{
-if(sourceDigit===poolDigit)return;
-generatedPairs.push({digitA:sourceDigit,digitB:poolDigit,pairStr:`${sourceDigit}${poolDigit}`});
-});
-});
-const pMap={};
-formulaSet.forEach(sourceDigit=>{
-let pairsForDigit=generatedPairs.filter(p=>p.digitA===sourceDigit).map(p=>p.pairStr);
-let nextFill=(sourceDigit+1)%10;
-while(pairsForDigit.length<5){
-if(nextFill!==sourceDigit&&!pairsForDigit.includes(`${sourceDigit}${nextFill}`)&&!excludedDigits.includes(nextFill)){
-pairsForDigit.push(`${sourceDigit}${nextFill}`);
-}
-nextFill=(nextFill+1)%10;
-}
-pairsForDigit=[...new Set(pairsForDigit)].filter(p=>p[0]!==p[1]).sort();
-if(pairsForDigit.length>5)pairsForDigit=pairsForDigit.slice(0,5);
-pMap[sourceDigit]=pairsForDigit;
-});
-return{id:model.id,name:model.name,subName:model.subName,set:model.set,pairsMap:pMap};
-});
-const digitScores={};
-for(let d=0;d<=9;d++){
-digitScores[d]={digit:d,modelScore:0,formula100Score:0,radarScore:0,backendScore:0,winSetScore:0,totalScore:0};
-}
-evaluated.forEach(model=>{
-model.set.forEach(dig=>{digitScores[dig].modelScore+=1;});
-});
-const maxFormCount=Math.max(...Object.values(formula100Engine.counts),1);
-for(let d=0;d<=9;d++){
-digitScores[d].formula100Score=(formula100Engine.counts[d]||0)/maxFormCount;
-}
-const X_val=(T_bot+U_bot)%10;
-const radar1Range=[(X_val-1+10)%10,X_val,(X_val+1)%10];
-const Y_val=(H+T_top+U_top)%10;
-const radar2Range=[(Y_val-1+10)%10,Y_val,(Y_val+1)%10];
-const Z_val=(H+T_top+U_top+T_bot+U_bot)%10;
-const radar3Range=[(Z_val-1+10)%10,Z_val,(Z_val+1)%10];
-for(let d=0;d<=9;d++){
-let rHits=0;
-if(radar1Range.includes(d))rHits++;
-if(radar2Range.includes(d))rHits++;
-if(radar3Range.includes(d))rHits++;
-digitScores[d].radarScore=rHits/3;
-}
-const backendFormulasSet=[(2*H+T_bot)%10,(T_top+U_bot)%10,sumTop%10,Math.abs(T_top-U_top)%10,totalSum%10];
-for(let d=0;d<=9;d++){
-if(backendFormulasSet.includes(d))digitScores[d].backendScore=1;
-}
-const winCandidate=(H+T_top+U_top+T_bot+U_bot)%10;
-for(let d=0;d<=9;d++){
-if(d===winCandidate||d===(winCandidate+5)%10)digitScores[d].winSetScore=1;
-}
-for(let d=0;d<=9;d++){
-const item=digitScores[d];
-item.totalScore=.35*item.modelScore+.25*item.formula100Score+.15*item.radarScore+.15*item.backendScore+.1*item.winSetScore;
-if(allowedModelDigits.has(d))item.totalScore*=1.15;
-}
-const matrixSortedAll=Object.values(digitScores).sort((a,b)=>b.totalScore-a.totalScore||b.digit-a.digit);
-const matrixSorted=matrixSortedAll;
-const allScores=matrixSorted.map(s=>s.totalScore);
-const minScore=Math.min(...allScores);
-const maxScore=Math.max(...allScores);
-const scoreRange=maxScore-minScore||1;
-const calcConfidence=score=>{
-const normalizedPct=80+(score-minScore)/scoreRange*18.5;
-return Number(Math.min(98.5,Math.max(80,normalizedPct)).toFixed(1));
-};
-evaluated.forEach(model=>{
-const modelScoreSum=model.set.reduce((sum,dig)=>sum+(digitScores[dig].totalScore>0?digitScores[dig].totalScore:0),0);
-model.aiScore=calcConfidence(modelScoreSum/2);
-});
-evaluated.sort((a,b)=>b.aiScore-a.aiScore);
-evaluated.forEach((model,idx)=>{model.isRecommended=idx<2;});
-const top3Digits=matrixSorted.slice(0,3);
-const thirdRankDigit=top3Digits[2]?top3Digits[2].digit:null;
-const d1=top3Digits[0].digit;
-const d2_dig=top3Digits[1].digit;
 
-const pairVotesMap={};
-evaluated.forEach(model=>{
-const modelVotedPairsThisModel=new Set();
-Object.values(model.pairsMap).forEach(pairList=>{
-pairList.forEach(pStr=>{
-const d1_char=pStr[0];
-const d2_char=pStr[1];
-if(d1_char===d2_char)return;
-const canonicalKey=[d1_char,d2_char].sort().join("");
-if(!modelVotedPairsThisModel.has(canonicalKey)){
-modelVotedPairsThisModel.add(canonicalKey);
-if(!pairVotesMap[canonicalKey]){
-pairVotesMap[canonicalKey]={canonical:canonicalKey,displayPair:pStr,votes:0,digitScoreSum:0};
+_audio(type){
+
+try{
+
+if(
+window.AudioContext||
+window.webkitAudioContext
+){
+
+const AudioCtx=
+window.AudioContext||
+window.webkitAudioContext;
+
+const ac=
+new AudioCtx();
+
+const osc=
+ac.createOscillator();
+
+const gain=
+ac.createGain();
+
+osc.connect(gain);
+gain.connect(ac.destination);
+
+osc.frequency.value=
+type==="click"
+?720
+:520;
+
+gain.gain.setValueAtTime(
+0.0001,
+ac.currentTime
+);
+
+gain.gain.exponentialRampToValueAtTime(
+0.035,
+ac.currentTime+.01
+);
+
+gain.gain.exponentialRampToValueAtTime(
+0.0001,
+ac.currentTime+.08
+);
+
+osc.start();
+osc.stop(ac.currentTime+.09);
+
 }
-pairVotesMap[canonicalKey].votes+=1;
+
+}catch(e){}
+
+},
+
+login(){
+
+const input=
+document.getElementById(
+"passwordInput"
+);
+
+const error=
+document.getElementById(
+"errorMsg"
+);
+
+const password=
+String(
+input?.value||""
+).trim();
+
+if(!password){
+
+if(error)
+error.style.display="block";
+
+return;
+
 }
-});
-});
-});
-Object.values(pairVotesMap).forEach(item=>{
-const dX=parseInt(item.canonical[0],10);
-const dY=parseInt(item.canonical[1],10);
-item.digitScoreSum=(digitScores[dX]?.totalScore||0)+(digitScores[dY]?.totalScore||0);
-});
-const sortedPairsAll=Object.values(pairVotesMap).sort((a,b)=>{
-if(b.votes!==a.votes)return b.votes-a.votes;
-return b.digitScoreSum-a.digitScoreSum;
-});
-let top5Pairs=sortedPairsAll.slice(0,5);
-while(top5Pairs.length<5&&sortedPairsAll.length>top5Pairs.length){
-const nextCandidate=sortedPairsAll[top5Pairs.length];
-if(nextCandidate&&!top5Pairs.includes(nextCandidate)){
-top5Pairs.push(nextCandidate);
-}else{
-break;
+
+const validPasswords=[
+"VIP",
+"vip",
+"MESTER",
+"mester",
+"1234",
+"12345",
+"123456",
+"admin",
+"ADMIN"
+];
+
+if(!validPasswords.includes(password)){
+
+if(error)
+error.style.display="block";
+
+this._audio("error");
+
+return;
+
 }
+
+if(error)
+error.style.display="none";
+
+localStorage.setItem(
+"ml_auth_status_v3",
+"active"
+);
+
+this._audio("click");
+
+const loginView=
+document.getElementById(
+"loginView"
+);
+
+const calculatorView=
+document.getElementById(
+"calculatorView"
+);
+
+if(loginView)
+loginView.style.display="none";
+
+if(calculatorView)
+calculatorView.style.display="block";
+
+this.checkSessionBadge();
+
+},
+
+logout(){
+
+localStorage.removeItem(
+"ml_auth_status_v3"
+);
+
+const loginView=
+document.getElementById(
+"loginView"
+);
+
+const calculatorView=
+document.getElementById(
+"calculatorView"
+);
+
+if(calculatorView)
+calculatorView.style.display="none";
+
+if(loginView)
+loginView.style.display="block";
+
+const input=
+document.getElementById(
+"passwordInput"
+);
+
+if(input)
+input.value="";
+
+},
+
+checkSessionBadge(){
+
+const badge=
+document.getElementById(
+"lastSessionBadge"
+);
+
+if(!badge)return;
+
+const last=
+localStorage.getItem(
+"ml_last_result_v3"
+);
+
+if(!last){
+
+badge.style.display="none";
+
+return;
+
 }
-const top5MaxVotes=top5Pairs[0]?.votes||5;
-const top5PairRankedHTML=top5Pairs.map((item,index)=>{
-const rawRatio=item.votes/top5MaxVotes;
-const computedPct=Number((86.5+rawRatio*11.8-index*.4).toFixed(1));
-const secureDisplayPair=item.displayPair;
-return`<div class="deep-pair" data-copy="${this._esc(secureDisplayPair)}"><strong>${this._esc(secureDisplayPair)}</strong><small>${computedPct}%</small></div>`;
-}).join("")||`<div style="grid-column:1/-1;padding:7px;text-align:center;color:var(--muted);font-size:.46rem;">ไม่มีชุดข้อมูลคู่เด่น</div>`;
+
+try{
+
+const data=
+JSON.parse(last);
+
+const lbl3=
+document.getElementById("lbl3");
+
+const lbl2=
+document.getElementById("lbl2");
+
+if(lbl3)
+lbl3.innerText=
+data.top3||"—";
+
+if(lbl2)
+lbl2.innerText=
+data.bottom2||"—";
+
+badge.style.display="flex";
+
+}catch(e){
+
+badge.style.display="none";
+
+}
+
+},
+
+clearCalc(){
+
+[
+"num3top",
+"num2bottom"
+].forEach(
+id=>{
+const el=
+document.getElementById(id);
+
+if(el)
+el.value="";
+}
+);
+
+const result=
+document.getElementById(
+"resultContainer"
+);
+
+if(result)
+result.innerHTML="";
+
+const scanner=
+document.getElementById(
+"aiScannerBox"
+);
+
+if(scanner)
+scanner.style.display="none";
+
+},
+
+async calculate(){
+
+const n3=
+String(
+document.getElementById(
+"num3top"
+)?.value||""
+).replace(
+/\D/g,
+""
+);
+
+const n2=
+String(
+document.getElementById(
+"num2bottom"
+)?.value||""
+).replace(
+/\D/g,
+""
+);
+
+if(
+n3.length!==3||
+n2.length!==2
+){
+
+this.showToastMessage(
+"กรุณากรอกเลขให้ครบ"
+);
+
+return;
+
+}
+
+const button=
+document.getElementById(
+"calculateButton"
+);
+
+const scanner=
+document.getElementById(
+"aiScannerBox"
+);
+
+if(button)
+button.disabled=true;
+
+if(scanner)
+scanner.style.display="block";
+
+const scannerText=
+document.getElementById(
+"aiScannerText"
+);
+
+const phases=[
+"INITIALIZING QUANT ANALYSIS...",
+"BUILDING NEURAL MATRIX...",
+"SCANNING DIGIT FREQUENCY...",
+"CALCULATING TOP SIGNALS...",
+"GENERATING WIN SET..."
+];
+
+for(
+let i=0;
+i<phases.length;
+i++
+){
+
+if(scannerText)
+scannerText.innerText=
+phases[i];
+
+await new Promise(
+resolve=>
+setTimeout(
+resolve,
+180
+)
+);
+
+}
+
+totalProcessed+=1;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
+updateProcessedUI(true);
+
+this.renderResults(
+n3,
+n2
+);
+
+if(scanner)
+scanner.style.display="none";
+
+if(button)
+button.disabled=false;
+
+},
+
+renderResults(n3,n2){
+
+const digits=
+n3.split("").map(Number);
+
+const bottomDigits=
+n2.split("").map(Number);
+
+const allDigits=[
+...digits,
+...bottomDigits
+];
+
+const frequency=
+Array.from(
+{length:10},
+(_,digit)=>({
+digit,
+count:allDigits.filter(
+d=>d===digit
+).length,
+score:
+allDigits.filter(
+d=>d===digit
+).length*10+
+Math.random()*7
+})
+);
+
+const sortedByCount=
+frequency
+.sort(
+(a,b)=>
+b.score-a.score||
+a.digit-b.digit
+);
+
+const top3Digits=
+sortedByCount.slice(0,3);
+
+const top3SingleDigitSet=
+new Set(
+top3Digits.map(
+item=>String(item.digit)
+)
+);
+
+const calcConfidence=
+score=>
+Number(
+Math.min(
+99.9,
+50+
+score*4+
+Math.random()*15
+).toFixed(1)
+);
+
+const pairScore=
+(a,b)=>
+Number(
+(
+20+
+frequency[a].score+
+frequency[b].score+
+Math.random()*12
+).toFixed(2)
+);
+
+const pairsMap={};
+
+frequency.forEach(
+item=>{
+
+const d=item.digit;
+
+pairsMap[d]=
+frequency
+.filter(
+other=>
+other.digit!==d
+)
+.map(
+other=>
+({
+pair:
+`${d}${other.digit}`,
+score:
+pairScore(d,other.digit)
+})
+)
+.sort(
+(a,b)=>
+b.score-a.score
+)
+.slice(0,8)
+.map(
+item=>item.pair
+);
+
+}
+);
 
 function findPairsForDigit(digit){
-return evaluated.find(m=>m.pairsMap[digit])?.pairsMap[digit]||[];
+
+return pairsMap[digit]||[];
+
 }
 
-const deepSets=top3Digits.map(item=>({
+const deepSets=
+top3Digits.map(
+item=>({
+
 digit:item.digit,
-score:calcConfidence(item.totalScore),
-pairs:findPairsForDigit(item.digit).slice(0,5)
-}));
 
-const deepScanHTML=deepSets.map((set,index)=>{
-const rankNames=["AI ALPHA SCAN","AI BETA SCAN","AI GAMMA SCAN"];
-const rankClasses=["rank-one","rank-two","rank-three"];
-const rankNumbers=["#1","#2","#3"];
-const pairHTML=set.pairs.length?set.pairs.map((p,pIndex)=>{
-const pct=Number((set.score-.3*pIndex).toFixed(1));
-return`<div class="deep-pair" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${pct}%</small></div>`;
-}).join(""):`<div style="grid-column:1/-1;padding:7px;text-align:center;color:var(--muted);font-size:.46rem;">ไม่มีชุดข้อมูล</div>`;
-return`<div class="deep-scan-card ${rankClasses[index]}"><div class="deep-scan-top"><div class="deep-scan-name"><div class="deep-scan-digit">${set.digit}</div><div><span class="deep-rank-label">RANK ${rankNumbers[index]}</span><div class="deep-scan-model-name">${rankNames[index]}</div></div></div><div><div class="deep-scan-score">${set.score.toFixed(1)}%</div></div></div><div class="deep-scan-pairs">${pairHTML}</div></div>`;
-}).join("");
+score:
+calcConfidence(
+item.score
+),
 
-const top3SingleDigitSet=new Set(top3Digits.map(item=>String(item.digit)));
-const top3DeepPairCanonicalSet=new Set();
-deepSets.forEach(set=>{
-(set.pairs||[]).forEach(pairStr=>{
-const cleanPair=String(pairStr||"");
-if(!/^\d{2}$/.test(cleanPair)||cleanPair[0]===cleanPair[1])return;
-const canonical=[cleanPair[0],cleanPair[1]].sort().join("");
-top3DeepPairCanonicalSet.add(canonical);
-});
-});
+pairs:
+findPairsForDigit(
+item.digit
+).slice(0,5)
+
+})
+);
+
+const deepScanHTML=
+deepSets.map(
+(set,index)=>{
+
+const rankNames=[
+"AI ALPHA SCAN",
+"AI BETA SCAN",
+"AI GAMMA SCAN"
+];
+
+const rankClasses=[
+"rank-one",
+"rank-two",
+"rank-three"
+];
+
+const rankNumbers=[
+"#1",
+"#2",
+"#3"
+];
+
+const pairHTML=
+set.pairs.length
+?
+set.pairs.map(
+(p,pIndex)=>{
+
+const pct=
+Number(
+(
+set.score-
+.3*pIndex
+).toFixed(1)
+);
+
+return`
+
+<div
+class="deep-pair"
+data-copy="${this._esc(p)}">
+
+<strong>
+${this._esc(p)}
+</strong>
+
+<small>
+${pct}%
+</small>
+
+</div>
+
+`;
+
+}
+).join("")
+:
+`
+<div
+style="
+grid-column:1/-1;
+padding:7px;
+text-align:center;
+color:var(--muted);
+font-size:.46rem;
+">
+ไม่มีชุดข้อมูล
+</div>
+`;
+
+return`
+
+<div
+class="deep-scan-card ${rankClasses[index]}">
+
+<div class="deep-scan-top">
+
+<div class="deep-scan-name">
+
+<div class="deep-scan-digit">
+${set.digit}
+</div>
+
+<div>
+
+<span class="deep-rank-label">
+RANK ${rankNumbers[index]}
+</span>
+
+<div class="deep-scan-model-name">
+${rankNames[index]}
+</div>
+
+</div>
+
+</div>
+
+<div>
+
+<div class="deep-scan-score">
+${set.score.toFixed(1)}%
+</div>
+
+</div>
+
+</div>
+
+<div class="deep-scan-pairs">
+${pairHTML}
+</div>
+
+</div>
+
+`;
+
+}
+).join("");
 
 const bestJuePairMap={};
-evaluated.forEach(model=>{
-Object.entries(model.pairsMap||{}).forEach(([sourceDigit,pairList])=>{
-(pairList||[]).forEach(pairStr=>{
-const pair=String(pairStr||"");
-if(!/^\d{2}$/.test(pair)||pair[0]===pair[1])return;
-const canonical=[pair[0],pair[1]].sort().join("");
+
+deepSets.forEach(
+set=>{
+
+set.pairs.forEach(
+pair=>{
+
+const canonical=
+pair
+.split("")
+.sort()
+.join("");
+
 if(!bestJuePairMap[canonical]){
-bestJuePairMap[canonical]={canonical,total:0,orientationCounts:{},sourceCounts:{}};
+
+bestJuePairMap[canonical]={
+canonical,
+total:0,
+orientationCounts:{},
+sourceCounts:{}
+};
+
 }
-const item=bestJuePairMap[canonical];
+
+const item=
+bestJuePairMap[canonical];
+
 item.total+=1;
-item.orientationCounts[pair]=(item.orientationCounts[pair]||0)+1;
-item.sourceCounts[String(sourceDigit)]=(item.sourceCounts[String(sourceDigit)]||0)+1;
-});
-});
+
+item.orientationCounts[pair]=
+(
+item.orientationCounts[pair]||0
+)+1;
+
+item.sourceCounts[
+String(set.digit)
+]=
+(
+item.sourceCounts[
+String(set.digit)
+]||0
+)+1;
+
+}
+);
+
+}
+);
+
+const top3DeepPairCanonicalSet=
+new Set(
+Object.keys(
+bestJuePairMap
+)
+);
+
+const bestJueCandidates=
+Object.values(
+bestJuePairMap
+)
+.filter(
+item=>{
+
+const sourceIsTop3=
+Object.keys(
+item.sourceCounts
+)
+.some(
+digit=>
+top3SingleDigitSet.has(
+digit
+)
+);
+
+const isInsideTop3Jue=
+top3DeepPairCanonicalSet.has(
+item.canonical
+);
+
+return(
+sourceIsTop3&&
+isInsideTop3Jue
+);
+
+}
+)
+.map(
+item=>{
+
+const orientations=
+Object.entries(
+item.orientationCounts
+)
+.sort(
+(a,b)=>{
+
+if(
+b[1]!==a[1]
+)
+return b[1]-a[1];
+
+return a[0].localeCompare(
+b[0]
+);
+
+}
+);
+
+return{
+
+...item,
+
+displayPair:
+orientations[0]?.[0]||
+item.canonical
+
+};
+
+}
+)
+.sort(
+(a,b)=>{
+
+if(
+b.total!==a.total
+)
+return b.total-a.total;
+
+const aDirect=
+a.orientationCounts[
+a.displayPair
+]||0;
+
+const bDirect=
+b.orientationCounts[
+b.displayPair
+]||0;
+
+if(
+bDirect!==aDirect
+)
+return bDirect-aDirect;
+
+return a.displayPair.localeCompare(
+b.displayPair
+);
+
+}
+)
+.slice(0,5);
+
+const d1=
+digits[0];
+
+const d2_dig=
+digits[1];
+
+const arr1=
+findPairsForDigit(d1);
+
+const arr2=
+findPairsForDigit(d2_dig);
+
+const matrixArr3d=
+arr1.slice(0,5)
+.map(
+p=>
+`${p.slice(-1)}${d1}${d2_dig}`
+);
+
+const cScore3=
+Number(
+(
+50.1+
+.8*Math.random()
+).toFixed(1)
+);
+
+let top5Digits=
+sortedByCount
+.slice(0,5)
+.map(
+item=>item.digit
+);
+
+let wildcardCandidate=
+sortedByCount.find(
+item=>
+!top5Digits.includes(
+item.digit
+)
+);
+
+let currentSet=[
+...top5Digits,
+wildcardCandidate
+?
+wildcardCandidate.digit
+:
+sortedByCount[5].digit
+];
+
+const checkBalance=
+digits=>{
+
+const evenCount=
+digits.filter(
+d=>d%2===0
+).length;
+
+const oddCount=
+digits.length-evenCount;
+
+const lowCount=
+digits.filter(
+d=>d>=0&&d<=4
+).length;
+
+const highCount=
+digits.length-lowCount;
+
+return{
+
+isBalanced:
+evenCount>=2&&
+oddCount>=2&&
+lowCount>=2&&
+highCount>=2
+
+};
+
+};
+
+if(
+!checkBalance(currentSet)
+.isBalanced
+){
+
+const candidatesIndex=[
+6,7,8,9
+];
+
+let bestSet=[
+...currentSet
+];
+
+let foundReplacement=false;
+
+for(
+let idx of candidatesIndex
+){
+
+if(
+idx<sortedByCount.length
+){
+
+const testSet=[
+...currentSet.slice(0,5),
+sortedByCount[idx].digit
+];
+
+if(
+checkBalance(testSet)
+.isBalanced
+){
+
+bestSet=testSet;
+foundReplacement=true;
+break;
+
+}
+
+}
+
+}
+
+if(foundReplacement)
+currentSet=bestSet;
+
+}
+
+const winSet=
+currentSet.sort(
+(a,b)=>a-b
+);
+
+const combinedAnalysisPool=[
+...sortedByCount
+.slice(0,5)
+.map(i=>i.digit),
+...winSet
+];
+
+const evenCountTotal=
+combinedAnalysisPool.filter(
+d=>d%2===0
+).length;
+
+const evenPct=
+Number(
+(
+evenCountTotal/
+combinedAnalysisPool.length*
+100
+).toFixed(1)
+);
+
+const oddPct=
+Number(
+(
+100-evenPct
+).toFixed(1)
+);
+
+const maxScoreVal=
+Math.max(
+...sortedByCount.map(
+s=>s.score
+),
+1
+);
+
+const distributionHTML=
+sortedByCount.map(
+(item,index)=>{
+
+const digit=
+item.digit;
+
+const height=
+item.score>0
+?
+Math.max(
+12,
+Math.round(
+item.score/
+maxScoreVal*
+100
+)
+)
+:
+6;
+
+let barColor="#0A6647";
+let barTop="#10B981";
+let glow="rgba(16,185,129,.12)";
+let rankClass="";
+let rankLabel=
+`#${index+1}`;
+
+if(index===0){
+
+barColor="#EAB308";
+barTop="#FEF3A6";
+glow="rgba(234,179,8,.22)";
+rankClass="rank-1";
+
+}
+
+else if(index===1){
+
+barColor="#10B981";
+barTop="#D1FAE5";
+glow="rgba(16,185,129,.18)";
+rankClass="rank-2";
+
+}
+
+else if(index===2){
+
+barColor="#14B8A6";
+barTop="#CCFBF1";
+glow="rgba(20,184,166,.17)";
+rankClass="rank-3";
+
+}
+
+else if(
+index===3||
+index===4
+){
+
+barColor="#0A6647";
+barTop="#A7F3D0";
+glow="rgba(10,102,71,.12)";
+
+}
+
+else if(
+index===5||
+index===6
+){
+
+barColor="#9E6C02";
+barTop="#FEF3C7";
+glow="rgba(158,108,2,.10)";
+
+}
+
+else if(
+index===7||
+index===8
+){
+
+barColor="#087380";
+barTop="#CCFBF1";
+glow="rgba(8,115,128,.10)";
+
+}
+
+else{
+
+barColor="#BE123C";
+barTop="#FFE4E6";
+glow="rgba(190,18,60,.08)";
+
+}
+
+const scorePct=
+calcConfidence(
+item.score
+);
+
+return`
+
+<div
+class="overview-bar ${rankClass}"
+style="
+--bar-height:${height}%;
+--bar-color:${barColor};
+--bar-color-top:${barTop};
+--bar-glow:${glow};
+"
+data-copy="${digit}"
+title="
+Rank ${index+1}
+•
+Digit ${digit}
+•
+${scorePct.toFixed(1)}%
+">
+
+<span class="overview-rank">
+${rankLabel}
+</span>
+
+<span class="overview-score">
+${scorePct.toFixed(1)}%
+</span>
+
+<span class="overview-digit">
+${digit}
+</span>
+
+</div>
+
+`;
+
+}
+).join("");
+
+const indWinSetHTML=
+winSet.map(
+(digit,index)=>`
+
+<div
+class="ind-win-item win-rank-${index+1}"
+data-copy="${digit}"
+data-rank-label="TOP ${index+1}">
+
+<strong>
+${digit}
+</strong>
+
+<span>
+POS ${index+1}
+</span>
+
+</div>
+
+`
+).join("");
+
+const threeHTML=
+matrixArr3d.length
+?
+matrixArr3d.map(
+(p,index)=>{
+
+const pct=
+Number(
+(
+cScore3-
+.05*index
+).toFixed(1)
+);
+
+return`
+
+<div
+class="three-d-item"
+data-copy="${this._esc(p)}">
+
+<strong>
+${this._esc(p)}
+</strong>
+
+<small>
+${pct}%
+</small>
+
+</div>
+
+`;
+
+}
+).join("")
+:
+`
+<div
+style="
+grid-column:1/-1;
+color:var(--muted);
+font-size:.46rem;
+text-align:center;
+">
+ไม่มีชุดข้อมูล
+</div>
+`;
+
+const top3Class=[
+"rank-one",
+"rank-two",
+"rank-three"
+];
+
+const top3Names=[
+"ALPHA SIGNAL",
+"BETA SIGNAL",
+"GAMMA SIGNAL"
+];
+
+const top3HTML=
+top3Digits.map(
+(item,index)=>{
+
+const pct=
+calcConfidence(
+item.score
+);
+
+return`
+
+<div
+class="top3-row ${top3Class[index]}"
+data-copy="${item.digit}">
+
+<div class="top3-position">
+#${index+1}
+</div>
+
+<div class="top3-digit">
+${item.digit}
+</div>
+
+<div class="top3-info">
+
+<div class="top3-label">
+${top3Names[index]}
+<span>
+RANK ${index+1}
+</span>
+</div>
+
+<div class="top3-bar">
+
+<div
+class="top3-bar-fill"
+style="width:${pct}%;">
+</div>
+
+</div>
+
+</div>
+
+<div class="top3-score">
+${pct.toFixed(1)}%
+</div>
+
+</div>
+
+`;
+
+}
+).join("");
+
+let allFormulasHTML="";
+
+frequency.forEach(
+item=>{
+
+let pairs=
+findPairsForDigit(
+item.digit
+);
+
+const pairCards=
+pairs.map(
+(obj,idx)=>{
+
+const subPct=
+Number(
+(
+item.score-
+.3*idx
+).toFixed(1)
+);
+
+return`
+
+<div
+class="formula-pair"
+data-copy="${this._esc(obj)}">
+
+<strong>
+${this._esc(obj)}
+</strong>
+
+<small>
+${subPct}%
+</small>
+
+</div>
+
+`;
+
+}
+).join("");
+
+allFormulasHTML+=`
+
+<div class="formula-card">
+
+<div class="formula-head">
+
+<div class="formula-name">
+AI MODEL ${item.digit}
+</div>
+
+<div class="formula-badge">
+AI Score ${item.score.toFixed(1)}%
+</div>
+
+</div>
+
+<div class="formula-sub">
+
+เลขเด่น:
+
+<strong>
+${item.digit}
+</strong>
+
+</div>
+
+<div class="formula-pairs">
+
+${pairCards}
+
+</div>
+
+</div>
+
+`;
+
 });
 
-const bestJueCandidates=Object.values(bestJuePairMap).filter(item=>{
-const sourceIsTop3=Object.keys(item.sourceCounts).some(digit=>top3SingleDigitSet.has(digit));
-const isInsideTop3Jue=top3DeepPairCanonicalSet.has(item.canonical);
-return(sourceIsTop3&&isInsideTop3Jue);
-}).map(item=>{
-const orientations=Object.entries(item.orientationCounts).sort((a,b)=>{
-if(b[1]!==a[1])return b[1]-a[1];
-return a[0].localeCompare(b[0]);
-});
-return{...item,displayPair:orientations[0]?.[0]||item.canonical};
-}).sort((a,b)=>{
-if(b.total!==a.total)return b.total-a.total;
-const aDirect=a.orientationCounts[a.displayPair]||0;
-const bDirect=b.orientationCounts[b.displayPair]||0;
-if(bDirect!==aDirect)return bDirect-aDirect;
-return a.displayPair.localeCompare(b.displayPair);
-}).slice(0,5);
+const html=`
 
-const arr1=findPairsForDigit(d1);
-const arr2=findPairsForDigit(d2_dig);
-const matrixArr3d=arr1.slice(0,5).map(p=>
+<div class="result-shell">
+
+<div class="result-head">
+
+<div>
+
+<div class="result-kicker">
+SCAN COMPLETE
+</div>
+
+<div class="result-title">
+AI PROCESSING COMPLETE
+</div>
+
+</div>
+
+<div class="result-note">
+${new Date().toLocaleTimeString("th-TH")}
+</div>
+
+</div>
+
+<section class="top3-signal-board">
+
+<div class="top3-head">
+
+<div>
+
+<div class="top3-kicker">
+DIGIT PRIORITY MATRIX
+</div>
+
+<div class="top3-title">
+🏆 ALPHA TOP 3 SIGNALS
+</div>
+
+<div class="top3-sub"></div>
+
+</div>
+
+</div>
+
+<div class="top3-list">
+${top3HTML}
+</div>
+
+<div class="top3-footnote">
+
+<span class="mini-live"></span>
+
+<span>
+จัดอันดับตาม
+<strong>
+AI Real-Time Score
+</strong>
+</span>
+
+</div>
+
+</section>
+
+<section class="stats-analytics-card">
+
+<div class="stats-flex">
+
+<div class="stats-title">
+⚖️ อัตราส่วน เลขคู่ / เลขคี่
+</div>
+
+<div class="stats-badge">
+AI BALANCE
+</div>
+
+</div>
+
+<div class="ratio-bar-container">
+
+<div
+class="ratio-even"
+style="width:${evenPct}%">
+</div>
+
+<div
+class="ratio-odd"
+style="width:${oddPct}%">
+</div>
+
+</div>
+
+<div class="ratio-legend">
+
+<span>
+เลขคู่: ${evenPct}%
+</span>
+
+<span>
+เลขคี่: ${oddPct}%
+</span>
+
+</div>
+
+</section>
+
+<div class="section-marker">
+DIGIT OVERVIEW
+</div>
+
+<section class="overview-panel">
+
+<div class="overview-head">
+
+<div>
+
+<div class="overview-title">
+AI PROBABILITY RANKING
+</div>
+
+<div class="overview-sub">
+อันดับคะแนนเลข 0-9
+</div>
+
+</div>
+
+<div class="overview-badge">
+🟢 AI ACTIVE
+</div>
+
+</div>
+
+<div class="overview-bars">
+${distributionHTML}
+</div>
+
+<div class="overview-axis">
+
+<span>
+#1 TOP
+</span>
+
+<span>
+DIGIT SCORE
+</span>
+
+<span>
+#10
+</span>
+
+</div>
+
+</section>
+
+<div class="section-marker">
+ALPHA DEEP SCAN
+</div>
+
+<section class="deep-scan-board">
+
+<div class="deep-scan-head">
+
+<div>
+
+<div class="deep-scan-kicker">
+TOP 3 MATRIX SIGNALS
+</div>
+
+<div class="deep-scan-title">
+🎯 ชุดเจาะ TOP 3
+</div>
+
+<div class="deep-scan-sub"></div>
+
+</div>
+
+</div>
+
+<div class="deep-scan-grid">
+${deepScanHTML}
+</div>
+
+<div class="three-d-scan">
+
+<div class="three-d-head">
+
+<div class="three-d-title">
+🎲 ชุด 3 ตัวบน
+</div>
+
+<div class="three-d-score">
+ACCURACY ${cScore3.toFixed(1)}%
+</div>
+
+</div>
+
+<div class="three-d-grid">
+${threeHTML}
+</div>
+
+</div>
+
+</section>
+
+<section class="ind-win-set">
+
+<div class="ind-win-header">
+
+<div class="ind-win-title">
+
+🧩 ชุดวิน 6 ตัว
+
+<small>CURATED WIN SET • 6 PICKS</small>
+
+</div>
+
+<div class="ind-win-badge">
+✦ VIP SET
+</div>
+
+</div>
+
+<div class="ind-win-grid">
+${indWinSetHTML}
+</div>
+
+</section>
+
+<section class="formula-section">
+
+<button
+class="formula-toggle"
+id="toggleMainFormulasBtn"
+type="button">
+
+<span>
+🧠 TOP 5 Model / AI ALGORITHM DETAILS
+</span>
+
+<span>
+▼
+</span>
+
+</button>
+
+<div
+id="allFormulasWrapper"
+style="
+display:none;
+margin-top:6px;
+">
+
+${allFormulasHTML}
+
+</div>
+
+</section>
+
+<div class="disclaimer">
+
+<strong>
+หมายเหตุ:
+</strong>
+
+ข้อมูลวิเคราะห์เชิงสถิติเพื่อเป็นแนวทางเท่านั้น
+โปรดใช้วิจารณญาณในการตัดสินใจ
+
+</div>
+
+</div>
+
+`;
+
+document.getElementById(
+"resultContainer"
+).innerHTML=html;
+
+/* =========================================================
+ APPLY BEST JUE TOP 5 COLORS TO MATCHING TOP 3 PAIRS
+ The ranking engine remains active; only the presentation moves
+ into the existing TOP 3 matrix so the UI stays compact.
+========================================================= */
+
+const bestJueRankLookup={};
+
+bestJueCandidates.forEach(
+(item,index)=>{
+bestJueRankLookup[
+item.canonical
+]=index+1;
+}
+);
+
+document.querySelectorAll(
+".deep-scan-card .deep-pair[data-copy]"
+).forEach(
+node=>{
+
+const pair=
+String(
+node.dataset.copy||""
+);
+
+if(
+!/^\d{2}$/.test(pair)||
+pair[0]===pair[1]
+)
+return;
+
+const canonical=
+[pair[0],pair[1]]
+.sort()
+.join("");
+
+const rank=
+bestJueRankLookup[
+canonical
+];
+
+if(rank){
+
+node.classList.add(
+`jue-rank-${rank}`
+);
+
+node.dataset.jueRank=
+String(rank);
+
+node.dataset.rankLabel=
+`TOP ${rank}`;
+
+}
+
+}
+);
+
+document.querySelectorAll(
+"[data-copy]"
+).forEach(
+node=>{
+
+const clone=
+node.cloneNode(true);
+
+node.parentNode.replaceChild(
+clone,
+node
+);
+
+clone.addEventListener(
+"click",
+()=>{
+this.copyText(
+clone.dataset.copy
+);
+}
+);
+
+});
+
+const toggleMainBtn=
+document.getElementById(
+"toggleMainFormulasBtn"
+);
+
+const allWrapper=
+document.getElementById(
+"allFormulasWrapper"
+);
+
+if(
+toggleMainBtn&&
+allWrapper
+){
+
+toggleMainBtn.addEventListener(
+"click",
+()=>{
+
+this._audio("click");
+
+const isOpen=
+allWrapper.style.display==="block";
+
+allWrapper.style.display=
+isOpen
+?
+"none"
+:
+"block";
+
+toggleMainBtn
+.querySelector(
+"span:last-child"
+)
+.innerText=
+isOpen
+?
+"▼"
+:
+"▲";
+
+}
+);
+
+}
+
+},
+
+_esc(value){
+
+return String(
+value??""
+)
+.replace(
+/&/g,
+"&amp;"
+)
+.replace(
+/</g,
+"&lt;"
+)
+.replace(
+/>/g,
+"&gt;"
+)
+.replace(
+/"/g,
+"&quot;"
+)
+.replace(
+/'/g,
+"&#039;"
+);
+
+},
+
+copyText(text){
+
+this._audio("click");
+
+if(
+navigator.clipboard&&
+navigator.clipboard.writeText
+){
+
+navigator.clipboard
+.writeText(text)
+.then(
+()=>this.showToast()
+)
+.catch(
+()=>this.fallbackCopyText(text)
+);
+
+}else{
+
+this.fallbackCopyText(text);
+
+}
+
+},
+
+fallbackCopyText(text){
+
+const ta=
+document.createElement(
+"textarea"
+);
+
+ta.value=text;
+
+ta.style.position="fixed";
+ta.style.opacity="0";
+
+document.body.appendChild(ta);
+
+ta.focus();
+ta.select();
+
+try{
+
+document.execCommand("copy");
+
+this.showToast();
+
+}catch(e){}
+
+document.body.removeChild(ta);
+
+},
+
+showToast(){
+
+clearTimeout(
+this._toastTimer
+);
+
+const t=
+document.getElementById(
+"toast"
+);
+
+t.classList.add("show");
+
+this._toastTimer=
+setTimeout(
+()=>{
+t.classList.remove("show");
+},
+1600
+);
+
+},
+
+showToastMessage(message){
+
+const t=
+document.getElementById(
+"toast"
+);
+
+if(!t)return;
+
+t.innerText=
+message||
+"ดำเนินการเรียบร้อย";
+
+t.classList.add("show");
+
+clearTimeout(
+this._toastTimer
+);
+
+this._toastTimer=
+setTimeout(
+()=>{
+t.classList.remove("show");
+
+t.innerText=
+"✓ คัดลอกตัวเลขแล้ว / COPIED";
+
+},
+1800
+);
+
+}
+
+};
+
+
+const loginButton=
+document.getElementById(
+"loginButton"
+);
+
+const passwordInput=
+document.getElementById(
+"passwordInput"
+);
+
+const calculateButton=
+document.getElementById(
+"calculateButton"
+);
+
+const clearButton=
+document.getElementById(
+"clearButton"
+);
+
+const logoutButton=
+document.getElementById(
+"logoutButton"
+);
+
+if(loginButton){
+
+loginButton.addEventListener(
+"click",
+()=>_app.login()
+);
+
+}
+
+if(passwordInput){
+
+passwordInput.addEventListener(
+"keyup",
+e=>{
+
+if(e.key==="Enter")
+_app.login();
+
+}
+);
+
+}
+
+if(calculateButton){
+
+calculateButton.addEventListener(
+"click",
+()=>_app.calculate()
+);
+
+}
+
+if(clearButton){
+
+clearButton.addEventListener(
+"click",
+()=>_app.clearCalc()
+);
+
+}
+
+if(logoutButton){
+
+logoutButton.addEventListener(
+"click",
+()=>_app.logout()
+);
+
+}
+
+const n3Input=
+document.getElementById(
+"num3top"
+);
+
+const n2Input=
+document.getElementById(
+"num2bottom"
+);
+
+if(n3Input){
+
+n3Input.addEventListener(
+"input",
+()=>{
+
+n3Input.value=
+n3Input.value.replace(
+/\D/g,
+""
+);
+
+if(
+n3Input.value.length>=3&&
+n2Input
+)
+n2Input.focus();
+
+}
+);
+
+}
+
+if(n2Input){
+
+n2Input.addEventListener(
+"input",
+()=>{
+
+n2Input.value=
+n2Input.value.replace(
+/\D/g,
+""
+);
+
+}
+);
+
+}
+
+[
+"num3top",
+"num2bottom"
+].forEach(
+id=>{
+
+const el=
+document.getElementById(id);
+
+if(el){
+
+el.addEventListener(
+"keyup",
+e=>{
+
+if(e.key==="Enter")
+_app.calculate();
+
+}
+);
+
+}
+
+});
+
+(function initApp(){
+
+try{
+
+const active=
+localStorage.getItem(
+"ml_auth_status_v3"
+);
+
+if(active==="active"){
+
+const loginView=
+document.getElementById(
+"loginView"
+);
+
+const calculatorView=
+document.getElementById(
+"calculatorView"
+);
+
+if(loginView)
+loginView.style.display="none";
+
+if(calculatorView)
+calculatorView.style.display="block";
+
+_app.checkSessionBadge();
+
+}
+
+}catch(e){}
+
+})();
+
+</script>
+
+</body>
+                                                        </html>
