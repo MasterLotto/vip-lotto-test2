@@ -1,48 +1,9 @@
 <!DOCTYPE html>
-<!--
-[L3] MESTER LOTTO VIP+ V12.1 — UI/SESSION/FLAG UPGRADE AUDIT SUMMARY
-
-[L8] SOURCE:
-[L9] - Upgraded from V.11.5.
-[L10] - 5 Main Models: UNCHANGED.
-[L11] - 100 original formulas + raw values + transformations: UNCHANGED.
-[L12] - Formula-derived pair generation rules: UNCHANGED.
-[L13] - Login persistence/localStorage: PERSISTENT AUTO-RESTORE RETAINED.
-[L14] - Existing CSS/color/theme: UNCHANGED.
-
-[L19] BACKTEST ON USER-SUPPLIED HISTORY (strict past -> future, per lottery type):
-[L20] - ดาวโจนส์ VIP: V11.6 Top-2 85.7% (7 trials), Candidate 100.0%, Top-1 28.6%.
-[L21] - ฮานอยปกติ: V11.6 Top-2 87.5% (8 trials), Candidate 100.0%, Top-1 62.5%.
-[L22] - หุ้นนิคเคอิเช้า: V11.6 Top-2 87.5% (8 trials), Candidate 100.0%, Top-1 50.0%.
-[L23] - ลาวพัฒนา: V11.6 Top-2 62.5% (8 trials), Candidate 87.5%, Top-1 50.0%.
-[L24] - รัฐบาลไทย: V11.6 Top-2 77.8% (9 trials), Candidate 100.0%, Top-1 33.3%.
-[L25] - นิคเคอิ VIP เช้า: V11.6 Top-2 37.5% (8 trials), Candidate 100.0%, Top-1 25.0%.
-[L26] - Mean Top-2 across these six series: ~73.0%.
-[L27] - The supplied "หุ้นนิคเคอิเช้า" block appeared twice; exact duplicate records are now de-duplicated before learning/backtest.
-
-[L32] UPGRADES:
-[L33] 1. Historical weights now use Bayesian-style uncertainty shrinkage with real recent-sample counts.
-[L34] 2. Removed the old redundancy penalty that could reduce a digit when multiple signals agreed.
-[L35] 3. Added evidenceScore combining long history, recent form, and stability.
-[L36] 4. Added hot-streak protection so strong recent digits are not automatically punished as "hot".
-[L37] 5. Strengthened anti-dead filtering using reliability + recent posterior + model consensus + support.
-[L38] 6. Added support/conflict-aware selector ranking and a stronger near-tie resolver.
-[L39] 7. Pair source strength no longer relies on an undefined aiScore; it uses model history weight + selected digit reliability.
-[L40] 8. Walk-forward audit now reports Top-1, Top-2, Candidate Coverage, Lift, selection loss, confidence and average candidate-pool size.
-[L41] 9. Lottery groups now de-duplicate exact same date/result records and flag same-date conflicting results instead of contaminating history.
-[L42] 10. No target/future record is used when scoring an earlier walk-forward target.
-
-[L47] IMPORTANT:
-[L48] - Backtest sample sizes are small; the percentages are diagnostic evidence, not a guarantee of future results.
-[L49] - V11.6 intentionally does NOT alter the protected 5 Main Models, the original 100 formulas, or the protected pair/number formulas.
--->
-
-<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mester Lotto VIP+ — Multi Lottery Engine V12.1</title>
+<title>Mester Lotto VIP+ — Multi Lottery Engine</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -678,7 +639,6 @@ min-width:31px
 
 <input
 id="password"
-name="password"
 class="password"
 type="password"
 autocomplete="current-password"
@@ -715,23 +675,9 @@ placeholder="ลาวพัฒนา | 24 ส.ค. 69
 552
 55
 
-
-
-
-
-
-
-
 ลาวพัฒนา | 21 ส.ค. 69
 253
 02
-
-
-
-
-
-
-
 
 ลาวสตาร์ | 24 ส.ค. 69
 781
@@ -789,6 +735,7 @@ READING MULTI-LOTTERY INPUT...
 
 <script>
 (()=>{
+
 const c=document.getElementById('snow');
 const x=c.getContext('2d');
 
@@ -851,6 +798,7 @@ requestAnimationFrame(draw);
 
 })();
 
+
 const $=id=>document.getElementById(id);
 
 const esc=s=>String(s)
@@ -859,6 +807,7 @@ const esc=s=>String(s)
 .replace(/>/g,'&gt;')
 .replace(/"/g,'&quot;')
 .replace(/'/g,'&#039;');
+
 
 const sec={
 
@@ -894,67 +843,20 @@ t=>v===this.dec(t)
 
 };
 
-const AUTH_KEY='ml_auth_status_v3';
-const AUTH_COOKIE='ml_auth_status_v3=active; path=/; max-age=315360000; SameSite=Lax';
-
-const storage={
-get(){
-try{
-return localStorage.getItem(AUTH_KEY)==='active';
-}catch(e){
-try{
-return document.cookie
-.split(';')
-.map(v=>v.trim())
-.some(v=>v===AUTH_COOKIE.split(';')[0]);
-}catch(_){
-return false;
-}
-}
-},
-
-set(active){
-try{
-if(active){
-localStorage.setItem(AUTH_KEY,'active');
-}else{
-localStorage.removeItem(AUTH_KEY);
-}
-}catch(e){}
-
-try{
-document.cookie=active
-?AUTH_COOKIE
-:'ml_auth_status_v3=; path=/; max-age=0; SameSite=Lax';
-}catch(e){}
-},
-
-clear(){
-this.set(false);
-try{
-sessionStorage.removeItem(AUTH_KEY);
-}catch(e){}
-}
-};
 
 const app={
 
 cache:[],
 toastTimer:null,
 
-setAuthState(active){
-if(active){
-storage.set(true);
-}else{
-storage.clear();
-}
-},
 
 audio(){},
+
 
 norm(x){
 return(x%10+10)%10;
 },
+
 
 flag(n){
 
@@ -998,9 +900,6 @@ return'🇬🇧';
 if(/อียิปต์|egypt/.test(n))
 return'🇪🇬';
 
-if(/มาเลเซีย|มาเล|malaysia|malay/.test(n))
-return'🇲🇾';
-
 if(/ไต้หวัน|taiwan|tse/.test(n))
 return'🇹🇼';
 
@@ -1022,6 +921,7 @@ return'🇹🇭';
 return'🌐';
 
 },
+
 
 parse(text){
 
@@ -1121,6 +1021,7 @@ errors
 };
 
 },
+
 
 /*
 ==========================================================
@@ -1292,6 +1193,7 @@ signals
 
 },
 
+
 /*
 ==========================================================
 5 MAIN MODELS
@@ -1370,6 +1272,7 @@ set:unit(raw[4])
 ];
 
 },
+
 
 buildPairs(
 models,
@@ -1458,6 +1361,7 @@ p=>p[0]!==p[1]
 
 },
 
+
 /*
 ==========================================================
 HISTORICAL ENGINE
@@ -1479,8 +1383,7 @@ stability:.5,
 samples:0,
 hits:0,
 recentHits:0,
-recentWeight:0,
-recentSamples:0
+recentWeight:0
 }
 ]
 )
@@ -1498,8 +1401,7 @@ recent:.5,
 samples:0,
 hits:0,
 recentHits:0,
-recentWeight:0,
-recentSamples:0
+recentWeight:0
 }
 ]
 )
@@ -1519,7 +1421,6 @@ samples:0,
 hits:0,
 recentHits:0,
 recentWeight:0,
-recentSamples:0,
 streak:0,
 maxStreak:0
 }
@@ -1638,8 +1539,6 @@ hit*recencyWeight;
 mp.recentWeight+=
 recencyWeight;
 
-mp.recentSamples++;
-
 }
 
 });
@@ -1663,8 +1562,6 @@ hit*recencyWeight;
 
 fp.recentWeight+=
 recencyWeight;
-
-fp.recentSamples++;
 
 }
 
@@ -1696,8 +1593,6 @@ hit*recencyWeight;
 dp.recentWeight+=
 recencyWeight;
 
-dp.recentSamples++;
-
 }
 
 }
@@ -1712,6 +1607,7 @@ actual:[...actual]
 });
 
 }
+
 
 Object.values(modelPerf).forEach(mp=>{
 
@@ -1736,6 +1632,7 @@ mp.long-mp.recent
 
 });
 
+
 Object.values(formulaPerf).forEach(fp=>{
 
 fp.long=
@@ -1749,6 +1646,7 @@ fp.recentHits/fp.recentWeight:
 fp.long;
 
 });
+
 
 for(let d=0;d<=9;d++){
 
@@ -1824,41 +1722,84 @@ recentWindow
 
 },
 
-posterior(rate,samples,prior=.5,priorN=6){
-const n=Math.max(0,Number(samples)||0);
-return(rate*n+prior*priorN)/(n+priorN);
-},
 
 modelWeight(m,history){
-const hp=history&&history.modelPerf[m.id];
+
+const hp=
+history&&
+history.modelPerf[m.id];
+
 if(!hp)return 1;
-const long=this.posterior(hp.long,hp.samples,0.5,6);
-const recent=this.posterior(hp.recent,hp.recentSamples||Math.min(hp.samples,8),0.5,4);
-const blended=.50*long+.30*recent+.20*(hp.stability??.5);
-return .70+.60*Math.max(0,Math.min(1,blended));
+
+const blended=
+.55*hp.long+
+.30*hp.recent+
+.15*hp.stability;
+
+return .70+
+.60*
+Math.max(
+0,
+Math.min(
+1,
+blended
+)
+);
+
 },
 
+
 formulaWeight(id,history){
-const fp=history&&history.formulaPerf[id];
+
+const fp=
+history&&
+history.formulaPerf[id];
+
 if(!fp)return 1;
-const long=this.posterior(fp.long,fp.samples,0.5,8);
-const recent=this.posterior(fp.recent,fp.recentSamples||Math.min(fp.samples,8),0.5,4);
-const blended=.55*long+.35*recent+.10;
-return .75+.50*Math.max(0,Math.min(1,blended));
+
+const blended=
+.60*fp.long+
+.30*fp.recent+
+.10;
+
+return .75+
+.50*
+Math.max(
+0,
+Math.min(
+1,
+blended
+)
+);
+
 },
+
 
 /*
 ==========================================================
 DIGIT SCORE ENGINE
 ==========================================================
 
-UPGRADE V11.6:
-- uncertainty-aware historical shrinkage
-- true support synergy instead of redundancy penalty
-- hot-streak protection
-- anti-dead gate
-- candidate pool remains locked to 5 Main Models
-- original formulas remain untouched
+ส่วนฐานเดิม:
+- modelScore
+- formula100Score
+- radarScore
+- backendScore
+- winSetScore
+- historicalScore
+- recentFormScore
+- stabilityScore
+
+ส่วนที่เพิ่ม:
+- modelConsensusCount
+- supportSignals
+- conflictSignals
+- reliabilityScore
+- selectionPenalty
+- selectorScore
+
+ทั้งหมดเป็น "Selector Layer"
+ไม่เปลี่ยนสูตรต้นทาง
 
 ==========================================================
 */
@@ -1886,71 +1827,112 @@ backendScore:0,
 winSetScore:0,
 selectorBonus:0,
 selectorScore:0,
-historicalScore:.5,
-recentFormScore:.5,
-stabilityScore:.5,
-hotStreakBonus:1,
+historicalScore:0,
+recentFormScore:0,
+stabilityScore:0,
+hotStreakPenalty:1,
 confidence:0,
 redundancyPenalty:1,
+
 modelConsensusCount:0,
 supportSignals:0,
 conflictSignals:0,
 reliabilityScore:.5,
-evidenceScore:.5,
-uncertainty:1,
 selectionPenalty:1,
 selectionScore:0,
+
 totalScore:0
 }
 ]
 )
 );
 
+
 const allowed=new Set();
+
 const modelWeights={};
+
 let totalModelWeight=0;
 
+
 models.forEach(m=>{
-const mw=this.modelWeight(m,history);
+
+const mw=
+this.modelWeight(
+m,
+history
+);
+
 modelWeights[m.id]=mw;
+
 m.historyWeight=mw;
+
 totalModelWeight+=mw;
-m.set.forEach(d=>allowed.add(d));
+
+m.set.forEach(d=>{
+
+allowed.add(d);
+
+score[d].modelScore+=mw;
+
 });
 
+});
+
+
 for(let d=0;d<=9;d++){
-score[d].modelScore=totalModelWeight?
-models.reduce(
-(sum,m)=>sum+(m.set.includes(d)?modelWeights[m.id]:0),
-0
-)/totalModelWeight:
+
+score[d].modelScore=
+totalModelWeight?
+score[d].modelScore/
+totalModelWeight:
 0;
+
 }
+
 
 const weightedFormulaCounts=
 Object.fromEntries(
-Array.from({length:10},(_,d)=>[d,0])
+Array.from(
+{length:10},
+(_,d)=>[d,0]
+)
 );
 
+
 F.signals.forEach(sig=>{
+
 weightedFormulaCounts[sig.value]+=
-this.formulaWeight(sig.id,history);
+this.formulaWeight(
+sig.id,
+history
+);
+
 });
+
 
 const maxF=
 Math.max(
-...Object.values(weightedFormulaCounts),
+...Object.values(
+weightedFormulaCounts
+),
 1
 );
 
+
 for(let d=0;d<=9;d++){
+
 score[d].formula100Score=
-weightedFormulaCounts[d]/maxF;
+weightedFormulaCounts[d]/
+maxF;
+
 }
+
 
 const x=(R1+R2)%10;
 const y=sumT%10;
 const z=total%10;
+
 
 const r1=[
 this.norm(x-1),
@@ -1970,6 +1952,7 @@ z,
 this.norm(z+1)
 ];
 
+
 for(let d=0;d<=9;d++){
 
 let h=0;
@@ -1982,13 +1965,17 @@ score[d].radarScore=h/3;
 
 }
 
+
 const back=[
+
 (2*H+R1)%10,
 (T+R2)%10,
 sumT%10,
 Math.abs(T-U)%10,
 total%10
+
 ];
+
 
 for(let d=0;d<=9;d++){
 
@@ -2001,54 +1988,30 @@ d===this.norm(z+5)
 )
 score[d].winSetScore=1;
 
+
 const dp=
 history&&
 history.digitPerf[d];
 
 if(dp&&dp.samples){
 
-score[d].historicalScore=dp.long;
-score[d].recentFormScore=dp.recent;
-score[d].stabilityScore=dp.stability;
+score[d].historicalScore=
+dp.long;
 
-const longPost=
-this.posterior(
-dp.long,
-dp.samples,
-.5,
-6
-);
+score[d].recentFormScore=
+dp.recent;
 
-const recentPost=
-this.posterior(
-dp.recent,
-dp.recentSamples||Math.min(dp.samples,8),
-.5,
-4
-);
+score[d].stabilityScore=
+dp.stability;
 
-score[d].evidenceScore=
-.55*longPost+
-.35*recentPost+
-.10*dp.stability;
-
-score[d].uncertainty=
-1/Math.sqrt(dp.samples+1);
-
-const streak=
-Math.max(
-0,
-dp.streak||0
-);
-
-score[d].hotStreakBonus=
-1+
+score[d].hotStreakPenalty=
+1-
 Math.min(
-.06,
+.12,
 Math.max(
 0,
-streak-1
-)*.015
+dp.streak-2
+)*.03
 );
 
 }else{
@@ -2056,114 +2019,237 @@ streak-1
 score[d].historicalScore=.5;
 score[d].recentFormScore=.5;
 score[d].stabilityScore=.5;
-score[d].evidenceScore=.5;
-score[d].uncertainty=1;
-score[d].hotStreakBonus=1;
 
 }
 
+
+score[d].totalScore=
+.28*score[d].modelScore+
+.20*score[d].formula100Score+
+.13*score[d].radarScore+
+.12*score[d].backendScore+
+.07*score[d].winSetScore+
+.10*score[d].historicalScore+
+.06*score[d].recentFormScore+
+.04*score[d].stabilityScore;
+
+score[d].totalScore*=
+score[d].hotStreakPenalty;
+
+if(allowed.has(d))
+score[d].totalScore*=1.15;
+
 }
 
-for(let d=0;d<=9;d++){
 
-const v=score[d];
+Object.values(score).forEach(v=>{
 
-v.modelConsensusCount=
-models.filter(
-m=>m.set.includes(d)
-).length;
+const consensus=
+v.modelScore;
 
-const signals=[
+const highSignals=[
+
 v.formula100Score,
 v.radarScore,
 v.backendScore,
 v.winSetScore
-];
 
-v.supportSignals=
-signals.filter(
-x=>x>=.60
+].filter(
+x=>x>=.75
 ).length;
 
-v.conflictSignals=
-signals.filter(
-x=>x<=.25
-).length;
+
+const redundancyPenalty=
+1-
+Math.min(
+.18,
+Math.max(
+0,
+highSignals-1
+)*.06
+);
+
+
+v.redundancyPenalty=
+redundancyPenalty;
+
+
+const signalAgreement=
+(
+v.formula100Score+
+v.radarScore+
+v.backendScore+
+v.winSetScore
+)/4*
+redundancyPenalty;
+
+
+v.selectorBonus=
+allowed.has(v.digit)
+?
+(
+.055*consensus+
+.045*signalAgreement
+)
+:
+0;
+
+
+v.selectorScore=
+v.totalScore+
+v.selectorBonus;
+
+});
+
+
+/*
+==========================================================
+FINAL SELECTION LAYER
+==========================================================
+
+ห้าม:
+- สร้างเลขใหม่
+- เพิ่มเลขนอก Candidate Pool
+- เปลี่ยน 5 Main Models
+- เปลี่ยนสูตรเลขเจาะ
+- ใช้ผลจริงของงวดเป้าหมาย
+
+ทำ:
+- วัด consensus
+- วัด support
+- วัด conflict
+- shrink historical reliability
+- ป้องกันเลขดับ
+- แก้ near-tie
+- คำนวณ confidence
+
+==========================================================
+*/
+
+const bayes=
+(
+hitRate,
+samples,
+prior=.5,
+priorN=4
+)=>{
+
+const n=
+Math.max(
+0,
+Number(samples)||0
+);
+
+return(
+hitRate*n+
+prior*priorN
+)/
+(n+priorN);
+
+};
+
+
+Object.values(score).forEach(v=>{
 
 const dp=
 history&&
-history.digitPerf[d];
+history.digitPerf[v.digit];
 
 const samples=
 dp?.samples||0;
 
-const recentSamples=
-dp?.recentSamples||
-Math.min(samples,8);
+const hist=
+dp?.long??.5;
 
-const longPost=
-this.posterior(
-dp?.long??.5,
-samples,
-.5,
-6
-);
+const recent=
+dp?.recent??hist;
 
-const recentPost=
-this.posterior(
-dp?.recent??.5,
-recentSamples,
-.5,
-4
-);
+const stability=
+dp?.stability??.5;
+
+
+/*
+Bayesian-style shrinkage
+
+ทำให้ข้อมูลเพียงไม่กี่งวดไม่สามารถ
+สร้างความมั่นใจเกินจริงได้
+*/
 
 v.reliabilityScore=
-.50*longPost+
-.30*recentPost+
-.20*(dp?.stability??.5);
+
+.45*
+bayes(
+hist,
+samples
+)+
+
+.35*
+bayes(
+recent,
+Math.min(samples,8)
+)+
+
+.20*
+stability;
+
+
+v.modelConsensusCount=
+models.filter(
+m=>m.set.includes(v.digit)
+).length;
+
+
+v.supportSignals=[
+
+v.formula100Score,
+v.radarScore,
+v.backendScore,
+v.winSetScore
+
+].filter(
+x=>x>=.60
+).length;
+
+
+v.conflictSignals=[
+
+v.formula100Score,
+v.radarScore,
+v.backendScore,
+v.winSetScore
+
+].filter(
+x=>x<=.25
+).length;
+
+
+/*
+ถ้ามี signal ขัดแย้งหลายตัว
+ให้ลดคะแนนอย่างจำกัด
+
+ไม่สามารถลบเลขออกจาก Candidate Pool
+เพียงเพราะ signal ชั้นรองขัดแย้ง
+*/
 
 const conflictPenalty=
 1-
 Math.min(
-.16,
+.20,
 Math.max(
 0,
 v.conflictSignals-1
-)*.04
+)*.05
 );
 
-const deadCandidate=
-allowed.has(v.digit)&&
-v.reliabilityScore<.39&&
-recentPost<.36&&
-v.modelConsensusCount<=1&&
-v.supportSignals===0;
 
-const deadPenalty=
-deadCandidate?
-.78:
-1;
+/*
+Shrink reliability กลับเข้าหา neutral 0.5
+*/
 
-v.selectionPenalty=
-conflictPenalty*
-deadPenalty;
+const reliabilityBlend=
+.70*v.reliabilityScore+
+.30*.5;
 
-v.totalScore=
-.32*v.modelScore+
-.18*v.formula100Score+
-.10*v.radarScore+
-.08*v.backendScore+
-.04*v.winSetScore+
-.10*v.historicalScore+
-.08*v.recentFormScore+
-.04*v.stabilityScore+
-.06*v.evidenceScore;
-
-v.totalScore*=
-v.hotStreakBonus;
-
-if(allowed.has(v.digit))
-v.totalScore*=1.12;
 
 const poolStrength=
 v.modelConsensusCount/
@@ -2172,45 +2258,132 @@ Math.max(
 models.length
 );
 
-const supportBreadth=
-v.supportSignals/4;
 
-v.selectorBonus=allowed.has(v.digit)?
-(
-.040*poolStrength+
-.040*supportBreadth+
-.035*Math.max(
-0,
-v.reliabilityScore-.5
-)
-):
+const consensusBoost=
+allowed.has(v.digit)
+?
+.055*poolStrength
+:
 0;
 
+
+const agreementBoost=
+allowed.has(v.digit)
+?
+.045*
+(v.supportSignals/4)
+:
+0;
+
+
+const reliabilityBoost=
+allowed.has(v.digit)
+?
+.055*
+(reliabilityBlend-.5)
+:
+0;
+
+
+const conflictPenaltyValue=
+allowed.has(v.digit)
+?
+conflictPenalty
+:
+0;
+
+
+/*
+Anti-dead gate
+
+ลงโทษเลขที่:
+- reliability ต่ำ
+- recent ต่ำ
+- consensus จาก Models ต่ำ
+
+แต่ไม่ hard-block เลขที่ 5 Models สนับสนุนแรง
+*/
+
+const deadCandidate=
+
+allowed.has(v.digit) &&
+
+reliabilityBlend<.38 &&
+
+recent<.35 &&
+
+v.modelConsensusCount<=2;
+
+
+const deadPenalty=
+deadCandidate
+?
+.82
+:
+1;
+
+
+v.selectionPenalty=
+conflictPenaltyValue*
+deadPenalty;
+
+
 v.selectorScore=
+
 (
 v.totalScore+
-v.selectorBonus
+consensusBoost+
+agreementBoost+
+reliabilityBoost
 )*
 v.selectionPenalty;
 
-v.selectionScore=
-v.selectorScore;
+});
 
-}
 
 let ranked=
 Object.values(score)
+
 .filter(
 v=>allowed.has(v.digit)
 )
+
 .sort(
+
 (a,b)=>
-b.selectorScore-a.selectorScore||
-b.totalScore-a.totalScore||
-b.modelScore-a.modelScore||
-b.reliabilityScore-a.reliabilityScore||
-b.digit-a.digit
+
+b.selectorScore-
+a.selectorScore ||
+
+b.totalScore-
+a.totalScore ||
+
+b.modelScore-
+a.modelScore ||
+
+b.reliabilityScore-
+a.reliabilityScore ||
+
+b.digit-
+a.digit
+
 );
+
+
+/*
+Near-Tie Resolver
+
+ถ้าอันดับ 1-3 คะแนนใกล้กันจริง
+จะไม่ตัดสินด้วยคะแนนรวมอย่างเดียว
+
+ให้ดู:
+- consensus
+- support breadth
+- reliability
+- conflict
+
+ยังคงอยู่ใน Candidate Pool เดิม
+*/
 
 if(ranked.length>2){
 
@@ -2226,31 +2399,41 @@ const gap23=
 second.selectorScore-
 third.selectorScore;
 
+
 const near12=
-gap12<=.030||
+gap12<=.035 ||
+
 (
-first.selectorScore>0&&
-gap12/first.selectorScore<=.030
+first.selectorScore>0 &&
+gap12/
+first.selectorScore<=.035
 );
 
+
 const near23=
-gap23<=.030||
+gap23<=.035 ||
+
 (
-second.selectorScore>0&&
-gap23/second.selectorScore<=.030
+second.selectorScore>0 &&
+gap23/
+second.selectorScore<=.035
 );
+
 
 if(near12||near23){
 
 ranked=
 ranked
+
 .map(v=>({
 
 v,
 
 final:
+
 v.selectorScore+
-.024*
+
+.020*
 (
 v.modelConsensusCount/
 Math.max(
@@ -2258,30 +2441,40 @@ Math.max(
 models.length
 )
 )+
-.018*
+
+.015*
 (
 v.supportSignals/4
 )+
-.012*v.reliabilityScore+
-.010*v.evidenceScore-
-.008*
+
+.010*
+v.reliabilityScore-
+
+.010*
 (
 v.conflictSignals/4
 )
 
 }))
+
 .sort(
+
 (a,b)=>
-b.final-a.final||
+
+b.final-
+a.final ||
+
 b.v.modelConsensusCount-
-a.v.modelConsensusCount||
+a.v.modelConsensusCount ||
+
 b.v.reliabilityScore-
-a.v.reliabilityScore||
-b.v.evidenceScore-
-a.v.evidenceScore||
+a.v.reliabilityScore ||
+
 b.v.digit-
 a.v.digit
+
 )
+
 .map(
 x=>x.v
 );
@@ -2290,19 +2483,31 @@ x=>x.v
 
 }
 
+
+/*
+Confidence
+
+ไม่ได้แปลว่าโอกาสถูกรางวัล
+แต่เป็นความมั่นใจของ Selector
+ว่าผู้สมัครนี้แข็งกว่า Candidate ตัวอื่น
+ตามข้อมูลที่ระบบมี
+*/
+
 ranked.forEach((v,i)=>{
 
-const next=
-ranked[i+1];
+const next=ranked[i+1];
 
 const margin=
 next?
+
 Math.max(
 0,
 v.selectorScore-
 next.selectorScore
 ):
+
 v.selectorScore;
+
 
 v.confidence=
 Math.max(
@@ -2310,9 +2515,12 @@ Math.max(
 Math.min(
 1,
 
-.30+
-.30*v.reliabilityScore+
-.16*
+.50+
+
+.30*
+v.reliabilityScore+
+
+.12*
 (
 v.modelConsensusCount/
 Math.max(
@@ -2320,14 +2528,11 @@ Math.max(
 models.length
 )
 )+
-.12*
-(
-v.supportSignals/4
-)+
-.12*
+
+.08*
 Math.min(
 1,
-margin/.12
+margin/.15
 )
 
 )
@@ -2335,8 +2540,10 @@ margin/.12
 
 });
 
+
 const top=
 ranked.slice(0,2);
+
 
 return{
 score,
@@ -2346,6 +2553,7 @@ ranked
 };
 
 },
+
 
 collectPairCandidates(
 digit,
@@ -2362,21 +2570,23 @@ m=>m.set.includes(digit)
 .forEach(m=>{
 
 const sourceStrength=
-Math.max(
-0,
 Math.min(
 1,
-.70*
+
+.55*
+(
+(m.aiScore||80)/
+98.5
+)+
+
+.45*
 (
 (m.historyWeight||1)/
 1.30
-)+
-.30*
-(
-score[digit]?.reliabilityScore??.5
 )
-)
+
 );
+
 
 const digitStrength=
 score[digit]
@@ -2385,12 +2595,14 @@ score[digit].selectorScore
 :
 0;
 
+
 const modelConsensus=
 score[digit]
 ?
 score[digit].modelScore
 :
 0;
+
 
 (
 m.pairsMap[digit]||[]
@@ -2401,12 +2613,16 @@ const key=
 this.pairKey(pair);
 
 const pairScore=
+
 .55*
 sourceStrength+
+
 .30*
 digitStrength+
+
 .15*
 modelConsensus;
+
 
 candidates.push({
 
@@ -2424,6 +2640,7 @@ modelId:m.id
 return candidates;
 
 },
+
 
 bestPairsForDigit(
 digit,
@@ -2454,14 +2671,19 @@ bestByKey[c.key]=c;
 
 });
 
+
 return Object.values(bestByKey)
 
 .sort(
+
 (a,b)=>
+
 b.pairScore-
-a.pairScore||
+a.pairScore ||
+
 Number(a.key)-
 Number(b.key)
+
 )
 
 .slice(0,5)
@@ -2471,6 +2693,7 @@ v=>v.pair
 );
 
 },
+
 
 pairKey(pair){
 
@@ -2487,6 +2710,7 @@ p[1]
 .join('');
 
 },
+
 
 buildConsensus(pairSets){
 
@@ -2509,6 +2733,7 @@ rowIndex
 
 }
 );
+
 
 const counts={};
 
@@ -2542,242 +2767,614 @@ item.pair
 
 });
 
+
 const ranked=
 Object.values(counts)
 
 .sort(
+
 (a,b)=>
-b.score-a.score||
+
+b.score-a.score ||
+
 b.rows.size-
-a.rows.size||
+a.rows.size ||
+
 Number(a.key)-
 Number(b.key)
+
 );
+
 
 const colorMap={};
 
-ranked.forEach(
+ranked
+.slice(0,6)
+.forEach(
 (item,index)=>{
 
-const rank=index+1;
+let color;
 
-let color='pair';
+if(index<2)
+color='gold';
 
-if(rank===1)
-color='pair-gold';
-else if(rank===2)
-color='pair-silver';
-else if(rank===3)
-color='pair-rose';
+else if(index<4)
+color='silver';
+
+else
+color='rose';
 
 colorMap[item.key]={
-rank,
-score:item.score,
-color
+
+color,
+rank:index+1,
+score:item.score
+
 };
 
-});
+}
+);
+
 
 return{
+
+counts,
 ranked,
 colorMap
+
 };
 
 },
 
-pairClass(pair,colorMap){
+
+sortPairs(pairs){
+
+return pairs
+.map(String)
+.sort(
+(a,b)=>
+Number(a)-Number(b)
+);
+
+},
+
+
+pairClass(
+pair,
+colorMap
+){
 
 const info=
 colorMap[
 this.pairKey(pair)
 ];
 
-return info
-?info.color
-:'pair';
+if(!info)
+return'pair';
+
+if(info.color==='gold')
+return'pair pair-gold';
+
+if(info.color==='silver')
+return'pair pair-silver';
+
+if(info.color==='rose')
+return'pair pair-rose';
+
+return'pair';
 
 },
 
-sortPairs(pairs){
 
-return[
-...new Set(
-pairs
-.map(String)
-)
-]
-.sort(
-(a,b)=>
-Number(a)-
-Number(b)
-);
+/*
+==========================================================
+DATA / DATE / GROUP MANAGEMENT
+==========================================================
+*/
 
-},
+normalizeLotteryName(name){
 
-nextDateLabel(records){
-
-if(!records.length)
-return'รอข้อมูล';
-
-return records[0]?.date||'';
+return String(name||'')
+.trim()
+.replace(/\s+/g,' ')
+.toLowerCase();
 
 },
 
-copy(text){
 
-navigator.clipboard
-?.writeText(text)
-.then(
-()=>{
-const t=$('toast');
-t.classList.add('show');
+parseDateValue(date){
 
-clearTimeout(
-this.toastTimer
+const s=
+String(date||'')
+.trim();
+
+const m=
+s.match(
+/^(\d{1,2})\s+([^\s]+)\s+(\d{2,4})$/
 );
 
-this.toastTimer=
-setTimeout(
-()=>{
-t.classList.remove('show');
-},
-1400
-);
-}
-)
-.catch(
-()=>{
-const ta=document.createElement('textarea');
-ta.value=text;
-document.body.appendChild(ta);
-ta.select();
-document.execCommand('copy');
-ta.remove();
+if(!m)
+return null;
 
-const t=$('toast');
-t.classList.add('show');
+const months={
 
-clearTimeout(
-this.toastTimer
-);
+'ม.ค.':1,
+'ก.พ.':2,
+'มี.ค.':3,
+'เม.ย.':4,
+'พ.ค.':5,
+'มิ.ย.':6,
+'ก.ค.':7,
+'ส.ค.':8,
+'ก.ย.':9,
+'ต.ค.':10,
+'พ.ย.':11,
+'ธ.ค.':12,
 
-this.toastTimer=
-setTimeout(
-()=>{
-t.classList.remove('show');
-},
-1400
-);
-}
-);
+'มกราคม':1,
+'กุมภาพันธ์':2,
+'มีนาคม':3,
+'เมษายน':4,
+'พฤษภาคม':5,
+'มิถุนายน':6,
+'กรกฎาคม':7,
+'สิงหาคม':8,
+'กันยายน':9,
+'ตุลาคม':10,
+'พฤศจิกายน':11,
+'ธันวาคม':12
 
-},
-
-async calculate(){
-
-const btn=$('run');
-const scanner=$('scanner');
-
-btn.disabled=true;
-scanner.style.display='block';
-
-const scan=t=>{
-$('scanText').textContent=t;
 };
 
-const yieldUI=()=>{
-return new Promise(
-resolve=>setTimeout(resolve,40)
-);
-};
+const mo=
+months[m[2]];
 
-try{
+if(!mo)
+return null;
 
-const parsed=
-this.parse(
-$('bulkInput').value
-);
+let y=
+Number(m[3]);
 
-if(
-!parsed.records.length
-){
+if(y<100)
+y+=2500;
 
-scanner.style.display='none';
-btn.disabled=false;
+if(y>2400)
+y-=543;
 
-$('result').innerHTML=`
-<div class="errorbox">
-ไม่พบข้อมูลที่สามารถประมวลผลได้
-</div>
-`;
-
-return;
-
-}
-
-scan(
-'แยกประเภทหวยและจัดเรียงประวัติ...'
+return new Date(
+y,
+mo-1,
+Number(m[1])
 );
 
-await yieldUI();
+},
 
-const groupsMap={};
 
-parsed.records.forEach(r=>{
+sortChronological(records){
 
-if(!groupsMap[r.name])
-groupsMap[r.name]=[];
+return [...records]
+.sort((a,b)=>{
 
-groupsMap[r.name].push(r);
+const da=
+this.parseDateValue(a.date);
+
+const db=
+this.parseDateValue(b.date);
+
+if(da&&db)
+return da-db;
+
+if(da&&!db)
+return -1;
+
+if(!da&&db)
+return 1;
+
+return String(a.date)
+.localeCompare(
+String(b.date),
+'th'
+);
 
 });
 
+},
+
+
+groupByLottery(records){
+
 const groups=
-Object.entries(groupsMap)
+new Map();
+
+records.forEach(r=>{
+
+const key=
+this.normalizeLotteryName(
+r.name
+);
+
+if(!groups.has(key))
+groups.set(key,[]);
+
+groups
+.get(key)
+.push({...r});
+
+});
+
+
+return[
+...groups.entries()
+]
+
 .map(
-([name,records])=>({
-name,
-records
+([key,items])=>({
+
+key,
+
+name:
+items[0].name,
+
+records:
+this.sortChronological(items)
+
 })
+)
+
+.sort(
+(a,b)=>
+a.name.localeCompare(
+b.name,
+'th'
+)
 );
 
-const cards=[];
-const copyBlocks=[];
-const outputData=[];
+},
 
-scan(
-'กำลังวิเคราะห์ด้วย 5 Main Models...'
+
+/*
+งวดแสดงผล = วันถัดจากงวดล่าสุดที่ผู้ใช้ป้อน
+
+ตัวอย่าง:
+24 ส.ค. 69
+→
+25 ส.ค. 69
+
+ส่วน Backtest ภายในยังคงใช้วันที่จริง
+ของแต่ละ target โดยไม่เห็นอนาคต
+*/
+
+nextDateLabel(records){
+
+const sorted=
+this.sortChronological(records);
+
+const last=
+sorted[sorted.length-1];
+
+const d=
+this.parseDateValue(
+last?.date
 );
 
-await yieldUI();
+if(!d)
+return'งวดถัดไป';
+
+const next=
+new Date(
+d.getTime()+
+86400000
+);
+
+const months=[
+'ม.ค.',
+'ก.พ.',
+'มี.ค.',
+'เม.ย.',
+'พ.ค.',
+'มิ.ย.',
+'ก.ค.',
+'ส.ค.',
+'ก.ย.',
+'ต.ค.',
+'พ.ย.',
+'ธ.ค.'
+];
+
+const buddhist=
+next.getFullYear()+543;
+
+return`${next.getDate()} ${months[next.getMonth()]} ${String(buddhist).slice(-2)}`;
+
+},
+
+
+actualDigits(record){
+
+return new Set(
+
+(
+String(record.n3)+
+String(record.n2)
+)
+
+.split('')
+.map(Number)
+
+);
+
+},
+
+
+/*
+==========================================================
+WALK-FORWARD SELECTOR AUDIT
+==========================================================
+
+กติกา:
+
+Target i
+↑
+ใช้เฉพาะ records[0...i-1]
+
+ห้าม:
+records[i]
+records[i+1]
+...
+เข้ามาช่วยทำนาย Target i
+
+ดังนั้น Backtest นี้ไม่สามารถรู้ผลจริง
+ก่อนถึงขั้นตอนตรวจผล
+
+==========================================================
+*/
+
+auditSelector(records){
+
+const ordered=
+this.sortChronological(
+records
+);
+
+const audit=[];
+
+if(ordered.length<2){
+
+return{
+
+trials:0,
+candidateHits:0,
+selectorHits:0,
+candidateCoverage:0,
+selectorRate:0,
+rows:[]
+
+};
+
+}
+
 
 for(
-const group of groups
+let targetIndex=1;
+targetIndex<ordered.length;
+targetIndex++
 ){
 
-const records=
-group.records;
+const historyRecords=
+ordered.slice(
+0,
+targetIndex
+);
 
-const latest=
-records[0];
+const source=
+historyRecords[
+historyRecords.length-1
+];
+
+if(!source)
+continue;
+
 
 const history=
 this.buildHistory(
-records
+historyRecords
 );
 
+
+const prediction=
+this.run(
+source.n3,
+source.n2,
+history
+);
+
+
+const actual=
+this.actualDigits(
+ordered[targetIndex]
+);
+
+
+const allowed=
+new Set();
+
+prediction.models
+.forEach(m=>
+m.set.forEach(
+d=>allowed.add(d)
+)
+);
+
+
+const candidateHit=
+[...actual]
+.some(
+d=>allowed.has(d)
+);
+
+
+const selectorHit=
+prediction.top2Digits
+.some(
+d=>actual.has(d)
+);
+
+
+const top1Hit=
+actual.has(
+prediction.top2Digits[0]
+);
+
+
+const top2Hit=
+actual.has(
+prediction.top2Digits[1]
+);
+
+
+audit.push({
+
+sourceDate:
+source.date,
+
+targetDate:
+ordered[targetIndex].date,
+
+actual:
+[...actual],
+
+top2:
+[...prediction.top2Digits],
+
+candidateHit,
+
+selectorHit,
+
+top1Hit,
+
+top2Hit,
+
+confidence:
+prediction.modelScores[
+prediction.top2Digits[0]
+]?.confidence||0
+
+});
+
+}
+
+
+const trials=
+audit.length;
+
+const candidateHits=
+audit.filter(
+x=>x.candidateHit
+).length;
+
+const selectorHits=
+audit.filter(
+x=>x.selectorHit
+).length;
+
+
+return{
+
+trials,
+
+candidateHits,
+
+selectorHits,
+
+candidateCoverage:
+trials?
+candidateHits/trials:
+0,
+
+selectorRate:
+trials?
+selectorHits/trials:
+0,
+
+rows:audit
+
+};
+
+},
+
+
+formatPct(v){
+
+return`${Math.round(
+Math.max(
+0,
+Math.min(
+1,
+v
+)
+)*1000
+)/10}%`;
+
+},
+
+
+formatDate(date){
+
+const s=
+String(date||'')
+.trim();
+
+if(
+/\d+\s+\S+\s+\d+/.test(s)
+){
+
+const p=
+s.split(/\s+/);
+
+if(p.length>=3){
+
+return[
+p[0],
+p[1],
+p.slice(2).join(' ')
+].join(' · ');
+
+}
+
+}
+
+return s;
+
+},
+
+
+/*
+==========================================================
+MAIN ENGINE
+==========================================================
+*/
+
+run(
+n3,
+n2,
+history=null
+){
+
 const d3=
-latest.n3.split('').map(Number);
+n3.split('').map(Number);
 
 const d2=
-latest.n2.split('').map(Number);
+n2.split('').map(Number);
 
-const H=d3[0];
-const T=d3[1];
-const U=d3[2];
 
-const R1=d2[0];
-const R2=d2[1];
+const[
+H,T,U
+]=d3;
+
+const[
+R1,R2
+]=d2;
+
 
 const sumT=
 H+T+U;
@@ -2788,6 +3385,7 @@ R1+R2;
 const total=
 sumT+sumB;
 
+
 const F=
 this.formulas(
 H,T,U,
@@ -2797,6 +3395,7 @@ sumB,
 total
 );
 
+
 const models=
 this.buildModels(
 H,T,U,
@@ -2804,17 +3403,20 @@ R1,R2,
 sumT
 );
 
+
 const anchor=
 this.norm(
-total
+7-H
 );
+
 
 this.buildPairs(
 models,
 anchor
 );
 
-const a=
+
+const scored=
 this.scoreDigits(
 models,
 F,
@@ -2826,60 +3428,312 @@ total,
 history
 );
 
+
+const top=
+scored.top;
+
+
 const pairSets=
-a.top
-.map(
-v=>
+top.map(
+t=>
 this.bestPairsForDigit(
-v.digit,
+t.digit,
 models,
-a.score
+scored.score
 )
 );
+
 
 const consensus=
 this.buildConsensus(
 pairSets
 );
 
-const top2Digits=
-a.top.map(
-v=>v.digit
-);
 
-const audit={
-usable:history.usable,
-recentWindow:history.recentWindow,
-top1:
-a.ranked[0]?.digit??null,
-top2:
-a.ranked.slice(0,2)
-.map(v=>v.digit),
-candidateCoverage:
-a.ranked.length?
-1:
-0,
-lift:
-a.ranked[0]?
-a.ranked[0].confidence:
-0,
-selectionLoss:
-a.ranked.length>1?
-Math.max(
-0,
-(a.ranked[1]?.selectorScore||0)-
-(a.ranked[0]?.selectorScore||0)
-):
-0,
-confidence:
-a.ranked[0]?.confidence||0,
-candidatePoolSize:
-a.ranked.length
+return{
+
+top2Digits:
+top.map(
+v=>v.digit
+),
+
+pairSets:
+pairSets.map(
+v=>v.slice(0,5)
+),
+
+modelScores:
+scored.score,
+
+modelCount:5,
+
+history,
+
+models,
+
+consensus
+
 };
 
+},
+
+
+copy(text){
+
+navigator.clipboard
+?.writeText(text)
+.then(()=>this.show())
+.catch(()=>{
+
+const t=
+document.createElement('textarea');
+
+t.value=text;
+
+document.body.appendChild(t);
+
+t.select();
+
+document.execCommand('copy');
+
+t.remove();
+
+this.show();
+
+});
+
+},
+
+
+show(){
+
+const t=
+$('toast');
+
+t.classList.add('show');
+
+clearTimeout(
+this.toastTimer
+);
+
+this.toastTimer=
+setTimeout(
+()=>t.classList.remove('show'),
+1500
+);
+
+},
+
+
 /*
-ผล Audit ยังคงคำนวณอยู่เบื้องหลังตามระบบเดิม
-แต่ไม่แสดง WF/C/Top2/Top1/Lift บนการ์ดผลลัพธ์
+==========================================================
+CALCULATE
+==========================================================
+
+1. Parse
+2. แยกประเภทหวย
+3. เรียงเก่า → ใหม่
+4. Walk-forward audit
+5. ใช้ history ทั้งหมดของประเภทนั้น
+6. Predict งวดถัดไป
+7. ตรวจ Candidate Pool
+8. แสดงเฉพาะ Top 2
+9. แสดงแหล่งที่มา "บ้านเงินกอง"
+
+==========================================================
+*/
+
+async calculate(){
+
+const parsed=
+this.parse(
+$('bulkInput').value
+);
+
+
+if(!parsed.records.length){
+
+$('result').innerHTML=
+'<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
+
+return;
+
+}
+
+
+const scanner=
+$('scanner');
+
+const btn=
+$('run');
+
+btn.disabled=true;
+
+scanner.style.display='block';
+
+
+const scan=
+msg=>
+$('scanText').textContent=msg;
+
+
+const yieldUI=
+()=>new Promise(
+resolve=>
+requestAnimationFrame(resolve)
+);
+
+
+try{
+
+scan(
+'แยกประเภทหวยและเรียงข้อมูลเก่า → ใหม่...'
+);
+
+await yieldUI();
+
+
+this.cache=[];
+
+const groups=
+this.groupByLottery(
+parsed.records
+);
+
+const cards=[];
+const outputData=[];
+const copyBlocks=[];
+
+
+let groupIndex=0;
+
+
+for(
+const group of groups
+){
+
+groupIndex++;
+
+const records=
+group.records;
+
+
+scan(
+`ตรวจ ${group.name} • ${groupIndex}/${groups.length}`
+);
+
+await yieldUI();
+
+
+if(records.length<1)
+continue;
+
+
+/*
+======================================================
+STRICT WALK-FORWARD AUDIT
+======================================================
+
+ผล Audit ไม่ถูกส่งกลับไปแก้คะแนนของงวดปัจจุบัน
+
+นี่เป็นจุดสำคัญในการป้องกัน Data Leakage
+======================================================
+*/
+
+const audit=
+this.auditSelector(
+records
+);
+
+
+/*
+งวดล่าสุดใช้เป็นฐานสำหรับทำนายงวดถัดไป
+
+ประวัติทั้งหมดของ "หวยประเภทเดียวกัน"
+เท่านั้น
+*/
+
+const latest=
+records[
+records.length-1
+];
+
+
+const history=
+this.buildHistory(
+records
+);
+
+
+const a=
+this.run(
+latest.n3,
+latest.n2,
+history
+);
+
+
+this.cache.push({
+
+group:
+group.name,
+
+result:
+a,
+
+audit
+
+});
+
+
+/*
+======================================================
+CANDIDATE POOL GUARD
+======================================================
+
+Top 2 ต้องมาจาก 5 Main Models เท่านั้น
+======================================================
+*/
+
+const allowed=
+new Set();
+
+a.models.forEach(
+m=>
+m.set.forEach(
+d=>allowed.add(d)
+)
+);
+
+
+const valid=
+
+a.top2Digits.length===2 &&
+
+a.top2Digits.every(
+d=>allowed.has(d)
+) &&
+
+new Set(
+a.top2Digits
+).size===2;
+
+
+if(!valid){
+
+parsed.errors.push(
+`${group.name} | ${latest.date}: Top 2 ไม่ผ่าน Candidate Pool ของ 5 Main Models`
+);
+
+continue;
+
+}
+
+
+/*
+======================================================
+DISPLAY
+======================================================
 */
 
 const rows=
@@ -2888,22 +3742,25 @@ a.top2Digits
 (d,k)=>{
 
 const sourcePairs=
-(pairSets[k]||[])
+(a.pairSets[k]||[])
 .slice(0,5);
+
 
 const sorted=
 this.sortPairs(
 sourcePairs
 );
 
+
 const pairHTML=
 sorted
 .map(pair=>{
 
 const info=
-consensus.colorMap[
+a.consensus.colorMap[
 this.pairKey(pair)
 ];
+
 
 const title=
 info
@@ -2912,11 +3769,12 @@ info
 :
 'เลขเจาะจาก 5 Main Models';
 
+
 return`
 <span
 class="${this.pairClass(
 pair,
-consensus.colorMap
+a.consensus.colorMap
 )}"
 title="${esc(title)}"
 >
@@ -2927,12 +3785,14 @@ ${esc(pair)}
 })
 .join('');
 
+
 const digitClass=
 k===0
 ?
 'digit digit-gold'
 :
 'digit digit-silver';
+
 
 return`
 <div class="row">
@@ -2958,6 +3818,7 @@ ${pairHTML}
 })
 .join('');
 
+
 const footer=`
 
 <div class="brand-footer">
@@ -2978,15 +3839,30 @@ const footer=`
 
 `;
 
+
 const nextDate=
 this.nextDateLabel(
 records
 );
 
+
 /*
-ผล Audit ยังคงคำนวณอยู่เบื้องหลังตามระบบเดิม
-แต่ไม่แสดง WF/C/Top2/Top1/Lift บนการ์ดผลลัพธ์
+แสดง audit เฉพาะใน badge เล็กด้านบน
+ไม่แสดงสูตร 100 ตัว
+ไม่แสดงคะแนนหลังบ้าน
+ไม่แสดงรายละเอียดโมเดล
 */
+
+const auditTitle=
+audit.trials
+?
+
+`Walk-forward ${audit.trials} งวด • Candidate ${this.formatPct(audit.candidateCoverage)} • Selector ${this.formatPct(audit.selectorRate)}`
+
+:
+
+'ยังมีข้อมูลย้อนหลังไม่พอสำหรับ Walk-forward audit';
+
 
 cards.push(`
 
@@ -3014,6 +3890,10 @@ ${esc(nextDate)}
 
 </div>
 
+<div class="vip-label">
+${esc(auditTitle)}
+</div>
+
 </div>
 
 <div class="rows">
@@ -3026,6 +3906,7 @@ ${footer}
 
 `);
 
+
 copyBlocks.push([
 
 `${this.flag(group.name)} ${group.name} | ${nextDate}`,
@@ -3034,28 +3915,26 @@ copyBlocks.push([
 (d,k)=>
 `${d} : ${
 this.sortPairs(
-(pairSets[k]||[])
+(a.pairSets[k]||[])
 .slice(0,5)
 ).join('-')}`
 )
 
 ].join('\n'));
 
+
 outputData.push({
 
 group,
-
 latest,
-
 a,
-
 audit,
-
 nextDate
 
 });
 
 }
+
 
 scan(
 'ตรวจสอบความสอดคล้องของผลลัพธ์...'
@@ -3063,20 +3942,24 @@ scan(
 
 await yieldUI();
 
+
 scan(
 'FINALIZING...'
 );
 
 await yieldUI();
 
+
 scanner.style.display='none';
 
 btn.disabled=false;
+
 
 const all=
 copyBlocks.join(
 '\n\n'
 );
+
 
 $('result').innerHTML=`
 
@@ -3103,6 +3986,7 @@ id="copyTop"
 
 </div>
 
+
 ${
 parsed.errors.length
 ?
@@ -3117,7 +4001,9 @@ ${parsed.errors
 ''
 }
 
+
 ${cards.join('')}
+
 
 <button
 class="copyall"
@@ -3128,16 +4014,22 @@ id="copyBottom"
 
 `;
 
+
 $('copyTop').onclick=
 ()=>this.copy(all);
+
 
 $('copyBottom').onclick=
 ()=>this.copy(all);
 
+
 $('result').scrollIntoView({
+
 behavior:'smooth',
 block:'start'
+
 });
+
 
 }catch(err){
 
@@ -3159,6 +4051,7 @@ console.error(err);
 
 },
 
+
 clear(){
 
 $('bulkInput').value='';
@@ -3173,10 +4066,12 @@ $('bulkInput').focus();
 
 },
 
+
 login(){
 
 const v=
 $('password').value.trim();
+
 
 if(!sec.ok(v)){
 
@@ -3187,8 +4082,10 @@ return;
 
 }
 
+
 $('loginErr')
 .style.display='none';
+
 
 $('login')
 .classList.remove('active');
@@ -3196,25 +4093,30 @@ $('login')
 $('console')
 .classList.add('active');
 
-/*
-==========================================================
-PERSISTENT LOGIN
-==========================================================
-จำสถานะการเข้าสู่ระบบแบบถาวรบนอุปกรณ์/เบราว์เซอร์เดิม
-ไม่มีวันหมดอายุ และจะถูกลบเฉพาะเมื่อกด LOGOUT
-ใช้ localStorage พร้อม fallback เพื่อไม่ให้หน้า Login
-เด้งกลับมาเมื่อรีเฟรชหรือเปิดหน้าใหม่
-*/
-
-this.setAuthState(true);
 
 $('bulkInput').focus();
 
+
+/*
+จำสถานะการเข้าสู่ระบบ
+เพื่อไม่ต้องกรอกรหัสใหม่ทุกครั้ง
+บนอุปกรณ์/เบราว์เซอร์เดิม
+*/
+
+localStorage.setItem(
+'ml_auth_status_v3',
+'active'
+);
+
 },
+
 
 logout(){
 
-this.setAuthState(false);
+localStorage.removeItem(
+'ml_auth_status_v3'
+);
+
 
 $('console')
 .classList.remove('active');
@@ -3232,6 +4134,7 @@ $('result').innerHTML='';
 
 };
 
+
 /*
 ==========================================================
 EVENTS
@@ -3241,6 +4144,7 @@ EVENTS
 $('loginBtn').onclick=
 ()=>app.login();
 
+
 $('password').onkeydown=
 e=>{
 
@@ -3248,6 +4152,7 @@ if(e.key==='Enter')
 app.login();
 
 };
+
 
 $('password').oninput=
 ()=>{
@@ -3257,14 +4162,18 @@ $('loginErr')
 
 };
 
+
 $('run').onclick=
 ()=>app.calculate();
+
 
 $('clear').onclick=
 ()=>app.clear();
 
+
 $('logout').onclick=
 ()=>app.logout();
+
 
 $('bulkInput').onkeydown=
 e=>{
@@ -3280,17 +4189,18 @@ app.calculate();
 
 };
 
+
 /*
 ==========================================================
-AUTO RESTORE LOGIN SESSION
+RESTORE LOGIN SESSION
 ==========================================================
-เข้าครั้งแรกต้องยืนยัน Access Key 1 ครั้ง
-หลังจากนั้นอุปกรณ์/เบราว์เซอร์เดิมจะเข้าใช้งานอัตโนมัติ
-โดยไม่ต้องกรอกรหัสซ้ำ และคงสถานะไว้แม้รีเฟรช/เปิดหน้าใหม่
-จนกว่าจะกด LOGOUT เท่านั้น
 */
 
-if(storage.get()){
+if(
+localStorage.getItem(
+'ml_auth_status_v3'
+)==='active'
+){
 
 $('login')
 .classList.remove('active');
@@ -3304,4 +4214,4 @@ $('console')
 </script>
 
 </body>
-</html>
+  </html>
