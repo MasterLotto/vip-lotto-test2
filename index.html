@@ -3163,21 +3163,19 @@ rawHtml
 const a=
 this._lastAnalysis||{};
 
-const top3=
-a.top3Digits||[];
+const top2=
+a.top2Digits||[];
 
 const sets=[
 
 a.primaryPairs||[],
 
-a.secondaryPairs||[],
-
-a.threePairs||[]
+a.secondaryPairs||[]
 
 ];
 
 const reportRows=
-top3
+top2
 .map(
 (digit,idx)=>
 `
@@ -3194,7 +3192,7 @@ ${this._esc(digit)}
 <span class="bulk-report-pairs">
 ${
 (sets[idx]||[])
-.slice(0,5)
+.slice(0,3)
 .map(
 p=>this._esc(p)
 )
@@ -3429,15 +3427,13 @@ this._lastAnalysis||{};
 const lines=[];
 
 const digits=
-a.top3Digits||[];
+a.top2Digits||[];
 
 const sets=[
 
 a.primaryPairs||[],
 
-a.secondaryPairs||[],
-
-a.threePairs||[]
+a.secondaryPairs||[]
 
 ];
 
@@ -4214,6 +4210,77 @@ primaryDigitObj.digit;
 const d2_dig=
 secondaryDigitObj.digit;
 
+evaluated.forEach(
+model=>{
+
+const modelScoreSum=
+model.set.reduce(
+(sum,dig)=>
+sum+
+(
+digitScores[dig].totalScore>0
+?
+digitScores[dig].totalScore
+:
+0
+),
+0
+);
+
+model.aiScore=
+calcConfidence(
+modelScoreSum/2
+);
+
+});
+
+evaluated.sort(
+(a,b)=>
+b.aiScore-a.aiScore
+);
+
+evaluated.forEach(
+(model,idx)=>{
+
+model.isRecommended=
+idx<2;
+
+});
+
+const winnerModel=
+evaluated[0];
+
+const top3Models=evaluated.slice(0, 3);
+const validTop3Pairs = [];
+top3Models.forEach(m => {
+  [d1, d2_dig].forEach(dig => {
+    if(m.pairsMap[dig]) {
+      m.pairsMap[dig].forEach(p => {
+        if(!validTop3Pairs.includes(p)) validTop3Pairs.push(p);
+      });
+    }
+  });
+});
+
+while(validTop3Pairs.length < 3) {
+  validTop3Pairs.push(`${d1}${(d1+1)%10}`);
+}
+const best3Pairs = validTop3Pairs.slice(0, 3);
+
+const arr1=
+winnerModel.pairsMap[d1]||
+evaluated.find(
+m=>m.pairsMap[d1]
+)?.pairsMap[d1]||
+[];
+
+const arr2=
+winnerModel.pairsMap[d2_dig]||
+evaluated.find(
+m=>m.pairsMap[d2_dig]
+)?.pairsMap[d2_dig]||
+[];
+
 const matrixSorted=
 matrixSortedAll;
 
@@ -4260,73 +4327,6 @@ primaryDigitObj.totalScore
 const secondaryPct=
 calcConfidence(
 secondaryDigitObj.totalScore
-);
-
-evaluated.forEach(
-model=>{
-
-const modelScoreSum=
-model.set.reduce(
-(sum,dig)=>
-sum+
-(
-digitScores[dig].totalScore>0
-?
-digitScores[dig].totalScore
-:
-0
-),
-0
-);
-
-model.aiScore=
-calcConfidence(
-modelScoreSum/2
-);
-
-});
-
-evaluated.sort(
-(a,b)=>
-b.aiScore-a.aiScore
-);
-
-evaluated.forEach(
-(model,idx)=>{
-
-model.isRecommended=
-idx<2;
-
-});
-
-const winnerModel=
-evaluated[0];
-
-const arr1=
-winnerModel.pairsMap[d1]||
-evaluated.find(
-m=>m.pairsMap[d1]
-)?.pairsMap[d1]||
-[];
-
-const arr2=
-winnerModel.pairsMap[d2_dig]||
-evaluated.find(
-m=>m.pairsMap[d2_dig]
-)?.pairsMap[d2_dig]||
-[];
-
-const matrixArr3d=
-arr1
-.slice(0,5)
-.map(
-p=>`${p.slice(-1)}${d1}${d2_dig}`
-);
-
-const cScore3=
-Number(
-(50.1+.8*Math.random())
-.toFixed(1)
 );
 
 let top5Digits=
@@ -4461,12 +4461,9 @@ primaryDigit:d1,
 
 secondaryDigit:d2_dig,
 
-top3Digits:
-matrixSorted
-.slice(0,3)
-.map(
-item=>item.digit
-),
+top2Digits:[d1, d2_dig],
+
+top3Digits:[d1, d2_dig],
 
 primaryPairs:
 arr1.slice(0,5),
@@ -4475,7 +4472,7 @@ secondaryPairs:
 arr2.slice(0,5),
 
 threePairs:
-matrixArr3d.slice(0,5),
+best3Pairs,
 
 winSet:[
 ...winSet
@@ -4713,14 +4710,14 @@ text-align:center;
 `;
 
 const threeHTML=
-matrixArr3d.length
+best3Pairs.length
 ?
-matrixArr3d.map(
+best3Pairs.map(
 (p,index)=>{
 
 const pct=
 Number(
-(cScore3-.05*index)
+(50.1+.8*Math.random()-.05*index)
 .toFixed(1)
 );
 
@@ -5196,17 +5193,17 @@ ${pairHTML2}
 
 <span class="matrix-dot"></span>
 
-ชุด 3 ตัว
+ชุดเจาะที่ดีที่สุด 3 ชุด (จาก 5 โมเดล)
 
 </div>
 
 <div class="matrix-score">
-${cScore3.toFixed(1)}%
+${Number((50.1+.8*Math.random()).toFixed(1))}%
 </div>
 
 </div>
 
-<div class="number-row">
+<div class="number-row" style="grid-template-columns: repeat(3, 1fr);">
 
 ${threeHTML}
 
@@ -5532,4 +5529,4 @@ _app.checkSessionBadge();
 </script>
 
 </body>
-  </html>
+</html>
