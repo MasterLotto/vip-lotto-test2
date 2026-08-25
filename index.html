@@ -1083,10 +1083,6 @@ READING MULTI-LOTTERY INPUT...
 
 <script>
 (()=>{
-
-
-
-
 const c=document.getElementById('snow');
 const x=c.getContext('2d');
 
@@ -1534,9 +1530,6 @@ if(!m){
 errors.push(
 `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
 );
-
-
-
 
 i++;
 continue;
@@ -3076,6 +3069,10 @@ let totalModelWeight=0;
 
 
 
+
+
+
+
 models.forEach(m=>{
 
 
@@ -3145,6 +3142,10 @@ totalModelWeight:
 
 
 }
+
+
+
+
 
 
 
@@ -3969,6 +3970,10 @@ third.selectorScore;
 
 const near12=
 gap12<=.035 ||
+
+
+
+
 (
 first.selectorScore>0 &&
 gap12/
@@ -3980,6 +3985,10 @@ first.selectorScore<=.035
 
 const near23=
 gap23<=.035 ||
+
+
+
+
 (
 second.selectorScore>0 &&
 gap23/
@@ -4691,7 +4700,7 @@ const colorMap={};
 
 
 ranked
-.slice(0,3)
+.slice(0,9)
 .forEach(
 (item,index)=>{
 
@@ -4703,13 +4712,13 @@ let color;
 
 
 
-if(index===0)
+if(index<3)
 color='gold';
 
 
 
 
-else if(index===1)
+else if(index<6)
 color='silver';
 
 
@@ -4786,6 +4795,10 @@ Number(a)-Number(b)
 
 
 },
+
+
+
+
 
 
 
@@ -4921,6 +4934,10 @@ group.records
 
 
 
+
+
+
+
 sortChronological(records){
 
 
@@ -4938,6 +4955,10 @@ this.parseDate(b.date)
 
 
 },
+
+
+
+
 
 
 
@@ -5020,6 +5041,10 @@ Number(m[1])
 
 
 
+
+
+
+
 nextDateLabel(records){
 
 
@@ -5081,7 +5106,12 @@ next.getFullYear()+543;
 
 
 return`${next.getDate()} ${months[next.getMonth()]} ${String(buddhist).slice(-2)}`;
+
 },
+
+
+
+
 
 
 
@@ -5100,6 +5130,10 @@ return new Set(
 String(record.n3)+
 String(record.n2)
 )
+
+
+
+
 .split('')
 .map(Number)
 
@@ -5107,7 +5141,15 @@ String(record.n2)
 
 
 );
+
+
+
+
 },
+
+
+
+
 
 
 
@@ -5354,10 +5396,6 @@ top1Hit,
 
 
 top2Hit,
-
-
-
-
 top3Hit,
 
 
@@ -5404,6 +5442,10 @@ x=>x.selectorHit
 
 
 return{
+
+
+
+
 trials,
 
 
@@ -5436,12 +5478,20 @@ selectorHits/trials:
 
 
 rows:audit
+
+
+
+
 };
 
 
 
 
 },
+
+
+
+
 
 
 
@@ -5465,6 +5515,10 @@ v
 
 
 },
+
+
+
+
 
 
 
@@ -5524,6 +5578,10 @@ return s;
 
 
 },
+
+
+
+
 
 
 
@@ -5727,6 +5785,10 @@ consensus
 
 
 
+
+
+
+
 copy(text){
 
 
@@ -5786,6 +5848,10 @@ this.show();
 
 
 
+
+
+
+
 show(){
 
 
@@ -5819,6 +5885,10 @@ setTimeout(
 
 
 },
+
+
+
+
 
 
 
@@ -6127,24 +6197,26 @@ d=>allowed.add(d)
 
 const valid=
 
-
-
-
 a.top3Digits.length===3 &&
-
-
-
 
 a.top3Digits.every(
 d=>allowed.has(d)
 ) &&
 
-
-
-
 new Set(
 a.top3Digits
-).size===3;
+).size===3 &&
+
+a.pairSets.length===3 &&
+
+a.pairSets.every(
+pairs=>
+Array.isArray(pairs) &&
+pairs.length===5 &&
+new Set(
+pairs.map(p=>this.pairKey(p))
+).size===5
+);
 
 
 
@@ -6155,7 +6227,7 @@ if(!valid){
 
 
 parsed.errors.push(
-`${group.name} | ${latest.date}: Top 3 ไม่ผ่าน Candidate Pool ของ 5 Main Models`
+`${group.name} | ${latest.date}: Top 3 ต้องมาจาก 5 Main Models และแต่ละเลขเด่นต้องมีเลขเจาะ 5 คู่ครบถ้วน`
 );
 
 
@@ -6190,7 +6262,7 @@ a.top3Digits
 
 const sourcePairs=
 (a.pairSets[k]||[])
-.slice(0,3);
+.slice(0,5);
 
 
 
@@ -6476,12 +6548,8 @@ copyBlocks.push([
 `${d} : ${
 this.sortPairs(
 (a.pairSets[k]||[])
-.slice(0,3)
+.slice(0,5)
 ).join('-')}`
-
-
-
-
 )
 
 
@@ -6606,7 +6674,8 @@ id="copyTop"
 
 
 
-${parsed.errors.length
+${
+parsed.errors.length
 ?
 `
 <div class="errorbox">
@@ -6616,7 +6685,8 @@ ${parsed.errors
 </div>
 `
 :
-''}
+''
+}
 
 
 
@@ -6702,6 +6772,10 @@ console.error(err);
 
 
 
+
+
+
+
 clear(){
 
 
@@ -6733,6 +6807,10 @@ $('bulkInput').focus();
 
 
 },
+
+
+
+
 
 
 
@@ -6810,6 +6888,10 @@ localStorage.setItem(
 
 
 },
+
+
+
+
 
 
 
