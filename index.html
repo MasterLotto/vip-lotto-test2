@@ -3056,7 +3056,7 @@ this._analysisTextCache[index]
 
 
 /* =====================================================
-   BULK CALCULATE
+   BULK CALCULATE (ASYNC FIX FOR UI BLOCKING)
 ===================================================== */
 
 async calculate(){
@@ -3107,23 +3107,14 @@ btn.disabled=true;
 scan.style.display="block";
 
 const messages=[
-
 "READING MULTI-LOTTERY INPUT...",
-
 "PARSING LOTTERY NAMES & DATES...",
-
 "VALIDATING 3-DIGIT / 2-DIGIT DATA...",
-
 "RUNNING EXISTING QUANT ENGINE...",
-
 "RANKING TOP SIGNALS...",
-
 "BUILDING NUMBER MATRIX...",
-
 "GENERATING ALL LOTTERY RESULTS...",
-
 "FINALIZING BULK REPORT..."
-
 ];
 
 let index=0;
@@ -3138,14 +3129,16 @@ messages[0];
 
 const timer=
 setInterval(()=>{
-
 index++;
-
 if(index<messages.length)
 scannerText.innerText=
 messages[index];
-
 },120);
+
+// [FIX] ยอมหลีกทางให้ UI อัปเดตหน้าจอโชว์แอนิเมชัน Scanner ก่อนประมวลผลลูปหนักๆ
+await new Promise(resolve => setTimeout(resolve, 150));
+
+try {
 
 this._analysisTextCache=[];
 
@@ -3158,6 +3151,10 @@ let i=0;
 i<parsed.records.length;
 i++
 ){
+// [FIX] ป้องกัน UI ค้างเวลาลูปข้อมูลเยอะ
+if (i > 0 && i % 3 === 0) {
+    await new Promise(r => setTimeout(r, 10));
+}
 
 const record=
 parsed.records[i];
@@ -3191,13 +3188,9 @@ const top3=
 a.top3Digits||[];
 
 const sets=[
-
 a.primaryPairs||[],
-
 a.secondaryPairs||[],
-
 a.threePairs||[]
-
 ];
 
 const reportRows=
@@ -3206,15 +3199,12 @@ top3
 (digit,idx)=>
 `
 <div class="bulk-report-row">
-
 <span class="bulk-report-digit">
 ${this._esc(digit)}
 </span>
-
 <span class="bulk-report-sep">
 :
 </span>
-
 <span class="bulk-report-pairs">
 ${
 (sets[idx]||[])
@@ -3227,7 +3217,6 @@ p=>this._esc(p)
 "—"
 }
 </span>
-
 </div>
 `
 )
@@ -3236,92 +3225,62 @@ p=>this._esc(p)
 const flagIcon = this._getFlag(record.lotteryName);
 
 cards.push(
-
 `
 <article class="bulk-lottery-card">
-
 <div class="bulk-lottery-head">
-
 <div>
-
 <div class="bulk-lottery-name">
 ${flagIcon} ${this._esc(record.lotteryName)}
 </div>
-
 <div class="bulk-lottery-date">
 ${this._esc(record.date)}
 </div>
-
 </div>
-
 <div class="bulk-lottery-index">
 #${String(i+1).padStart(2,"0")}
 </div>
-
 </div>
-
 <div class="bulk-report">
 ${reportRows}
 </div>
-
 </article>
 `
-
 );
 
 }
 
-clearInterval(timer);
-
-scan.style.display="none";
-
-btn.disabled=false;
-
 document.getElementById(
 "resultContainer"
 ).innerHTML=
-
 `
 <div class="result-shell">
 
 <div class="result-head">
-
 <div>
-
 <div class="result-kicker">
 BULK ANALYSIS COMPLETE
 </div>
-
 <div class="result-title">
 Multi-Lottery Intelligence Result
 </div>
-
 </div>
-
 <div class="result-note">
 ${(new Date).toLocaleTimeString("th-TH")}
 </div>
-
 </div>
 
 <div class="bulk-summary">
-
 <span>
-
 ประมวลผลสำเร็จ
-
 <strong>
 ${parsed.records.length}
 </strong>
-
 รายการ
-
 ${
 parsed.errors.length
 ?
 `
 · พบข้อผิดพลาด
-
 <strong>
 ${parsed.errors.length}
 </strong>
@@ -3329,9 +3288,7 @@ ${parsed.errors.length}
 :
 ""
 }
-
 </span>
-
 <button
 class="bulk-copy-btn"
 id="copyAllResultsBtn"
@@ -3339,7 +3296,6 @@ type="button"
 >
 📋 คัดลอกผลทั้งหมด
 </button>
-
 </div>
 
 ${
@@ -3347,17 +3303,13 @@ parsed.errors.length
 ?
 `
 <div class="bulk-errors">
-
 <strong>
 ⚠ รายการที่ไม่ถูกนำไปประมวลผล
 </strong>
-
 <br>
-
 ${parsed.errors
 .map(e=>this._esc(e))
 .join("<br>")}
-
 </div>
 `
 :
@@ -3403,19 +3355,15 @@ copyHandler
 );
 
 if(lastRecord){
-
 localStorage.setItem(
 "ml_l_n3_v3",
 lastRecord.n3
 );
-
 localStorage.setItem(
 "ml_l_n2_v3",
 lastRecord.n2
 );
-
 this.checkSessionBadge();
-
 }
 
 document
@@ -3436,6 +3384,20 @@ totalProcessed
 );
 
 updateProcessedUI(true);
+
+} catch (err) {
+  console.error("Analysis Error:", err);
+  document.getElementById("resultContainer").innerHTML = `
+    <div class="bulk-empty" style="color: var(--red); border-color: var(--red);">
+      ❌ เกิดข้อผิดพลาดในการประมวลผล (Engine Error)<br>
+      <small>${this._esc(err.message)}</small>
+    </div>
+  `;
+} finally {
+  clearInterval(timer);
+  scan.style.display="none";
+  btn.disabled=false;
+}
 
 },
 
@@ -3990,8 +3952,11 @@ p=>p.pairStr
 let nextFill=
 (sourceDigit+1)%10;
 
+// [FIX] ป้องกัน infinite loop ให้หมุนเช็คไม่เกิน 20 รอบ
+let loopAttempts = 0;
+
 while(
-pairsForDigit.length<5
+pairsForDigit.length<5 && loopAttempts < 20
 ){
 
 if(
@@ -4012,6 +3977,8 @@ pairsForDigit.push(
 
 nextFill=
 (nextFill+1)%10;
+
+loopAttempts++;
 
 }
 
@@ -4255,11 +4222,12 @@ idx<2;
 
 });
 
-// คัดเลือกเลขเด่น 3 ตัวที่ดีที่สุดจาก 5 โมเดล (3 อันดับแรกที่มีคะแนนสูงสุดจากโมเดล)
+// [FIX] คัดเลือกเลขเด่น 3 ตัวที่ดีที่สุดจาก 5 โมเดล แก้ logic bug เช็ค object property ให้ถูกต้อง
 let topModelDigitsPool = [];
 evaluated.forEach(m => {
   m.set.forEach(d => {
-    if(!topModelDigitsPool.includes(d)) {
+    // แก้ไขจาก .includes(d) เป็น .some() เพื่อตรวจจับตัวเลขซ้ำใน Object Array
+    if(!topModelDigitsPool.some(x => x.digit === d)) {
       topModelDigitsPool.push({
         digit: d,
         score: digitScores[d].totalScore,
