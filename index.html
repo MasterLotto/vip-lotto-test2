@@ -2,2034 +2,2405 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="theme-color" content="#F8FBF9">
-<meta name="color-scheme" content="light">
-<title>Mester Lotto VIP+ — Multi Lottery AI Analysis</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mester Lotto VIP+ — Multi Lottery Engine</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --white:#fff;
-  --bg:#f4f8f6;
-  --surface:#fff;
-  --surface-soft:#f8fbf9;
-  --surface-green:#eef7f2;
-  --line:#d9e6df;
-  --line-strong:#bfd5ca;
-  --text:#1b2722;
-  --muted:#718079;
-  --muted2:#9aa8a2;
-  --green:#397d62;
-  --green2:#5e9a7e;
-  --green-soft:#eaf5ef;
-  --gold:#c9a227;
-  --gold-soft:#fff6d5;
-  --silver:#87919a;
-  --silver-soft:#edf0f3;
-  --rose:#b4776b;
-  --rose-soft:#f7e8e4;
-  --shadow:0 12px 32px rgba(47,79,66,.08);
-  --shadow-soft:0 5px 16px rgba(47,79,66,.06);
-  --radius:18px;
-  --radius2:12px;
+  --bg:#f8f7f3;
+  --surface:#ffffff;
+  --surface-soft:#fcfbf8;
+  --surface-warm:#f8f4ec;
+  --text:#4b4640;
+  --text-dark:#3f3a35;
+  --muted:#8d877f;
+  --line:#e8e1d7;
+  --line-soft:#f0ebe4;
+
+  --champagne:#c9a24d;
+  --champagne-dark:#9d7628;
+  --champagne-soft:#f7eed8;
+
+  --silver:#8b9299;
+  --silver-dark:#626a72;
+  --silver-soft:#eef0f2;
+
+  --rose:#b97870;
+  --rose-dark:#8f5953;
+  --rose-soft:#f4e4e1;
+
+  --success:#718b78;
+  --success-soft:#edf4ef;
+  --danger:#b86b6b;
+
+  --shadow:0 18px 45px rgba(107,94,75,.09);
+  --shadow-soft:0 8px 24px rgba(107,94,75,.07);
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{scroll-behavior:smooth}
+
+*{box-sizing:border-box}
+
+html{
+  scroll-behavior:smooth;
+}
+
 body{
+  margin:0;
   min-height:100vh;
+  font-family:Prompt,sans-serif;
   color:var(--text);
-  font-family:'Prompt',sans-serif;
   background:
-    radial-gradient(circle at 5% 0%,rgba(198,224,210,.34),transparent 38%),
-    radial-gradient(circle at 100% 15%,rgba(241,225,176,.20),transparent 35%),
-    linear-gradient(135deg,#fff 0%,#f7faf8 55%,#edf4f0 100%);
+    radial-gradient(circle at 10% 0%,rgba(222,205,166,.22),transparent 34%),
+    radial-gradient(circle at 90% 12%,rgba(226,211,204,.20),transparent 34%),
+    linear-gradient(135deg,#fff,#f8f7f3 55%,#f5f1ea);
+  overflow-x:hidden;
 }
-button,input,textarea{font-family:'Prompt',sans-serif}
-button{cursor:pointer}
-#snowCanvas{
+
+button,input,textarea{
+  font-family:Prompt,sans-serif;
+}
+
+button{
+  cursor:pointer;
+}
+
+#snow{
   position:fixed;
   inset:0;
-  width:100%;
-  height:100%;
+  z-index:0;
   pointer-events:none;
+  opacity:.7;
+}
+
+.shell{
+  position:relative;
   z-index:1;
-  opacity:.32;
-}
-.app-shell{
-  position:relative;
-  z-index:2;
-  width:100%;
-  max-width:620px;
-  min-height:100vh;
+  width:min(580px,100%);
   margin:auto;
-  padding:14px 11px 28px;
+  padding:12px;
 }
-.app-card{
-  position:relative;
+
+.app{
   overflow:hidden;
-  min-height:calc(100vh - 28px);
-  border:1px solid rgba(191,213,202,.85);
+  border:1px solid rgba(210,199,180,.75);
   border-radius:26px;
-  background:rgba(255,255,255,.96);
-  box-shadow:0 25px 65px rgba(47,79,66,.12);
+  background:rgba(255,255,255,.94);
+  box-shadow:0 28px 70px rgba(100,88,70,.11);
   backdrop-filter:blur(18px);
 }
-.app-card:before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:3px;
-  background:linear-gradient(90deg,#c9a227,#e5e7eb,#b4776b,#c9a227);
+
+.inner{
+  padding:16px;
 }
-.app-inner{padding:15px}
-.top-nav{
+
+.top{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:8px;
-  margin-bottom:12px;
+  gap:10px;
+  margin-bottom:13px;
 }
-.brand-mini{display:flex;align-items:center;gap:9px;min-width:0}
-.brand-mark{
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+
+.logo{
   width:40px;
   height:40px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex:none;
-  border-radius:12px;
-  color:#fff;
-  font-size:.72rem;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  color:#fffaf0;
   font-weight:800;
-  background:linear-gradient(135deg,#6c8f7d,#3d6f59);
-  box-shadow:0 6px 15px rgba(61,111,89,.20);
+  font-size:.72rem;
+  background:linear-gradient(145deg,#e1c77f,#a98031);
+  border:1px solid rgba(157,118,40,.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.75),
+    0 7px 18px rgba(157,118,40,.20);
 }
-.brand-name{font-size:.82rem;font-weight:800}
-.brand-sub{font-size:.5rem;color:var(--muted)}
-.system-pill{
-  display:flex;
-  align-items:center;
-  gap:5px;
-  padding:5px 10px;
-  border:1px solid #cfe2d8;
-  border-radius:999px;
-  color:var(--green);
-  background:var(--green-soft);
+
+.brand b{
+  display:block;
+  color:var(--text-dark);
+  font-size:.82rem;
+  letter-spacing:.1px;
+}
+
+.brand small{
+  display:block;
+  color:var(--muted);
+  font-size:.49rem;
+  letter-spacing:.15px;
+}
+
+.pill{
+  padding:5px 9px;
+  border-radius:99px;
+  color:#806528;
+  background:var(--champagne-soft);
+  border:1px solid #eadbb8;
   font-size:.48rem;
   font-weight:800;
   white-space:nowrap;
 }
-.live-dot{
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:#67a986;
-  box-shadow:0 0 0 3px rgba(103,169,134,.15);
-  animation:pulse 1.8s ease-in-out infinite;
-}
-@keyframes pulse{50%{transform:scale(.65);opacity:.5}}
+
 .hero{
-  position:relative;
-  overflow:hidden;
-  padding:17px 15px;
-  margin-bottom:10px;
+  padding:17px;
+  margin-bottom:11px;
   border:1px solid var(--line);
-  border-radius:20px;
+  border-radius:19px;
   background:
-    radial-gradient(circle at 90% 10%,rgba(201,162,39,.10),transparent 35%),
-    radial-gradient(circle at 10% 90%,rgba(94,154,126,.12),transparent 42%),
-    #fff;
-  box-shadow:var(--shadow-soft);
-}
-.hero-kicker{
-  display:inline-flex;
-  padding:4px 9px;
-  margin-bottom:7px;
-  border:1px solid #d8e8df;
-  border-radius:999px;
-  color:var(--green);
-  background:var(--green-soft);
-  font-size:.48rem;
-  font-weight:800;
-  letter-spacing:.7px;
-}
-.hero h1{
-  font-size:1.65rem;
-  line-height:1.15;
-  font-weight:800;
-}
-.hero h1 em{
-  font-style:normal;
-  background:linear-gradient(100deg,#9b7914,#c9a227,#a9675d);
-  -webkit-background-clip:text;
-  background-clip:text;
-  color:transparent;
-}
-.hero p{
-  margin-top:6px;
-  color:var(--muted);
-  font-size:.57rem;
-  line-height:1.45;
-}
-.hero-meta{
-  display:flex;
-  flex-wrap:wrap;
-  gap:5px;
-  margin-top:10px;
-}
-.meta-chip{
-  padding:4px 8px;
-  border:1px solid var(--line);
-  border-radius:8px;
-  color:#607069;
-  background:#fbfdfc;
-  font-size:.45rem;
-  font-weight:700;
-}
-.login-dashboard{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:7px;
-  margin-bottom:9px;
-}
-.mini-stat{
-  padding:9px 11px;
-  border:1px solid var(--line);
-  border-radius:13px;
-  background:#fff;
-  box-shadow:var(--shadow-soft);
-}
-.mini-stat-label{font-size:.45rem;color:var(--muted);font-weight:700}
-.mini-stat-value{margin-top:2px;font:700 1rem 'IBM Plex Mono',monospace}
-.mini-stat-value.green{color:var(--green)}
-.packages{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:7px;
-  margin-bottom:9px;
-}
-.package{
+    linear-gradient(135deg,#fff,#fdfbf7 62%,#f7f0e4);
+  box-shadow:var(--shadow);
   position:relative;
-  padding:9px 10px;
   overflow:hidden;
-  border:1px solid var(--line);
-  border-radius:13px;
-  background:#fff;
 }
-.package:before{
+
+.hero::after{
   content:"";
   position:absolute;
-  left:0;
-  top:0;
-  right:0;
-  height:2px;
-  background:linear-gradient(90deg,#c9a227,#b4776b);
+  width:170px;
+  height:170px;
+  right:-75px;
+  top:-85px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(218,191,130,.22),transparent 68%);
+  pointer-events:none;
 }
-.package-title{font-size:.46rem;color:var(--muted);font-weight:700}
-.package-price{margin-top:2px;font:700 1rem 'IBM Plex Mono',monospace}
-.package-desc{font-size:.4rem;color:var(--muted2)}
-.contact-btn{
-  width:100%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:10px;
-  margin-bottom:9px;
-  border-radius:12px;
-  text-decoration:none;
-  color:#fff;
-  background:linear-gradient(135deg,#628c76,#3d705a);
-  font-size:.58rem;
-  font-weight:700;
-  box-shadow:0 6px 16px rgba(61,112,90,.18);
-}
-.login-panel{
-  padding:14px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:linear-gradient(135deg,#fff,#f6faf8);
-}
-.section-eyebrow{
-  text-align:center;
-  color:var(--green);
+
+.hero-tag{
+  display:inline-block;
+  padding:4px 9px;
+  border-radius:99px;
+  color:#856a31;
+  background:#faf2df;
+  border:1px solid #eee0bf;
   font-size:.48rem;
   font-weight:800;
-  letter-spacing:.7px;
+  letter-spacing:.25px;
 }
-.login-heading{
-  margin-top:3px;
-  text-align:center;
-  font-size:.9rem;
-  font-weight:800;
+
+.hero h1{
+  margin:7px 0 3px;
+  color:var(--text-dark);
+  font-size:1.55rem;
+  letter-spacing:-.3px;
 }
-.login-description{
-  margin:3px 0 9px;
-  text-align:center;
+
+.hero h1 em{
+  font-style:normal;
+  color:var(--champagne-dark);
+}
+
+.hero p{
+  margin:0;
   color:var(--muted);
-  font-size:.52rem;
+  font-size:.57rem;
 }
-.login-panel input{
-  width:100%;
-  height:43px;
-  border:1px solid var(--line-strong);
-  border-radius:11px;
-  outline:0;
-  text-align:center;
-  background:#fbfdfc;
-}
-.primary-btn{
-  width:100%;
-  height:43px;
-  margin-top:7px;
-  border:0;
-  border-radius:11px;
-  color:#fff;
-  background:linear-gradient(135deg,#628c76,#3d705a);
-  font-size:.62rem;
-  font-weight:800;
-}
-#errorMsg{
+
+.login,
+.console{
   display:none;
-  margin-top:6px;
-  color:#b25c58;
-  text-align:center;
-  font-size:.5rem;
-  font-weight:700;
 }
-#calculatorView{display:none}
-.engine-strip{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:6px;
-  margin-bottom:9px;
+
+.login.active,
+.console.active{
+  display:block;
 }
-.engine-card{
-  padding:8px;
+
+.panel{
+  padding:14px;
   border:1px solid var(--line);
-  border-radius:12px;
-  background:#fff;
+  border-radius:19px;
+  background:linear-gradient(135deg,#fff,#fcfaf6);
   box-shadow:var(--shadow-soft);
 }
-.engine-label{font-size:.42rem;color:var(--muted);font-weight:700}
-.engine-value{margin-top:2px;font:700 .62rem 'IBM Plex Mono',monospace}
-.engine-value.cyan{color:#718c98}
-.engine-value.green{color:var(--green)}
-.engine-value.gold{color:#a17d18}
-.command-center{
-  padding:12px;
-  margin-bottom:9px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:#fff;
-  box-shadow:var(--shadow);
+
+.label{
+  display:block;
+  margin-bottom:6px;
+  color:var(--text-dark);
+  font-size:.58rem;
+  font-weight:800;
 }
-.command-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:7px;
-  margin-bottom:8px;
-}
-.command-title{font-size:.82rem;font-weight:800}
-.command-sub{margin-top:1px;color:var(--muted);font-size:.49rem}
-.command-badge{
-  padding:4px 7px;
-  border:1px solid #d7e4dd;
-  border-radius:7px;
-  color:var(--green);
-  background:#f2f8f5;
-  font:700 .42rem 'IBM Plex Mono',monospace;
-  white-space:nowrap;
-}
-.stats-input-wrap textarea{
+
+.password{
   width:100%;
-  min-height:215px;
-  resize:vertical;
-  padding:12px 13px;
-  border:1px solid var(--line-strong);
-  border-radius:13px;
-  outline:0;
-  color:#27332e;
-  background:#fbfdfc;
-  font:500 .68rem/1.7 'IBM Plex Mono','Prompt',sans-serif;
-}
-.stats-input-wrap textarea:focus{
-  background:#fff;
-  border-color:#8eb4a1;
-  box-shadow:0 0 0 3px rgba(94,154,126,.10);
-}
-.stats-input-hint{
-  margin-top:5px;
-  color:var(--muted);
+  height:44px;
+  border:1px solid var(--line);
+  border-radius:12px;
   text-align:center;
-  font-size:.44rem;
+  outline:0;
+  color:var(--text-dark);
+  background:#fff;
 }
-.action-row{
+
+.password:focus{
+  border-color:#d5bd84;
+  box-shadow:0 0 0 3px rgba(201,162,77,.10);
+}
+
+.btn{
+  width:100%;
+  height:44px;
+  margin-top:8px;
+  border:0;
+  border-radius:12px;
+  color:#fffaf0;
+  background:linear-gradient(135deg,#d2b365,#a67c2d);
+  box-shadow:0 7px 18px rgba(166,124,45,.17);
+  font-weight:800;
+  transition:.18s ease;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 10px 22px rgba(166,124,45,.22);
+}
+
+.err{
+  display:none;
+  margin-top:7px;
+  text-align:center;
+  color:var(--danger);
+  font-size:.55rem;
+}
+
+.bulkbox{
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:#faf8f4;
+}
+
+.bulkbox label{
+  display:block;
+  margin-bottom:6px;
+  color:var(--text-dark);
+  font-size:.58rem;
+  font-weight:800;
+}
+
+.bulk{
+  width:100%;
+  min-height:230px;
+  padding:12px;
+  resize:vertical;
+  border:1px solid var(--line);
+  border-radius:12px;
+  outline:0;
+  background:#fff;
+  color:var(--text-dark);
+  font:700 .76rem/1.65 'IBM Plex Mono',monospace;
+}
+
+.bulk:focus{
+  border-color:#d5bd84;
+  box-shadow:0 0 0 3px rgba(201,162,77,.10);
+}
+
+.hint{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:.48rem;
+  line-height:1.45;
+}
+
+.actions{
   display:grid;
-  grid-template-columns:1fr 84px;
+  grid-template-columns:1fr 88px;
   gap:7px;
   margin-top:8px;
 }
-.calculate-btn,.clear-btn{
-  height:43px;
-  border-radius:11px;
-  font-size:.58rem;
-  font-weight:800;
+
+.clear{
+  height:44px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  color:var(--muted);
+  font-weight:700;
 }
-.calculate-btn{
-  border:0;
-  color:#fff;
-  background:linear-gradient(135deg,#668f7a,#3e705a);
-  box-shadow:0 6px 15px rgba(62,112,90,.16);
+
+.clear:hover{
+  background:#faf8f4;
+  color:var(--text-dark);
 }
-.calculate-btn:disabled{opacity:.55}
-.clear-btn{
-  border:1px solid var(--line-strong);
-  color:#6c7973;
-  background:#f8fbf9;
-}
-.batch-progress{
+
+.scanner{
   display:none;
-  align-items:center;
-  gap:7px;
-  padding:9px 11px;
-  margin-bottom:9px;
-  border:1px solid #d5e5dc;
-  border-radius:11px;
-  color:var(--green);
-  background:#f1f8f4;
-  font-size:.49rem;
-  font-weight:800;
+  margin:10px 0;
+  padding:15px;
+  text-align:center;
+  border:1px solid #e7dcc8;
+  border-radius:16px;
+  background:#fcf7ed;
+  color:#92733b;
+  font:700 .55rem 'IBM Plex Mono',monospace;
 }
-.batch-progress.show{display:flex}
-.batch-spinner{
-  width:13px;
-  height:13px;
-  flex:none;
-  border:2px solid #c9ddd2;
-  border-top-color:var(--green);
+
+.ring{
+  width:42px;
+  height:42px;
+  margin:0 auto 8px;
+  border:3px solid #eee4d2;
+  border-top-color:var(--champagne);
   border-radius:50%;
-  animation:spin .7s linear infinite;
+  animation:spin 1s linear infinite;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
-#aiScannerBox{display:none}
-.batch-toolbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:7px;
-  margin-bottom:8px;
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
 }
-.batch-date{
-  color:#45544d;
-  font-size:.67rem;
-  font-weight:800;
+
+.result{
+  margin-top:10px;
 }
-.batch-date span{color:#9b7914}
-.copy-all-btn{
-  height:35px;
-  padding:0 11px;
-  border:1px solid #d8c58a;
-  border-radius:10px;
-  color:#8b6b11;
-  background:linear-gradient(135deg,#fffdf4,#f7f0d9);
-  font-size:.5rem;
-  font-weight:800;
-}
-.batch-results{
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-}
-.lottery-card{
-  position:relative;
-  overflow:hidden;
-  padding:11px;
-  border:1px solid #d9e5df;
-  border-radius:18px;
-  background:linear-gradient(135deg,#fff,#fbfdfc);
-  box-shadow:var(--shadow-soft);
-}
-.lottery-card:before{
-  content:"";
-  position:absolute;
-  top:0;
-  bottom:0;
-  left:0;
-  width:3px;
-  background:linear-gradient(180deg,#c9a227,#e5e7eb,#b4776b);
-}
-.lottery-head{
+
+.summary{
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:8px;
+  padding:10px 11px;
   margin-bottom:8px;
+  border:1px solid #e7dcc8;
+  border-radius:13px;
+  background:linear-gradient(135deg,#fffaf0,#f9f3e7);
+  font-size:.52rem;
+  color:var(--muted);
 }
+
+.summary strong{
+  color:var(--champagne-dark);
+}
+
+.copy{
+  padding:7px 10px;
+  border:0;
+  border-radius:9px;
+  color:#fffaf0;
+  background:linear-gradient(135deg,#cfae61,#a77d31);
+  font-size:.52rem;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.errorbox{
+  padding:9px;
+  margin-bottom:8px;
+  border-radius:12px;
+  background:#fff5f5;
+  border:1px solid #efd5d5;
+  color:var(--danger);
+  font-size:.5rem;
+  line-height:1.5;
+}
+
+.output-note{
+  margin:0 0 8px;
+  padding:8px 10px;
+  border:1px solid #eee8df;
+  border-radius:11px;
+  background:#fcfbf8;
+  color:var(--muted);
+  font-size:.49rem;
+  line-height:1.45;
+}
+
+.output-note strong{
+  color:#766038;
+}
+
+/* =========================================================
+   PREMIUM LOTTERY CARD
+   ========================================================= */
+
+.lottery{
+  position:relative;
+  padding:13px;
+  margin-bottom:11px;
+  border:1px solid #e5ddd2;
+  border-radius:18px;
+  background:
+    linear-gradient(145deg,#ffffff 0%,#fffefa 58%,#faf6ef 100%);
+  box-shadow:
+    0 10px 28px rgba(100,88,70,.07),
+    inset 0 1px 0 rgba(255,255,255,.95);
+  overflow:hidden;
+}
+
+.lottery::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:13px;
+  bottom:13px;
+  width:3px;
+  border-radius:99px;
+  background:linear-gradient(
+    180deg,
+    #dfc276 0%,
+    #c9a24d 45%,
+    #d5aaa2 100%
+  );
+}
+
+.lottery::after{
+  content:"";
+  position:absolute;
+  width:150px;
+  height:150px;
+  right:-80px;
+  top:-80px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(213,190,148,.13),transparent 70%);
+  pointer-events:none;
+}
+
+.lottery-head{
+  position:relative;
+  z-index:1;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:1px 3px 9px 7px;
+  margin-bottom:8px;
+  border-bottom:1px solid #eee8df;
+}
+
+.lottery-name-wrap{
+  min-width:0;
+}
+
 .lottery-name{
   display:flex;
   align-items:center;
+  gap:6px;
+  color:var(--text-dark);
+  font-size:.82rem;
+  font-weight:800;
+  line-height:1.2;
+}
+
+.lottery-name .flag{
+  font-size:.96rem;
+}
+
+.date{
+  display:inline-block;
+  margin-top:4px;
+  padding:2px 8px;
+  border-radius:7px;
+  color:#8a795b;
+  background:#f8f3e9;
+  border:1px solid #eee4d2;
+  font:700 .46rem 'IBM Plex Mono',monospace;
+  letter-spacing:.35px;
+}
+
+.vip-label{
+  flex:none;
+  padding:4px 7px;
+  border-radius:99px;
+  color:#92733b;
+  background:#faf3e3;
+  border:1px solid #ecdfc4;
+  font-size:.42rem;
+  font-weight:800;
+  letter-spacing:.25px;
+}
+
+/* =========================================================
+   TOP 3 DIGIT ROW
+   ========================================================= */
+
+.rows{
+  display:flex;
+  flex-direction:column;
   gap:7px;
+}
+
+.row{
+  position:relative;
+  display:grid;
+  grid-template-columns:43px 10px 1fr;
+  align-items:center;
+  gap:4px;
+  min-height:57px;
+  padding:7px 9px 7px 7px;
+  border:1px solid #eee8df;
+  border-radius:13px;
+  background:
+    linear-gradient(135deg,#fff,#fbfaf7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.digit-rank{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+
+.medal{
+  position:relative;
+  width:30px;
+  height:30px;
+  flex:none;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  font:800 .62rem 'IBM Plex Mono',monospace;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.9),
+    inset 0 -2px 3px rgba(90,70,40,.16),
+    0 4px 9px rgba(90,70,40,.12);
+}
+
+.medal::before{
+  content:"";
+  position:absolute;
+  inset:3px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.42);
+}
+
+.medal-gold{
+  color:#70531d;
+  background:
+    radial-gradient(circle at 32% 25%,#fff8d9 0,#e9ce7b 22%,#c9a24d 58%,#9e7429 100%);
+  border:1px solid #b98f39;
+}
+
+.medal-silver{
+  color:#4f575e;
+  background:
+    radial-gradient(circle at 32% 25%,#ffffff 0,#d9dde0 25%,#aab0b5 62%,#7b838a 100%);
+  border:1px solid #939aa0;
+}
+
+.medal-rose{
+  color:#754a45;
+  background:
+    radial-gradient(circle at 32% 25%,#fff2ef 0,#e6b6ad 25%,#c58980 62%,#a4635b 100%);
+  border:1px solid #b87870;
+}
+
+.digit{
+  color:var(--text-dark);
+  font:800 .96rem 'IBM Plex Mono',monospace;
+  text-align:center;
+}
+
+.sep{
+  color:#b5aea5;
+  font:700 .68rem 'IBM Plex Mono',monospace;
+}
+
+.pairs{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+  gap:5px;
   min-width:0;
 }
-.lottery-flag{font-size:1.05rem;line-height:1}
-.lottery-title{
-  color:#28332e;
-  font-size:.68rem;
-  font-weight:800;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.lottery-source-date{
-  margin-top:1px;
-  color:#9aa59f;
-  font:500 .4rem 'IBM Plex Mono',monospace;
-}
-.lottery-index{
-  color:#a0aaa5;
-  font:600 .42rem 'IBM Plex Mono',monospace;
-}
-.lottery-main{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
-}
-.lottery-number-box{
-  padding:8px 5px;
-  text-align:center;
-  border:1px solid #e0e8e3;
-  border-radius:11px;
-  background:#fafcfb;
-}
-.lottery-number-label{
-  color:#87938d;
-  font-size:.4rem;
-  font-weight:800;
-}
-.lottery-number{
-  margin-top:2px;
-  font:800 1.05rem 'IBM Plex Mono',monospace;
-}
-.lottery-number.primary{color:#9a7815}
-.lottery-number.secondary{color:#69747c}
-.lottery-number.tertiary{color:#a66d62}
-.lottery-subhead{
-  display:flex;
-  justify-content:space-between;
+
+/* =========================================================
+   PAIR CHIP
+   15 PAIRS TOTAL
+   9 CONSENSUS COLORED
+   3 GOLD / 3 SILVER / 3 ROSE GOLD
+   ========================================================= */
+
+.pair{
+  display:inline-flex;
   align-items:center;
-  gap:5px;
-  margin:9px 1px 5px;
+  justify-content:center;
+  min-width:39px;
+  height:29px;
+  padding:0 7px;
+  border-radius:8px;
+  border:1px solid #e7e1d9;
+  background:#f8f7f4;
+  color:#655f58;
+  font:700 .60rem 'IBM Plex Mono',monospace;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+  transition:.15s ease;
 }
-.lottery-subhead strong{font-size:.51rem}
-.rank-legend{
+
+.pair:hover{
+  transform:translateY(-1px);
+}
+
+.pair-gold{
+  color:#6d531d;
+  border-color:#d8bc76;
+  background:linear-gradient(145deg,#fff8df,#f3df9d);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 3px 8px rgba(201,162,77,.16);
+}
+
+.pair-silver{
+  color:#4e565d;
+  border-color:#b9bec2;
+  background:linear-gradient(145deg,#ffffff,#dfe3e6);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    0 3px 8px rgba(110,118,125,.13);
+}
+
+.pair-rose{
+  color:#754c47;
+  border-color:#d2a39b;
+  background:linear-gradient(145deg,#fff1ee,#eac6c0);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 3px 8px rgba(185,120,112,.13);
+}
+
+.pair-normal{
+  color:#69635d;
+  background:#f7f5f2;
+}
+
+/* =========================================================
+   CONSENSUS LEGEND
+   ========================================================= */
+
+.consensus{
   display:flex;
+  align-items:center;
+  justify-content:flex-end;
   gap:5px;
-  color:#7c8781;
-  font-size:.38rem;
-  font-weight:700;
+  margin-top:6px;
+  padding-right:3px;
+  color:#a09a92;
+  font-size:.42rem;
 }
-.rank-dot{
-  display:inline-block;
-  width:5px;
-  height:5px;
-  margin-right:2px;
-  border-radius:50%;
-}
-.rank-dot.gold{background:#c9a227}
-.rank-dot.silver{background:#8b959e}
-.rank-dot.rose{background:#b4776b}
-.pair-groups{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
-}
-.pair-group{
-  padding:6px 4px;
-  border:1px solid #e2e9e5;
-  border-radius:10px;
-  background:#fff;
-}
-.pair-group-title{
-  margin-bottom:4px;
-  text-align:center;
-  color:#4e675c;
-  font:800 .48rem 'IBM Plex Mono',monospace;
-}
-.pair-list{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
+
+.consensus-item{
+  display:inline-flex;
+  align-items:center;
   gap:3px;
 }
-.pair-chip{
-  padding:5px 1px;
-  border:1px solid #e4ebe7;
-  border-radius:6px;
-  color:#394640;
-  background:#f8faf9;
-  text-align:center;
-  font:800 .52rem 'IBM Plex Mono',monospace;
-  cursor:pointer;
+
+.consensus-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
 }
-.pair-chip.gold{
-  color:#735600;
-  border-color:#cfaa34;
-  background:linear-gradient(135deg,#fff9d9,#f2d27a);
-  box-shadow:0 3px 7px rgba(201,162,39,.16);
+
+.dot-gold{
+  background:#c9a24d;
+  box-shadow:0 0 0 2px #f7eed8;
 }
-.pair-chip.silver{
-  color:#56616a;
-  border-color:#b5bdc4;
-  background:linear-gradient(135deg,#fcfdfe,#dce2e7);
-  box-shadow:0 3px 7px rgba(120,130,140,.12);
+
+.dot-silver{
+  background:#858e96;
+  box-shadow:0 0 0 2px #eef0f2;
 }
-.pair-chip.rose{
-  color:#754940;
-  border-color:#bd8278;
-  background:linear-gradient(135deg,#fff5f2,#d9a39a);
-  box-shadow:0 3px 7px rgba(180,119,107,.12);
+
+.dot-rose{
+  background:#b97870;
+  box-shadow:0 0 0 2px #f4e4e1;
 }
-.lottery-footer{
-  display:flex;
-  justify-content:space-between;
-  gap:5px;
-  margin-top:7px;
-  color:#9aa49f;
-  font-size:.39rem;
+
+/* =========================================================
+   COPY / LOGOUT / TOAST
+   ========================================================= */
+
+.copyall{
+  width:100%;
+  height:45px;
+  border:0;
+  border-radius:13px;
+  color:#fffaf0;
+  background:linear-gradient(135deg,#d0ae62,#a57b30);
+  box-shadow:0 8px 20px rgba(165,123,48,.16);
+  font-weight:800;
 }
-.lottery-footer b{color:#9a7815}
-.empty-batch{
-  padding:18px;
-  border:1px dashed #bfd4c9;
-  border-radius:14px;
-  color:#738079;
-  background:#fff;
-  text-align:center;
-  font-size:.55rem;
-  line-height:1.6;
+
+.copyall:hover{
+  transform:translateY(-1px);
 }
-#toast{
-  position:fixed;
-  left:50%;
-  bottom:20px;
-  z-index:9999;
-  min-width:170px;
-  padding:9px 15px;
-  border-radius:999px;
-  transform:translate(-50%,20px);
-  opacity:0;
-  pointer-events:none;
-  color:#fff;
-  background:#5a7467;
-  box-shadow:0 10px 25px rgba(50,80,68,.22);
-  text-align:center;
-  font-size:.52rem;
-  font-weight:700;
-  transition:.25s;
-}
-#toast.show{opacity:1;transform:translate(-50%,0)}
-.logout-btn{
+
+.logout{
+  margin-top:10px;
   width:100%;
   height:42px;
-  margin-top:10px;
   border:1px solid var(--line);
-  border-radius:11px;
-  color:#7b8781;
+  border-radius:12px;
   background:#fff;
-  font-size:.53rem;
+  color:var(--muted);
+  font-size:.58rem;
   font-weight:700;
 }
-@media(max-width:450px){
-  .app-inner{padding:12px}
-  .pair-groups{grid-template-columns:1fr}
-  .lottery-main{grid-template-columns:repeat(3,1fr)}
-  .stats-input-wrap textarea{min-height:190px}
+
+.logout:hover{
+  background:#faf8f4;
+  color:var(--text-dark);
+}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:22px;
+  z-index:9;
+  transform:translate(-50%,20px);
+  opacity:0;
+  padding:9px 15px;
+  border-radius:99px;
+  color:#fffaf0;
+  background:#9d7628;
+  font-size:.55rem;
+  font-weight:700;
+  box-shadow:0 8px 25px rgba(100,80,40,.18);
+  transition:.2s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+@media(max-width:470px){
+  .shell{padding:8px}
+  .inner{padding:12px}
+  .pair{
+    min-width:36px;
+    height:28px;
+    padding:0 6px;
+    font-size:.56rem;
+  }
+  .row{
+    grid-template-columns:40px 9px 1fr;
+  }
+}
+
+@media(max-width:390px){
+  .bulk{min-height:250px}
+  .lottery-name{font-size:.75rem}
+  .pair{
+    min-width:34px;
+    padding:0 5px;
+    font-size:.53rem;
+  }
+  .medal{
+    width:28px;
+    height:28px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="snowCanvas"></canvas>
+<canvas id="snow"></canvas>
 
-<div class="app-shell">
-<div class="app-card">
-<div class="app-inner">
+<div class="shell">
+  <div class="app">
+    <div class="inner">
 
-<div id="loginView">
+      <div class="top">
+        <div class="brand">
+          <div class="logo">AI</div>
+          <div>
+            <b>Mester Lotto VIP+</b>
+            <small>Multi-Lottery Quant Engine</small>
+          </div>
+        </div>
+        <div class="pill">● ENGINE READY</div>
+      </div>
 
-<div class="top-nav">
-  <div class="brand-mini">
-    <div class="brand-mark">AI</div>
-    <div>
-      <div class="brand-name">Enterprise Quant</div>
-      <div class="brand-sub">Predictive Data Engine</div>
-    </div>
-  </div>
-  <div class="system-pill"><span class="live-dot"></span>SYSTEM READY</div>
-</div>
+      <section class="hero">
+        <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
+        <h1>Multi-Lottery <em>VIP+</em></h1>
+        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้ 5 AI Models เดิม</p>
+      </section>
 
-<section class="hero">
-  <div class="hero-kicker">QUANT ANALYSIS ENGINE</div>
-  <h1>Mester Lotto <em>VIP+</em></h1>
-  <p>ระบบคำนวณและวิเคราะห์ข้อมูล AI อัจฉริยะ<br><b>Multi-Layer AI Processing</b></p>
-  <div class="hero-meta">
-    <div class="meta-chip">AI Pattern</div>
-    <div class="meta-chip">Digit Ranking</div>
-    <div class="meta-chip">5 Models</div>
-    <div class="meta-chip">VIP Matrix</div>
-  </div>
-</section>
+      <div id="login" class="login active">
+        <section class="panel">
+          <label class="label">🔐 SYSTEM ACCESS KEY</label>
+          <input
+            id="password"
+            class="password"
+            type="password"
+            autocomplete="off"
+            placeholder="••• System Access Key •••"
+          >
+          <button id="loginBtn" class="btn">
+            เข้าสู่ระบบ / CONNECT ENGINE
+          </button>
+          <div id="loginErr" class="err">
+            ❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED
+          </div>
+        </section>
+      </div>
 
-<div class="login-dashboard">
-  <div class="mini-stat">
-    <div class="mini-stat-label">ผู้ใช้งานระบบ / MEMBERS</div>
-    <div class="mini-stat-value">2,573</div>
-  </div>
-  <div class="mini-stat">
-    <div class="mini-stat-label">สถานะระบบ / STATUS</div>
-    <div class="mini-stat-value green">ONLINE</div>
-  </div>
-</div>
+      <div id="console" class="console">
 
-<div class="packages">
-  <div class="package">
-    <div class="package-title">7 วัน / 7 DAYS</div>
-    <div class="package-price">99 ฿</div>
-    <div class="package-desc">Starter Tier</div>
-  </div>
-  <div class="package">
-    <div class="package-title">15 วัน / 15 DAYS</div>
-    <div class="package-price">199 ฿</div>
-    <div class="package-desc">รายงวด / Period</div>
-  </div>
-  <div class="package">
-    <div class="package-title">1 เดือน / 1 MONTH</div>
-    <div class="package-price">299 ฿</div>
-    <div class="package-desc">Popular</div>
-  </div>
-  <div class="package">
-    <div class="package-title">1 ปี / 1 YEAR</div>
-    <div class="package-price">1,890 ฿</div>
-    <div class="package-desc">VIP Long Term</div>
-  </div>
-</div>
+        <section class="panel">
 
-<a class="contact-btn" href="https://line.me/ti/p/cWXNwvCmqc" target="_blank" rel="noopener noreferrer">
-  💬 ติดต่อแอดมิน / CONTACT ADMIN
-</a>
+          <div class="bulkbox">
 
-<section class="login-panel">
-  <div class="section-eyebrow">SECURE ACCESS / ระบบสมาชิก</div>
-  <div class="login-heading">เชื่อมต่อ Master Engine</div>
-  <div class="login-description">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบ</div>
-  <input type="password" id="passwordInput" placeholder="••• System Access Key •••" autocomplete="off">
-  <button class="primary-btn" id="loginButton" type="button">🔐 CONNECT TO ENGINE / เข้าสู่ระบบ</button>
-  <div id="errorMsg">❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED</div>
-</section>
+            <label for="bulkInput">
+              📥 วางสถิติหวยทั้งหมด / MULTI-LOTTERY INPUT
+            </label>
 
-</div>
-
-<div id="calculatorView">
-
-<div class="top-nav">
-  <div class="brand-mini">
-    <div class="brand-mark">AI</div>
-    <div>
-      <div class="brand-name">Enterprise Quant</div>
-      <div class="brand-sub">AI Intelligence Console</div>
-    </div>
-  </div>
-  <div class="system-pill"><span class="live-dot"></span>ENGINE ONLINE</div>
-</div>
-
-<section class="hero">
-  <div class="hero-kicker">PREMIUM ANALYSIS CONSOLE</div>
-  <h1>Mester Lotto <em>VIP+</em></h1>
-  <p>วิเคราะห์ด้วย AI อัจฉริยะ<br><b>Multi-Layer 5 Model Processing</b></p>
-  <div class="hero-meta">
-    <div class="meta-chip">เลขเด่น 3 ตัว</div>
-    <div class="meta-chip">ชุดเจาะ 15 คู่</div>
-    <div class="meta-chip">5 Models</div>
-    <div class="meta-chip">VIP Ranking</div>
-  </div>
-</section>
-
-<div class="engine-strip">
-  <div class="engine-card">
-    <div class="engine-label">ประมวลผลทั้งหมด</div>
-    <div class="engine-value cyan" id="totalProcessedCount">35,000</div>
-  </div>
-  <div class="engine-card">
-    <div class="engine-label">สมาชิกออนไลน์</div>
-    <div class="engine-value green">1,150 คน</div>
-  </div>
-  <div class="engine-card">
-    <div class="engine-label">ความเร็วเซิร์ฟเวอร์</div>
-    <div class="engine-value gold">18 ms</div>
-  </div>
-</div>
-
-<section class="command-center">
-
-  <div class="command-header">
-    <div>
-      <div class="command-title">Statistics Input</div>
-      <div class="command-sub">วางสถิติหลายหวยในช่องเดียว ระบบจะแยกประเภทให้อัตโนมัติ</div>
-    </div>
-    <div class="command-badge">MULTI LOTTERY READY</div>
-  </div>
-
-  <div class="stats-input-wrap">
-<textarea id="statsInput" spellcheck="false" autocomplete="off" placeholder="ลาวพัฒนา | 24 ส.ค. 69
+            <textarea
+              id="bulkInput"
+              class="bulk"
+              spellcheck="false"
+              placeholder="ลาวพัฒนา | 24 ส.ค. 69
 552
 55
 
 ลาวพัฒนา | 21 ส.ค. 69
 253
-02"></textarea>
-    <div class="stats-input-hint">
-      รูปแบบ: ชื่อหวย | วันที่ → 3 ตัวบน → 2 ตัวล่าง • เว้นบรรทัดระหว่างชุดได้
+02
+
+ลาวสตาร์ | 24 ส.ค. 69
+781
+46"
+            ></textarea>
+
+            <div class="hint">
+              รูปแบบ: ชื่อหวย | วันที่ → 3 ตัวบน → 2 ตัวล่าง
+              • วางได้หลายรายการในครั้งเดียว
+              • ผลเด่น/เจาะใช้เฉพาะ 5 AI Models เดิม
+              • แต่ละหวยถูกประมวลผลแยกจากกันอย่างชัดเจน
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button id="run" class="btn">
+              ⚡ RUN ALL / ประมวลผลทั้งหมด
+            </button>
+
+            <button id="clear" class="clear">
+              ล้าง / CLEAR
+            </button>
+          </div>
+
+        </section>
+
+        <div id="scanner" class="scanner">
+          <div class="ring"></div>
+          <span id="scanText">READING MULTI-LOTTERY INPUT...</span>
+        </div>
+
+        <div id="result" class="result"></div>
+
+        <button id="logout" class="logout">
+          ออกจากระบบ / LOGOUT
+        </button>
+
+      </div>
+
     </div>
   </div>
-
-  <div class="action-row">
-    <button class="calculate-btn" id="calculateButton" type="button">
-      ⚡ RUN ALL ANALYSIS / ประมวลผลทั้งหมด
-    </button>
-    <button class="clear-btn" id="clearButton" type="button">ล้าง / CLEAR</button>
-  </div>
-
-</section>
-
-<div id="batchProgress" class="batch-progress">
-  <span class="batch-spinner"></span>
-  <span>กำลังประมวลผล...</span>
 </div>
 
-<div id="resultContainer"></div>
-
-<button class="logout-btn" id="logoutButton" type="button">
-  ออกจากระบบ / LOGOUT
-</button>
-
-</div>
-
-</div>
-</div>
-</div>
-
-<div id="toast">✓ คัดลอกแล้ว / COPIED</div>
+<div id="toast" class="toast">✓ คัดลอกผลทั้งหมดแล้ว</div>
 
 <script>
-(function(){
-"use strict";
+(()=>{
 
-/* ============================================================
-   SNOW / AMBIENT EFFECT
-============================================================ */
-(function(){
-  const canvas=document.getElementById("snowCanvas");
-  if(!canvas)return;
-  const ctx=canvas.getContext("2d");
-  let w=window.innerWidth,h=window.innerHeight;
-  const flakes=[];
-  const count=Math.min(90,Math.max(45,Math.floor(w*h/15000)));
+/* =========================================================
+   SOFT LUXURY PARTICLES
+   ========================================================= */
 
-  function resize(){
-    w=canvas.width=window.innerWidth;
-    h=canvas.height=window.innerHeight;
-  }
+const canvas=document.getElementById('snow');
+const ctx=canvas.getContext('2d');
 
-  window.addEventListener("resize",resize,{passive:true});
-  resize();
+let w=canvas.width=innerWidth;
+let h=canvas.height=innerHeight;
 
-  for(let i=0;i<count;i++){
-    flakes.push({
-      x:Math.random()*w,
-      y:Math.random()*h,
-      r:.6+Math.random()*1.8,
-      speed:.15+Math.random()*.55,
-      drift:.2+Math.random()*.6,
-      phase:Math.random()*Math.PI*2
-    });
-  }
+addEventListener('resize',()=>{
+  w=canvas.width=innerWidth;
+  h=canvas.height=innerHeight;
+});
 
-  function draw(){
-    ctx.clearRect(0,0,w,h);
-    flakes.forEach(f=>{
-      f.phase+=.006;
-      f.x+=Math.sin(f.phase)*f.drift*.18;
-      f.y+=f.speed;
-      if(f.y>h+8){
-        f.y=-8;
-        f.x=Math.random()*w;
-      }
-      if(f.x>w+8)f.x=-8;
-      if(f.x<-8)f.x=w+8;
+const particles=Array.from({length:38},()=>({
+  x:Math.random()*w,
+  y:Math.random()*h,
+  r:.55+Math.random()*1.45,
+  s:.10+Math.random()*.30,
+  a:.10+Math.random()*.28,
+  p:Math.random()*Math.PI*2
+}));
 
-      ctx.beginPath();
-      ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
-      ctx.fillStyle="rgba(110,150,132,.35)";
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
+(function draw(){
+
+  ctx.clearRect(0,0,w,h);
+
+  particles.forEach(q=>{
+    q.p+=.008;
+    q.y+=q.s;
+    q.x+=Math.sin(q.p)*.18;
+
+    if(q.y>h+5){
+      q.y=-5;
+      q.x=Math.random()*w;
+    }
+
+    ctx.beginPath();
+    ctx.arc(q.x,q.y,q.r,0,Math.PI*2);
+
+    /* Champagne / Rose-gold soft particles */
+    const rose=Math.random()>.58;
+
+    ctx.fillStyle=rose
+      ? `rgba(185,120,112,${q.a*.55})`
+      : `rgba(201,162,77,${q.a})`;
+
+    ctx.fill();
+  });
+
+  requestAnimationFrame(draw);
+
 })();
 
-/* ============================================================
-   CORE HELPERS
-============================================================ */
-const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({
-  "&":"&amp;",
-  "<":"&lt;",
-  ">":"&gt;",
-  '"':"&quot;",
-  "'":"&#039;"
-}[m]));
 
-const normalize=n=>((n%10)+10)%10;
-
-const MONTHS={
-  "ม.ค.":1,"ก.พ.":2,"มี.ค.":3,"เม.ย.":4,"พ.ค.":5,"มิ.ย.":6,
-  "ก.ค.":7,"ส.ค.":8,"ก.ย.":9,"ต.ค.":10,"พ.ย.":11,"ธ.ค.":12
-};
-
-const FLAG_RULES=[
-  [/ฮานอย|เวียดนาม|หวยเวียดนาม/i,"🇻🇳"],
-  [/ลาว/i,"🇱🇦"],
-  [/รัฐบาลไทย|หวยไทย|ไทย|ออมสิน|ธกส|ธอส/i,"🇹🇭"],
-  [/พม่า|ย่างกุ้ง/i,"🇲🇲"],
-  [/มาเลย์|มาเลเซีย/i,"🇲🇾"],
-  [/อินโด|อินโดนีเซีย/i,"🇮🇩"],
-  [/สิงคโปร์/i,"🇸🇬"],
-  [/เกาหลี/i,"🇰🇷"],
-  [/จีน|ฮั่งเส็ง|เซี่ยงไฮ้/i,"🇨🇳"],
-  [/ญี่ปุ่น|นิเคอิ/i,"🇯🇵"],
-  [/ดาวโจนส์|อเมริกา|สหรัฐ/i,"🇺🇸"]
-];
-
-function flagFor(name){
-  for(const [re,flag] of FLAG_RULES){
-    if(re.test(name))return flag;
-  }
-  return "🎯";
-}
-
-function parseDate(raw){
-  if(!raw)return null;
-
-  const x=raw.trim().replace(/\s+/g," ");
-
-  let m=x.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{2,4})$/);
-
-  if(m&&MONTHS[m[2]]){
-    let y=Number(m[3]);
-    if(y<100)y+=2500;
-    return {
-      d:Number(m[1]),
-      m:MONTHS[m[2]],
-      y
-    };
-  }
-
-  m=x.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
-
-  if(m){
-    let y=Number(m[3]);
-    if(y<100)y+=2500;
-    return {
-      d:Number(m[1]),
-      m:Number(m[2]),
-      y
-    };
-  }
-
-  return null;
-}
-
-function dateKey(raw){
-  const d=parseDate(raw);
-  if(!d)return 0;
-  return new Date(d.y-543,d.m-1,d.d).getTime();
-}
-
-function nextDate(raw){
-  const d=parseDate(raw);
-  if(!d)return raw||"";
-
-  const dt=new Date(d.y-543,d.m-1,d.d);
-  dt.setDate(dt.getDate()+1);
-
-  return `${dt.getDate()}/${dt.getMonth()+1}/${String(dt.getFullYear()-543).padStart(2,"0")}`;
-}
-
-function canonicalPair(pair){
-  const s=String(pair).replace(/\D/g,"").padStart(2,"0").slice(-2);
-  return s[0]<=s[1] ? s : s[1]+s[0];
-}
-
-/* ============================================================
-   INPUT PARSER
-   รูปแบบ:
-   ชื่อหวย | วันที่
-   3 ตัวบน
-   2 ตัวล่าง
-============================================================ */
-function parseBatch(text){
-
-  const lines=String(text||"")
-    .replace(/\r/g,"")
-    .split("\n")
-    .map(x=>x.trim());
-
-  const result=[];
-  let i=0;
-
-  while(i<lines.length){
-
-    if(!lines[i].includes("|")){
-      i++;
-      continue;
-    }
-
-    const parts=lines[i].split("|");
-    const name=(parts[0]||"").trim();
-    const date=(parts.slice(1).join("|")||"").trim();
-
-    let top="";
-    let bottom="";
-    let j=i+1;
-
-    while(j<lines.length&&!lines[j].includes("|")){
-
-      const line=lines[j];
-
-      if(/^\d{3}$/.test(line)&&!top){
-        top=line;
-      }
-      else if(/^\d{2}$/.test(line)&&!bottom){
-        bottom=line;
-      }
-
-      j++;
-
-      if(top&&bottom)break;
-    }
-
-    if(
-      name &&
-      /^\d{3}$/.test(top) &&
-      /^\d{2}$/.test(bottom)
-    ){
-      result.push({
-        name,
-        date,
-        top,
-        bottom
-      });
-    }
-
-    i=j;
-  }
-
-  return result;
-}
-
-/* ============================================================
-   100-FORMULA ENGINE
-   คงหลักการของเครื่องเดิม
-============================================================ */
-function run100Formulas(H,A,B,C,D,sumTop,sumBottom,totalSum){
-
-  const formulas=[
-    H+A,H+B,A+B,H+C,H+D,A+C,A+D,B+C,B+D,C+D,
-    sumTop+C,sumTop+D,sumTop+H,sumTop+A,sumTop+B,
-    10-H,10-A,10-B,10-C,10-D,
-    H+A+C,H+B+D,A+B+C,A+B+D,H+C+D,A+C+D,
-    sumTop-C,sumTop-D,sumTop+sumBottom,sumTop-sumBottom,
-    H+A-D,A+B-C,H+B-C,20-(A+C),20-(B+D),
-    H+A+B-C,H+A+B-D,10+A-D,10+B-C,sumTop+10-D,
-    H+D-A,A+D-H,B+C-H,sumBottom+H-A,sumBottom+H-B,
-    H+sumBottom-A,H+sumBottom-B,A+sumBottom-H,A+sumBottom-B,
-    B+sumBottom-H,B+sumBottom-A,
-    30-(H+A+C),30-(H+B+D),30-(A+B+C),30-(H+C+D),
-    H+A+C-D,H+B+D-C,A+B+C-H,sumTop+C-D,sumTop+D-C,
-    H+A+sumBottom,H+B+sumBottom,A+B+sumBottom,
-    H+C+sumTop,H+D+sumTop,A+C+sumTop,A+D+sumTop,
-    B+C+sumTop,B+D+sumTop,C+D+sumTop,
-    10+H+A,10+H+B,10+A+B,10+C+D,
-    10+H+C,10+H+D,10+A+C,10+A+D,10+B+C,10+B+D,
-    H-A+D,H-B+C,A-B+D,C-D+H,C-D+A,C-D+B,
-    20-H-A,20-H-B,20-A-B,20-C-D,
-    20-H-C,20-H-D,20-A-C,20-A-D,20-B-C,20-B-D,
-    totalSum,2*totalSum,totalSum+H,totalSum+C
-  ];
-
-  const counts={};
-  for(let d=0;d<=9;d++)counts[d]=0;
-
-  formulas.forEach(v=>{
-    const digit=normalize(v);
-    counts[digit]++;
-  });
-
-  return counts;
-}
-
-/* ============================================================
-   THE FIVE MAIN MODELS
-   สำคัญ:
-   เลขเด่น 3 ตัวจะถูกคัดจากผลของ 5 โมเดลนี้เท่านั้น
-============================================================ */
-function runFiveModels(top,bottom){
-
-  const d3=top.split("").map(Number);
-  const d2=bottom.split("").map(Number);
-
-  const [H,A,B]=d3;
-  const [C,D]=d2;
-
-  const sumTop=H+A+B;
-  const sumBottom=C+D;
-  const totalSum=sumTop+sumBottom;
-
-  const rawModels=[
-    (A+C)%10,
-    sumTop%10,
-    (H+C)%10,
-    (B+D)%10,
-    (10-D)%10
-  ];
-
-  const models=rawModels.map((digit,index)=>({
-    id:index+1,
-    digit,
-    set:[
-      digit,
-      normalize(digit+1)
-    ]
-  }));
-
-  const modelDigits=[];
-
-  models.forEach(model=>{
-    model.set.forEach(d=>{
-      if(!modelDigits.includes(d))modelDigits.push(d);
-    });
-  });
-
-  /*
-    100 formula layer is used as supporting evidence only.
-    It is NEVER allowed to introduce an outside digit
-    into the final 3 leading digits.
-  */
-  const formulaCounts=run100Formulas(
-    H,A,B,C,D,
-    sumTop,
-    sumBottom,
-    totalSum
-  );
-
-  const scoreMap={};
-
-  for(let d=0;d<=9;d++){
-    scoreMap[d]={
-      digit:d,
-      modelHits:0,
-      formulaHits:formulaCounts[d]||0,
-      total:0
-    };
-  }
-
-  models.forEach(model=>{
-    model.set.forEach(d=>{
-      scoreMap[d].modelHits++;
-    });
-  });
-
-  const maxFormula=Math.max(...Object.values(scoreMap).map(x=>x.formulaHits),1);
-
-  for(let d=0;d<=9;d++){
-
-    const modelScore=scoreMap[d].modelHits/5;
-    const formulaScore=scoreMap[d].formulaHits/maxFormula;
-
-    scoreMap[d].total=
-      modelScore*.75+
-      formulaScore*.25;
-
-    /*
-      Hard gate:
-      ถ้าไม่ได้อยู่ใน 5 โมเดล จะไม่สามารถขึ้นเป็น
-      เลขเด่น 3 ตัวได้
-    */
-    if(modelDigits.includes(d)){
-      scoreMap[d].total+=.20;
-    }
-  }
-
-  const allowed=modelDigits
-    .map(d=>scoreMap[d])
-    .sort((a,b)=>
-      b.total-a.total ||
-      a.digit-b.digit
-    );
-
-  const top3=[];
-
-  for(const item of allowed){
-    if(!top3.includes(item.digit)){
-      top3.push(item.digit);
-    }
-    if(top3.length===3)break;
-  }
-
-  /*
-    Guarantee:
-    ทุกหวยต้องมีเลขเด่นครบ 3 ตัว
-    และทุกตัวต้องมาจาก 5 โมเดล
-  */
-  if(top3.length<3){
-
-    for(const model of models){
-
-      for(const d of model.set){
-
-        if(!top3.includes(d)){
-          top3.push(d);
-        }
-
-        if(top3.length===3)break;
-      }
-
-      if(top3.length===3)break;
-    }
-  }
-
-  /*
-    ถ้า 5 โมเดลมีเลขซ้ำจนไม่ครบ 3 ตัวจริง ๆ
-    จะเติมจาก union ของโมเดลเท่านั้น
-    ไม่แตะเลขจาก formula engine
-  */
-  if(top3.length<3){
-
-    const union=[...new Set(models.flatMap(m=>m.set))];
-
-    for(const d of union){
-      if(!top3.includes(d))top3.push(d);
-      if(top3.length===3)break;
-    }
-  }
-
-  return {
-    H,A,B,C,D,
-    models,
-    modelDigits,
-    top3,
-    scoreMap,
-    formulaCounts
-  };
-}
-
-/* ============================================================
-   PAIR ENGINE
-   5 MODELS ONLY
-   02 และ 20 = คู่เดียวกัน
-============================================================ */
-function buildPairs(engine){
-
-  const pairScores=new Map();
-
-  engine.models.forEach(model=>{
-
-    model.set.forEach(sourceDigit=>{
-
-      /*
-        ใช้โครงสร้างเดิม:
-        เลขต้นทางชนกับเลขรอบข้าง
-      */
-      const candidates=[];
-
-      for(let offset=-3;offset<=3;offset++){
-
-        const d=normalize(sourceDigit+offset);
-
-        if(d===sourceDigit)continue;
-
-        candidates.push(d);
-      }
-
-      /*
-        ทำให้ได้อย่างน้อย 5 คู่ต่อเลข
-      */
-      let added=0;
-
-      for(const d of candidates){
-
-        if(added>=5)break;
-
-        const pair=canonicalPair(`${sourceDigit}${d}`);
-
-        if(pair[0]===pair[1])continue;
-
-        const key=`${model.id}:${pair}`;
-
-        if(!pairScores.has(key)){
-          pairScores.set(key,{
-            pair,
-            count:1,
-            models:[model.id]
-          });
-          added++;
-        }
-      }
-    });
-  });
-
-  /*
-    Aggregate ข้ามโมเดล
-  */
-  const aggregate=new Map();
-
-  for(const value of pairScores.values()){
-
-    if(!aggregate.has(value.pair)){
-      aggregate.set(value.pair,{
-        pair:value.pair,
-        count:0,
-        models:new Set()
-      });
-    }
-
-    const item=aggregate.get(value.pair);
-    item.count++;
-    value.models.forEach(id=>item.models.add(id));
-  }
-
-  const ranked=[...aggregate.values()]
-    .map(x=>({
-      pair:x.pair,
-      count:x.count,
-      modelCount:x.models.size
-    }))
-    .sort((a,b)=>
-      b.count-a.count ||
-      b.modelCount-a.modelCount ||
-      Number(a.pair)-Number(b.pair)
-    );
-
-  /*
-    3 เลขเด่น × 5 คู่ = 15 คู่
-  */
-  const groups={};
-
-  engine.top3.forEach(d=>{
-    groups[d]=[];
-  });
-
-  engine.top3.forEach(d=>{
-
-    const candidates=ranked.filter(item=>
-      item.pair.includes(String(d))
-    );
-
-    for(const item of candidates){
-
-      if(groups[d].length>=5)break;
-
-      if(!groups[d].some(x=>x.pair===item.pair)){
-        groups[d].push(item);
-      }
-    }
-
-    /*
-      Fill ให้ครบ 5 คู่โดยยังยึดเลขเด่นของกลุ่ม
-    */
-    for(let n=0;n<=9&&groups[d].length<5;n++){
-
-      if(n===d)continue;
-
-      const p=canonicalPair(`${d}${n}`);
-
-      if(!groups[d].some(x=>x.pair===p)){
-        groups[d].push({
-          pair:p,
-          count:0,
-          modelCount:0
-        });
-      }
-    }
-
-    /*
-      จัดเลขในแต่ละกลุ่มให้น้อย -> มาก
-    */
-    groups[d].sort((a,b)=>
-      Number(a.pair)-Number(b.pair)
-    );
-  });
-
-  /*
-    Top 9 pairs สำหรับสี:
-    อันดับ 1-3 = Gold
-    อันดับ 4-6 = Silver
-    อันดับ 7-9 = Rose Gold
-  */
-  const allSelected=[];
-
-  Object.values(groups).forEach(group=>{
-    group.forEach(item=>{
-      if(!allSelected.some(x=>x.pair===item.pair)){
-        allSelected.push(item);
-      }
-    });
-  });
-
-  const top9=allSelected
-    .sort((a,b)=>
-      b.count-a.count ||
-      b.modelCount-a.modelCount ||
-      Number(a.pair)-Number(b.pair)
-    )
-    .slice(0,9);
-
-  const rankMap=new Map();
-
-  top9.forEach((item,index)=>{
-    rankMap.set(item.pair,index);
-  });
-
-  function colorClass(pair){
-
-    const rank=rankMap.get(pair);
-
-    if(rank===undefined)return"";
-    if(rank<3)return" gold";
-    if(rank<6)return" silver";
-    return" rose";
-  }
-
-  return {
-    groups,
-    top9,
-    rankMap,
-    colorClass
-  };
-}
-
-/* ============================================================
-   AUTH / APP
-============================================================ */
-const APP={
-  toastTimer:null,
-
-  audio(type="click"){
-    try{
-      const AC=window.AudioContext||window.webkitAudioContext;
-      if(!AC)return;
-
-      const ctx=new AC();
-      const osc=ctx.createOscillator();
-      const gain=ctx.createGain();
-
-      osc.type=type==="error"?"triangle":"sine";
-
-      const now=ctx.currentTime;
-
-      osc.frequency.setValueAtTime(
-        type==="error"?190:520,
-        now
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+const $=id=>document.getElementById(id);
+
+const esc=s=>String(s)
+  .replace(/&/g,'&amp;')
+  .replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;')
+  .replace(/'/g,'&#039;');
+
+
+/* =========================================================
+   ACCESS CONTROL
+   ========================================================= */
+
+const sec={
+  tokens:[
+    '4d617374657241646d696e32303236',
+    '54396b4c326d5037',
+    '5a71345738785431'
+  ],
+
+  dec(h){
+    let s='';
+    for(let i=0;i<h.length;i+=2){
+      s+=String.fromCharCode(
+        parseInt(h.slice(i,i+2),16)
       );
-
-      osc.frequency.exponentialRampToValueAtTime(
-        type==="error"?130:720,
-        now+.08
-      );
-
-      gain.gain.setValueAtTime(
-        type==="error"?.035:.025,
-        now
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        .001,
-        now+.12
-      );
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now);
-      osc.stop(now+.13);
-
-    }catch(e){}
+    }
+    return s;
   },
 
-  showToast(text="✓ คัดลอกแล้ว / COPIED"){
-    const t=document.getElementById("toast");
-    if(!t)return;
+  ok(v){
+    return this.tokens.some(
+      t=>v===this.dec(t)
+    );
+  }
+};
 
-    t.textContent=text;
-    t.classList.add("show");
+
+/* =========================================================
+   MAIN APPLICATION
+   ========================================================= */
+
+const app={
+
+  cache:[],
+  toastTimer:null,
+
+  audio(){},
+
+  norm(x){
+    return (x%10+10)%10;
+  },
+
+
+  /* =======================================================
+     FLAGS
+     ======================================================= */
+
+  flag(n){
+
+    n=String(n).toLowerCase();
+
+    if(/ลาว|lao/.test(n))return'🇱🇦';
+
+    if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))
+      return'🇻🇳';
+
+    if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))
+      return'🇲🇲';
+
+    if(/จีน|china|shanghai/.test(n))
+      return'🇨🇳';
+
+    if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))
+      return'🇭🇰';
+
+    if(/นิเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))
+      return'🇯🇵';
+
+    if(/เกาหลี|korea|kospi/.test(n))
+      return'🇰🇷';
+
+    if(/สิงคโปร์|singapore/.test(n))
+      return'🇸🇬';
+
+    if(/อินเดีย|india|sensex/.test(n))
+      return'🇮🇳';
+
+    if(/รัสเซีย|russia|moscow/.test(n))
+      return'🇷🇺';
+
+    if(/เยอรมัน|germany|dax/.test(n))
+      return'🇩🇪';
+
+    if(/อังกฤษ|uk|ftse|london/.test(n))
+      return'🇬🇧';
+
+    if(/อียิปต์|egypt/.test(n))
+      return'🇪🇬';
+
+    if(/ไต้หวัน|taiwan|tse/.test(n))
+      return'🇹🇼';
+
+    if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))
+      return'🇺🇸';
+
+    if(/ฝรั่งเศส|france|cac/.test(n))
+      return'🇫🇷';
+
+    if(/ออสเตรเลีย|australia|asx/.test(n))
+      return'🇦🇺';
+
+    if(/แคนาดา|canada/.test(n))
+      return'🇨🇦';
+
+    if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n))
+      return'🇹🇭';
+
+    return'🌐';
+  },
+
+
+  /* =======================================================
+     INPUT PARSER
+     ======================================================= */
+
+  parse(text){
+
+    const z=String(text||'')
+      .replace(/\r/g,'')
+      .trim();
+
+    if(!z){
+      return{
+        records:[],
+        errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
+      };
+    }
+
+    const lines=z
+      .split('\n')
+      .map(v=>v.trim());
+
+    const records=[];
+    const errors=[];
+
+    let i=0;
+
+    while(i<lines.length){
+
+      if(!lines[i]){
+        i++;
+        continue;
+      }
+
+      const m=lines[i].match(
+        /^(.+?)\s*\|\s*(.+?)$/
+      );
+
+      if(!m){
+
+        errors.push(
+          `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
+        );
+
+        i++;
+        continue;
+      }
+
+      const name=m[1].trim();
+      const date=m[2].trim();
+
+      const n3=lines[i+1]||'';
+      const n2=lines[i+2]||'';
+
+      if(!/^\d{3}$/.test(n3)){
+
+        errors.push(
+          `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
+        );
+
+        i+=1;
+        continue;
+      }
+
+      if(!/^\d{2}$/.test(n2)){
+
+        errors.push(
+          `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
+        );
+
+        i+=2;
+        continue;
+      }
+
+      records.push({
+        name,
+        date,
+        n3,
+        n2
+      });
+
+      i+=3;
+    }
+
+    return{
+      records,
+      errors
+    };
+  },
+
+
+  /* =======================================================
+     ORIGINAL FORMULA ENGINE
+     ======================================================= */
+
+  formulas(H,T,U,R1,R2,sumT,sumB,total){
+
+    const raw=[
+
+      H+T,
+      H+U,
+      T+U,
+      H+R1,
+      H+R2,
+      T+R1,
+      T+R2,
+      U+R1,
+      U+R2,
+      R1+R2,
+
+      sumT+R1,
+      sumT+R2,
+      sumT+H,
+      sumT+T,
+      sumT+U,
+
+      10-H,
+      10-T,
+      10-U,
+      10-R1,
+      10-R2,
+
+      H+T+R1,
+      H+U+R2,
+      T+U+R1,
+      T+U+R2,
+      H+R1+R2,
+      T+R1+R2,
+
+      sumT-R1,
+      sumT-R2,
+      sumT+sumB,
+      sumT-sumB,
+
+      H+T-R2,
+      T+U-R1,
+      H+U-R1,
+
+      20-(T+R1),
+      20-(U+R2),
+
+      H+T+U-R1,
+      H+T+U-R2,
+
+      10+T-R2,
+      10+U-R1,
+
+      sumT+10-R2,
+
+      H+R2-T,
+      T+R2-H,
+      U+R1-H,
+
+      sumB+H-T,
+      sumB+H-U,
+
+      H+sumB-T,
+      H+sumB-U,
+      T+sumB-H,
+      T+sumB-U,
+      U+sumB-H,
+      U+sumB-T,
+
+      30-(H+T+R1),
+      30-(H+U+R2),
+      30-(T+U+R1),
+      30-(H+R1+R2),
+
+      H+T+R1-R2,
+      H+U+R2-R1,
+      T+U+R1-H,
+
+      sumT+R1-R2,
+      sumT+R2-R1,
+
+      H+T+sumB,
+      H+U+sumB,
+      T+U+sumB,
+
+      H+R1+sumT,
+      H+R2+sumT,
+      T+R1+sumT,
+      T+R2+sumT,
+      U+R1+sumT,
+      U+R2+sumT,
+      R1+R2+sumT,
+
+      10+H+T,
+      10+H+U,
+      10+T+U,
+      10+R1+R2,
+
+      10+H+R1,
+      10+H+R2,
+      10+T+R1,
+      10+T+R2,
+      10+U+R1,
+      10+U+R2,
+
+      H-T+R2,
+      H-U+R1,
+      T-U+R2,
+
+      R1-R2+H,
+      R1-R2+T,
+      R1-R2+U,
+
+      20-H-T,
+      20-H-U,
+      20-T-U,
+      20-R1-R2,
+
+      20-H-R1,
+      20-H-R2,
+      20-T-R1,
+      20-T-R2,
+      20-U-R1,
+      20-U-R2,
+
+      total,
+      2*total,
+      total+H,
+      total+R1
+    ];
+
+    const counts=Object.fromEntries(
+      Array.from({length:10},(_,d)=>[d,0])
+    );
+
+    raw.forEach(v=>{
+      counts[this.norm(v)]++;
+    });
+
+    return{counts};
+  },
+
+
+  /* =======================================================
+     CORE 5-MODEL ENGINE
+     ======================================================= */
+
+  run(n3,n2){
+
+    const d3=n3.split('').map(Number);
+    const d2=n2.split('').map(Number);
+
+    const [H,T,U]=d3;
+    const [R1,R2]=d2;
+
+    const sumT=H+T+U;
+    const sumB=R1+R2;
+    const total=sumT+sumB;
+
+    const F=this.formulas(
+      H,T,U,R1,R2,
+      sumT,sumB,total
+    );
+
+    const unit=v=>{
+      const q=Math.abs(v)%10;
+      return[
+        q,
+        (q+1)%10
+      ];
+    };
+
+    const anchor=this.norm(7-H);
+
+    const raw=[
+      (T+R1)%10,
+      sumT%10,
+      (H+R1)%10,
+      (U+R2)%10,
+      (10-R2)%10
+    ];
+
+    const models=[
+
+      {
+        id:1,
+        name:'AI โมเดล 01',
+        set:unit(raw[0])
+      },
+
+      {
+        id:2,
+        name:'AI โมเดล 02',
+        set:unit(raw[1])
+      },
+
+      {
+        id:3,
+        name:'AI โมเดล 03',
+        set:unit(raw[2])
+      },
+
+      {
+        id:4,
+        name:'AI โมเดล 04',
+        set:unit(raw[3])
+      },
+
+      {
+        id:5,
+        name:'AI โมเดล 05',
+        set:unit(raw[4])
+      }
+
+    ];
+
+    const allowed=new Set();
+
+    models.forEach(m=>{
+      m.set.forEach(d=>{
+        allowed.add(d);
+      });
+    });
+
+
+    /* =====================================================
+       BUILD 5 PAIRS FOR EVERY DIGIT GENERATED BY EACH MODEL
+       ===================================================== */
+
+    models.forEach(m=>{
+
+      let range=[];
+      let collision=false;
+
+      for(let o=-2;o<=2;o++){
+
+        if(
+          m.set.includes(
+            this.norm(anchor+o)
+          )
+        ){
+          collision=true;
+          break;
+        }
+
+      }
+
+      for(
+        let o=collision?-3:-2;
+        o<=(collision?3:2);
+        o++
+      ){
+
+        range.push(
+          this.norm(anchor+o)
+        );
+
+      }
+
+      m.pairsMap={};
+
+      m.set.forEach(src=>{
+
+        let pairs=range
+          .filter(p=>
+            p!==src &&
+            !m.set.includes(p)
+          )
+          .map(p=>`${src}${p}`);
+
+        let next=(src+1)%10;
+
+        while(pairs.length<5){
+
+          if(
+            next!==src &&
+            !m.set.includes(next) &&
+            !pairs.includes(`${src}${next}`)
+          ){
+            pairs.push(`${src}${next}`);
+          }
+
+          next=(next+1)%10;
+        }
+
+        m.pairsMap[src]=[
+          ...new Set(pairs)
+        ]
+        .filter(p=>p[0]!==p[1])
+        .slice(0,5);
+
+      });
+
+    });
+
+
+    /* =====================================================
+       SCORE ENGINE
+       ===================================================== */
+
+    const score=Object.fromEntries(
+      Array.from(
+        {length:10},
+        (_,d)=>[
+          d,
+          {
+            digit:d,
+            modelScore:0,
+            formula100Score:0,
+            radarScore:0,
+            backendScore:0,
+            winSetScore:0,
+            totalScore:0
+          }
+        ]
+      )
+    );
+
+    models.forEach(m=>{
+      m.set.forEach(d=>{
+        score[d].modelScore++;
+      });
+    });
+
+    const maxF=Math.max(
+      ...Object.values(F.counts),
+      1
+    );
+
+    for(let d=0;d<=9;d++){
+
+      score[d].formula100Score=
+        (F.counts[d]||0)/maxF;
+
+    }
+
+    const x=(R1+R2)%10;
+    const y=sumT%10;
+    const z=total%10;
+
+    const r1=[
+      this.norm(x-1),
+      x,
+      this.norm(x+1)
+    ];
+
+    const r2=[
+      this.norm(y-1),
+      y,
+      this.norm(y+1)
+    ];
+
+    const r3=[
+      this.norm(z-1),
+      z,
+      this.norm(z+1)
+    ];
+
+    for(let d=0;d<=9;d++){
+
+      let h=0;
+
+      if(r1.includes(d))h++;
+      if(r2.includes(d))h++;
+      if(r3.includes(d))h++;
+
+      score[d].radarScore=h/3;
+    }
+
+    const back=[
+      (2*H+R1)%10,
+      (T+R2)%10,
+      sumT%10,
+      Math.abs(T-U)%10,
+      total%10
+    ];
+
+    for(let d=0;d<=9;d++){
+
+      if(back.includes(d))
+        score[d].backendScore=1;
+
+      if(
+        d===z ||
+        d===this.norm(z+5)
+      ){
+        score[d].winSetScore=1;
+      }
+
+      score[d].totalScore=
+        .35*score[d].modelScore+
+        .25*score[d].formula100Score+
+        .15*score[d].radarScore+
+        .15*score[d].backendScore+
+        .10*score[d].winSetScore;
+
+      /*
+        IMPORTANT:
+        Only digits generated by the 5 main models
+        receive the model eligibility multiplier.
+      */
+      if(allowed.has(d)){
+        score[d].totalScore*=1.15;
+      }
+
+    }
+
+
+    /* =====================================================
+       TOP 3 MUST COME FROM THE 5 MAIN MODELS ONLY
+       ===================================================== */
+
+    const ranked=Object.values(score)
+      .sort(
+        (a,b)=>
+          b.totalScore-a.totalScore ||
+          b.digit-a.digit
+      );
+
+    const top=ranked
+      .filter(v=>allowed.has(v.digit))
+      .slice(0,3);
+
+
+    /* =====================================================
+       MODEL SCORES
+       ===================================================== */
+
+    models.forEach(m=>{
+
+      const sm=m.set.reduce(
+        (a,d)=>a+score[d].totalScore,
+        0
+      );
+
+      m.aiScore=
+        80+
+        Math.min(
+          18.5,
+          sm*4
+        );
+
+    });
+
+
+    /* =====================================================
+       5-PAIR SET FOR EACH TOP DIGIT
+       ===================================================== */
+
+    const pairSets=top.map(t=>{
+
+      const ms=models
+        .filter(m=>m.set.includes(t.digit))
+        .sort(
+          (a,b)=>
+            b.aiScore-a.aiScore ||
+            b.id-a.id
+        );
+
+      return ms.length
+        ?(ms[0].pairsMap[t.digit]||[]).slice(0,5)
+        :[];
+
+    });
+
+
+    return{
+      top3Digits:top.map(v=>v.digit),
+      pairSets:pairSets.map(v=>v.slice(0,5)),
+      modelScores:score,
+      modelCount:5
+    };
+
+  },
+
+
+  /* =======================================================
+     NORMALIZE PAIR
+     02 = 20 FOR CONSENSUS ONLY
+     ======================================================= */
+
+  pairKey(pair){
+
+    const p=String(pair);
+
+    if(!/^\d{2}$/.test(p))
+      return p;
+
+    const a=p[0];
+    const b=p[1];
+
+    return [a,b].sort().join('');
+  },
+
+
+  /* =======================================================
+     CONSENSUS RANKING ACROSS ALL 15 PAIRS
+     ======================================================= */
+
+  buildConsensus(pairSets){
+
+    const all=[];
+
+    pairSets.forEach((set,rowIndex)=>{
+
+      set.slice(0,5).forEach(pair=>{
+
+        all.push({
+          pair:String(pair),
+          rowIndex
+        });
+
+      });
+
+    });
+
+
+    /*
+      Count reversed pairs as the same pair:
+      02 = 20
+      37 = 73
+      etc.
+    */
+
+    const counts={};
+
+    all.forEach(item=>{
+
+      const key=this.pairKey(item.pair);
+
+      if(!counts[key]){
+        counts[key]={
+          key,
+          score:0,
+          pairs:new Set()
+        };
+      }
+
+      counts[key].score++;
+      counts[key].pairs.add(item.pair);
+
+    });
+
+
+    /*
+      Rank by:
+      1. Consensus frequency
+      2. Numeric key for deterministic ordering
+    */
+
+    const ranked=Object.values(counts)
+      .sort(
+        (a,b)=>
+          b.score-a.score ||
+          Number(a.key)-Number(b.key)
+      );
+
+
+    /*
+      Top 9 only receive premium colors.
+      1-3 Gold
+      4-6 Silver
+      7-9 Rose Gold
+    */
+
+    const colorMap={};
+
+    ranked.slice(0,9).forEach((item,index)=>{
+
+      let color='';
+
+      if(index<3)
+        color='gold';
+      else if(index<6)
+        color='silver';
+      else
+        color='rose';
+
+      colorMap[item.key]={
+        color,
+        rank:index+1,
+        score:item.score
+      };
+
+    });
+
+
+    return{
+      counts,
+      ranked,
+      colorMap
+    };
+
+  },
+
+
+  /* =======================================================
+     SORT PAIRS NUMERICALLY FOR CLEAN DISPLAY
+     ======================================================= */
+
+  sortPairs(pairs){
+
+    return pairs
+      .map(String)
+      .sort(
+        (a,b)=>
+          Number(a)-Number(b)
+      );
+
+  },
+
+
+  /* =======================================================
+     GET DISPLAY COLOR
+     ======================================================= */
+
+  pairClass(pair,colorMap){
+
+    const key=this.pairKey(pair);
+    const info=colorMap[key];
+
+    if(!info)
+      return'pair pair-normal';
+
+    if(info.color==='gold')
+      return'pair pair-gold';
+
+    if(info.color==='silver')
+      return'pair pair-silver';
+
+    if(info.color==='rose')
+      return'pair pair-rose';
+
+    return'pair pair-normal';
+
+  },
+
+
+  /* =======================================================
+     FORMAT DATE
+     ======================================================= */
+
+  formatDate(date){
+
+    const s=String(date||'').trim();
+
+    /*
+      Preserve Thai dates if present:
+      25 ส.ค. 69 -> 25 · ส.ค. · 69
+
+      Also supports:
+      25/08/69
+      25-08-69
+      25.08.69
+    */
+
+    if(/\d+\s+\S+\s+\d+/.test(s)){
+
+      const parts=s.split(/\s+/);
+
+      if(parts.length>=3){
+
+        return[
+          parts[0],
+          parts[1],
+          parts.slice(2).join(' ')
+        ].join(' · ');
+
+      }
+
+    }
+
+    if(/^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}$/.test(s)){
+
+      return s.replace(/[\/.-]/g,' · ');
+
+    }
+
+    return s;
+
+  },
+
+
+  /* =======================================================
+     COPY
+     ======================================================= */
+
+  copy(text){
+
+    navigator.clipboard?.writeText(text)
+      .then(()=>this.show())
+      .catch(()=>{
+
+        const t=document.createElement('textarea');
+
+        t.value=text;
+
+        document.body.appendChild(t);
+
+        t.select();
+
+        document.execCommand('copy');
+
+        t.remove();
+
+        this.show();
+
+      });
+
+  },
+
+
+  show(){
+
+    const t=$('toast');
+
+    t.classList.add('show');
 
     clearTimeout(this.toastTimer);
 
-    this.toastTimer=setTimeout(()=>{
-      t.classList.remove("show");
-    },1600);
+    this.toastTimer=setTimeout(
+      ()=>t.classList.remove('show'),
+      1500
+    );
+
   },
 
-  copyText(text){
-    this.audio("click");
 
-    if(
-      navigator.clipboard &&
-      navigator.clipboard.writeText
-    ){
-      navigator.clipboard.writeText(text)
-        .then(()=>this.showToast())
-        .catch(()=>this.fallbackCopy(text));
-    }else{
-      this.fallbackCopy(text);
-    }
-  },
+  /* =======================================================
+     CALCULATE ALL LOTTERIES
+     ======================================================= */
 
-  fallbackCopy(text){
+  calculate(){
 
-    const ta=document.createElement("textarea");
+    const parsed=this.parse(
+      $('bulkInput').value
+    );
 
-    ta.value=text;
-    ta.style.position="fixed";
-    ta.style.opacity="0";
+    if(!parsed.records.length){
 
-    document.body.appendChild(ta);
-
-    ta.focus();
-    ta.select();
-
-    try{
-      document.execCommand("copy");
-      this.showToast();
-    }catch(e){}
-
-    document.body.removeChild(ta);
-  },
-
-  login(){
-
-    this.audio();
-
-    const password=document
-      .getElementById("passwordInput")
-      .value
-      .trim();
-
-    /*
-      รองรับรหัสเดิมของระบบ
-    */
-    const valid=[
-      "MasterAdmin2026",
-      "T9kL2mP7",
-      "Zq4T8x"
-    ];
-
-    if(!valid.includes(password)){
-
-      this.audio("error");
-
-      document.getElementById("errorMsg").style.display="block";
+      $('result').innerHTML=
+        '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
 
       return;
     }
 
-    document.getElementById("errorMsg").style.display="none";
 
-    localStorage.setItem(
-      "ml_auth_status_final",
-      "active"
-    );
+    const scan=$('scanner');
+    const btn=$('run');
 
-    document.getElementById("loginView").style.display="none";
-    document.getElementById("calculatorView").style.display="block";
+    btn.disabled=true;
+    scan.style.display='block';
 
-    document.getElementById("statsInput").focus();
-  },
 
-  logout(){
+    const msgs=[
+      'READING INPUT...',
+      'PARSING LOTTERY NAMES...',
+      'RUNNING EXISTING 5 AI MODELS...',
+      'VALIDATING TOP 3...',
+      'BUILDING 5-PAIR SETS...',
+      'RANKING 15 PAIRS BY CONSENSUS...',
+      'FINALIZING VIP REPORT...'
+    ];
 
-    this.audio();
 
-    localStorage.removeItem(
-      "ml_auth_status_final"
-    );
+    let i=0;
 
-    document.getElementById("calculatorView").style.display="none";
-    document.getElementById("loginView").style.display="block";
+    $('scanText').textContent=msgs[0];
 
-    document.getElementById("passwordInput").value="";
-    document.getElementById("statsInput").value="";
-    document.getElementById("resultContainer").innerHTML="";
-  },
 
-  clearCalc(){
+    const timer=setInterval(()=>{
 
-    this.audio();
+      i++;
 
-    document.getElementById("statsInput").value="";
-    document.getElementById("resultContainer").innerHTML="";
+      if(i<msgs.length)
+        $('scanText').textContent=msgs[i];
 
-    document.getElementById("statsInput").focus();
-  }
-};
+    },110);
 
-/* ============================================================
-   RENDER SINGLE LOTTERY
-============================================================ */
-function renderLottery(item,index){
 
-  const engine=runFiveModels(
-    item.top,
-    item.bottom
-  );
+    /*
+      Small async break keeps the interface responsive
+      even when many lottery records are pasted.
+    */
 
-  const pairs=buildPairs(engine);
+    setTimeout(()=>{
 
-  const groupsHTML=engine.top3.map(d=>{
+      this.cache=[];
 
-    const group=pairs.groups[d]||[];
+      const cards=[];
+      const outputData=[];
 
-    return `
-      <div class="pair-group">
 
-        <div class="pair-group-title">
-          ${d} • 5 คู่
-        </div>
+      parsed.records.forEach(r=>{
 
-        <div class="pair-list">
-
-          ${group.slice(0,5).map(pair=>`
-            <div
-              class="pair-chip${pairs.colorClass(pair.pair)}"
-              data-copy="${esc(pair.pair)}"
-            >
-              ${esc(pair.pair)}
-            </div>
-          `).join("")}
-
-        </div>
-
-      </div>
-    `;
-
-  }).join("");
-
-  return {
-    html:`
-      <article class="lottery-card">
-
-        <div class="lottery-head">
-
-          <div class="lottery-name">
-
-            <span class="lottery-flag">
-              ${flagFor(item.name)}
-            </span>
-
-            <div>
-
-              <div class="lottery-title">
-                ${esc(item.name)}
-              </div>
-
-              <div class="lottery-source-date">
-                ${esc(item.date)}
-              </div>
-
-            </div>
-
-          </div>
-
-          <div class="lottery-index">
-            #${String(index+1).padStart(2,"0")}
-          </div>
-
-        </div>
-
-        <div class="lottery-main">
-
-          <div class="lottery-number-box">
-            <div class="lottery-number-label">
-              เลขเด่น #1
-            </div>
-            <div class="lottery-number primary">
-              ${engine.top3[0]}
-            </div>
-          </div>
-
-          <div class="lottery-number-box">
-            <div class="lottery-number-label">
-              เลขเด่น #2
-            </div>
-            <div class="lottery-number secondary">
-              ${engine.top3[1]}
-            </div>
-          </div>
-
-          <div class="lottery-number-box">
-            <div class="lottery-number-label">
-              เลขเด่น #3
-            </div>
-            <div class="lottery-number tertiary">
-              ${engine.top3[2]}
-            </div>
-          </div>
-
-        </div>
-
-        <div class="lottery-subhead">
-
-          <strong>
-            ชุดเจาะที่ดีที่สุด • 15 คู่
-          </strong>
-
-          <div class="rank-legend">
-            <span>
-              <i class="rank-dot gold"></i>
-              TOP 1
-            </span>
-            <span>
-              <i class="rank-dot silver"></i>
-              TOP 2
-            </span>
-            <span>
-              <i class="rank-dot rose"></i>
-              TOP 3
-            </span>
-          </div>
-
-        </div>
-
-        <div class="pair-groups">
-          ${groupsHTML}
-        </div>
-
-        <div class="lottery-footer">
-          <span>
-            5 โมเดลหลักเท่านั้น • 02 = 20
-          </span>
-
-          <b>
-            5 MODELS ONLY
-          </b>
-        </div>
-
-      </article>
-    `,
-
-    engine,
-    pairs
-  };
-}
-
-/* ============================================================
-   BATCH PROCESS
-============================================================ */
-function processBatch(){
-
-  APP.audio();
-
-  const input=document.getElementById("statsInput");
-  const raw=input.value;
-
-  const parsed=parseBatch(raw);
-
-  if(!parsed.length){
-
-    APP.audio("error");
-
-    alert(
-      "ไม่พบข้อมูลที่ถูกต้อง\n\n"+
-      "รูปแบบที่รองรับ:\n"+
-      "ชื่อหวย | วันที่\n"+
-      "3 ตัวบน\n"+
-      "2 ตัวล่าง"
-    );
-
-    return;
-  }
-
-  /*
-    หากหวยเดียวกันถูกส่งมาหลายวัน
-    จะใช้ข้อมูลล่าสุดของหวยนั้นเพียงชุดเดียว
-    เพื่อไม่ให้ผลลัพธ์ซ้ำซ้อน
-  */
-  const latestByName=new Map();
-
-  parsed.forEach(item=>{
-
-    const key=item.name
-      .trim()
-      .toLowerCase();
-
-    const previous=latestByName.get(key);
-
-    if(
-      !previous ||
-      dateKey(item.date)>=dateKey(previous.date)
-    ){
-      latestByName.set(key,item);
-    }
-
-  });
-
-  const items=[...latestByName.values()]
-    .sort((a,b)=>
-      dateKey(b.date)-dateKey(a.date)
-    );
-
-  const displayDate=nextDate(items[0].date);
-
-  const btn=document.getElementById("calculateButton");
-  const progress=document.getElementById("batchProgress");
-  const result=document.getElementById("resultContainer");
-
-  btn.disabled=true;
-
-  progress.classList.add("show");
-  progress.innerHTML=`
-    <span class="batch-spinner"></span>
-    <span>
-      กำลังแยกข้อมูล ${items.length} หวย และประมวลผลด้วย 5 โมเดลหลัก...
-    </span>
-  `;
-
-  result.innerHTML="";
-
-  /*
-    ให้ browser มีเวลาวาดสถานะ Processing
-    ก่อนเริ่มคำนวณจริง
-    ป้องกันอาการเหมือนค้างหน้าประมวลผล
-  */
-  setTimeout(()=>{
-
-    try{
-
-      const outputs=[];
-
-      items.forEach((item,index)=>{
-
-        const output=renderLottery(
-          item,
-          index
+        const a=this.run(
+          r.n3,
+          r.n2
         );
 
-        outputs.push(output);
+        /*
+          HARD VALIDATION:
+          Top 3 must exist and every one must be
+          generated by the 5 main models.
+        */
+
+        const allowedDigits=new Set();
+
+        /*
+          Reconstruct model eligibility from the exact
+          result engine by checking modelScores.
+        */
+
+        Object.values(a.modelScores).forEach(s=>{
+          if(s.modelScore>0)
+            allowedDigits.add(s.digit);
+        });
+
+        const validTop3=
+          a.top3Digits.length===3 &&
+          a.top3Digits.every(
+            d=>allowedDigits.has(d)
+          );
+
+        if(!validTop3){
+
+          parsed.errors.push(
+            `${r.name} | ${r.date}: ไม่ผ่านการตรวจสอบ Top 3 จาก 5 Main Models`
+          );
+
+          return;
+        }
+
+
+        this.cache.push(a);
+
+
+        /*
+          Consensus across all 15 pairs of this lottery
+        */
+
+        const consensus=
+          this.buildConsensus(a.pairSets);
+
+
+        /*
+          Build each row with:
+          - exactly 5 pairs
+          - numeric ascending order
+          - colors preserved according to consensus rank
+        */
+
+        const rows=a.top3Digits.map((d,k)=>{
+
+          const sourcePairs=
+            (a.pairSets[k]||[])
+              .slice(0,5);
+
+          const sortedPairs=
+            this.sortPairs(sourcePairs);
+
+          const pairHTML=
+            sortedPairs.map(pair=>{
+
+              return`
+                <span
+                  class="${this.pairClass(
+                    pair,
+                    consensus.colorMap
+                  )}"
+                  title="Consensus ${consensus.colorMap[this.pairKey(pair)]?.score||0} Models"
+                >${esc(pair)}</span>
+              `;
+
+            }).join('');
+
+
+          const medalClass=
+            k===0
+              ?'medal medal-gold'
+              :k===1
+                ?'medal medal-silver'
+                :'medal medal-rose';
+
+
+          return`
+            <div class="row">
+
+              <div class="digit-rank">
+
+                <span class="${medalClass}">
+                  ${k+1}
+                </span>
+
+                <span class="digit">
+                  ${esc(d)}
+                </span>
+
+              </div>
+
+              <span class="sep">:</span>
+
+              <div class="pairs">
+                ${pairHTML}
+              </div>
+
+            </div>
+          `;
+
+        }).join('');
+
+
+        /*
+          Compact consensus legend.
+        */
+
+        const legend=`
+          <div class="consensus">
+
+            <span class="consensus-item">
+              <span class="consensus-dot dot-gold"></span>
+              Gold 1–3
+            </span>
+
+            <span class="consensus-item">
+              <span class="consensus-dot dot-silver"></span>
+              Silver 4–6
+            </span>
+
+            <span class="consensus-item">
+              <span class="consensus-dot dot-rose"></span>
+              Rose Gold 7–9
+            </span>
+
+          </div>
+        `;
+
+
+        cards.push(`
+          <article class="lottery">
+
+            <div class="lottery-head">
+
+              <div class="lottery-name-wrap">
+
+                <div class="lottery-name">
+                  <span class="flag">
+                    ${this.flag(r.name)}
+                  </span>
+
+                  <span>
+                    ${esc(r.name)}
+                  </span>
+                </div>
+
+                <div class="date">
+                  ${esc(this.formatDate(r.date))}
+                </div>
+
+              </div>
+
+              <div class="vip-label">
+                VIP ANALYSIS
+              </div>
+
+            </div>
+
+            <div class="rows">
+              ${rows}
+            </div>
+
+            ${legend}
+
+          </article>
+        `);
+
+
+        outputData.push({
+          record:r,
+          result:a
+        });
 
       });
 
-      const cards=outputs
-        .map(x=>x.html)
-        .join("");
+
+      clearInterval(timer);
+
+      scan.style.display='none';
+      btn.disabled=false;
+
 
       /*
-        วันที่แสดงด้านบนเพียงครั้งเดียว
-        ไม่มีธงชาติซ้ำที่วันที่
+        COPY ALL:
+        Clean output only.
+        No scores, no UI labels, no colors.
       */
-      result.innerHTML=`
 
-        <div class="batch-toolbar">
+      const all=outputData
+        .map(item=>{
 
-          <div class="batch-date">
-            ผลสำหรับวันที่
-            <span>${esc(displayDate)}</span>
-          </div>
+          const r=item.record;
+          const a=item.result;
+
+          return[
+            `${this.flag(r.name)} ${r.name}`,
+            `${this.formatDate(r.date)}`,
+            ...a.top3Digits.map((d,k)=>
+              `${d} : ${(a.pairSets[k]||[])
+                .slice(0,5)
+                .sort((a,b)=>Number(a)-Number(b))
+                .join('-')}`
+            )
+          ].join('\n');
+
+        })
+        .join('\n\n');
+
+
+      $('result').innerHTML=`
+
+        <div class="summary">
+
+          <span>
+            ประมวลผลสำเร็จ
+            <strong>${outputData.length}</strong>
+            รายการ • 5 AI Models
+          </span>
 
           <button
-            class="copy-all-btn"
-            id="copyAllBatch"
-            type="button"
+            class="copy"
+            id="copyTop"
           >
-            ⧉ COPY ALL
+            📋 COPY ALL
           </button>
 
         </div>
 
-        <div class="batch-results">
-          ${cards}
+
+        ${
+          parsed.errors.length
+            ?`
+              <div class="errorbox">
+                ${parsed.errors.map(esc).join('<br>')}
+              </div>
+            `
+            :''
+        }
+
+
+        <div class="output-note">
+
+          ผลลัพธ์ด้านล่างใช้เฉพาะเลขที่ถูกสร้างโดย
+          <strong>AI โมเดล 01–05</strong>
+          เท่านั้น
+
+          • เลขเด่น 3 อันดับต้องมาจาก 5 Main Models
+
+          • แต่ละเลขเด่นมีเลขเจาะ 5 คู่
+
+          • รวม 15 คู่ต่อหวย
+
+          • ระบบจัด Consensus ของ 15 คู่ร่วมกัน
+
+          • Top 9 Consensus ถูกแบ่งเป็น
+          Gold / Silver / Rose Gold
+
         </div>
+
+
+        ${cards.join('')}
+
+
+        <button
+          class="copyall"
+          id="copyBottom"
+        >
+          📋 คัดลอกหวยทั้งหมด
+        </button>
 
       `;
 
-      /*
-        Copy เฉพาะเลขเจาะเมื่อกดเลข
-      */
-      result
-        .querySelectorAll("[data-copy]")
-        .forEach(el=>{
-          el.addEventListener(
-            "click",
-            ()=>APP.copyText(el.dataset.copy)
-          );
-        });
 
-      /*
-        Copy ผลทั้งหมดครั้งเดียว
-      */
-      document
-        .getElementById("copyAllBatch")
-        .addEventListener("click",()=>{
+      $('copyTop').onclick=()=>this.copy(all);
+      $('copyBottom').onclick=()=>this.copy(all);
 
-          const copyLines=[
-            `ผลสำหรับวันที่ ${displayDate}`,
-            ""
-          ];
 
-          items.forEach(item=>{
-
-            copyLines.push(
-              `${flagFor(item.name)} ${item.name}`
-            );
-
-            copyLines.push(item.top);
-            copyLines.push(item.bottom);
-            copyLines.push("");
-
-          });
-
-          APP.copyText(
-            copyLines.join("\n").trim()
-          );
-
-        });
-
-      /*
-        Counter
-      */
-      const key="ml_total_processed_final";
-
-      let total=
-        Number(localStorage.getItem(key))||35000;
-
-      total+=items.length;
-
-      localStorage.setItem(
-        key,
-        String(total)
-      );
-
-      document.getElementById(
-        "totalProcessedCount"
-      ).textContent=
-        total.toLocaleString();
-
-      result.scrollIntoView({
-        behavior:"smooth",
-        block:"start"
+      $('result').scrollIntoView({
+        behavior:'smooth',
+        block:'start'
       });
 
-    }catch(error){
+    },80);
 
-      console.error(error);
+  },
 
-      result.innerHTML=`
-        <div class="empty-batch">
-          เกิดข้อผิดพลาดระหว่างประมวลผล
-          <br>
-          กรุณาตรวจสอบรูปแบบข้อมูลแล้วลองใหม่
-        </div>
-      `;
 
-    }finally{
+  /* =======================================================
+     CLEAR
+     ======================================================= */
 
-      btn.disabled=false;
-      progress.classList.remove("show");
+  clear(){
 
+    $('bulkInput').value='';
+    $('result').innerHTML='';
+    $('bulkInput').focus();
+
+  },
+
+
+  /* =======================================================
+     LOGIN
+     ======================================================= */
+
+  login(){
+
+    const v=$('password').value.trim();
+
+    if(!sec.ok(v)){
+
+      $('loginErr').style.display='block';
+
+      return;
     }
 
-  },80);
-}
+    $('loginErr').style.display='none';
 
-/* ============================================================
-   EVENTS
-============================================================ */
-document
-  .getElementById("loginButton")
-  .addEventListener(
-    "click",
-    ()=>APP.login()
-  );
+    $('login').classList.remove('active');
+    $('console').classList.add('active');
 
-document
-  .getElementById("passwordInput")
-  .addEventListener(
-    "keyup",
-    e=>{
-      if(e.key==="Enter")APP.login();
-    }
-  );
+    $('bulkInput').focus();
 
-document
-  .getElementById("calculateButton")
-  .addEventListener(
-    "click",
-    processBatch
-  );
+    localStorage.setItem(
+      'ml_auth_status_v3',
+      'active'
+    );
 
-document
-  .getElementById("clearButton")
-  .addEventListener(
-    "click",
-    ()=>APP.clearCalc()
-  );
+  },
 
-document
-  .getElementById("logoutButton")
-  .addEventListener(
-    "click",
-    ()=>APP.logout()
-  );
 
-/*
-  Enter ใน textarea ไม่ประมวลผลอัตโนมัติ
-  เพื่อให้สามารถขึ้นบรรทัดใหม่ได้ตามรูปแบบข้อมูล
-*/
+  /* =======================================================
+     LOGOUT
+     ======================================================= */
 
-/* ============================================================
-   INITIALIZE
-============================================================ */
-(function init(){
+  logout(){
 
-  const total=
-    Number(
-      localStorage.getItem(
-        "ml_total_processed_final"
-      )
-    )||35000;
+    localStorage.removeItem(
+      'ml_auth_status_v3'
+    );
 
-  document.getElementById(
-    "totalProcessedCount"
-  ).textContent=
-    total.toLocaleString();
+    $('console').classList.remove('active');
+    $('login').classList.add('active');
 
-  if(
-    localStorage.getItem(
-      "ml_auth_status_final"
-    )==="active"
-  ){
-    document.getElementById("loginView").style.display="none";
-    document.getElementById("calculatorView").style.display="block";
+    $('password').value='';
+    $('bulkInput').value='';
+    $('result').innerHTML='';
+
   }
 
-})();
+};
+
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+
+$('loginBtn').onclick=()=>app.login();
+
+$('password').onkeydown=e=>{
+  if(e.key==='Enter')
+    app.login();
+};
+
+$('run').onclick=()=>app.calculate();
+
+$('clear').onclick=()=>app.clear();
+
+$('logout').onclick=()=>app.logout();
+
+$('bulkInput').onkeydown=e=>{
+
+  if(
+    (e.ctrlKey||e.metaKey) &&
+    e.key==='Enter'
+  ){
+    app.calculate();
+  }
+
+};
+
+
+/* =========================================================
+   RESTORE SESSION
+   ========================================================= */
+
+if(
+  localStorage.getItem(
+    'ml_auth_status_v3'
+  )==='active'
+){
+
+  $('login').classList.remove('active');
+  $('console').classList.add('active');
+
+}
 
 })();
 </script>
 
 </body>
-  </html>
+               </html>
