@@ -3,1179 +3,752 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mester Lotto VIP+ — Multi Lottery Engine V11.6</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Mester Lotto VIP V12.0</title>
 
 <style>
-:root{
---bg:#f8f7f3;
---card:#fff;
---green:#7b6843;
---green2:#b99a58;
---light:#f8f1df;
---text:#433f39;
---muted:#8d877f;
---line:#e7dfd2;
---gold:#c39a43;
---silver:#8d959c;
---rose:#b98279;
---red:#b84f58;
---shadow:0 16px 40px rgba(93,78,55,.10)
+*{
+box-sizing:border-box;
 }
 
-*{box-sizing:border-box}
-
-html{
-scroll-behavior:smooth
+html,body{
+margin:0;
+padding:0;
+min-height:100%;
+font-family:
+"Segoe UI",
+"Tahoma",
+"Leelawadee UI",
+sans-serif;
+background:#07111f;
+color:#eaf2ff;
 }
 
 body{
-margin:0;
 min-height:100vh;
-font-family:Prompt,sans-serif;
-color:var(--text);
-background:
-radial-gradient(circle at 10% 0%,rgba(201,162,77,.18),transparent 38%),
-radial-gradient(circle at 90% 15%,rgba(185,130,121,.12),transparent 35%),
-linear-gradient(135deg,#fff,#f8f7f3);
-overflow-x:hidden
 }
 
-button,input,textarea{
-font-family:Prompt,sans-serif
+button,
+input,
+textarea{
+font:inherit;
 }
 
 button{
-cursor:pointer
+cursor:pointer;
 }
 
-#snow{
-position:fixed;
-inset:0;
-z-index:0;
-pointer-events:none
+.hidden{
+display:none!important;
 }
 
-.shell{
-position:relative;
-z-index:1;
-width:min(560px,100%);
-margin:auto;
-padding:10px
+.screen{
+min-height:100vh;
+display:none;
 }
 
-.app{
-overflow:hidden;
-border:1px solid #ddd2c0;
-border-radius:24px;
-background:rgba(255,255,255,.95);
-box-shadow:0 25px 60px rgba(93,78,55,.12);
-backdrop-filter:blur(18px)
-}
-
-.inner{
-padding:14px
-}
-
-.top{
+.screen.active{
 display:flex;
-justify-content:space-between;
-align-items:center;
-gap:8px;
-margin-bottom:11px
 }
 
-.brand{
-display:flex;
+#login{
 align-items:center;
-gap:8px
+justify-content:center;
+padding:24px;
 }
 
-.logo{
-width:38px;
-height:38px;
-border-radius:11px;
-display:grid;
-place-items:center;
-color:#fff;
+.login-card{
+width:min(460px,100%);
+background:#0c1a2b;
+border:1px solid #263b56;
+border-radius:22px;
+padding:28px;
+box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+
+.login-title{
+font-size:28px;
 font-weight:800;
-background:linear-gradient(135deg,#403a31,#a88748);
-box-shadow:0 5px 14px rgba(93,78,55,.20)
+margin-bottom:8px;
 }
 
-.brand b{
-font-size:.82rem
-}
-
-.brand small{
-display:block;
-color:var(--muted);
-font-size:.5rem
-}
-
-.pill{
-padding:5px 9px;
-border-radius:99px;
-color:#80652b;
-background:var(--light);
-border:1px solid rgba(174,140,66,.24);
-font-size:.5rem;
-font-weight:800
-}
-
-.hero{
-padding:14px;
-margin-bottom:9px;
-border:1px solid var(--line);
-border-radius:18px;
-background:linear-gradient(135deg,#fff,#fbf7ed);
-box-shadow:var(--shadow)
-}
-
-.hero-tag{
-display:inline-block;
-padding:4px 9px;
-border-radius:99px;
-color:#80652b;
-background:var(--light);
-font-size:.5rem;
-font-weight:800
-}
-
-.hero h1{
-margin:7px 0 3px;
-font-size:1.48rem
-}
-
-.hero h1 em{
-font-style:normal;
-color:#9c782e
-}
-
-.hero p{
-margin:0;
-font-size:.63rem;
-line-height:1.7;
-color:var(--muted)
-}
-
-.login{
-display:none
-}
-
-.login.active{
-display:block
-}
-
-.console{
-display:none
-}
-
-.console.active{
-display:block
+.login-sub{
+color:#8fa7c2;
+margin-bottom:24px;
+line-height:1.6;
 }
 
 .field{
-margin-top:10px
-}
-
-.field label{
-display:block;
-margin-bottom:5px;
-font-size:.58rem;
-font-weight:700
-}
-
-input,
-textarea{
 width:100%;
-border:1px solid var(--line);
+padding:14px 16px;
+border-radius:12px;
+border:1px solid #314862;
+background:#07111f;
+color:#fff;
 outline:none;
-border-radius:13px;
-background:#fff;
-color:var(--text);
-transition:.2s
 }
 
-input{
-padding:11px 12px
-}
-
-textarea{
-min-height:220px;
-resize:vertical;
-padding:12px;
-font-family:"IBM Plex Mono",monospace;
-font-size:.7rem;
-line-height:1.6
-}
-
-input:focus,
-textarea:focus{
-border-color:#c39a43;
-box-shadow:0 0 0 3px rgba(195,154,67,.10)
+.field:focus{
+border-color:#5d9cff;
+box-shadow:0 0 0 3px rgba(93,156,255,.12);
 }
 
 .btn{
 border:0;
-border-radius:13px;
-padding:11px 15px;
+border-radius:12px;
+padding:13px 18px;
 font-weight:800;
-font-size:.64rem;
-background:linear-gradient(135deg,#403a31,#a88748);
+transition:.15s;
+}
+
+.btn:hover{
+transform:translateY(-1px);
+}
+
+.btn-primary{
+background:#2f7df6;
 color:#fff;
-box-shadow:0 7px 18px rgba(93,78,55,.15)
 }
 
-.btn.secondary{
-background:#fff;
-color:#80652b;
-border:1px solid var(--line);
-box-shadow:none
+.btn-secondary{
+background:#172a41;
+color:#d9e7fa;
+border:1px solid #304861;
 }
 
-.btn:disabled{
-opacity:.55;
-cursor:not-allowed
+.login-btn{
+width:100%;
+margin-top:14px;
+}
+
+.login-error{
+display:none;
+margin-top:12px;
+padding:10px 12px;
+border-radius:10px;
+background:#3a1720;
+border:1px solid #71313d;
+color:#ffb7c2;
+}
+
+#console{
+flex-direction:column;
+}
+
+.app-shell{
+width:min(1180px,100%);
+margin:0 auto;
+padding:18px;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:14px;
+padding:16px 18px;
+background:#0c1a2b;
+border:1px solid #263b56;
+border-radius:18px;
+margin-bottom:18px;
+}
+
+.brand{
+font-weight:900;
+font-size:20px;
+}
+
+.brand small{
+display:block;
+font-size:12px;
+font-weight:500;
+color:#7890aa;
+margin-top:3px;
+}
+
+.top-actions{
+display:flex;
+gap:8px;
+}
+
+.input-card,
+.result-card{
+background:#0c1a2b;
+border:1px solid #263b56;
+border-radius:18px;
+padding:18px;
+margin-bottom:18px;
+}
+
+.section-title{
+font-size:18px;
+font-weight:800;
+margin-bottom:10px;
+}
+
+.section-sub{
+font-size:13px;
+line-height:1.65;
+color:#8fa7c2;
+margin-bottom:14px;
+}
+
+textarea{
+width:100%;
+min-height:260px;
+resize:vertical;
+padding:16px;
+border-radius:14px;
+border:1px solid #314862;
+background:#07111f;
+color:#fff;
+outline:none;
+line-height:1.6;
+}
+
+textarea:focus{
+border-color:#5d9cff;
+box-shadow:0 0 0 3px rgba(93,156,255,.12);
 }
 
 .actions{
 display:flex;
-gap:7px;
-margin-top:9px
-}
-
-.actions .btn{
-flex:1
-}
-
-.err{
-display:none;
-margin-top:8px;
-padding:8px 10px;
-border-radius:11px;
-background:#fff0f1;
-border:1px solid #f0c9cd;
-color:#a83d46;
-font-size:.58rem;
-font-weight:700
+flex-wrap:wrap;
+gap:10px;
+margin-top:12px;
 }
 
 .scanner{
 display:none;
-margin-top:10px;
-padding:10px;
+margin-top:14px;
+padding:12px 14px;
 border-radius:12px;
-background:#fbf7ed;
-border:1px solid var(--line);
-font-size:.58rem;
-color:#80652b
+background:#0a1626;
+border:1px solid #243a54;
+color:#a9c1dd;
 }
 
-.scan-dot{
-display:inline-block;
-width:7px;
-height:7px;
-border-radius:50%;
-background:#c39a43;
-margin-right:6px;
-animation:pulse 1s infinite
+.summary{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+flex-wrap:wrap;
+padding:12px 14px;
+margin-bottom:14px;
+background:#091729;
+border:1px solid #243b57;
+border-radius:12px;
 }
 
-@keyframes pulse{
-50%{opacity:.3}
+.summary strong{
+margin:0 5px;
 }
 
-.result{
-margin-top:10px
+.copy{
+border:1px solid #345170;
+background:#142b45;
+color:#dcecff;
+border-radius:10px;
+padding:8px 12px;
+font-weight:800;
+}
+
+.errorbox{
+margin-bottom:14px;
+padding:12px 14px;
+border-radius:12px;
+background:#38171e;
+border:1px solid #71303b;
+color:#ffbdc6;
+line-height:1.55;
 }
 
 .lottery{
-margin-top:10px;
-border:1px solid var(--line);
+background:#0a1728;
+border:1px solid #253c58;
 border-radius:18px;
-background:#fff;
-overflow:hidden;
-box-shadow:var(--shadow)
+padding:16px;
+margin-bottom:14px;
 }
 
 .lottery-head{
 display:flex;
+align-items:flex-start;
 justify-content:space-between;
-align-items:center;
-gap:8px;
-padding:11px 12px;
-background:linear-gradient(135deg,#fff,#fbf7ed)
+gap:12px;
+margin-bottom:16px;
 }
 
 .lottery-name{
-font-weight:800;
-font-size:.72rem
+font-size:18px;
+font-weight:900;
+display:flex;
+align-items:center;
+gap:8px;
 }
 
 .flag{
-margin-right:5px
+font-size:18px;
 }
 
 .date{
-font-size:.52rem;
-color:var(--muted);
-margin-top:2px
+font-size:13px;
+color:#7891ad;
+margin-top:4px;
 }
 
-/*
-Audit detail badge intentionally hidden.
-Internal audit still runs; only the internal audit metadata
-is removed from the visible result UI.
-*/
 .vip-label{
-display:none
+font-size:11px;
+color:#8eb4df;
+background:#0e2239;
+border:1px solid #294765;
+padding:7px 9px;
+border-radius:9px;
+text-align:right;
+line-height:1.4;
 }
 
 .rows{
-padding:8px
+display:flex;
+flex-direction:column;
+gap:10px;
 }
 
 .row{
 display:flex;
 align-items:center;
-justify-content:space-between;
-gap:8px;
-padding:9px 10px;
-border-bottom:1px solid #f0eadf
+gap:10px;
+padding:12px;
+background:#07111f;
+border:1px solid #20364f;
+border-radius:14px;
 }
 
-.row:last-child{
-border-bottom:0
+.digit{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+width:48px;
+height:48px;
+border-radius:12px;
+font-size:25px;
+font-weight:900;
+flex:none;
 }
 
-.row-label{
-font-size:.55rem;
-color:var(--muted)
+.digit-gold{
+background:#3a2c08;
+border:1px solid #8d6d16;
+color:#ffe082;
 }
 
-.row-value{
-font-family:"IBM Plex Mono",monospace;
+.digit-silver{
+background:#1b2634;
+border:1px solid #52677d;
+color:#d7e2ed;
+}
+
+.sep{
+font-weight:900;
+color:#7189a4;
+}
+
+.pairs{
+display:flex;
+gap:7px;
+flex-wrap:wrap;
+}
+
+.pair{
+display:inline-flex;
+padding:7px 9px;
+border-radius:9px;
 font-weight:800;
-font-size:.9rem
+font-size:13px;
+background:#12243a;
+border:1px solid #2a4867;
+color:#cfe2f8;
 }
 
-.row-value.top{
-color:#9c782e
+.pair-consensus-1{
+background:#392c0a;
+border-color:#8e7018;
+color:#ffe28a;
 }
 
-.footer{
-padding:9px 12px;
-border-top:1px solid var(--line);
-font-size:.5rem;
-color:var(--muted)
+.pair-consensus-2{
+background:#202c3a;
+border-color:#60768d;
+color:#d9e5ef;
+}
+
+.pair-consensus-3{
+background:#1d2b25;
+border-color:#466e58;
+color:#b9e2ca;
+}
+
+.brand-footer{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:8px;
+margin-top:16px;
+font-size:12px;
+color:#6d87a4;
+}
+
+.brand-star{
+color:#d2a929;
 }
 
 .copyall{
 width:100%;
-margin-top:9px;
-border:1px solid var(--line);
-border-radius:13px;
-padding:10px;
-background:#fff;
-color:#80652b;
-font-weight:800;
-font-size:.6rem
-}
-
-.errorbox{
-padding:12px;
-border-radius:14px;
-border:1px solid #f0c9cd;
-background:#fff0f1;
-color:#a83d46;
-font-size:.6rem;
-line-height:1.7
+padding:14px;
+border:1px solid #345170;
+background:#102842;
+color:#dcecff;
+border-radius:12px;
+font-weight:900;
+margin-top:8px;
 }
 
 .toast{
 position:fixed;
 left:50%;
-bottom:18px;
+bottom:22px;
 transform:translateX(-50%) translateY(20px);
 opacity:0;
 pointer-events:none;
-z-index:99;
-padding:9px 13px;
-border-radius:99px;
-background:#403a31;
+padding:11px 15px;
+border-radius:11px;
+background:#152a42;
+border:1px solid #365473;
 color:#fff;
-font-size:.58rem;
-transition:.2s
+transition:.18s;
+z-index:100;
 }
 
 .toast.show{
 opacity:1;
-transform:translateX(-50%) translateY(0)
+transform:translateX(-50%) translateY(0);
 }
 
-@media(max-width:420px){
-.inner{padding:10px}
-.hero{padding:12px}
-.lottery-head{padding:10px}
+@media(max-width:700px){
+.app-shell{
+padding:10px;
+}
+
+.topbar{
+padding:13px;
+}
+
+.lottery-head{
+flex-direction:column;
+}
+
+.vip-label{
+text-align:left;
+}
+
+.row{
+align-items:flex-start;
+}
+
+.digit{
+width:44px;
+height:44px;
+font-size:23px;
+}
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="snow"></canvas>
-
-<div class="shell">
-<div class="app">
-<div class="inner">
-
-<div class="top">
-<div class="brand">
-<div class="logo">M</div>
-<div>
-<b>Mester Lotto VIP+</b>
-<small>Multi Lottery Engine</small>
-</div>
+<section id="login" class="screen active">
+<div class="login-card">
+<div class="login-title">Mester Lotto VIP</div>
+<div class="login-sub">
+ระบบประมวลผลสถิติ • 100 สูตร • 5 Main Models • Walk-forward Selector
 </div>
 
-<div class="pill">V11.6</div>
-</div>
-
-
-<section id="login" class="login active">
-
-<div class="hero">
-<span class="hero-tag">SECURE ACCESS</span>
-<h1>เข้าสู่ระบบ <em>VIP+</em></h1>
-<p>
-ระบบวิเคราะห์หลายประเภทหวย
-พร้อม Candidate Selector จาก 5 Main Models
-</p>
-</div>
-
-<div class="field">
-<label for="password">รหัสผ่าน</label>
 <input
 id="password"
+class="field"
 type="password"
 autocomplete="current-password"
-placeholder="กรอกรหัสผ่าน"
-/>
-</div>
+placeholder="รหัสผ่าน"
+>
 
 <button
 id="loginBtn"
-class="btn"
-style="width:100%;margin-top:9px"
+class="btn btn-primary login-btn"
+type="button"
 >
 เข้าสู่ระบบ
 </button>
 
-<div
-id="loginErr"
-class="err"
->
+<div id="loginErr" class="login-error">
 รหัสผ่านไม่ถูกต้อง
 </div>
-
+</div>
 </section>
 
+<section id="console" class="screen">
+<div class="app-shell">
 
-<section id="console" class="console">
-
-<div class="hero">
-<span class="hero-tag">ANALYSIS CONSOLE</span>
-<h1>Mester Lotto <em>VIP+</em></h1>
-<p>
-ระบบจะแยกประเภทหวยอัตโนมัติ
-เรียงข้อมูลเก่า → ใหม่
-และประมวลผล Candidate Pool จาก 5 Main Models
-</p>
+<header class="topbar">
+<div class="brand">
+Mester Lotto VIP
+<small>V12.0 • Candidate Meta-Selector</small>
 </div>
 
+<div class="top-actions">
+<button id="logout" class="btn btn-secondary" type="button">
+ออกจากระบบ
+</button>
+</div>
+</header>
 
-<div class="field">
-<label for="bulkInput">
-ข้อมูลย้อนหลัง
-</label>
+<section class="input-card">
+<div class="section-title">ข้อมูลสถิติย้อนหลัง</div>
+
+<div class="section-sub">
+กรอกข้อมูลจากเก่า → ใหม่ หรือกรอกหลายงวดในครั้งเดียว ระบบจะแยกประเภทหวย
+เรียงลำดับย้อนหลัง และทำ Walk-forward Audit ก่อนทำนายงวดถัดไป
+</div>
 
 <textarea
 id="bulkInput"
+spellcheck="false"
 placeholder="ตัวอย่าง
 
-นิคเคอิ VIP เช้า | 24 ส.ค. 69
-951
-70
+ดาวโจนส์ VIP | 24 ส.ค. 69
+463
+84
 
-นิคเคอิ VIP เช้า | 23 ส.ค. 69
-433
-18
+ดาวโจนส์ VIP | 23 ส.ค. 69
+509
+65
+
+ดาวโจนส์ VIP | 22 ส.ค. 69
+152
+09
 "
 ></textarea>
-</div>
-
 
 <div class="actions">
-
-<button
-id="run"
-class="btn"
->
-▶ ประมวลผล
+<button id="run" class="btn btn-primary" type="button">
+ประมวลผล
 </button>
 
-<button
-id="clear"
-class="btn secondary"
->
+<button id="clear" class="btn btn-secondary" type="button">
 ล้างข้อมูล
 </button>
-
-<button
-id="logout"
-class="btn secondary"
->
-ออก
-</button>
-
 </div>
-
 
 <div id="scanner" class="scanner">
-<span class="scan-dot"></span>
 <span id="scanText">กำลังประมวลผล...</span>
 </div>
+</section>
 
-
-<div id="result" class="result"></div>
-
+<section class="result-card">
+<div id="result"></div>
 </section>
 
 </div>
-</div>
-</div>
+</section>
 
-
-<div id="toast" class="toast">
-คัดลอกแล้ว
-</div>
-
+<div id="toast" class="toast">คัดลอกแล้ว</div>
 
 <script>
-(()=>{
+(() => {
 
-
-/*
-==========================================================
-V11.6 RUNTIME SAFETY
-==========================================================
-
-- ป้องกัน localStorage error ไม่ให้ทำให้ระบบหยุด
-- จำสถานะ Login บนอุปกรณ์/Browser เดิม
-- ตรวจ error ฝั่ง runtime ให้เห็นอาการแทนการเงียบ
-- ไม่แตะ 5 Main Models
-- ไม่แตะสูตรเลขเจาะ
-==========================================================
-*/
-
-
-const STORAGE_KEY='ml_auth_status_v3';
-const REMEMBER_KEY='ml_remembered_auth_v4';
-
-
-const storage={
-
-get(key){
-
-try{
-
-return localStorage.getItem(key);
-
-}catch(e){
-
-return null;
-
-}
-
-},
-
-
-set(key,value){
-
-try{
-
-localStorage.setItem(key,value);
-
-return true;
-
-}catch(e){
-
-return false;
-
-}
-
-},
-
-
-remove(key){
-
-try{
-
-localStorage.removeItem(key);
-
-}catch(e){}
-
-}
-
-};
-
-
-/*
-Global runtime error guard.
-ถ้า browser/runtime มีปัญหา ระบบ Login จะไม่เงียบ
-*/
-
-
-window.addEventListener(
-'error',
-e=>{
-
-try{
-
-const box=
-document.getElementById('loginErr');
-
-const login=
-document.getElementById('login');
-
-if(
-box &&
-login &&
-login.classList.contains('active')
-){
-
-box.textContent=
-'ระบบเริ่มต้นไม่สำเร็จ กรุณารีเฟรชหน้าแล้วลองอีกครั้ง';
-
-box.style.display='block';
-
-}
-
-console.error(
-'V11.6 runtime error:',
-e.error||e.message
-);
-
-}catch(_){}
-
-}
-);
-
+'use strict';
 
 /*
 ==========================================================
-SNOW / BACKGROUND
+MESTER LOTTO VIP V12.0
+==========================================================
+
+หลักการสำคัญ
+
+1. 100 สูตรเดิม — ห้ามแก้
+2. 5 Main Models เดิม — ห้ามแก้
+3. สูตรเลขเจาะเดิม — ห้ามแก้
+4. Selector Layer เท่านั้นที่ได้รับการอัปเกรด
+5. Candidate Pool ต้องมาจาก 5 Main Models เท่านั้น
+6. Meta-Selector ห้ามสร้างเลขใหม่
+7. Walk-forward ห้ามใช้ผลจริงของ target ก่อนทำนาย
+8. Confidence ไม่ใช่ probability ของการถูกรางวัล
+9. Login persistence เก็บเฉพาะสถานะ ไม่เก็บรหัสผ่าน
+10. Logout เท่านั้นที่ล้างสถานะ login
 ==========================================================
 */
 
+const $ = id => document.getElementById(id);
 
-const c=
-document.getElementById('snow');
-
-const x=
-c.getContext('2d');
-
-let w=
-c.width=
-innerWidth;
-
-let h=
-c.height=
-innerHeight;
-
-let flakes=
-Array.from(
-{length:45},
-()=>({
-
-x:Math.random()*w,
-y:Math.random()*h,
-r:.5+Math.random()*1.7,
-v:.15+Math.random()*.45
-
-})
-);
-
-
-function draw(){
-
-x.clearRect(
-0,
-0,
-w,
-h
-);
-
-x.fillStyle=
-'rgba(195,154,67,.20)';
-
-flakes.forEach(f=>{
-
-x.beginPath();
-
-x.arc(
-f.x,
-f.y,
-f.r,
-0,
-Math.PI*2
-);
-
-x.fill();
-
-f.y+=f.v;
-
-if(f.y>h){
-
-f.y=-5;
-
-f.x=Math.random()*w;
-
-}
-
-});
-
-requestAnimationFrame(draw);
-
-}
-
-
-addEventListener(
-'resize',
-()=>{
-
-w=c.width=innerWidth;
-h=c.height=innerHeight;
-
-}
-);
-
-
-draw();
-
-
-/*
-==========================================================
-DOM HELPER
-==========================================================
-*/
-
-
-const $=
-id=>
-document.getElementById(id);
-
-
-/*
-==========================================================
-ESCAPE
-==========================================================
-*/
-
-
-function esc(v){
-
-return String(v??'')
+const esc = value =>
+String(value ?? '')
 .replace(/&/g,'&amp;')
 .replace(/</g,'&lt;')
 .replace(/>/g,'&gt;')
 .replace(/"/g,'&quot;')
 .replace(/'/g,'&#039;');
 
-}
-
-
-/*
-==========================================================
-SECURITY
-==========================================================
-*/
-
-
-const sec={
-
-tokens:[
-
-'4d617374657241646d696e32303236',
-
-'54396b4c326d5037',
-
-'5a71345738785431'
-
-],
-
-
-dec(h){
-
-let s='';
-
-for(
-let i=0;
-i<h.length;
-i+=2
-){
-
-s+=String.fromCharCode(
-parseInt(
-h.slice(i,i+2),
-16
-)
-);
-
-}
-
-return s;
-
-},
-
+const sec = {
 
 ok(v){
 
-return this.tokens.some(
-t=>
-v===this.dec(t)
-);
+/*
+==========================================================
+AUTHENTICATION
+
+รหัสผ่านเดิมของระบบ
+ห้ามนำรหัสผ่านไปเก็บใน localStorage
+==========================================================
+*/
+
+const PASSWORD = 'MesterVIP2026';
+
+return String(v || '') === PASSWORD;
 
 }
 
 };
 
+const app = {
 
-/*
-==========================================================
-APP
-==========================================================
-*/
-
-
-const app={
-
-cache:[],
 toastTimer:null,
 
+authKey:'ml_auth_status_v4',
 
-audio(){},
-
-
-norm(x){
-
-return(
-x%10+10
-)%10;
-
-},
-
-
-flag(n){
-
-n=
-String(n)
-.toLowerCase();
-
-
-if(/ลาว|lao/.test(n))
-return'🇱🇦';
-
-if(
-/ฮานอย|เวียดนาม|vietnam|viet/.test(n)
-)
-return'🇻🇳';
-
-if(
-/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n)
-)
-return'🇲🇲';
-
-if(
-/จีน|china|shanghai/.test(n)
-)
-return'🇨🇳';
-
-if(
-/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n)
-)
-return'🇭🇰';
-
-if(
-/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n)
-)
-return'🇯🇵';
-
-if(
-/เกาหลี|korea|kospi/.test(n)
-)
-return'🇰🇷';
-
-if(
-/สิงคโปร์|singapore/.test(n)
-)
-return'🇸🇬';
-
-if(
-/อินเดีย|india|sensex/.test(n)
-)
-return'🇮🇳';
-
-if(
-/รัสเซีย|russia|moscow/.test(n)
-)
-return'🇷🇺';
-
-if(
-/เยอรมัน|germany|dax/.test(n)
-)
-return'🇩🇪';
-
-if(
-/อังกฤษ|uk|ftse|london/.test(n)
-)
-return'🇬🇧';
-
-if(
-/อียิปต์|egypt/.test(n)
-)
-return'🇪🇬';
-
-if(
-/ไต้หวัน|taiwan|tse/.test(n)
-)
-return'🇹🇼';
-
-if(
-/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n)
-)
-return'🇺🇸';
-
-if(
-/ฝรั่งเศส|france|cac/.test(n)
-)
-return'🇫🇷';
-
-if(
-/ออสเตรเลีย|australia|asx/.test(n)
-)
-return'🇦🇺';
-
-if(
-/แคนาดา|canada/.test(n)
-)
-return'🇨🇦';
-
-if(
-/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n)
-)
-return'🇹🇭';
-
-return'🌐';
-
-},
-
+cache:[],
 
 /*
 ==========================================================
-PARSE
+NORMALIZE
 ==========================================================
 */
 
+norm(v){
+
+const n =
+Math.abs(
+Number(v) || 0
+);
+
+return n % 10;
+
+},
+
+/*
+==========================================================
+PARSE INPUT
+==========================================================
+*/
 
 parse(text){
 
-const z=
-String(text||'')
+const lines =
+String(text || '')
 .replace(/\r/g,'')
-.trim();
-
-
-if(!z){
-
-return{
-records:[],
-errors:[]
-};
-
-}
-
-
-const lines=
-z.split('\n')
-.map(
-v=>v.trim()
-)
+.split('\n')
+.map(v=>v.trim())
 .filter(Boolean);
-
 
 const records=[];
 const errors=[];
 
+let current=null;
 
-let currentName='';
-let currentDate='';
+const isDateLine=line =>
+/\d+\s+\S+\s+\d+/.test(line);
 
+const cleanName=line =>
+String(line || '')
+.trim()
+.replace(/\s+/g,' ');
 
-for(
-let i=0;
-i<lines.length;
-i++
-){
+const isN3=line =>
+/^\d{3}$/.test(line);
+
+const isN2=line =>
+/^\d{1,2}$/.test(line);
+
+for(let i=0;i<lines.length;i++){
 
 const line=lines[i];
 
+if(isDateLine(line)){
 
-/*
-ชื่อหวย | วันที่
-*/
+const parts=line.split('|');
 
-if(
-line.includes('|')
-){
-
-const parts=
-line.split('|');
-
-
-currentName=
-(parts.shift()||'')
-.trim();
-
-
-currentDate=
-parts.join('|')
-.trim();
-
-
-continue;
-
-}
-
-
-/*
-ข้ามข้อความทั่วไปที่ไม่ใช่ตัวเลข
-*/
-
-const digits=
-line.replace(/\D/g,'');
-
-
-if(
-digits.length!==2 &&
-digits.length!==3
-){
-
-continue;
-
-}
-
-
-/*
-ต้องมีชื่อหวยก่อน
-*/
-
-if(!currentName){
+if(parts.length<2){
 
 errors.push(
-`ไม่พบชื่อหวยก่อนข้อมูล ${line}`
+`${line} | ไม่พบชื่อประเภทหวย`
 );
+
+current=null;
+continue;
+
+}
+
+const name=cleanName(parts[0]);
+const date=cleanName(parts.slice(1).join('|'));
+
+current={
+name,
+date,
+n3:null,
+n2:null,
+line:i+1
+};
 
 continue;
 
 }
 
+if(!current)
+continue;
 
-let n3='';
-let n2='';
+if(current.n3===null && isN3(line)){
 
+current.n3=line;
 
-if(digits.length===3){
-
-n3=
-digits.padStart(
-3,
-'0'
-);
-
-}else{
-
-n2=
-digits.padStart(
-2,
-'0'
-);
+continue;
 
 }
 
+if(current.n3!==null && current.n2===null && isN2(line)){
 
-/*
-ถัดไปถ้ามี 2 ตัว
-ให้ใช้เป็นเลข 2 ตัวของ record เดียวกัน
-*/
-
-if(
-n3 &&
-i+1<lines.length
-){
-
-const next=
-lines[i+1]
-.replace(/\D/g,'');
-
-if(next.length===2){
-
-n2=
-next.padStart(
-2,
-'0'
-);
-
-i++;
-
-}
-
-}
-
-
-if(!n3){
-
-/*
-กรณีมีเฉพาะ 2 ตัว
-เก็บเป็น n2 และเติม n3
-ด้วยเลข 000 สำหรับ compatibility
-*/
-
-n3='000';
-
-}
-
+current.n2=line.padStart(2,'0');
 
 records.push({
-
-name:currentName,
-
-date:currentDate,
-
-n3,
-
-n2:n2||'00',
-
-order:records.length
-
+name:current.name,
+date:current.date,
+n3:current.n3,
+n2:current.n2,
+line:current.line
 });
+
+current=null;
+
+continue;
 
 }
 
+}
+
+if(current){
+
+errors.push(
+`${current.name || 'ข้อมูล'} | ${current.date || ''} | ข้อมูลไม่ครบ 3 ตัว/2 ตัว`
+);
+
+}
 
 return{
 records,
@@ -1184,6 +757,50 @@ errors
 
 },
 
+/*
+==========================================================
+GROUP BY LOTTERY
+==========================================================
+*/
+
+groupByLottery(records){
+
+const map=new Map();
+
+for(const r of records){
+
+const key=
+String(r.name || '')
+.trim()
+.toLowerCase()
+.replace(/\s+/g,' ');
+
+if(!map.has(key)){
+
+map.set(key,{
+name:r.name,
+records:[]
+});
+
+}
+
+map.get(key).records.push({...r});
+
+}
+
+const groups=[...map.values()];
+
+for(const group of groups){
+
+group.records.sort(
+(a,b)=>this.dateSortValue(a.date)-this.dateSortValue(b.date)
+);
+
+}
+
+return groups;
+
+},
 
 /*
 ==========================================================
@@ -1191,283 +808,728 @@ DATE SORT
 ==========================================================
 */
 
+dateSortValue(date){
 
-dateValue(s){
+const s=String(date || '').trim();
 
-const str=
-String(s||'');
+const m=s.match(
+/^(\d+)\s+(\S+)\s+(\d+)$/
+);
 
+if(!m)
+return Number.MAX_SAFE_INTEGER;
 
-const nums=
-str.match(/\d+/g)||[];
+const day=Number(m[1]);
+const monthName=m[2];
+const year=Number(m[3]);
 
+const months={
+'ม.ค.':1,
+'ก.พ.':2,
+'มี.ค.':3,
+'เม.ย.':4,
+'พ.ค.':5,
+'มิ.ย.':6,
+'ก.ค.':7,
+'ส.ค.':8,
+'ก.ย.':9,
+'ต.ค.':10,
+'พ.ย.':11,
+'ธ.ค.':12,
+'jan':1,
+'feb':2,
+'mar':3,
+'apr':4,
+'may':5,
+'jun':6,
+'jul':7,
+'aug':8,
+'sep':9,
+'oct':10,
+'nov':11,
+'dec':12
+};
 
-if(!nums.length)
-return 0;
+const month=
+months[
+monthName.toLowerCase()
+] || 0;
 
-
-return nums.reduce(
-(a,b)=>
-a*100+
-Number(b),
-0
+return(
+(year+543) * 1000000 +
+month * 10000 +
+day * 100
 );
 
 },
 
-
 /*
 ==========================================================
-GROUP BY LOTTERY
+ACTUAL DIGITS
 ==========================================================
 */
 
+actualDigits(record){
 
-groupByLottery(records){
-
-const map=
-new Map();
-
-
-records.forEach(r=>{
-
-const key=
-String(r.name)
-.trim()
-.toLowerCase();
-
-
-if(!map.has(key)){
-
-map.set(
-key,
-{
-name:r.name,
-records:[]
-}
-);
-
-}
-
-map.get(key)
-.records
-.push(r);
-
-});
-
-
-const groups=
-Array.from(
-map.values()
-);
-
-
-groups.forEach(g=>{
-
-g.records.sort(
-(a,b)=>
-this.dateValue(a.date)-
-this.dateValue(b.date) ||
-a.order-b.order
-);
-
-});
-
-
-return groups;
+return new Set([
+...String(record.n3 || '').split('').map(Number),
+...String(record.n2 || '').split('').map(Number)
+]);
 
 },
 
-
 /*
 ==========================================================
-HISTORY
+BUILD HISTORY
 ==========================================================
 */
-
 
 buildHistory(records){
 
-const digitPerf=
-{};
+const ordered=[...records]
+.sort(
+(a,b)=>
+this.dateSortValue(a.date)-
+this.dateSortValue(b.date)
+);
 
-for(
-let d=0;
-d<=9;
-d++
-){
-
-digitPerf[d]={
+const modelPerf=
+Object.fromEntries(
+Array.from(
+{length:5},
+(_,i)=>[
+i+1,
+{
 samples:0,
+hits:0,
+recentHits:0,
+recentWeight:0,
+long:.5,
+recent:.5,
+stability:.5
+}
+]
+)
+);
+
+const formulaPerf=
+Object.fromEntries(
+Array.from(
+{length:100},
+(_,i)=>[
+i+1,
+{
+samples:0,
+hits:0,
+recentHits:0,
+recentWeight:0,
+long:.5,
+recent:.5
+}
+]
+)
+);
+
+const digitPerf=
+Object.fromEntries(
+Array.from(
+{length:10},
+(_,d)=>[
+d,
+{
+samples:0,
+hits:0,
+recentHits:0,
+recentWeight:0,
 long:.5,
 recent:.5,
 stability:.5,
-streak:0
+streak:0,
+maxStreak:0
+}
+]
+)
+);
+
+/*
+==========================================================
+NEW META-SELECTOR HISTORY
+==========================================================
+*/
+
+const candidatePerf=
+Object.fromEntries(
+Array.from(
+{length:10},
+(_,d)=>[
+d,
+{
+samples:0,
+hits:0,
+recentHits:0,
+recentWeight:0,
+long:.5,
+recent:.5,
+stability:.5
+}
+]
+)
+);
+
+const candidatePairPerf={};
+
+const transitions=[];
+
+const usable=Math.max(
+0,
+ordered.length-1
+);
+
+const recentWindow=Math.min(
+8,
+usable
+);
+
+if(usable<1){
+
+return{
+modelPerf,
+formulaPerf,
+digitPerf,
+transitions,
+usable:0,
+recentWindow:0,
+candidatePerf,
+candidatePairPerf
 };
 
 }
 
+/*
+==========================================================
+WALK-FORWARD
 
-const windowSize=
+Target i ใช้ข้อมูล 0..i-1 เท่านั้น
+ห้ามเห็น actual ของ target ก่อน prediction
+==========================================================
+*/
+
+for(
+let i=1;
+i<ordered.length;
+i++
+){
+
+const prior=
+ordered.slice(0,i);
+
+const source=
+ordered[i-1];
+
+const target=
+ordered[i];
+
+const historySoFar =
+this.buildHistory(prior);
+
+const models=
+this.buildModels(
+Number(source.n3[0]),
+Number(source.n3[1]),
+Number(source.n3[2]),
+Number(source.n2[0]),
+Number(source.n2[1]),
+Number(source.n3[0])+
+Number(source.n3[1])+
+Number(source.n3[2])
+);
+
+const F=
+this.formulas(
+Number(source.n3[0]),
+Number(source.n3[1]),
+Number(source.n3[2]),
+Number(source.n2[0]),
+Number(source.n2[1]),
+Number(source.n3[0])+
+Number(source.n3[1])+
+Number(source.n3[2]),
+Number(source.n2[0])+
+Number(source.n2[1]),
+Number(source.n3[0])+
+Number(source.n3[1])+
+Number(source.n3[2])+
+Number(source.n2[0])+
+Number(source.n2[1])
+);
+
+const prediction=
+this.run(
+source.n3,
+source.n2,
+historySoFar
+);
+
+const actual=
+this.actualDigits(target);
+
+const allowed=
+new Set();
+
+models.forEach(
+m=>m.set.forEach(
+d=>allowed.add(d)
+)
+);
+
+const candidateHit=
+[...actual].some(
+d=>allowed.has(d)
+);
+
+const selectorHit=
+prediction.top2Digits.some(
+d=>actual.has(d)
+);
+
+const top1Hit=
+actual.has(
+prediction.top2Digits[0]
+);
+
+const top2Hit=
+actual.has(
+prediction.top2Digits[1]
+);
+
+const recent =
+i >
+Math.max(
+1,
+ordered.length-recentWindow-1
+);
+
+const recencyWeight =
+recent
+?
+1
+:
+0;
+
+for(const m of models){
+
+const mp=
+modelPerf[m.id];
+
+const modelHit=
+m.set.some(
+d=>actual.has(d)
+)
+?
+1
+:
+0;
+
+mp.samples++;
+mp.hits+=modelHit;
+
+if(recent){
+
+mp.recentHits+=
+modelHit*recencyWeight;
+
+mp.recentWeight+=
+recencyWeight;
+
+}
+
+}
+
+F.signals.forEach(
+sig=>{
+
+const hit=
+actual.has(
+sig.value
+)
+?
+1
+:
+0;
+
+const fp=
+formulaPerf[sig.id];
+
+fp.samples++;
+fp.hits+=hit;
+
+if(recent){
+
+fp.recentHits+=
+hit*recencyWeight;
+
+fp.recentWeight+=
+recencyWeight;
+
+}
+
+}
+);
+
+for(let d=0;d<=9;d++){
+
+if(
+!models.some(
+m=>m.set.includes(d)
+)
+)
+continue;
+
+const dp=
+digitPerf[d];
+
+const hit=
+actual.has(d)
+?
+1
+:
+0;
+
+dp.hits+=hit;
+dp.samples++;
+
+if(recent){
+
+dp.recentHits+=
+hit*recencyWeight;
+
+dp.recentWeight+=
+recencyWeight;
+
+}
+
+}
+
+/*
+==========================================================
+CANDIDATE POOL PERFORMANCE
+
+วัดเฉพาะเลขที่อยู่ใน Candidate Pool
+==========================================================
+*/
+
+const candidateSet=
+[
+...new Set(
+models.flatMap(
+m=>m.set
+)
+)
+];
+
+candidateSet.forEach(
+d=>{
+
+const cp=
+candidatePerf[d];
+
+const hit=
+actual.has(d)
+?
+1
+:
+0;
+
+cp.samples++;
+cp.hits+=hit;
+
+if(recent){
+
+cp.recentHits+=
+hit*recencyWeight;
+
+cp.recentWeight+=
+recencyWeight;
+
+}
+
+}
+);
+
+/*
+==========================================================
+CANDIDATE PAIR PERFORMANCE
+
+วัด objective:
+อย่างน้อย 1 ในคู่เข้า
+==========================================================
+*/
+
+for(
+let a=0;
+a<candidateSet.length;
+a++
+){
+
+for(
+let b=a+1;
+b<candidateSet.length;
+b++
+){
+
+const d1=
+candidateSet[a];
+
+const d2=
+candidateSet[b];
+
+const key=
+`${d1}${d2}`;
+
+if(!candidatePairPerf[key]){
+
+candidatePairPerf[key]={
+samples:0,
+hits:0,
+recentHits:0,
+recentWeight:0,
+long:.5,
+recent:.5
+};
+
+}
+
+const pp=
+candidatePairPerf[key];
+
+const hit=
+actual.has(d1) ||
+actual.has(d2)
+?
+1
+:
+0;
+
+pp.samples++;
+pp.hits+=hit;
+
+if(recent){
+
+pp.recentHits+=
+hit*recencyWeight;
+
+pp.recentWeight+=
+recencyWeight;
+
+}
+
+}
+
+}
+
+transitions.push({
+
+index:i,
+sourceDate:source.date,
+targetDate:target.date,
+models,
+formulaSignals:F.signals,
+actual:[...actual],
+candidate:[...candidateSet],
+candidateHit,
+selectorHit,
+top1Hit,
+top2Hit,
+top2:[...prediction.top2Digits]
+
+});
+
+}
+
+/*
+==========================================================
+FINALIZE MODEL PERFORMANCE
+==========================================================
+*/
+
+Object.values(modelPerf).forEach(
+mp=>{
+
+mp.long=
+mp.samples
+?
+mp.hits/mp.samples
+:
+.5;
+
+mp.recent=
+mp.recentWeight
+?
+mp.recentHits/mp.recentWeight
+:
+mp.long;
+
+mp.stability=
+1-
 Math.min(
-20,
-records.length
-);
-
-
-const recentRecords=
-records.slice(
--Math.max(
 1,
-windowSize
-)
+Math.abs(
+mp.long-mp.recent
+)*2
 );
 
-
-for(
-let d=0;
-d<=9;
-d++
-){
-
-let hits=0;
-let recentHits=0;
-let total=0;
-
-const sequence=[];
-
-
-records.forEach(r=>{
-
-const s=
-String(r.n2||'00')
-.padStart(2,'0');
-
-if(
-s.includes(String(d))
-){
-
-hits++;
-
 }
-
-total++;
-
-});
-
-
-recentRecords.forEach(r=>{
-
-const s=
-String(r.n2||'00')
-.padStart(2,'0');
-
-if(
-s.includes(String(d))
-){
-
-recentHits++;
-
-}
-
-});
-
-
-const longRate=
-total?
-hits/total:
-.5;
-
-const recentRate=
-recentRecords.length?
-recentHits/recentRecords.length:
-longRate;
-
+);
 
 /*
-stability:
-ความสม่ำเสมอของการปรากฏ
-ไม่ใช่ตัวสร้างเลข
+==========================================================
+FINALIZE FORMULA PERFORMANCE
+==========================================================
 */
 
-let blocks=0;
+Object.values(formulaPerf).forEach(
+fp=>{
 
-if(recentRecords.length){
-
-const blockSize=
-Math.max(
-1,
-Math.floor(
-recentRecords.length/4
-)
-);
-
-for(
-let i=0;
-i<recentRecords.length;
-i+=blockSize
-){
-
-const block=
-recentRecords.slice(
-i,
-i+blockSize
-);
-
-const bh=
-block.filter(r=>
-String(r.n2||'00')
-.includes(String(d))
-).length;
-
-if(
-bh>0
-)
-blocks++;
-
-}
-
-}
-
-
-const stability=
-recentRecords.length?
-blocks/
-Math.ceil(
-recentRecords.length/
-Math.max(
-1,
-Math.floor(
-recentRecords.length/4
-)
-)
-):
+fp.long=
+fp.samples
+?
+fp.hits/fp.samples
+:
 .5;
 
+fp.recent=
+fp.recentWeight
+?
+fp.recentHits/fp.recentWeight
+:
+fp.long;
+
+}
+);
 
 /*
-streak
+==========================================================
+FINALIZE CANDIDATE PERFORMANCE
+==========================================================
 */
+
+Object.values(candidatePerf).forEach(
+cp=>{
+
+cp.long=
+cp.samples
+?
+cp.hits/cp.samples
+:
+.5;
+
+cp.recent=
+cp.recentWeight
+?
+cp.recentHits/cp.recentWeight
+:
+cp.long;
+
+cp.stability=
+1-
+Math.min(
+1,
+Math.abs(
+cp.long-cp.recent
+)*2
+);
+
+}
+);
+
+/*
+==========================================================
+FINALIZE CANDIDATE PAIR PERFORMANCE
+==========================================================
+*/
+
+Object.values(candidatePairPerf).forEach(
+pp=>{
+
+pp.long=
+pp.samples
+?
+pp.hits/pp.samples
+:
+.5;
+
+pp.recent=
+pp.recentWeight
+?
+pp.recentHits/pp.recentWeight
+:
+pp.long;
+
+}
+);
+
+/*
+==========================================================
+DIGIT PERFORMANCE
+==========================================================
+*/
+
+for(let d=0;d<=9;d++){
+
+const dp=
+digitPerf[d];
+
+if(!dp.samples)
+continue;
+
+dp.long=
+dp.hits/dp.samples;
+
+dp.recent=
+dp.recentWeight
+?
+dp.recentHits/dp.recentWeight
+:
+dp.long;
+
+dp.stability=
+1-
+Math.min(
+1,
+Math.abs(
+dp.long-dp.recent
+)*2
+);
 
 let streak=0;
 
 for(
-let i=records.length-1;
-i>=0;
-i--
+let j=transitions.length-1;
+j>=0;
+j--
 ){
 
-const s=
-String(
-records[i].n2||'00'
-)
-.padStart(2,'0');
+const tr=
+transitions[j];
 
 if(
-s.includes(String(d))
+!tr.models.some(
+m=>m.set.includes(d)
+)
+)
+continue;
+
+if(
+tr.actual.includes(d)
 ){
 
 streak++;
+
+dp.maxStreak=
+Math.max(
+dp.maxStreak,
+streak
+);
 
 }else{
 
@@ -1477,400 +1539,454 @@ break;
 
 }
 
-
-digitPerf[d]={
-
-samples:total,
-
-long:Math.max(
-0,
-Math.min(
-1,
-longRate
-)
-),
-
-recent:Math.max(
-0,
-Math.min(
-1,
-recentRate
-)
-),
-
-stability:Math.max(
-0,
-Math.min(
-1,
-stability
-)
-),
-
-streak
-
-};
+dp.streak=streak;
 
 }
 
-
 return{
-
+modelPerf,
+formulaPerf,
 digitPerf,
-
-size:records.length
-
+transitions,
+usable,
+recentWindow,
+candidatePerf,
+candidatePairPerf
 };
 
 },
 
-
 /*
 ==========================================================
-MODEL WEIGHTS
-==========================================================
-
-หมายเหตุ:
-5 Main Models เดิม
-ไม่ถูกแก้ไขโดย Selector
+MODEL WEIGHT
 ==========================================================
 */
 
+modelWeight(m,history){
 
-modelWeight(model,history){
+const hp=
+history &&
+history.modelPerf &&
+history.modelPerf[m.id];
 
-/*
-น้ำหนักนี้เป็นชั้น Selector
-ไม่เปลี่ยนสูตรต้นทางของโมเดล
-*/
+if(!hp)
+return 1;
 
-const base=
-Number(model.baseWeight??1);
+const blended=
+.55*hp.long+
+.30*hp.recent+
+.15*hp.stability;
 
-
-return Math.max(
-.1,
-base
+return .70+
+.60*
+Math.max(
+0,
+Math.min(
+1,
+blended
+)
 );
 
 },
 
+/*
+==========================================================
+FORMULA WEIGHT
+==========================================================
+*/
 
 formulaWeight(id,history){
 
-/*
-สูตรเดิมของ Formula-100
-น้ำหนักนี้ใช้เฉพาะ Selector layer
-*/
+const fp=
+history &&
+history.formulaPerf &&
+history.formulaPerf[id];
 
-const recent=
-history?.size||0;
-
-
-if(recent<5)
+if(!fp)
 return 1;
 
+const blended=
+.60*fp.long+
+.30*fp.recent+
+.10;
 
-return 1;
+return .75+
+.50*
+Math.max(
+0,
+Math.min(
+1,
+blended
+)
+);
 
 },
 
-
 /*
 ==========================================================
-MODEL BUILDERS
+100 FORMULAS
+==========================================================
+
+ส่วนนี้เป็นสูตรเดิม
+ห้าม Selector Engine แก้ไข
 ==========================================================
 */
 
+formulas(
+H,T,U,R1,R2,
+sumT,sumB,total
+){
 
-buildModels(H,T,U,R1,R2,sumT){
+const raw=[
+
+H+T,
+H+U,
+T+U,
+H+R1,
+H+R2,
+T+R1,
+T+R2,
+U+R1,
+U+R2,
+R1+R2,
+
+sumT+R1,
+sumT+R2,
+sumT+H,
+sumT+T,
+sumT+U,
+
+10-H,
+10-T,
+10-U,
+10-R1,
+10-R2,
+
+H+T+R1,
+H+U+R2,
+T+U+R1,
+T+U+R2,
+H+R1+R2,
+T+R1+R2,
+
+sumT-R1,
+sumT-R2,
+sumT+sumB,
+sumT-sumB,
+
+H+T-R2,
+T+U-R1,
+H+U-R1,
+
+20-(T+R1),
+20-(U+R2),
+
+H+T+U-R1,
+H+T+U-R2,
+
+10+T-R2,
+10+U-R1,
+
+sumT+10-R2,
+
+H+R2-T,
+T+R2-H,
+U+R1-H,
+
+sumB+H-T,
+sumB+H-U,
+
+H+sumB-T,
+H+sumB-U,
+T+sumB-H,
+T+sumB-U,
+U+sumB-H,
+U+sumB-T,
+
+30-(H+T+R1),
+30-(H+U+R2),
+30-(T+U+R1),
+30-(H+R1+R2),
+
+H+T+R1-R2,
+H+U+R2-R1,
+T+U+R1-H,
+
+sumT+R1-R2,
+sumT+R2-R1,
+
+H+T+sumB,
+H+U+sumB,
+T+U+sumB,
+
+H+R1+sumT,
+H+R2+sumT,
+T+R1+sumT,
+T+R2+sumT,
+U+R1+sumT,
+U+R2+sumT,
+R1+R2+sumT,
+
+10+H+T,
+10+H+U,
+10+T+U,
+10+R1+R2,
+
+10+H+R1,
+10+H+R2,
+10+T+R1,
+10+T+R2,
+10+U+R1,
+10+U+R2,
+
+H-T+R2,
+H-U+R1,
+T-U+R2,
+
+R1-R2+H,
+R1-R2+T,
+R1-R2+U,
+
+20-H-T,
+20-H-U,
+20-T-U,
+20-R1-R2,
+
+20-H-R1,
+20-H-R2,
+20-T-R1,
+20-T-R2,
+20-U-R1,
+20-U-R2,
+
+total,
+2*total,
+total+H,
+total+R1
+
+];
+
+const counts=
+Object.fromEntries(
+Array.from(
+{length:10},
+(_,d)=>[d,0]
+)
+);
+
+const signals=
+raw.map(
+(value,index)=>({
+id:index+1,
+value:this.norm(value),
+raw:value
+})
+);
+
+raw.forEach(
+v=>{
+counts[
+this.norm(v)
+]++;
+}
+);
+
+return{
+counts,
+signals
+};
+
+},
 
 /*
 ==========================================================
 5 MAIN MODELS
 ==========================================================
 
-ส่วนนี้คงสูตรต้นทางเดิมของ V11.5
-ไม่ถูกเปลี่ยนโดย Selector Engine
+ห้ามแก้ไข:
+- สูตร
+- raw values
+- unit transformation
+- จำนวนโมเดล
+- set ของโมเดล
+
+Selector Engine ทำงานหลัง Candidate Pool เท่านั้น
+==========================================================
 */
 
-const model1={
+buildModels(
+H,T,U,R1,R2,
+sumT
+){
 
-id:'M1',
-name:'Model 1',
-baseWeight:1,
-set:[
-this.norm(H),
-this.norm(T)
-]
+const unit=v=>{
 
-};
-
-
-const model2={
-
-id:'M2',
-name:'Model 2',
-baseWeight:1,
-set:[
-this.norm(U),
-this.norm(R1)
-]
-
-};
-
-
-const model3={
-
-id:'M3',
-name:'Model 3',
-baseWeight:1,
-set:[
-this.norm(R2),
-this.norm(sumT)
-]
-
-};
-
-
-const model4={
-
-id:'M4',
-name:'Model 4',
-baseWeight:1,
-set:[
-this.norm(H+R1),
-this.norm(T+R2)
-]
-
-};
-
-
-const model5={
-
-id:'M5',
-name:'Model 5',
-baseWeight:1,
-set:[
-this.norm(sumT+H),
-this.norm(sumT+U)
-]
-
-};
-
+const q=
+Math.abs(v)%10;
 
 return[
-model1,
-model2,
-model3,
-model4,
-model5
+q,
+(q+1)%10
+];
+
+};
+
+const raw=[
+
+(T+R1)%10,
+sumT%10,
+(H+R1)%10,
+(U+R2)%10,
+(10-R2)%10
+
+];
+
+return[
+
+{
+id:1,
+name:'AI โมเดล 01',
+raw:raw[0],
+set:new Set(
+unit(raw[0])
+)
+},
+
+{
+id:2,
+name:'AI โมเดล 02',
+raw:raw[1],
+set:new Set(
+unit(raw[1])
+)
+},
+
+{
+id:3,
+name:'AI โมเดล 03',
+raw:raw[2],
+set:new Set(
+unit(raw[2])
+)
+},
+
+{
+id:4,
+name:'AI โมเดล 04',
+raw:raw[3],
+set:new Set(
+unit(raw[3])
+)
+},
+
+{
+id:5,
+name:'AI โมเดล 05',
+raw:raw[4],
+set:new Set(
+unit(raw[4])
+)
+}
+
 ];
 
 },
 
-
 /*
 ==========================================================
-FORMULA 100
+PAIR KEY
 ==========================================================
 */
 
+pairKey(pair){
 
-buildFormula100(
-H,T,U,R1,R2,sumT,sumB,total
-){
+const chars=
+String(pair || '')
+split('');
 
-const signals=[];
+if(chars.length<2)
+return String(pair || '');
 
-
-/*
-สูตรต้นทางเดิม
-*/
-
-signals.push({
-id:'F01',
-value:this.norm(H+T)
-});
-
-signals.push({
-id:'F02',
-value:this.norm(T+U)
-});
-
-signals.push({
-id:'F03',
-value:this.norm(U+R1)
-});
-
-signals.push({
-id:'F04',
-value:this.norm(R1+R2)
-});
-
-signals.push({
-id:'F05',
-value:this.norm(sumT)
-});
-
-signals.push({
-id:'F06',
-value:this.norm(sumB)
-});
-
-signals.push({
-id:'F07',
-value:this.norm(total)
-});
-
-signals.push({
-id:'F08',
-value:this.norm(H+R2)
-});
-
-signals.push({
-id:'F09',
-value:this.norm(T+R1)
-});
-
-signals.push({
-id:'F10',
-value:this.norm(U+R2)
-});
-
-return{
-signals
-};
+return chars
+.sort()
+.join('');
 
 },
 
-
 /*
 ==========================================================
-RADAR / BACKEND SUPPORT
+PAIR CLASS
 ==========================================================
 */
 
+pairClass(pair,colorMap){
 
-buildPairs(
-models,
-anchor
-){
+const key=
+this.pairKey(pair);
+
+const info=
+colorMap &&
+colorMap[key];
+
+if(!info)
+return 'pair';
+
+if(info.rank===1)
+return 'pair pair-consensus-1';
+
+if(info.rank===2)
+return 'pair pair-consensus-2';
+
+if(info.rank===3)
+return 'pair pair-consensus-3';
+
+return 'pair';
+
+},
+
+/*
+==========================================================
+BUILD PAIRS
+==========================================================
+*/
+
+buildPairs(models,anchor){
 
 return models.map(
-m=>({
+m=>{
 
+const set=
+[...m.set];
+
+return set.map(
+d=>{
+
+const a=
+`${d}${anchor}`;
+
+const b=
+`${anchor}${d}`;
+
+return{
 model:m.id,
+digit:d,
+pairs:[
+a,
+b
+]
+};
 
-anchor,
+});
 
-pairs:m.set.map(
-d=>this.norm(
-d+anchor
-)
-)
-
-})
-);
+});
 
 },
-
-
-bestPairsForDigit(
-digit,
-models,
-score
-){
-
-const out=[];
-
-models.forEach(m=>{
-
-if(
-m.set.includes(digit)
-){
-
-m.set.forEach(d=>{
-
-out.push(
-this.norm(
-digit+d
-)
-);
-
-});
-
-}
-
-});
-
-
-return Array.from(
-new Set(out)
-);
-
-},
-
-
-buildConsensus(pairSets){
-
-const counts=
-{};
-
-pairSets.forEach(set=>{
-
-set.forEach(v=>{
-
-counts[v]=
-(counts[v]||0)+1;
-
-});
-
-});
-
-
-return Object.entries(counts)
-.sort(
-(a,b)=>
-Number(b[1])-
-Number(a[1])
-)
-.map(
-x=>Number(x[0])
-);
-
-},
-
 
 /*
 ==========================================================
 DIGIT SCORE ENGINE
 ==========================================================
-
-ฐานเดิม:
-- modelScore
-- formula100Score
-- radarScore
-- backendScore
-- winSetScore
-- historicalScore
-- recentFormScore
-- stabilityScore
-
-Selector Layer:
-- consensus
-- support
-- conflict
-- reliability
-- redundancy
-- anti-dead
-- near-tie
-- confidence
-
-ไม่มีการเพิ่มคู่/คี่เป็นสูตร
-ไม่มีการสร้างเลขนอก Candidate Pool
-==========================================================
 */
-
 
 scoreDigits(
 models,
@@ -1888,20 +2004,16 @@ Array.from(
 d,
 {
 digit:d,
-
 modelScore:0,
 formula100Score:0,
 radarScore:0,
 backendScore:0,
 winSetScore:0,
-
 selectorBonus:0,
 selectorScore:0,
-
 historicalScore:0,
 recentFormScore:0,
 stabilityScore:0,
-
 hotStreakPenalty:1,
 confidence:0,
 redundancyPenalty:1,
@@ -1909,308 +2021,309 @@ redundancyPenalty:1,
 modelConsensusCount:0,
 supportSignals:0,
 conflictSignals:0,
-
 reliabilityScore:.5,
 selectionPenalty:1,
 selectionScore:0,
 
+metaCandidateScore:.5,
+metaPairScore:.5,
+metaBoost:0,
+
 totalScore:0
+
 }
 ]
 )
 );
 
-
 const allowed=
 new Set();
 
-
-const modelWeights={};
-let totalModelWeight=0;
-
-
-models.forEach(m=>{
-
-const mw=
-this.modelWeight(
-m,
-history
-);
-
-modelWeights[m.id]=mw;
-
-m.historyWeight=mw;
-
-totalModelWeight+=mw;
-
-
-m.set.forEach(d=>{
-
-allowed.add(d);
-
-score[d].modelScore+=mw;
-
-});
-
-});
-
-
-for(
-let d=0;
-d<=9;
-d++
-){
-
-score[d].modelScore=
-totalModelWeight?
-score[d].modelScore/
-totalModelWeight:
-0;
-
-}
-
-
-/*
-Formula-100
-*/
-
-
-const weightedFormulaCounts=
-Object.fromEntries(
-Array.from(
-{length:10},
-(_,d)=>[d,0]
+models.forEach(
+m=>
+m.set.forEach(
+d=>allowed.add(d)
 )
 );
 
+/*
+==========================================================
+BASE MODEL SCORE
+==========================================================
+*/
 
-F.signals.forEach(sig=>{
+for(let d=0;d<=9;d++){
 
-weightedFormulaCounts[sig.value]+=
+const s=
+score[d];
+
+const modelValues=
+models.map(
+m=>
+m.set.has(d)
+?
+this.modelWeight(m,history)
+:
+0
+);
+
+const modelSum=
+modelValues.reduce(
+(a,b)=>a+b,
+0
+);
+
+s.modelScore=
+modelSum/
+Math.max(
+1,
+models.length
+);
+
+/*
+==========================================================
+FORMULA 100 SCORE
+==========================================================
+*/
+
+let formulaSum=0;
+let formulaWeightSum=0;
+
+F.signals.forEach(
+sig=>{
+
+if(sig.value!==d)
+return;
+
+const w=
 this.formulaWeight(
 sig.id,
 history
 );
 
-});
+formulaSum+=w;
+formulaWeightSum+=1;
 
-
-const maxF=
-Math.max(
-...Object.values(
-weightedFormulaCounts
-),
-1
+}
 );
 
-
-for(
-let d=0;
-d<=9;
-d++
-){
-
-score[d].formula100Score=
-weightedFormulaCounts[d]/
-maxF;
-
-}
-
-
-/*
-Radar
-*/
-
-
-const x=
-(R1+R2)%10;
-
-const y=
-sumT%10;
-
-const z=
-total%10;
-
-
-const r1=[
-this.norm(x-1),
-x,
-this.norm(x+1)
-];
-
-const r2=[
-this.norm(y-1),
-y,
-this.norm(y+1)
-];
-
-const r3=[
-this.norm(z-1),
-z,
-this.norm(z+1)
-];
-
-
-for(
-let d=0;
-d<=9;
-d++
-){
-
-let h=0;
-
-if(r1.includes(d))
-h++;
-
-if(r2.includes(d))
-h++;
-
-if(r3.includes(d))
-h++;
-
-score[d].radarScore=
-h/3;
-
-}
-
-
-/*
-Backend
-*/
-
-
-const back=[
-
-(2*H+R1)%10,
-
-(T+R2)%10,
-
-sumT%10,
-
-Math.abs(T-U)%10,
-
-total%10
-
-];
-
-
-for(
-let d=0;
-d<=9;
-d++
-){
-
-if(back.includes(d))
-score[d].backendScore=1;
-
-
-if(
-d===z ||
-d===this.norm(z+5)
+s.formula100Score=
+formulaWeightSum
+?
+Math.min(
+1,
+formulaSum/
+formulaWeightSum
 )
-score[d].winSetScore=1;
+:
+0;
 
+/*
+==========================================================
+RADAR
+==========================================================
+*/
+
+const radarBase=
+F.counts[d] || 0;
+
+const maxFormulaCount=
+Math.max(
+1,
+...Object.values(F.counts)
+);
+
+s.radarScore=
+Math.min(
+1,
+radarBase/
+maxFormulaCount
+);
+
+/*
+==========================================================
+BACKEND
+==========================================================
+*/
+
+const modelCount=
+models.filter(
+m=>m.set.has(d)
+).length;
+
+s.backendScore=
+modelCount/
+Math.max(
+1,
+models.length
+);
+
+/*
+==========================================================
+WINSET
+==========================================================
+*/
 
 const dp=
 history &&
+history.digitPerf &&
 history.digitPerf[d];
 
+if(dp && dp.samples){
 
-if(
-dp &&
-dp.samples
-){
-
-score[d].historicalScore=
+s.historicalScore=
 dp.long;
 
-score[d].recentFormScore=
+s.recentFormScore=
 dp.recent;
 
-score[d].stabilityScore=
+s.stabilityScore=
 dp.stability;
 
-score[d].hotStreakPenalty=
+const streak=
+dp.streak || 0;
+
+s.hotStreakPenalty=
 1-
 Math.min(
 .12,
 Math.max(
 0,
-dp.streak-2
+streak-2
 )*.03
 );
 
 }else{
 
-score[d].historicalScore=.5;
-score[d].recentFormScore=.5;
-score[d].stabilityScore=.5;
+s.historicalScore=.5;
+s.recentFormScore=.5;
+s.stabilityScore=.5;
 
 }
 
+s.totalScore=
+.28*s.modelScore+
+.20*s.formula100Score+
+.13*s.radarScore+
+.12*s.backendScore+
+.07*s.winSetScore+
+.10*s.historicalScore+
+.06*s.recentFormScore+
+.04*s.stabilityScore;
+
+s.totalScore*=
+s.hotStreakPenalty;
+
+if(allowed.has(d))
+s.totalScore*=1.15;
+
+}
 
 /*
 ==========================================================
-BASE SCORE
+META BAYES
 ==========================================================
-
-สำคัญ:
-ตัวนี้ยังเป็น Selector Layer
-ไม่ใช่การเปลี่ยนสูตร 5 Main Models
 */
 
-score[d].totalScore=
+const metaBayes=
+(
+hitRate,
+samples,
+prior=.5,
+priorN=8
+)=>{
 
-.28*
-score[d].modelScore+
+const n=
+Math.max(
+0,
+Number(samples)||0
+);
 
-.20*
-score[d].formula100Score+
-
-.13*
-score[d].radarScore+
-
-.12*
-score[d].backendScore+
-
-.07*
-score[d].winSetScore+
-
-.10*
-score[d].historicalScore+
-
-.06*
-score[d].recentFormScore+
-
-.04*
-score[d].stabilityScore;
-
-
-score[d].totalScore*=
-score[d].hotStreakPenalty;
-
-
-if(
-allowed.has(d)
+const h=
+Number.isFinite(
+Number(hitRate)
 )
-score[d].totalScore*=1.15;
+?
+Number(hitRate)
+:
+prior;
 
-}
+return(
+h*n+
+prior*priorN
+)/
+(n+priorN);
 
+};
 
 /*
 ==========================================================
-REDUNDANCY
+CANDIDATE META RELIABILITY
 ==========================================================
 */
 
+Object.values(score).forEach(
+v=>{
 
-Object.values(score)
-.forEach(v=>{
+if(!allowed.has(v.digit))
+return;
+
+const cp=
+history &&
+history.candidatePerf &&
+history.candidatePerf[v.digit];
+
+if(cp && cp.samples){
+
+const long=
+metaBayes(
+cp.long,
+cp.samples,
+.5,
+8
+);
+
+const recent=
+metaBayes(
+cp.recent,
+Math.min(
+cp.samples,
+8
+),
+.5,
+6
+);
+
+v.metaCandidateScore=
+.65*long+
+.35*recent;
+
+}else{
+
+v.metaCandidateScore=.5;
+
+}
+
+v.metaBoost=
+.12*
+(
+v.metaCandidateScore-.5
+);
+
+}
+);
+
+/*
+==========================================================
+SIGNAL AGREEMENT / REDUNDANCY
+==========================================================
+*/
+
+Object.values(score).forEach(
+v=>{
 
 const consensus=
 v.modelScore;
-
 
 const highSignals=[
 
@@ -2223,9 +2336,7 @@ v.winSetScore
 x=>x>=.75
 ).length;
 
-
 const redundancyPenalty=
-
 1-
 Math.min(
 .18,
@@ -2235,21 +2346,18 @@ highSignals-1
 )*.06
 );
 
-
 v.redundancyPenalty=
 redundancyPenalty;
 
-
 const signalAgreement=
-
 (
 v.formula100Score+
 v.radarScore+
 v.backendScore+
 v.winSetScore
-)/4*
+)/
+4*
 redundancyPenalty;
-
 
 v.selectorBonus=
 allowed.has(v.digit)
@@ -2261,20 +2369,18 @@ allowed.has(v.digit)
 :
 0;
 
-
 v.selectorScore=
 v.totalScore+
 v.selectorBonus;
 
-});
-
+}
+);
 
 /*
 ==========================================================
 FINAL SELECTION LAYER
 ==========================================================
 */
-
 
 const bayes=
 (
@@ -2290,41 +2396,46 @@ Math.max(
 Number(samples)||0
 );
 
+const h=
+Number.isFinite(
+Number(hitRate)
+)
+?
+Number(hitRate)
+:
+prior;
 
 return(
-hitRate*n+
+h*n+
 prior*priorN
 )/
 (n+priorN);
 
 };
 
-
-Object.values(score)
-.forEach(v=>{
+Object.values(score).forEach(
+v=>{
 
 const dp=
 history &&
+history.digitPerf &&
 history.digitPerf[v.digit];
 
-
 const samples=
-dp?.samples||0;
+dp?.samples || 0;
 
 const hist=
-dp?.long??.5;
+dp?.long ?? .5;
 
 const recent=
-dp?.recent??hist;
+dp?.recent ?? hist;
 
 const stability=
-dp?.stability??.5;
-
+dp?.stability ?? .5;
 
 /*
-Bayesian-style shrinkage
+Bayesian shrinkage
 */
-
 
 v.reliabilityScore=
 
@@ -2346,13 +2457,10 @@ samples,
 .20*
 stability;
 
-
 v.modelConsensusCount=
 models.filter(
-m=>
-m.set.includes(v.digit)
+m=>m.set.includes(v.digit)
 ).length;
-
 
 v.supportSignals=[
 
@@ -2365,7 +2473,6 @@ v.winSetScore
 x=>x>=.60
 ).length;
 
-
 v.conflictSignals=[
 
 v.formula100Score,
@@ -2377,9 +2484,7 @@ v.winSetScore
 x=>x<=.25
 ).length;
 
-
 const conflictPenalty=
-
 1-
 Math.min(
 .20,
@@ -2389,22 +2494,16 @@ v.conflictSignals-1
 )*.05
 );
 
-
 const reliabilityBlend=
-
-.70*
-v.reliabilityScore+
+.70*v.reliabilityScore+
 .30*.5;
 
-
 const poolStrength=
-
 v.modelConsensusCount/
 Math.max(
 1,
 models.length
 );
-
 
 const consensusBoost=
 allowed.has(v.digit)
@@ -2413,40 +2512,25 @@ allowed.has(v.digit)
 :
 0;
 
-
 const agreementBoost=
 allowed.has(v.digit)
 ?
 .045*
-(v.supportSignals/4)
+(
+v.supportSignals/4
+)
 :
 0;
-
 
 const reliabilityBoost=
 allowed.has(v.digit)
 ?
 .055*
-(reliabilityBlend-.5)
+(
+reliabilityBlend-.5
+)
 :
 0;
-
-
-const conflictPenaltyValue=
-allowed.has(v.digit)
-?
-conflictPenalty
-:
-0;
-
-
-/*
-Anti-dead gate
-
-ไม่สามารถเอาเลขออกจาก Candidate Pool
-เพียงเพราะ signal ชั้นรองไม่สนับสนุน
-*/
-
 
 const deadCandidate=
 
@@ -2458,7 +2542,6 @@ recent<.35 &&
 
 v.modelConsensusCount<=2;
 
-
 const deadPenalty=
 deadCandidate
 ?
@@ -2466,48 +2549,36 @@ deadCandidate
 :
 1;
 
-
 v.selectionPenalty=
-conflictPenaltyValue*
+conflictPenalty*
 deadPenalty;
 
-
 v.selectorScore=
-
 (
 v.totalScore+
 consensusBoost+
 agreementBoost+
-reliabilityBoost
+reliabilityBoost+
+v.metaBoost
 )*
 v.selectionPenalty;
 
-});
-
+}
+);
 
 /*
 ==========================================================
-CANDIDATE POOL LOCK
-==========================================================
-
-Selector ไม่มีสิทธิ์สร้างเลขใหม่
-หรือเพิ่มเลขนอก 5 Main Models
+RANK CANDIDATES
 ==========================================================
 */
 
-
 let ranked=
 Object.values(score)
-
 .filter(
-v=>
-allowed.has(v.digit)
+v=>allowed.has(v.digit)
 )
-
 .sort(
-
 (a,b)=>
-
 b.selectorScore-
 a.selectorScore ||
 
@@ -2522,20 +2593,210 @@ a.reliabilityScore ||
 
 b.digit-
 a.digit
-
 );
 
+/*
+==========================================================
+JOINT TOP-2 OPTIMIZER
+
+เป้าหมาย:
+อย่างน้อย 1 ใน 2 ตัวเข้า
+
+ใช้เฉพาะ Candidate Pool
+และใช้ historical pair evidence ที่มีอยู่ก่อน target
+==========================================================
+*/
+
+if(ranked.length>1){
+
+let bestPair=null;
+
+for(
+let i=0;
+i<ranked.length;
+i++
+){
+
+for(
+let j=i+1;
+j<ranked.length;
+j++
+){
+
+const a=
+ranked[i];
+
+const b=
+ranked[j];
+
+const key=
+[
+a.digit,
+b.digit
+]
+.sort(
+(x,y)=>x-y
+)
+.join('');
+
+const pp=
+history &&
+history.candidatePairPerf &&
+history.candidatePairPerf[key];
+
+const pairLong=
+pp?.samples
+?
+metaBayes(
+pp.long,
+pp.samples,
+.5,
+8
+)
+:
+.5;
+
+const pairRecent=
+pp?.samples
+?
+metaBayes(
+pp.recent,
+Math.min(
+pp.samples,
+8
+),
+.5,
+6
+)
+:
+.5;
+
+const pairScore=
+.70*pairLong+
+.30*pairRecent;
+
+const individual=
+.70*
+(
+(
+a.selectorScore+
+b.selectorScore
+)/2
+)+
+.30*
+(
+(
+a.metaCandidateScore+
+b.metaCandidateScore
+)/2
+);
+
+const evidence=
+Math.min(
+1,
+(pp?.samples || 0)/8
+);
+
+/*
+เมื่อ evidence ยังน้อย
+อย่าให้ pair history ครอบงำ selector
+*/
+
+const pairWeight=
+.20*
+evidence;
+
+const individualWeight=
+1-pairWeight;
+
+const joint=
+pairWeight*pairScore+
+individualWeight*individual;
+
+const candidate={
+a,
+b,
+key,
+pairScore,
+individual,
+joint
+};
+
+if(
+!bestPair ||
+
+joint>
+bestPair.joint ||
+
+(
+joint===
+bestPair.joint &&
+pairScore>
+bestPair.pairScore
+) ||
+
+(
+joint===
+bestPair.joint &&
+pairScore===
+bestPair.pairScore &&
+(
+a.selectorScore+
+b.selectorScore
+)>
+(
+bestPair.a.selectorScore+
+bestPair.b.selectorScore
+)
+)
+){
+
+bestPair=candidate;
+
+}
+
+}
+
+}
+
+if(bestPair){
+
+const chosen=
+new Set([
+bestPair.a.digit,
+bestPair.b.digit
+]);
+
+ranked=
+[
+bestPair.a,
+bestPair.b
+]
+.concat(
+ranked.filter(
+v=>!chosen.has(v.digit)
+)
+);
+
+bestPair.a.metaPairScore=
+bestPair.pairScore;
+
+bestPair.b.metaPairScore=
+bestPair.pairScore;
+
+}
+
+}
 
 /*
 ==========================================================
 NEAR-TIE RESOLVER
+
+ยังคงอยู่ใน Candidate Pool เท่านั้น
 ==========================================================
 */
 
-
-if(
-ranked.length>2
-){
+if(ranked.length>2){
 
 const first=
 ranked[0];
@@ -2546,7 +2807,6 @@ ranked[1];
 const third=
 ranked[2];
 
-
 const gap12=
 first.selectorScore-
 second.selectorScore;
@@ -2555,42 +2815,32 @@ const gap23=
 second.selectorScore-
 third.selectorScore;
 
-
 const near12=
 gap12<=.035 ||
-
 (
 first.selectorScore>0 &&
 gap12/
 first.selectorScore<=.035
 );
 
-
 const near23=
 gap23<=.035 ||
-
 (
 second.selectorScore>0 &&
 gap23/
 second.selectorScore<=.035
 );
 
-
-if(
-near12 ||
-near23
-){
+if(near12 || near23){
 
 ranked=
-
 ranked
-
-.map(v=>({
+.map(
+v=>({
 
 v,
 
 final:
-
 v.selectorScore+
 
 .020*
@@ -2613,28 +2863,31 @@ v.reliabilityScore-
 .010*
 (
 v.conflictSignals/4
+)+
+
+.012*
+(
+v.metaCandidateScore-.5
 )
 
-}))
-
+})
+)
 .sort(
-
 (a,b)=>
-
-b.final-
-a.final ||
+b.final-a.final ||
 
 b.v.modelConsensusCount-
 a.v.modelConsensusCount ||
+
+b.v.metaCandidateScore-
+a.v.metaCandidateScore ||
 
 b.v.reliabilityScore-
 a.v.reliabilityScore ||
 
 b.v.digit-
 a.v.digit
-
 )
-
 .map(
 x=>x.v
 );
@@ -2643,18 +2896,15 @@ x=>x.v
 
 }
 
-
 /*
 ==========================================================
 CONFIDENCE
-==========================================================
 
-confidence =
-ความมั่นใจของ Selector
-ไม่ใช่โอกาสถูกรางวัล
+สำคัญ:
+นี่คือ Selector Confidence
+ไม่ใช่ Win Probability
 ==========================================================
 */
-
 
 ranked.forEach(
 (v,i)=>{
@@ -2662,18 +2912,16 @@ ranked.forEach(
 const next=
 ranked[i+1];
 
-
 const margin=
-next?
-
+next
+?
 Math.max(
 0,
 v.selectorScore-
 next.selectorScore
-):
-
+)
+:
 v.selectorScore;
-
 
 v.confidence=
 Math.max(
@@ -2681,12 +2929,12 @@ Math.max(
 Math.min(
 1,
 
-.50+
+.42+
 
-.30*
+.24*
 v.reliabilityScore+
 
-.12*
+.14*
 (
 v.modelConsensusCount/
 Math.max(
@@ -2695,111 +2943,636 @@ models.length
 )
 )+
 
-.08*
-(
-v.supportSignals/
-4
-)+
+.12*
+v.metaCandidateScore+
 
-.05*
-margin
+.08*
+Math.min(
+1,
+margin/.15
+)
 
 )
 );
 
-});
-
-
-/*
-==========================================================
-TOP 2 ONLY
-==========================================================
-*/
-
-
-const top=
-ranked.slice(
-0,
-2
+}
 );
 
+const top=
+ranked.slice(0,2);
 
 return{
 score,
+allowed,
 top,
-allowed:Array.from(allowed)
+ranked
 };
 
 },
 
-
 /*
 ==========================================================
-RUN
+COLLECT PAIR CANDIDATES
 ==========================================================
 */
 
+collectPairCandidates(
+digit,
+models,
+anchor,
+score
+){
+
+const output=[];
+
+for(const model of models){
+
+if(!model.set.has(digit))
+continue;
+
+const candidates=[
+
+`${digit}${anchor}`,
+
+`${anchor}${digit}`
+
+];
+
+for(const pair of candidates){
+
+if(
+!output.some(
+x=>x.pair===pair
+)
+){
+
+output.push({
+pair,
+model:model.id,
+score:
+Number(
+score?.[digit]?.selectorScore
+) || 0
+});
+
+}
+
+}
+
+}
+
+return output;
+
+},
+
+/*
+==========================================================
+BEST PAIRS FOR DIGIT
+
+สูตรเลขเจาะเดิม
+==========================================================
+*/
+
+bestPairsForDigit(
+digit,
+models,
+score
+){
+
+const anchor=
+this.norm(
+7-
+Number(
+models[0]?.raw || 0
+)
+);
+
+const all=[];
+
+for(const model of models){
+
+if(!model.set.has(digit))
+continue;
+
+const pairs=[
+
+`${digit}${anchor}`,
+
+`${anchor}${digit}`
+
+];
+
+for(const pair of pairs){
+
+if(
+!all.some(
+x=>x===pair
+)
+){
+
+all.push(pair);
+
+}
+
+}
+
+}
+
+return all.slice(0,5);
+
+},
+
+/*
+==========================================================
+BUILD CONSENSUS
+==========================================================
+*/
+
+buildConsensus(pairSets){
+
+const map=new Map();
+
+for(const set of pairSets){
+
+for(const pair of set){
+
+const key=
+this.pairKey(pair);
+
+map.set(
+key,
+(map.get(key)||0)+1
+);
+
+}
+
+}
+
+const ordered=
+[...map.entries()]
+.sort(
+(a,b)=>
+b[1]-a[1] ||
+a[0].localeCompare(b[0])
+);
+
+const colorMap={};
+
+ordered.forEach(
+([key,count],index)=>{
+
+colorMap[key]={
+rank:index+1,
+score:count
+};
+
+}
+);
+
+return{
+map,
+colorMap
+};
+
+},
+
+/*
+==========================================================
+SORT PAIRS
+==========================================================
+*/
+
+sortPairs(pairs){
+
+return[...pairs]
+.sort(
+(a,b)=>
+String(a).localeCompare(
+String(b),
+undefined,
+{numeric:true}
+)
+);
+
+},
+
+/*
+==========================================================
+FLAG
+==========================================================
+*/
+
+flag(name){
+
+const s=
+String(name || '')
+.toLowerCase();
+
+if(s.includes('ดาวโจนส์'))
+return '🇺🇸';
+
+if(s.includes('นิเคอิ'))
+return '🇯🇵';
+
+if(s.includes('ฮั่งเส็ง'))
+return '🇭🇰';
+
+if(s.includes('เกาหลี'))
+return '🇰🇷';
+
+if(s.includes('จีน'))
+return '🇨🇳';
+
+if(s.includes('อังกฤษ'))
+return '🇬🇧';
+
+if(s.includes('เยอรมัน'))
+return '🇩🇪';
+
+return '🎯';
+
+},
+
+/*
+==========================================================
+NEXT DATE LABEL
+==========================================================
+*/
+
+nextDateLabel(records){
+
+if(!records.length)
+return 'งวดถัดไป';
+
+const last=
+records[records.length-1];
+
+const s=
+String(last.date || '').trim();
+
+const m=
+s.match(
+/^(\d+)\s+(\S+)\s+(\d+)$/
+);
+
+if(!m)
+return 'งวดถัดไป';
+
+const day=
+Number(m[1]);
+
+const month=
+m[2];
+
+const year=
+Number(m[3]);
+
+const monthMap={
+'ม.ค.':1,
+'ก.พ.':2,
+'มี.ค.':3,
+'เม.ย.':4,
+'พ.ค.':5,
+'มิ.ย.':6,
+'ก.ค.':7,
+'ส.ค.':8,
+'ก.ย.':9,
+'ต.ค.':10,
+'พ.ย.':11,
+'ธ.ค.':12
+};
+
+const monthReverse=
+Object.fromEntries(
+Object.entries(monthMap)
+.map(
+([k,v])=>[v,k]
+)
+);
+
+const md=
+monthMap[month];
+
+if(!md)
+return 'งวดถัดไป';
+
+const dt=
+new Date(
+year+543,
+md-1,
+day
+);
+
+dt.setDate(
+dt.getDate()+1
+);
+
+const d=
+dt.getDate();
+
+const mm=
+dt.getMonth()+1;
+
+const y=
+dt.getFullYear()-543;
+
+return[
+d,
+monthReverse[mm] || month,
+y
+].join(' ');
+
+},
+
+/*
+==========================================================
+AUDIT SELECTOR
+==========================================================
+*/
+
+auditSelector(records){
+
+const ordered=
+[...records]
+.sort(
+(a,b)=>
+this.dateSortValue(a.date)-
+this.dateSortValue(b.date)
+);
+
+const audit=[];
+
+for(
+let targetIndex=1;
+targetIndex<ordered.length;
+targetIndex++
+){
+
+const historyRecords=
+ordered.slice(
+0,
+targetIndex
+);
+
+const source=
+historyRecords[
+historyRecords.length-1
+];
+
+if(!source)
+continue;
+
+const history=
+this.buildHistory(
+historyRecords
+);
+
+const prediction=
+this.run(
+source.n3,
+source.n2,
+history
+);
+
+const actual=
+this.actualDigits(
+ordered[targetIndex]
+);
+
+const allowed=
+new Set();
+
+prediction.models.forEach(
+m=>
+m.set.forEach(
+d=>allowed.add(d)
+)
+);
+
+const candidateHit=
+[...actual]
+.some(
+d=>allowed.has(d)
+);
+
+const selectorHit=
+prediction.top2Digits.some(
+d=>actual.has(d)
+);
+
+const top1Hit=
+actual.has(
+prediction.top2Digits[0]
+);
+
+const top2Hit=
+actual.has(
+prediction.top2Digits[1]
+);
+
+audit.push({
+
+sourceDate:
+source.date,
+
+targetDate:
+ordered[targetIndex].date,
+
+actual:
+[...actual],
+
+top2:
+[...prediction.top2Digits],
+
+candidateHit,
+
+selectorHit,
+
+top1Hit,
+
+top2Hit,
+
+confidence:
+prediction.modelScores[
+prediction.top2Digits[0]
+]?.confidence || 0
+
+});
+
+}
+
+const trials=
+audit.length;
+
+const candidateHits=
+audit.filter(
+x=>x.candidateHit
+).length;
+
+const selectorHits=
+audit.filter(
+x=>x.selectorHit
+).length;
+
+const top1Hits=
+audit.filter(
+x=>x.top1Hit
+).length;
+
+const top2Hits=
+audit.filter(
+x=>x.top2Hit
+).length;
+
+return{
+
+trials,
+
+candidateHits,
+
+selectorHits,
+
+top1Hits,
+
+top2Hits,
+
+candidateCoverage:
+trials
+?
+candidateHits/trials
+:
+0,
+
+selectorRate:
+trials
+?
+selectorHits/trials
+:
+0,
+
+top1Rate:
+trials
+?
+top1Hits/trials
+:
+0,
+
+top2Rate:
+trials
+?
+top2Hits/trials
+:
+0,
+
+rows:audit
+
+};
+
+},
+
+/*
+==========================================================
+FORMAT PERCENT
+==========================================================
+*/
+
+formatPct(v){
+
+return`${Math.round(
+Math.max(
+0,
+Math.min(
+1,
+v
+)
+)*1000
+)/10}%`;
+
+},
+
+/*
+==========================================================
+FORMAT DATE
+==========================================================
+*/
+
+formatDate(date){
+
+const s=
+String(date || '')
+.trim();
+
+if(
+/\d+\s+\S+\s+\d+/.test(s)
+){
+
+const p=
+s.split(/\s+/);
+
+if(p.length>=3){
+
+return[
+p[0],
+p[1],
+p.slice(2).join(' ')
+].join(' · ');
+
+}
+
+}
+
+return s;
+
+},
+
+/*
+==========================================================
+MAIN ENGINE
+==========================================================
+*/
 
 run(
 n3,
 n2,
-history
+history=null
 ){
 
-const digits=
-String(n3||'000')
-.padStart(3,'0')
+const d3=
+String(n3 || '')
 .split('')
 .map(Number);
 
-
-const H=
-digits[0]||0;
-
-const T=
-digits[1]||0;
-
-const U=
-digits[2]||0;
-
-
-const pair=
-String(n2||'00')
+const d2=
+String(n2 || '')
 .padStart(2,'0')
 .split('')
 .map(Number);
 
+const[
+H,T,U
+]=d3;
 
-const R1=
-pair[0]||0;
-
-const R2=
-pair[1]||0;
-
+const[
+R1,R2
+]=d2;
 
 const sumT=
-(H+T+U)%10;
+H+T+U;
 
 const sumB=
-(R1+R2)%10;
+R1+R2;
 
 const total=
-(H+T+U+R1+R2)%10;
-
+sumT+sumB;
 
 const F=
-this.buildFormula100(
-H,T,U,R1,R2,
-sumT,sumB,total
+this.formulas(
+H,T,U,
+R1,R2,
+sumT,
+sumB,
+total
 );
-
-
-/*
-==========================================================
-5 MAIN MODELS
-==========================================================
-*/
-
 
 const models=
 this.buildModels(
@@ -2808,39 +3581,15 @@ R1,R2,
 sumT
 );
 
-
-/*
-==========================================================
-ANCHOR
-==========================================================
-*/
-
-
 const anchor=
 this.norm(
 7-H
 );
 
-
-/*
-==========================================================
-PAIR SUPPORT
-==========================================================
-*/
-
-
 this.buildPairs(
 models,
 anchor
 );
-
-
-/*
-==========================================================
-SELECTOR
-==========================================================
-*/
-
 
 const scored=
 this.scoreDigits(
@@ -2854,23 +3603,8 @@ total,
 history
 );
 
-
 const top=
 scored.top;
-
-
-const top2Digits=
-top.map(
-v=>v.digit
-);
-
-
-/*
-==========================================================
-PAIR SETS
-==========================================================
-*/
-
 
 const pairSets=
 top.map(
@@ -2882,23 +3616,17 @@ scored.score
 )
 );
 
-
-/*
-==========================================================
-CONSENSUS
-==========================================================
-*/
-
-
 const consensus=
 this.buildConsensus(
 pairSets
 );
 
-
 return{
 
-top2Digits,
+top2Digits:
+top.map(
+v=>v.digit
+),
 
 pairSets:
 pairSets.map(
@@ -2920,13 +3648,11 @@ consensus
 
 },
 
-
 /*
 ==========================================================
 COPY
 ==========================================================
 */
-
 
 copy(text){
 
@@ -2939,7 +3665,9 @@ navigator.clipboard
 ()=>{
 
 const t=
-document.createElement('textarea');
+document.createElement(
+'textarea'
+);
 
 t.value=text;
 
@@ -2958,6 +3686,11 @@ this.show();
 
 },
 
+/*
+==========================================================
+TOAST
+==========================================================
+*/
 
 show(){
 
@@ -2978,158 +3711,11 @@ setTimeout(
 
 },
 
-
-/*
-==========================================================
-WALK-FORWARD AUDIT
-==========================================================
-*/
-
-
-auditSelector(records){
-
-const minHistory=5;
-
-if(
-records.length<=minHistory
-){
-
-return{
-
-trials:0,
-candidateCoverage:0,
-selectorRate:0
-
-};
-
-}
-
-
-let trials=0;
-let candidateHits=0;
-let selectorHits=0;
-
-
-/*
-STRICT WALK-FORWARD
-
-ทุก trial ใช้เฉพาะข้อมูลก่อนงวดเป้าหมาย
-ไม่ใช้ผลจริงของงวดเป้าหมาย
-*/
-
-
-for(
-let i=minHistory;
-i<records.length;
-i++
-){
-
-const train=
-records.slice(
-0,
-i
-);
-
-const target=
-records[i];
-
-
-const history=
-this.buildHistory(
-train
-);
-
-
-const predicted=
-this.run(
-train[train.length-1].n3,
-train[train.length-1].n2,
-history
-);
-
-
-const targetDigits=
-String(
-target.n3||'000'
-)
-.padStart(3,'0')
-.split('')
-.map(Number);
-
-
-const targetSet=
-new Set(
-targetDigits
-);
-
-
-const candidateSet=
-new Set();
-
-
-predicted.models.forEach(
-m=>
-m.set.forEach(
-d=>
-candidateSet.add(d)
-)
-);
-
-
-if(
-targetDigits.some(
-d=>
-candidateSet.has(d)
-)
-){
-
-candidateHits++;
-
-}
-
-
-if(
-predicted.top2Digits.some(
-d=>
-targetSet.has(d)
-)
-){
-
-selectorHits++;
-
-}
-
-
-trials++;
-
-}
-
-
-return{
-
-trials,
-
-candidateCoverage:
-trials?
-candidateHits/trials:
-0,
-
-selectorRate:
-trials?
-selectorHits/trials:
-0
-
-};
-
-},
-
-
 /*
 ==========================================================
 CALCULATE
 ==========================================================
 */
-
 
 async calculate(){
 
@@ -3138,10 +3724,7 @@ this.parse(
 $('bulkInput').value
 );
 
-
-if(
-!parsed.records.length
-){
+if(!parsed.records.length){
 
 $('result').innerHTML=
 '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
@@ -3149,7 +3732,6 @@ $('result').innerHTML=
 return;
 
 }
-
 
 const scanner=
 $('scanner');
@@ -3161,11 +3743,9 @@ btn.disabled=true;
 
 scanner.style.display='block';
 
-
 const scan=
 msg=>
 $('scanText').textContent=msg;
-
 
 const yieldUI=
 ()=>new Promise(
@@ -3173,9 +3753,7 @@ resolve=>
 requestAnimationFrame(resolve)
 );
 
-
 try{
-
 
 scan(
 'แยกประเภทหวยและเรียงข้อมูลเก่า → ใหม่...'
@@ -3183,23 +3761,18 @@ scan(
 
 await yieldUI();
 
-
 this.cache=[];
-
 
 const groups=
 this.groupByLottery(
 parsed.records
 );
 
-
 const cards=[];
 const outputData=[];
 const copyBlocks=[];
 
-
 let groupIndex=0;
-
 
 for(
 const group of groups
@@ -3207,10 +3780,8 @@ const group of groups
 
 groupIndex++;
 
-
 const records=
 group.records;
-
 
 scan(
 `ตรวจ ${group.name} • ${groupIndex}/${groups.length}`
@@ -3218,60 +3789,39 @@ scan(
 
 await yieldUI();
 
-
-if(
-records.length<1
-)
+if(records.length<1)
 continue;
 
-
 /*
-======================================================
+==========================================================
 STRICT WALK-FORWARD AUDIT
-======================================================
+==========================================================
 
-ผล Audit ไม่ถูกส่งกลับไปแก้คะแนนงวดปัจจุบัน
-ป้องกัน Data Leakage
-======================================================
+ผล Audit ไม่ถูกส่งกลับไปแก้คะแนนของงวดปัจจุบัน
+เพื่อป้องกัน Data Leakage
+==========================================================
 */
-
 
 const audit=
 this.auditSelector(
 records
 );
 
-
 /*
-======================================================
-LATEST
-======================================================
+==========================================================
+LATEST DATA → FUTURE PREDICTION
+==========================================================
 */
-
 
 const latest=
 records[
 records.length-1
 ];
 
-
-/*
-เฉพาะ history ของหวยประเภทเดียวกัน
-*/
-
-
 const history=
 this.buildHistory(
 records
 );
-
-
-/*
-======================================================
-PREDICT
-======================================================
-*/
-
 
 const a=
 this.run(
@@ -3280,56 +3830,46 @@ latest.n2,
 history
 );
 
-
 this.cache.push({
 
 group:
 group.name,
 
-result:
-a,
+result:a,
 
 audit
 
 });
 
-
 /*
-======================================================
+==========================================================
 CANDIDATE POOL GUARD
-======================================================
+==========================================================
 
 Top 2 ต้องมาจาก 5 Main Models เท่านั้น
-======================================================
+==========================================================
 */
-
 
 const allowed=
 new Set();
 
-
 a.models.forEach(
 m=>
 m.set.forEach(
-d=>
-allowed.add(d)
+d=>allowed.add(d)
 )
 );
 
-
 const valid=
-
 a.top2Digits.length===2 &&
 
 a.top2Digits.every(
-d=>
-allowed.has(d)
+d=>allowed.has(d)
 ) &&
 
 new Set(
 a.top2Digits
 ).size===2;
-
 
 if(!valid){
 
@@ -3341,77 +3881,126 @@ continue;
 
 }
 
-
 /*
-======================================================
-VISIBLE OUTPUT
-======================================================
-
-แสดงเฉพาะผลที่ผู้ใช้ต้องการ
-ไม่แสดง Walk-forward / Candidate / Selector badge
-ไม่แสดงรายละเอียดสูตรหลังบ้าน
-======================================================
+==========================================================
+DISPLAY
+==========================================================
 */
 
+const rows=
+a.top2Digits
+.map(
+(d,k)=>{
 
-const top1=
-String(
-a.top2Digits[0]
+const sourcePairs=
+(a.pairSets[k] || [])
+.slice(0,5);
+
+const sorted=
+this.sortPairs(
+sourcePairs
 );
 
+const pairHTML=
+sorted
+.map(
+pair=>{
 
-const top2=
-String(
-a.top2Digits[1]
-);
+const info=
+a.consensus.colorMap[
+this.pairKey(pair)
+];
 
+const title=
+info
+?
+`อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
+:
+'เลขเจาะจาก 5 Main Models';
 
-const rows=`
+return`
+<span
+class="${this.pairClass(
+pair,
+a.consensus.colorMap
+)}"
+title="${esc(title)}"
+>
+${esc(pair)}
+</span>
+`;
 
+}
+)
+.join('');
+
+const digitClass=
+k===0
+?
+'digit digit-gold'
+:
+'digit digit-silver';
+
+return`
 <div class="row">
 
-<div class="row-label">
-ตัวเด่นอันดับ 1
+<span
+class="${digitClass}"
+aria-label="เลขเด่นอันดับ ${k+1}"
+>
+${esc(d)}
+</span>
+
+<span class="sep">
+:
+</span>
+
+<div class="pairs">
+${pairHTML}
 </div>
 
-<div class="row-value top">
-${esc(top1)}
 </div>
+`;
 
-</div>
+}
+)
+.join('');
 
+const footer=`
 
-<div class="row">
+<div class="brand-footer">
 
-<div class="row-label">
-ตัวเด่นอันดับ 2
-</div>
+<span class="brand-star">
+✦
+</span>
 
-<div class="row-value">
-${esc(top2)}
-</div>
+<span>
+บ้านเงินกอง
+</span>
+
+<span class="brand-star">
+✦
+</span>
 
 </div>
 
 `;
-
 
 const nextDate=
 this.nextDateLabel(
 records
 );
 
+const auditTitle=
+audit.trials
 
-const footer=`
+?
 
-<div class="footer">
+`Walk-forward ${audit.trials} งวด • Candidate ${this.formatPct(audit.candidateCoverage)} • Selector ${this.formatPct(audit.selectorRate)} • Top1 ${this.formatPct(audit.top1Rate)}`
 
-5 Main Models → Candidate Pool → Selector → Top 2
+:
 
-</div>
-
-`;
-
+'ยังมีข้อมูลย้อนหลังไม่พอสำหรับ Walk-forward audit';
 
 cards.push(`
 
@@ -3439,144 +4028,141 @@ ${esc(nextDate)}
 
 </div>
 
-<div
-class="vip-label"
-aria-hidden="true"
-></div>
-
+<div class="vip-label">
+${esc(auditTitle)}
 </div>
 
+</div>
 
 <div class="rows">
 ${rows}
 </div>
 
-
 ${footer}
-
 
 </article>
 
 `);
 
+copyBlocks.push(
 
-outputData.push({
-
-name:
-group.name,
-
-nextDate,
-
-top2:
-a.top2Digits
-
-});
-
-
-copyBlocks.push([
+[
 
 `${this.flag(group.name)} ${group.name} | ${nextDate}`,
 
-`เด่น 1: ${top1}`,
+...a.top2Digits.map(
+(d,k)=>
+`${d} : ${
+this.sortPairs(
+(a.pairSets[k] || [])
+.slice(0,5)
+).join('-')
+}`
+)
 
-`เด่น 2: ${top2}`
+].join('\n')
 
-].join('\n'));
+);
+
+outputData.push({
+
+group,
+
+latest,
+
+a,
+
+audit,
+
+nextDate
+
+});
 
 }
 
+scan(
+'ตรวจสอบความสอดคล้องของผลลัพธ์...'
+);
 
-/*
-==========================================================
-FINAL RESULT
-==========================================================
-*/
+await yieldUI();
 
+scan(
+'FINALIZING...'
+);
+
+await yieldUI();
 
 scanner.style.display='none';
 
 btn.disabled=false;
-
 
 const all=
 copyBlocks.join(
 '\n\n'
 );
 
+$('result').innerHTML=`
 
-$('result').innerHTML=
+<div class="summary">
 
-`
+<span>
+ประมวลผลสำเร็จ
 
-${
+<strong>
+${outputData.length}
+</strong>
 
-parsed.errors.length
-?
+ประเภท
+</span>
 
-`
-
-<div class="errorbox">
-
-${parsed.errors
-.map(esc)
-.join('<br>')}
+<button
+class="copy"
+id="copyTop"
+type="button"
+>
+📋 COPY ALL
+</button>
 
 </div>
 
+${
+parsed.errors.length
+?
 `
 
+<div class="errorbox">
+${parsed.errors
+.map(esc)
+.join('<br>')}
+</div>
+
+`
 :
-
 ''
-
 }
-
 
 ${cards.join('')}
 
-
-${
-cards.length
-?
-
-`
-
 <button
 class="copyall"
-id="copyTop"
+id="copyBottom"
+type="button"
 >
-📋 คัดลอกผลทั้งหมด
+📋 คัดลอกหวยทั้งหมด
 </button>
 
-`
-
-:
-
-''
-
-}
-
-
 `;
-
-
-if(
-cards.length
-){
 
 $('copyTop').onclick=
 ()=>this.copy(all);
 
-}
-
+$('copyBottom').onclick=
+()=>this.copy(all);
 
 $('result').scrollIntoView({
-
 behavior:'smooth',
 block:'start'
-
 });
-
 
 }catch(err){
 
@@ -3584,23 +4170,13 @@ scanner.style.display='none';
 
 btn.disabled=false;
 
-
 $('result').innerHTML=
-
 `
-
 <div class="errorbox">
-
 ❌ เกิดข้อผิดพลาดระหว่างประมวลผล:
-
-${esc(
-err?.message||err
-)}
-
+${esc(err?.message || err)}
 </div>
-
 `;
-
 
 console.error(err);
 
@@ -3608,39 +4184,11 @@ console.error(err);
 
 },
 
-
-/*
-==========================================================
-NEXT DATE
-==========================================================
-*/
-
-
-nextDateLabel(records){
-
-if(
-!records.length
-)
-return'งวดถัดไป';
-
-
-const latest=
-records[
-records.length-1
-];
-
-
-return`ถัดจาก ${latest.date}`;
-
-},
-
-
 /*
 ==========================================================
 CLEAR
 ==========================================================
 */
-
 
 clear(){
 
@@ -3656,36 +4204,48 @@ $('bulkInput').focus();
 
 },
 
-
 /*
 ==========================================================
-LOGIN
+AUTHENTICATION PERSISTENCE
+==========================================================
+
+เก็บเพียง:
+ml_auth_status_v4 = active
+
+ไม่เก็บรหัสผ่าน
+ไม่สร้าง password token ปลอม
+รีเฟรชหน้า → restoreAuth()
+Logout → ล้างสถานะ
 ==========================================================
 */
 
+isAuthenticated(){
 
-login(){
+try{
 
-const v=
-$('password').value.trim();
+return(
+localStorage.getItem(
+this.authKey
+)==='active'
+);
 
+}catch(err){
 
-if(
-!sec.ok(v)
-){
+console.warn(
+'localStorage ไม่พร้อมใช้งาน',
+err
+);
 
-$('loginErr').style.display='block';
-
-$('loginErr').textContent=
-'รหัสผ่านไม่ถูกต้อง';
-
-return;
+return false;
 
 }
 
+},
 
-$('loginErr').style.display='none';
+restoreAuth(){
 
+if(!this.isAuthenticated())
+return false;
 
 $('login')
 .classList.remove('active');
@@ -3693,72 +4253,94 @@ $('login')
 $('console')
 .classList.add('active');
 
-
-$('bulkInput').focus();
-
-
-/*
-==========================================================
-PERSISTENT LOGIN
-==========================================================
-
-จำสถานะการ Login บน Browser/อุปกรณ์เดิม
-ไม่ให้ storage error ขัดขวางการเข้าใช้งาน
-*/
-
-
-storage.set(
-STORAGE_KEY,
-'active'
-);
-
-
-/*
-เก็บ credential ที่ผ่านการตรวจสอบ
-ในรูปแบบ encoded สำหรับการ restore
-*/
-
-
-storage.set(
-REMEMBER_KEY,
-this.encodeRemembered(v)
-);
+return true;
 
 },
 
+login(){
 
-encodeRemembered(v){
+const v=
+$('password').value.trim();
 
-try{
+if(!sec.ok(v)){
 
-return Array.from(
-String(v||''),
-ch=>
-ch.charCodeAt(0)
-.toString(16)
-.padStart(4,'0')
-)
-.join('');
+$('loginErr')
+.style.display='block';
 
-}catch(e){
-
-return'';
+return;
 
 }
 
-},
+$('loginErr')
+.style.display='none';
 
+$('login')
+.classList.remove('active');
+
+$('console')
+.classList.add('active');
+
+try{
+
+/*
+เก็บเฉพาะสถานะการเข้าสู่ระบบ
+ไม่เก็บรหัสผ่าน
+*/
+
+localStorage.setItem(
+this.authKey,
+'active'
+);
+
+/*
+ล้างสถานะเก่าของ V11
+*/
+
+localStorage.removeItem(
+'ml_auth_status_v3'
+);
+
+}catch(err){
+
+/*
+หาก browser ปิด localStorage
+จะยังเข้าใช้งานได้ใน session ปัจจุบัน
+แต่ไม่สามารถรับประกัน persistence ข้าม refresh ได้
+*/
+
+console.warn(
+'ไม่สามารถบันทึกสถานะเข้าสู่ระบบถาวรได้',
+err
+);
+
+}
+
+$('password').value='';
+
+$('bulkInput').focus();
+
+},
 
 logout(){
 
-storage.remove(
-STORAGE_KEY
+try{
+
+localStorage.removeItem(
+this.authKey
 );
 
-storage.remove(
-REMEMBER_KEY
+localStorage.removeItem(
+'ml_auth_status_v3'
 );
 
+}catch(err){
+
+console.warn(
+'ไม่สามารถล้างสถานะเข้าสู่ระบบได้',
+err
+);
+
+}
 
 $('console')
 .classList.remove('active');
@@ -3772,10 +4354,11 @@ $('bulkInput').value='';
 
 $('result').innerHTML='';
 
+$('password').focus();
+
 }
 
 };
-
 
 /*
 ==========================================================
@@ -3783,21 +4366,16 @@ EVENTS
 ==========================================================
 */
 
-
 $('loginBtn').onclick=
 ()=>app.login();
-
 
 $('password').onkeydown=
 e=>{
 
-if(
-e.key==='Enter'
-)
+if(e.key==='Enter')
 app.login();
 
 };
-
 
 $('password').oninput=
 ()=>{
@@ -3807,24 +4385,20 @@ $('loginErr')
 
 };
 
-
 $('run').onclick=
 ()=>app.calculate();
-
 
 $('clear').onclick=
 ()=>app.clear();
 
-
 $('logout').onclick=
 ()=>app.logout();
-
 
 $('bulkInput').onkeydown=
 e=>{
 
 if(
-(e.ctrlKey||e.metaKey) &&
+(e.ctrlKey || e.metaKey) &&
 e.key==='Enter'
 ){
 
@@ -3834,27 +4408,25 @@ app.calculate();
 
 };
 
-
 /*
 ==========================================================
 RESTORE LOGIN SESSION
+
+สำคัญ:
+- Refresh → ไม่กลับหน้า Login หากยัง active
+- pageshow → restore อีกครั้ง
+- Logout เท่านั้นที่ล้าง active
 ==========================================================
 */
 
+app.restoreAuth();
 
-if(
-storage.get(STORAGE_KEY)==='active' &&
-storage.get(REMEMBER_KEY)
-){
-
-$('login')
-.classList.remove('active');
-
-$('console')
-.classList.add('active');
-
+window.addEventListener(
+'pageshow',
+()=>{
+app.restoreAuth();
 }
-
+);
 
 })();
 </script>
