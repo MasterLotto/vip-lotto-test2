@@ -360,7 +360,7 @@ const _app = {
       "READING INPUT STRUCTURE...",
       "CALCULATING DIGIT MOMENTUM...",
       "RUNNING BACKEND COMPASS & SCORING...",
-      "EVALUATING 5 MATHEMATICAL MODELS...",
+      "EVALUATING 100 MATHEMATICAL MODELS...",
       "BUILDING NUMBER MATRIX...",
       "MAPPING DIGIT DISTRIBUTION...",
       "GENERATING WIN SET...",
@@ -431,35 +431,46 @@ const _app = {
     };
 
     const fixedBase = 7, anchorRaw = fixedBase - H, anchor = (Math.abs(anchorRaw) % 10 + 10) % 10;
-    let rawM1 = (T_top + T_bot) % 10,
-        rawM2 = sumTop % 10,
-        rawM3 = (H + T_bot) % 10,
-        rawM4 = (U_top + U_bot) % 10,
-        rawM5 = (10 - U_bot) % 10;
-
-    let modelRawValues = [rawM1, rawM2, rawM3, rawM4, rawM5], uniqueModelDigits = new Set(modelRawValues);
     
-    if(uniqueModelDigits.size < 4){
-      const fallbackFormulas = [(T_top + U_bot) % 10, (H + U_top) % 10, sumBot % 10, (H + sumBot) % 10, totalSum % 10];
-      for(let fbVal of fallbackFormulas){
-        const normFb = (fbVal % 10 + 10) % 10;
-        uniqueModelDigits.add(normFb);
-        if(uniqueModelDigits.size >= 6) break;
-      }
-    }
-
-    const fList = [
-      { id: 1, name: "AI โมเดล 01", subName: "B + R1 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM1), positionalWeight: 1 },
-      { id: 2, name: "AI โมเดล 02", subName: "A + B + C -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM2), positionalWeight: 1 },
-      { id: 3, name: "AI โมเดล 03", subName: "A + R1 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM3), positionalWeight: 1 },
-      { id: 4, name: "AI โมเดล 04", subName: "C + R2 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM4), positionalWeight: 1 },
-      { id: 5, name: "AI โมเดล 05", subName: "10 - R2 -> ใช้หลักหน่วยดิบเพียวๆ", set: getUnitDirect(rawM5), positionalWeight: 1 }
+    let mRaw = [
+      (T_top + T_bot) % 10,
+      sumTop % 10,
+      (H + T_bot) % 10,
+      (U_top + U_bot) % 10,
+      (10 - U_bot) % 10,
+      (T_top + U_bot) % 10,
+      (H + U_top) % 10,
+      sumBot % 10,
+      (H + sumBot) % 10,
+      totalSum % 10,
+      (H * 2 + T_top) % 10,
+      (T_top * 2 + U_top) % 10,
+      (U_bot * 2 + H) % 10,
+      Math.abs(H - T_bot) % 10,
+      Math.abs(T_top - U_top) % 10,
+      (H + T_top + U_bot) % 10,
+      (sumTop + sumBot) % 10,
+      (10 - H + T_bot) % 10,
+      (20 - sumTop) % 10,
+      (T_bot * 3) % 10
     ];
 
-    const allowedModelDigits = new Set();
-    fList.forEach(item => { item.set.forEach(d => allowedModelDigits.add(d)); });
+    const allModelObjects = mRaw.map((rawVal, idx) => {
+      const modelId = idx + 1;
+      return {
+        id: modelId,
+        name: `AI โมเดล ${String(modelId).padStart(2, '0')}`,
+        subName: `Backend Model ${modelId} Engine`,
+        set: getUnitDirect(rawVal),
+        positionalWeight: 1
+      };
+    });
 
-    const evaluated = fList.map(item => {
+    const fList = allModelObjects.slice(0, 5);
+    const allowedModelDigits = new Set();
+    allModelObjects.forEach(item => { item.set.forEach(d => allowedModelDigits.add(d)); });
+
+    const evaluatedAll = allModelObjects.map(item => {
       const formulaSet = item.set;
       let rawRange = [], hasCollision = !1;
       for(let offset = -2; offset <= 2; offset++){
@@ -496,9 +507,10 @@ const _app = {
       return { id: item.id, name: item.name, subName: item.subName, positionalWeight: item.positionalWeight, set: item.set, pairsMap: pMap };
     });
 
+    const evaluated = evaluatedAll.slice(0, 5);
     const digitScores = {};
     for(let d=0; d<=9; d++) digitScores[d] = { digit: d, modelScore: 0, formula100Score: 0, radarScore: 0, backendScore: 0, winSetScore: 0, totalScore: 0 };
-    evaluated.forEach(model => { model.set.forEach(dig => { digitScores[dig].modelScore += 1; }); });
+    evaluatedAll.forEach(model => { model.set.forEach(dig => { digitScores[dig].modelScore += 0.5; }); });
 
     const maxFormCount = Math.max(...Object.values(formula100Engine.counts), 1);
     for(let d=0; d<=9; d++){
@@ -537,7 +549,6 @@ const _app = {
     if(!secondaryDigitObj) secondaryDigitObj = matrixSortedAll.find(item => item.digit !== primaryDigitObj.digit) || matrixSortedAll[1];
 
     const d1 = primaryDigitObj.digit, d2_dig = secondaryDigitObj.digit, matrixSorted = matrixSortedAll;
-
     const allScores = matrixSorted.map(s => s.totalScore), minScore = Math.min(...allScores), maxScore = Math.max(...allScores), scoreRange = maxScore - minScore || 1;
     const calcConfidence = score => {
       const normalizedPct = 80 + (score - minScore) / scoreRange * 18.5;
@@ -545,21 +556,21 @@ const _app = {
     };
 
     const primaryPct = calcConfidence(primaryDigitObj.totalScore), secondaryPct = calcConfidence(secondaryDigitObj.totalScore);
-    evaluated.forEach(model => {
+    evaluatedAll.forEach(model => {
       const modelScoreSum = model.set.reduce((sum, dig) => sum + (digitScores[dig].totalScore > 0 ? digitScores[dig].totalScore : 0), 0);
       model.aiScore = calcConfidence(modelScoreSum / 2);
     });
-    evaluated.sort((a,b)=>b.aiScore-a.aiScore);
-    evaluated.forEach((model, idx) => { model.isRecommended = idx < 2; });
+    evaluatedAll.sort((a,b)=>b.aiScore-a.aiScore);
+    evaluatedAll.forEach((model, idx) => { model.isRecommended = idx < 2; });
 
-    const winnerModel = evaluated[0];
-    const arr1 = winnerModel.pairsMap[d1] || evaluated.find(m => m.pairsMap[d1])?.pairsMap[d1] || [];
-    const arr2 = winnerModel.pairsMap[d2_dig] || evaluated.find(m => m.pairsMap[d2_dig])?.pairsMap[d2_dig] || [];
+    const winnerModel = evaluatedAll[0];
+    const arr1 = winnerModel.pairsMap[d1] || evaluatedAll.find(m => m.pairsMap[d1])?.pairsMap[d1] || [];
+    const arr2 = winnerModel.pairsMap[d2_dig] || evaluatedAll.find(m => m.pairsMap[d2_dig])?.pairsMap[d2_dig] || [];
     const matrixArr3d = arr1.slice(0, 5).map(p => `${p.slice(-1)}${d1}${d2_dig}`);
     const cScore3 = Number((50.1 + .8 * Math.random()).toFixed(1));
 
     const pairFrequencyMap = {};
-    evaluated.forEach(m => {
+    evaluatedAll.forEach(m => {
       Object.keys(m.pairsMap).forEach(digKey => {
         m.pairsMap[digKey].forEach(pairStr => {
           const normPair = pairStr.split("").map(Number).sort((a,b)=>a-b).join("");
@@ -649,7 +660,7 @@ const _app = {
       </div>`;
     }).join("");
 
-    let allFormulasHTML = "";
+    let top5FormulasHTML = "";
     evaluated.forEach(item => {
       let pairs = [];
       item.set.forEach(digit => {
@@ -661,7 +672,7 @@ const _app = {
         return getConsensusChipHTML(displayPair, subPct);
       }).join("");
       const badgeHtml = item.isRecommended ? '<span class="compact-badge">สูตรแนะนำ</span>' : "";
-      allFormulasHTML += `<div class="formula-card"><div class="formula-head"><div class="formula-name">${this._esc(item.name)} ${badgeHtml}</div><div class="formula-badge">AI Score ${item.aiScore}%</div></div><div class="formula-sub">เลขเด่น: <strong>${item.set.join(" - ")}</strong></div><div class="formula-pairs">${pairCards}</div></div>`;
+      top5FormulasHTML += `<div class="formula-card"><div class="formula-head"><div class="formula-name">${this._esc(item.name)} ${badgeHtml}</div><div class="formula-badge">AI Score ${item.aiScore}%</div></div><div class="formula-sub">เลขเด่น: <strong>${item.set.join(" - ")}</strong></div><div class="formula-pairs">${pairCards}</div></div>`;
     });
 
     const html = `<div class="result-shell">
@@ -732,11 +743,11 @@ const _app = {
       
       <section class="formula-section">
         <button class="formula-toggle" id="toggleMainFormulasBtn" type="button" style="margin-bottom:6px;">
-          <span>📊 โมเดลการวิเคราะห์หลัก (Top Ranked Models)</span>
+          <span>📊 5 โมเดลการวิเคราะห์หลัก (Top Ranked Models)</span>
           <span>▼</span>
         </button>
         <div id="allFormulasWrapper" style="display:none; margin-top:6px;">
-          ${allFormulasHTML}
+          ${top5FormulasHTML}
         </div>
       </section>
 
