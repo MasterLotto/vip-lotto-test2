@@ -1,626 +1,5994 @@
-/* =========================================================
-   PREMIUM RANK SYSTEM
-   #1 = GOLD
-   #2 = SILVER
-   #3 = COPPER
-   ========================================================= */
+<!--
+============================================================
+MESTER LOTTO VIP+ — AUDIT / MODIFICATION NOTES
+============================================================
+SOURCE OF TRUTH:
+- Original uploaded Code2026.txt preserved as the base implementation.
+- Existing login, localStorage/session, counters, 100-formula engine,
+  5-model scoring, TOP3 matrix ranking, Deep Scan, Win Set,
+  3D Smart Scan, formula details, copy handlers and events retained.
 
+CHANGES:
+1. TOP3: presentation-only simplification; top3Digits and scoring are unchanged.
+2. Removed the empty .deep-scan-badge element from the Deep Scan header.
+3. Added _normalizePair(pair): normalizes AB and BA to the same two-digit key,
+   preserving leading zero (05 remains "05").
+4. Added _buildPairAnalysis(models): aggregates pair occurrences from all
+   5 evaluated models; every occurrence adds +1.
+5. Added _getPremiumGrade(score): derives PREMIUM/A+/A/B/C from the real score.
+6. Added TOP10 UI using matrixSorted.slice(0,10), so it uses the existing
+   ranking/scoring engine and is not hard-coded.
+7. Added compact Premium Pair Analysis UI using the 5-model pair evidence.
+8. No existing scoring formula or TOP3 ranking algorithm was replaced.
+============================================================
+-->
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#F4FBF7">
+<meta name="color-scheme" content="light">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self';">
+
+<title>Mester Lotto VIP+ — Premium Quant Intelligence</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
 :root{
-  --rank-gold:#B88716;
-  --rank-gold-light:#FFF4C2;
-  --rank-gold-dark:#765100;
+--white:#fff;
+--bg:#EEF8F3;
+--bg2:#F7FCF9;
+--surface:#fff;
+--surface2:#EEF8F3;
+--surface3:#DCEFE7;
 
-  --rank-silver:#73808A;
-  --rank-silver-light:#EEF2F5;
-  --rank-silver-dark:#46525B;
+--navy:#081B14;
+--navy2:#102C21;
 
-  --rank-copper:#B56A42;
-  --rank-copper-light:#F7E5DA;
-  --rank-copper-dark:#82472E;
+--emerald:#0A6647;
+--emerald2:#0D7A55;
+--green:#10B981;
+--greenSoft:#E3F8EE;
 
-  --rank-neutral:#567568;
-  --rank-neutral-light:#F3F8F5;
+--cyan:#087380;
+--cyan2:#14B8A6;
+
+--gold:#9E6C02;
+--gold2:#EAB308;
+--goldSoft:#FEF9C3;
+
+--purple:#6D28D9;
+--red:#BE123C;
+
+--text:#051912;
+--text2:#17372B;
+--muted:#567568;
+--muted2:#7A9A8D;
+
+--line:#B9DCCE;
+--lineSoft:rgba(10,102,71,.14);
+
+--shadow:0 14px 32px rgba(10,102,71,.09);
+--shadowSoft:0 7px 18px rgba(10,102,71,.055);
+
+--radius:20px;
+--radius2:14px;
+
+--ease:cubic-bezier(.2,.8,.2,1);
+}
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+-webkit-tap-highlight-color:transparent;
+}
+
+html{
+scroll-behavior:smooth;
+}
+
+body{
+min-height:100vh;
+overflow-x:hidden;
+font-family:'Prompt',sans-serif;
+color:var(--text);
+background:
+radial-gradient(circle at 12% 5%,rgba(16,185,129,.20),transparent 38%),
+radial-gradient(circle at 88% 15%,rgba(234,179,8,.13),transparent 34%),
+linear-gradient(135deg,#fff,#F0FAF5 58%,#E5F3ED);
+}
+
+button,
+input{
+font-family:'Prompt',sans-serif;
+}
+
+button{
+-webkit-user-select:none;
+user-select:none;
+}
+
+::selection{
+background:rgba(10,102,71,.18);
+color:var(--text);
+}
+
+#snowCanvas{
+position:fixed;
+inset:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:1;
+}
+
+.ambient{
+position:fixed;
+inset:0;
+pointer-events:none;
+z-index:0;
+overflow:hidden;
+}
+
+.ambient::before,
+.ambient::after{
+content:"";
+position:absolute;
+border-radius:50%;
+filter:blur(75px);
+opacity:.34;
+}
+
+.ambient::before{
+width:320px;
+height:320px;
+top:-80px;
+left:-90px;
+background:rgba(16,185,129,.34);
+}
+
+.ambient::after{
+width:340px;
+height:340px;
+right:-100px;
+bottom:8%;
+background:rgba(234,179,8,.20);
+}
+
+.grid-overlay{
+position:absolute;
+inset:0;
+opacity:.035;
+background-image:
+linear-gradient(rgba(10,102,71,.12) 1px,transparent 1px),
+linear-gradient(90deg,rgba(10,102,71,.12) 1px,transparent 1px);
+background-size:34px 34px;
+mask-image:linear-gradient(to bottom,#000,transparent 88%);
+}
+
+.app-shell{
+width:100%;
+max-width:560px;
+min-height:100vh;
+margin:0 auto;
+padding:
+max(12px,env(safe-area-inset-top))
+clamp(10px,2.5vw,14px)
+max(24px,env(safe-area-inset-bottom));
+position:relative;
+z-index:2;
+}
+
+.app-card{
+position:relative;
+overflow:hidden;
+min-height:calc(100vh - 24px);
+border:1px solid rgba(10,102,71,.22);
+border-radius:26px;
+background:rgba(255,255,255,.95);
+box-shadow:
+0 25px 60px rgba(10,102,71,.13),
+inset 0 1px 0 #fff;
+backdrop-filter:blur(24px);
+-webkit-backdrop-filter:blur(24px);
+}
+
+.app-card::before{
+content:"";
+position:absolute;
+top:0;
+left:0;
+right:0;
+height:3px;
+background:
+linear-gradient(
+90deg,
+#0A6647,
+#10B981,
+#14B8A6,
+#EAB308,
+#0A6647
+);
+background-size:240% 100%;
+animation:spectrumFlow 7s ease-in-out infinite;
+}
+
+@keyframes spectrumFlow{
+0%,100%{background-position:0 50%}
+50%{background-position:100% 50%}
+}
+
+.app-inner{
+padding:
+clamp(14px,3vw,18px)
+clamp(12px,3vw,16px)
+22px;
+}
+
+.top-nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+margin-bottom:14px;
+}
+
+.brand-mini{
+display:flex;
+align-items:center;
+gap:9px;
+min-width:0;
+}
+
+.brand-mark{
+width:38px;
+height:38px;
+flex:0 0 38px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:11px;
+color:#fff;
+font-size:.78rem;
+font-weight:800;
+background:linear-gradient(135deg,#081B14,#0A6647);
+box-shadow:
+0 5px 14px rgba(10,102,71,.28),
+inset 0 1px 0 rgba(255,255,255,.38);
+position:relative;
+}
+
+.brand-mark::after{
+content:"";
+position:absolute;
+inset:2px;
+border-radius:8px;
+border:1px solid rgba(255,255,255,.32);
+}
+
+.brand-name{
+font-size:.82rem;
+font-weight:800;
+letter-spacing:.2px;
+}
+
+.brand-sub{
+margin-top:1px;
+font-size:.55rem;
+font-weight:600;
+color:var(--muted);
+}
+
+.system-pill{
+display:flex;
+align-items:center;
+gap:5px;
+padding:5px 10px;
+border-radius:99px;
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.20);
+font-size:.52rem;
+font-weight:800;
+white-space:nowrap;
+}
+
+.live-dot{
+width:6px;
+height:6px;
+flex:0 0 6px;
+border-radius:50%;
+background:var(--green);
+box-shadow:0 0 0 3px rgba(16,185,129,.22);
+animation:livePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes livePulse{
+0%,100%{transform:scale(1);opacity:1}
+50%{transform:scale(.72);opacity:.45}
 }
 
 /* =========================================================
-   ALPHA TOP 3
-   ========================================================= */
+   SHARED PREMIUM CARD LANGUAGE
+========================================================= */
+
+.hero,
+.login-panel,
+.command-center,
+.top3-signal-board,
+.stats-analytics-card,
+.overview-panel,
+.deep-scan-board,
+.ind-win-set,
+.formula-card{
+position:relative;
+overflow:hidden;
+border:1px solid rgba(10,102,71,.18);
+box-shadow:var(--shadowSoft);
+}
+
+.hero,
+.login-panel,
+.command-center,
+.stats-analytics-card,
+.overview-panel,
+.ind-win-set{
+border-radius:19px;
+background:
+linear-gradient(135deg,#fff,#F2F9F5);
+}
+
+.hero{
+padding:16px 14px 14px;
+margin-bottom:10px;
+background:
+radial-gradient(circle at 95% 5%,rgba(16,185,129,.18),transparent 42%),
+radial-gradient(circle at 5% 95%,rgba(234,179,8,.12),transparent 38%),
+linear-gradient(135deg,#fff,#EEF9F2);
+}
+
+.hero::after{
+content:"";
+position:absolute;
+top:-70px;
+right:-70px;
+width:160px;
+height:160px;
+border-radius:50%;
+border:1px solid rgba(16,185,129,.12);
+box-shadow:
+0 0 0 18px rgba(16,185,129,.035),
+0 0 0 38px rgba(16,185,129,.025);
+pointer-events:none;
+}
+
+.hero-kicker{
+position:relative;
+z-index:2;
+display:inline-flex;
+align-items:center;
+gap:6px;
+padding:4px 10px;
+margin-bottom:8px;
+border-radius:99px;
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.20);
+font-size:.50rem;
+font-weight:800;
+letter-spacing:.8px;
+}
+
+.hero-kicker span{
+width:5px;
+height:5px;
+border-radius:50%;
+background:var(--green);
+box-shadow:0 0 6px rgba(16,185,129,.75);
+}
+
+.hero h1{
+position:relative;
+z-index:2;
+font-size:clamp(1.55rem,5.5vw,1.85rem);
+line-height:1.15;
+letter-spacing:-.4px;
+font-weight:800;
+}
+
+.hero h1 em{
+font-style:normal;
+background:
+linear-gradient(
+110deg,
+#0A6647,
+#087380,
+#6D28D9,
+#9E6C02
+);
+-webkit-background-clip:text;
+background-clip:text;
+color:transparent;
+background-size:220% 100%;
+animation:titleGradient 7s ease-in-out infinite;
+}
+
+@keyframes titleGradient{
+0%,100%{background-position:0 50%}
+50%{background-position:100% 50%}
+}
+
+.hero p{
+position:relative;
+z-index:2;
+margin-top:6px;
+font-size:.67rem;
+line-height:1.4;
+color:var(--muted);
+}
+
+.hero p b{
+color:var(--text2);
+}
+
+.hero-meta{
+position:relative;
+z-index:2;
+display:flex;
+flex-wrap:wrap;
+gap:5px;
+margin-top:10px;
+}
+
+.meta-chip{
+padding:4px 9px;
+border-radius:8px;
+background:rgba(255,255,255,.88);
+border:1px solid rgba(10,102,71,.15);
+color:var(--text2);
+font-size:.50rem;
+font-weight:700;
+box-shadow:0 2px 6px rgba(10,102,71,.04);
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+.login-dashboard{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:7px;
+margin-bottom:10px;
+}
+
+.mini-stat{
+padding:10px 12px;
+border-radius:14px;
+background:#fff;
+border:1px solid rgba(10,102,71,.15);
+box-shadow:var(--shadowSoft);
+}
+
+.mini-stat-label{
+color:var(--muted);
+font-size:.50rem;
+font-weight:700;
+}
+
+.mini-stat-value{
+margin-top:3px;
+font-family:'IBM Plex Mono',monospace;
+font-size:1rem;
+font-weight:700;
+}
+
+.mini-stat-value.green{
+color:var(--emerald);
+}
+
+.packages{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:7px;
+margin-bottom:10px;
+}
+
+.package{
+position:relative;
+overflow:hidden;
+padding:11px 12px;
+border-radius:14px;
+background:
+linear-gradient(135deg,#fff,#F8FCFA);
+border:1px solid rgba(10,102,71,.15);
+box-shadow:var(--shadowSoft);
+transition:
+transform .22s var(--ease),
+box-shadow .22s ease,
+border-color .22s ease;
+}
+
+.package:hover{
+transform:translateY(-1px);
+box-shadow:0 9px 22px rgba(10,102,71,.08);
+border-color:rgba(10,102,71,.24);
+}
+
+.package::before{
+content:"";
+position:absolute;
+top:0;
+left:0;
+right:0;
+height:2px;
+background:var(--emerald);
+}
+
+.package::after{
+content:"";
+position:absolute;
+width:70px;
+height:70px;
+right:-35px;
+top:-35px;
+border-radius:50%;
+background:rgba(16,185,129,.055);
+}
+
+.package:nth-child(2)::before{background:var(--cyan)}
+.package:nth-child(3)::before{background:var(--gold2)}
+.package:nth-child(4)::before{background:var(--purple)}
+
+.package-title{
+position:relative;
+z-index:1;
+font-size:.53rem;
+font-weight:700;
+color:var(--muted);
+}
+
+.package-price{
+position:relative;
+z-index:1;
+margin-top:3px;
+font-family:'IBM Plex Mono',monospace;
+font-size:1.12rem;
+font-weight:700;
+}
+
+.package-desc{
+position:relative;
+z-index:1;
+margin-top:2px;
+font-size:.47rem;
+color:var(--muted2);
+}
+
+.contact-btn{
+width:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:6px;
+padding:11px;
+margin-bottom:10px;
+border-radius:13px;
+text-decoration:none;
+color:#fff;
+background:
+linear-gradient(
+110deg,
+#0A6647,
+#0D7A55,
+#0A6647
+);
+background-size:200% 100%;
+box-shadow:0 7px 18px rgba(10,102,71,.18);
+font-size:.68rem;
+font-weight:700;
+transition:
+transform .2s ease,
+box-shadow .2s ease,
+background-position .35s ease;
+}
+
+.contact-btn:hover{
+transform:translateY(-1px);
+background-position:100% 50%;
+box-shadow:0 9px 22px rgba(10,102,71,.23);
+}
+
+.login-panel{
+padding:14px;
+}
+
+.section-eyebrow{
+color:var(--emerald);
+font-size:.52rem;
+font-weight:800;
+letter-spacing:.8px;
+text-align:center;
+}
+
+.login-heading{
+margin-top:3px;
+font-size:.95rem;
+font-weight:800;
+text-align:center;
+}
+
+.login-description{
+margin-top:3px;
+margin-bottom:10px;
+color:var(--muted);
+font-size:.55rem;
+text-align:center;
+}
+
+input{
+width:100%;
+height:44px;
+padding:0 12px;
+outline:0;
+border-radius:12px;
+border:1px solid rgba(10,102,71,.20);
+background:var(--bg2);
+color:var(--text);
+font-size:.85rem;
+text-align:center;
+transition:.2s ease;
+}
+
+input::placeholder{
+color:var(--muted2);
+}
+
+input:focus{
+background:#fff;
+border-color:rgba(10,102,71,.55);
+box-shadow:0 0 0 3px rgba(10,102,71,.10);
+}
+
+.primary-btn,
+.calculate-btn{
+position:relative;
+overflow:hidden;
+width:100%;
+height:44px;
+border:0;
+border-radius:13px;
+color:#fff;
+cursor:pointer;
+background:
+linear-gradient(
+110deg,
+#0A6647,
+#0D7A55,
+#0A6647
+);
+background-size:200% 100%;
+box-shadow:
+0 7px 18px rgba(10,102,71,.18),
+inset 0 1px 0 rgba(255,255,255,.16);
+font-size:.69rem;
+font-weight:800;
+transition:
+transform .2s ease,
+box-shadow .2s ease,
+background-position .35s ease;
+}
+
+.primary-btn::after,
+.calculate-btn::after{
+content:"";
+position:absolute;
+top:0;
+bottom:0;
+left:-85%;
+width:42%;
+background:
+linear-gradient(
+90deg,
+transparent,
+rgba(255,255,255,.18),
+transparent
+);
+transform:skewX(-18deg);
+transition:left .55s ease;
+pointer-events:none;
+}
+
+.primary-btn:hover::after,
+.calculate-btn:hover:not(:disabled)::after{
+left:130%;
+}
+
+.primary-btn{
+margin-top:8px;
+}
+
+.primary-btn:hover,
+.calculate-btn:hover:not(:disabled){
+transform:translateY(-1px);
+box-shadow:
+0 9px 22px rgba(10,102,71,.23),
+0 0 16px rgba(16,185,129,.08);
+background-position:100% 50%;
+}
+
+.primary-btn:active,
+.calculate-btn:active:not(:disabled){
+transform:translateY(0);
+}
+
+#errorMsg{
+display:none;
+margin-top:6px;
+text-align:center;
+color:var(--red);
+font-size:.56rem;
+font-weight:700;
+}
+
+/* =========================================================
+   ENGINE
+========================================================= */
+
+#calculatorView{
+display:none;
+}
+
+.engine-strip{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:6px;
+margin-bottom:10px;
+}
+
+.engine-card{
+position:relative;
+overflow:hidden;
+padding:9px 8px;
+border-radius:13px;
+background:rgba(255,255,255,.88);
+border:1px solid rgba(10,102,71,.14);
+box-shadow:var(--shadowSoft);
+}
+
+.engine-card::before{
+content:"";
+position:absolute;
+left:0;
+top:0;
+bottom:0;
+width:3px;
+background:linear-gradient(180deg,#0A6647,#10B981);
+}
+
+.engine-card:nth-child(2)::before{
+background:linear-gradient(180deg,#0D7A55,#14B8A6);
+}
+
+.engine-card:nth-child(3)::before{
+background:linear-gradient(180deg,#9E6C02,#EAB308);
+}
+
+.engine-label{
+display:flex;
+align-items:center;
+gap:3px;
+color:var(--muted);
+font-size:.44rem;
+font-weight:700;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.engine-value{
+display:flex;
+align-items:center;
+gap:3px;
+margin-top:2px;
+font-family:'IBM Plex Mono',monospace;
+font-size:.67rem;
+font-weight:700;
+}
+
+.engine-value.cyan{color:var(--cyan)}
+.engine-value.green{color:var(--emerald)}
+.engine-value.gold{color:var(--gold)}
+
+.total-dot-wrap{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+width:8px;
+height:8px;
+}
+
+.total-dot{
+width:4px;
+height:4px;
+border-radius:50%;
+background:var(--green);
+}
+
+.total-dot.ripple{
+animation:microRipple .85s ease-out;
+}
+
+@keyframes microRipple{
+0%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}
+100%{box-shadow:0 0 0 9px rgba(16,185,129,0)}
+}
+
+.last-session{
+display:none;
+align-items:center;
+justify-content:center;
+gap:6px;
+margin-bottom:10px;
+padding:9px;
+border-radius:12px;
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.20);
+color:var(--muted);
+font-size:.53rem;
+}
+
+.last-session strong{
+color:var(--gold);
+font-family:'IBM Plex Mono',monospace;
+font-size:.61rem;
+}
+
+/* =========================================================
+   COMMAND
+========================================================= */
+
+.command-center{
+padding:12px;
+margin-bottom:10px;
+}
+
+.command-header{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:8px;
+margin-bottom:10px;
+}
+
+.command-title{
+font-size:.87rem;
+font-weight:800;
+}
+
+.command-sub{
+margin-top:1px;
+color:var(--muted);
+font-size:.51rem;
+}
+
+.command-badge{
+padding:4px 8px;
+border-radius:7px;
+color:var(--cyan);
+background:rgba(8,115,128,.07);
+border:1px solid rgba(8,115,128,.18);
+font-family:'IBM Plex Mono',monospace;
+font-size:.45rem;
+font-weight:700;
+}
+
+.input-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:7px;
+}
+
+.field-card{
+padding:8px;
+border-radius:12px;
+background:var(--surface2);
+border:1px solid rgba(10,102,71,.15);
+}
+
+.field-label{
+display:block;
+margin-bottom:5px;
+color:var(--text2);
+font-size:.51rem;
+font-weight:700;
+text-align:center;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.field-card input{
+height:42px;
+background:#fff;
+font-family:'IBM Plex Mono',monospace;
+font-size:1.08rem;
+font-weight:700;
+letter-spacing:2px;
+}
+
+.action-row{
+display:grid;
+grid-template-columns:1fr 82px;
+gap:7px;
+margin-top:8px;
+}
+
+.clear-btn{
+height:44px;
+border-radius:13px;
+color:var(--muted);
+background:var(--bg2);
+border:1px solid rgba(10,102,71,.18);
+font-size:.59rem;
+font-weight:700;
+transition:
+transform .2s ease,
+background .2s ease,
+border-color .2s ease;
+}
+
+.clear-btn:hover{
+transform:translateY(-1px);
+background:#fff;
+border-color:rgba(10,102,71,.28);
+}
+
+.calculate-btn:disabled{
+opacity:.55;
+cursor:not-allowed;
+}
+
+/* =========================================================
+   SCANNER
+========================================================= */
+
+#aiScannerBox{
+display:none;
+position:relative;
+overflow:hidden;
+padding:16px 12px;
+margin-bottom:10px;
+text-align:center;
+border-radius:19px;
+background:
+radial-gradient(circle at center,rgba(16,185,129,.12),transparent 60%),
+#F0FBF5;
+border:1px solid rgba(10,102,71,.18);
+}
+
+.scanner-ring{
+position:relative;
+width:52px;
+height:52px;
+margin:0 auto 10px;
+border-radius:50%;
+border:1px solid rgba(10,102,71,.20);
+}
+
+.scanner-ring::before{
+content:"";
+position:absolute;
+inset:6px;
+border:3px solid transparent;
+border-top-color:var(--emerald);
+border-right-color:var(--cyan);
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+.scanner-ring::after{
+content:"";
+position:absolute;
+inset:16px;
+border-radius:50%;
+background:var(--gold2);
+animation:scannerPulse .9s ease-in-out infinite;
+}
+
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+
+@keyframes scannerPulse{
+0%,100%{transform:scale(.7);opacity:.5}
+50%{transform:scale(1);opacity:1}
+}
+
+#aiScannerText{
+color:var(--emerald);
+font-family:'IBM Plex Mono',monospace;
+font-size:.55rem;
+font-weight:700;
+}
+
+/* =========================================================
+   RESULT
+========================================================= */
+
+.result-shell{
+animation:resultIn .5s var(--ease);
+}
+
+@keyframes resultIn{
+from{
+opacity:0;
+transform:translateY(12px);
+}
+to{
+opacity:1;
+transform:none;
+}
+}
+
+.result-head{
+display:flex;
+justify-content:space-between;
+align-items:flex-end;
+gap:8px;
+margin:2px 2px 8px;
+}
+
+.result-kicker{
+color:var(--emerald);
+font-family:'IBM Plex Mono',monospace;
+font-size:.48rem;
+font-weight:800;
+letter-spacing:.8px;
+}
+
+.result-title{
+margin-top:1px;
+font-size:1.08rem;
+font-weight:800;
+}
+
+.result-note{
+color:var(--muted);
+font-size:.49rem;
+}
+
+/* =========================================================
+   TOP 3 — SINGLE RANKING MASTER
+   Presentation-only refinement: ranking/scoring logic unchanged.
+========================================================= */
+
+.top3-signal-board{
+padding:11px 12px;
+margin-bottom:9px;
+border-radius:16px;
+background:linear-gradient(135deg,#fff,#F4FAF7);
+border-color:rgba(10,102,71,.17);
+}
+
+.top3-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+margin-bottom:7px;
+}
+
+.top3-kicker{
+color:var(--emerald);
+font-family:'IBM Plex Mono',monospace;
+font-size:.43rem;
+font-weight:800;
+letter-spacing:.8px;
+}
+
+.top3-title{
+margin-top:1px;
+font-size:.79rem;
+font-weight:800;
+}
+
+.top3-sub{
+display:none;
+}
+
+.top3-badge{
+padding:3px 7px;
+border-radius:7px;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.18);
+font-family:'IBM Plex Mono',monospace;
+font-size:.39rem;
+font-weight:800;
+white-space:nowrap;
+}
+
+.top3-list{
+display:flex;
+flex-direction:column;
+gap:4px;
+}
+
+.top3-row{
+display:grid;
+grid-template-columns:24px 34px minmax(0,1fr) 48px;
+align-items:center;
+gap:6px;
+min-height:38px;
+padding:4px 7px;
+border-radius:10px;
+background:#FAFDFC;
+border:1px solid rgba(10,102,71,.11);
+transition:
+transform .18s var(--ease),
+box-shadow .18s ease,
+border-color .18s ease;
+}
+
+.top3-row:hover{
+transform:translateY(-1px);
+border-color:rgba(16,185,129,.28);
+box-shadow:0 5px 12px rgba(10,102,71,.06);
+}
 
 .top3-row.rank-one{
-  background:
-    linear-gradient(
-      100deg,
-      rgba(255,247,211,.94),
-      rgba(255,255,255,.98) 55%,
-      rgba(250,245,222,.88)
-    );
-  border-color:rgba(184,135,22,.34);
-  box-shadow:
-    0 5px 16px rgba(184,135,22,.08),
-    inset 0 1px 0 rgba(255,255,255,.95);
+background:linear-gradient(90deg,rgba(254,249,195,.52),#FAFDFC);
+border-color:rgba(158,108,2,.22);
 }
 
 .top3-row.rank-two{
-  background:
-    linear-gradient(
-      100deg,
-      rgba(238,242,245,.96),
-      rgba(255,255,255,.98) 55%,
-      rgba(231,236,240,.88)
-    );
-  border-color:rgba(115,128,138,.34);
-  box-shadow:
-    0 5px 15px rgba(73,87,97,.07),
-    inset 0 1px 0 rgba(255,255,255,.96);
+background:linear-gradient(90deg,rgba(225,248,237,.55),#FAFDFC);
+border-color:rgba(10,102,71,.16);
 }
 
 .top3-row.rank-three{
-  background:
-    linear-gradient(
-      100deg,
-      rgba(247,229,218,.94),
-      rgba(255,255,255,.98) 55%,
-      rgba(242,218,204,.86)
-    );
-  border-color:rgba(181,106,66,.34);
-  box-shadow:
-    0 5px 15px rgba(181,106,66,.07),
-    inset 0 1px 0 rgba(255,255,255,.95);
+background:linear-gradient(90deg,rgba(8,115,128,.035),#FAFDFC);
+border-color:rgba(8,115,128,.15);
 }
 
-.top3-row.rank-one .top3-position,
-.top3-row.rank-one .top3-score{
-  color:var(--rank-gold);
+.top3-position{
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:'IBM Plex Mono',monospace;
+font-size:.45rem;
+font-weight:800;
+color:var(--muted2);
 }
 
-.top3-row.rank-two .top3-position,
-.top3-row.rank-two .top3-score{
-  color:var(--rank-silver-dark);
-}
+.top3-row.rank-one .top3-position{color:var(--gold)}
+.top3-row.rank-two .top3-position{color:var(--emerald)}
+.top3-row.rank-three .top3-position{color:var(--cyan)}
 
-.top3-row.rank-three .top3-position,
-.top3-row.rank-three .top3-score{
-  color:var(--rank-copper-dark);
+.top3-digit{
+width:30px;
+height:30px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:8px;
+color:#fff;
+background:linear-gradient(135deg,#081B14,#0A6647);
+border:1px solid rgba(16,185,129,.32);
+font-family:'IBM Plex Mono',monospace;
+font-size:.82rem;
+font-weight:800;
 }
-
-/* Main digit */
 
 .top3-row.rank-one .top3-digit{
-  color:var(--rank-gold-dark);
-  background:
-    linear-gradient(
-      145deg,
-      #FFF8D7 0%,
-      #F5D875 45%,
-      #C99A24 100%
-    );
-  border-color:rgba(184,135,22,.48);
-  box-shadow:
-    0 5px 14px rgba(184,135,22,.18),
-    inset 0 1px 0 rgba(255,255,255,.90);
+color:#5F4300;
+background:linear-gradient(135deg,#FEF9C3,#FDE68A);
+border-color:rgba(158,108,2,.30);
 }
 
 .top3-row.rank-two .top3-digit{
-  color:#35414A;
-  background:
-    linear-gradient(
-      145deg,
-      #FAFCFD 0%,
-      #D9E0E5 48%,
-      #AEB8BF 100%
-    );
-  border-color:rgba(115,128,138,.42);
-  box-shadow:
-    0 5px 14px rgba(73,87,97,.14),
-    inset 0 1px 0 rgba(255,255,255,.94);
+background:linear-gradient(135deg,#0A6647,#10B981);
 }
 
 .top3-row.rank-three .top3-digit{
-  color:#713C27;
-  background:
-    linear-gradient(
-      145deg,
-      #FBEDE5 0%,
-      #D9956E 48%,
-      #A85C38 100%
-    );
-  border-color:rgba(181,106,66,.44);
-  box-shadow:
-    0 5px 14px rgba(181,106,66,.15),
-    inset 0 1px 0 rgba(255,255,255,.90);
+background:linear-gradient(135deg,#087380,#14B8A6);
 }
 
-/* Progress bars */
+.top3-info{
+min-width:0;
+}
+
+.top3-label{
+display:flex;
+align-items:center;
+gap:5px;
+color:var(--text2);
+font-size:.47rem;
+font-weight:800;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.top3-label span{
+color:var(--muted);
+font-size:.39rem;
+font-weight:600;
+}
+
+.top3-bar{
+position:relative;
+width:100%;
+height:4px;
+margin-top:4px;
+border-radius:99px;
+background:#DDEDE5;
+overflow:hidden;
+}
+
+.top3-bar-fill{
+position:absolute;
+inset:0 auto 0 0;
+border-radius:99px;
+background:linear-gradient(90deg,#0A6647,#10B981,#14B8A6);
+transition:width .55s var(--ease);
+}
 
 .top3-row.rank-one .top3-bar-fill{
-  background:
-    linear-gradient(
-      90deg,
-      #9A6A08,
-      #D9AC38,
-      #F1D778
-    );
+background:linear-gradient(90deg,#9E6C02,#EAB308,#10B981);
 }
 
 .top3-row.rank-two .top3-bar-fill{
-  background:
-    linear-gradient(
-      90deg,
-      #65727C,
-      #AEB8BF,
-      #D8DEE2
-    );
+background:linear-gradient(90deg,#0A6647,#10B981);
 }
 
 .top3-row.rank-three .top3-bar-fill{
-  background:
-    linear-gradient(
-      90deg,
-      #8F4E31,
-      #C77A53,
-      #E0A07D
-    );
+background:linear-gradient(90deg,#087380,#14B8A6);
 }
 
+.top3-score{
+text-align:right;
+font-family:'IBM Plex Mono',monospace;
+font-size:.47rem;
+font-weight:800;
+color:var(--emerald);
+}
+
+.top3-row.rank-one .top3-score{color:var(--gold)}
+.top3-row.rank-three .top3-score{color:var(--cyan)}
+
+.top3-footnote{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:5px;
+margin-top:6px;
+padding-top:6px;
+border-top:1px solid rgba(10,102,71,.07);
+color:var(--muted);
+font-size:.40rem;
+text-align:center;
+}
+
+.top3-footnote strong{color:var(--text2)}
+
+.mini-live{
+width:5px;
+height:5px;
+border-radius:50%;
+background:var(--green);
+box-shadow:0 0 0 3px rgba(16,185,129,.12);
+}
 
 /* =========================================================
-   DEEP SCAN
-   ========================================================= */
+   TOP 10 + PREMIUM PAIR ANALYSIS
+========================================================= */
 
-.deep-scan-grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:7px;
+.top10-panel,
+.pair-analysis-panel{
+position:relative;
+overflow:hidden;
+padding:11px 12px;
+margin-bottom:9px;
+border:1px solid rgba(10,102,71,.17);
+border-radius:16px;
+background:linear-gradient(135deg,#fff,#F4FAF7);
+box-shadow:var(--shadowSoft);
 }
 
-.deep-scan-card{
-  position:relative;
-  overflow:hidden;
-  padding:10px;
-  border-radius:14px;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.98),
-      rgba(245,249,247,.96)
-    );
-  border:1px solid rgba(10,102,71,.13);
-  box-shadow:
-    0 4px 13px rgba(10,102,71,.045),
-    inset 0 1px 0 rgba(255,255,255,.9);
+.top10-head,
+.pair-analysis-head{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:8px;
+margin-bottom:7px;
 }
 
-.deep-scan-card.rank-one{
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,248,219,.96),
-      rgba(255,255,255,.98)
-    );
-  border-color:rgba(184,135,22,.32);
+.top10-title,
+.pair-analysis-title{
+font-size:.75rem;
+font-weight:800;
 }
 
-.deep-scan-card.rank-two{
-  background:
-    linear-gradient(
-      145deg,
-      rgba(241,244,247,.97),
-      rgba(255,255,255,.98)
-    );
-  border-color:rgba(115,128,138,.30);
+.top10-sub,
+.pair-analysis-sub{
+margin-top:1px;
+color:var(--muted);
+font-size:.42rem;
 }
 
-.deep-scan-card.rank-three{
-  background:
-    linear-gradient(
-      145deg,
-      rgba(249,235,226,.96),
-      rgba(255,255,255,.98)
-    );
-  border-color:rgba(181,106,66,.30);
+.top10-badge,
+.pair-analysis-badge{
+padding:3px 7px;
+border-radius:7px;
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.16);
+font-family:'IBM Plex Mono',monospace;
+font-size:.39rem;
+font-weight:800;
+white-space:nowrap;
 }
 
-.deep-scan-card::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:0;
-  bottom:0;
-  width:3px;
+.top10-list{
+display:flex;
+flex-direction:column;
+gap:3px;
 }
 
-.deep-scan-card.rank-one::before{
-  background:linear-gradient(
-    180deg,
-    #9A6A08,
-    #E2B93D,
-    #F4DA7D
-  );
+.top10-row{
+display:grid;
+grid-template-columns:27px minmax(0,1fr) 49px 62px;
+align-items:center;
+gap:5px;
+min-height:32px;
+padding:4px 6px;
+border-radius:8px;
+background:#FAFDFC;
+border:1px solid rgba(10,102,71,.09);
 }
 
-.deep-scan-card.rank-two::before{
-  background:linear-gradient(
-    180deg,
-    #64717B,
-    #AAB4BB,
-    #D7DDE1
-  );
+.top10-rank{
+font-family:'IBM Plex Mono',monospace;
+font-size:.40rem;
+font-weight:800;
+color:var(--muted);
 }
 
-.deep-scan-card.rank-three::before{
-  background:linear-gradient(
-    180deg,
-    #8C4B2F,
-    #BE704A,
-    #DF9C78
-  );
+.top10-number{
+font-family:'IBM Plex Mono',monospace;
+font-size:.68rem;
+font-weight:800;
+color:var(--text);
 }
 
-.deep-scan-card.rank-one .deep-scan-model-name{
-  color:var(--rank-gold-dark);
+.top10-score{
+text-align:right;
+font-family:'IBM Plex Mono',monospace;
+font-size:.43rem;
+font-weight:800;
+color:var(--emerald);
 }
 
-.deep-scan-card.rank-two .deep-scan-model-name{
-  color:var(--rank-silver-dark);
+.top10-grade{
+justify-self:end;
+padding:2px 5px;
+border-radius:5px;
+font-family:'IBM Plex Mono',monospace;
+font-size:.37rem;
+font-weight:800;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.16);
+white-space:nowrap;
 }
 
-.deep-scan-card.rank-three .deep-scan-model-name{
-  color:var(--rank-copper-dark);
+.top10-header-row{
+display:grid;
+grid-template-columns:27px minmax(0,1fr) 49px 62px;
+gap:5px;
+padding:0 6px 3px;
+color:var(--muted2);
+font-family:'IBM Plex Mono',monospace;
+font-size:.34rem;
+font-weight:700;
 }
 
-.deep-scan-card.rank-one .deep-scan-score{
-  color:var(--rank-gold);
+.top10-header-row span:nth-child(2),
+.top10-header-row span:nth-child(3),
+.top10-header-row span:nth-child(4){
+text-align:right;
 }
 
-.deep-scan-card.rank-two .deep-scan-score{
-  color:var(--rank-silver-dark);
+.pair-analysis-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:4px;
 }
 
-.deep-scan-card.rank-three .deep-scan-score{
-  color:var(--rank-copper-dark);
+.pair-analysis-item{
+min-width:0;
+padding:6px 3px;
+border-radius:9px;
+text-align:center;
+background:#FAFDFC;
+border:1px solid rgba(10,102,71,.10);
 }
 
-
-/* Deep Scan main digit */
-
-.deep-scan-card.rank-one .deep-scan-digit{
-  color:#6D4A00;
-  background:
-    linear-gradient(
-      145deg,
-      #FFF8D7,
-      #E6BE4D
-    );
-  border-color:rgba(184,135,22,.42);
+.pair-analysis-item strong{
+display:block;
+font-family:'IBM Plex Mono',monospace;
+font-size:.67rem;
+font-weight:800;
+color:var(--emerald);
 }
 
-.deep-scan-card.rank-two .deep-scan-digit{
-  color:#35414A;
-  background:
-    linear-gradient(
-      145deg,
-      #FAFCFD,
-      #B9C2C8
-    );
-  border-color:rgba(115,128,138,.40);
+.pair-analysis-item span{
+display:block;
+margin-top:1px;
+color:var(--muted);
+font-family:'IBM Plex Mono',monospace;
+font-size:.35rem;
 }
 
-.deep-scan-card.rank-three .deep-scan-digit{
-  color:#713C27;
-  background:
-    linear-gradient(
-      145deg,
-      #FBEDE5,
-      #CF8862
-    );
-  border-color:rgba(181,106,66,.40);
-}
-
-
-/* =========================================================
-   ONLY 3 DEEP PAIRS
-   ========================================================= */
-
-.deep-scan-pairs{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:6px;
-  margin-top:2px;
-}
-
-.deep-pair{
-  position:relative;
-  overflow:hidden;
-  min-height:45px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  padding:6px 4px;
-  border-radius:10px;
-  text-align:center;
-  background:#fff;
-  border:1px solid rgba(10,102,71,.11);
-  box-shadow:
-    0 3px 8px rgba(10,102,71,.035),
-    inset 0 1px 0 rgba(255,255,255,.9);
-}
-
-.deep-pair strong{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.70rem;
-  font-weight:800;
-}
-
-.deep-pair small{
-  margin-top:2px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.38rem;
-  font-weight:700;
-}
-
-/* Deep pair uses SAME color as its parent rank */
-
-.deep-scan-card.rank-one .deep-pair{
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,249,224,.98),
-      #fff
-    );
-  border-color:rgba(184,135,22,.30);
-}
-
-.deep-scan-card.rank-one .deep-pair strong,
-.deep-scan-card.rank-one .deep-pair small{
-  color:var(--rank-gold-dark);
-}
-
-.deep-scan-card.rank-two .deep-pair{
-  background:
-    linear-gradient(
-      145deg,
-      rgba(242,245,247,.98),
-      #fff
-    );
-  border-color:rgba(115,128,138,.28);
-}
-
-.deep-scan-card.rank-two .deep-pair strong,
-.deep-scan-card.rank-two .deep-pair small{
-  color:var(--rank-silver-dark);
-}
-
-.deep-scan-card.rank-three .deep-pair{
-  background:
-    linear-gradient(
-      145deg,
-      rgba(249,237,229,.98),
-      #fff
-    );
-  border-color:rgba(181,106,66,.29);
-}
-
-.deep-scan-card.rank-three .deep-pair strong,
-.deep-scan-card.rank-three .deep-pair small{
-  color:var(--rank-copper-dark);
-}
-
-/* Remove old 5-color jue rank system */
-.deep-scan-card .deep-pair.jue-rank-1,
-.deep-scan-card .deep-pair.jue-rank-2,
-.deep-scan-card .deep-pair.jue-rank-3,
-.deep-scan-card .deep-pair.jue-rank-4,
-.deep-scan-card .deep-pair.jue-rank-5{
-  box-shadow:
-    0 3px 9px rgba(10,102,71,.035),
-    inset 0 1px 0 rgba(255,255,255,.9);
-}
-
-
-/* =========================================================
-   AI PROBABILITY RANKING
-   ========================================================= */
-
-.overview-bar{
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.96),
-      rgba(241,247,244,.96)
-    );
-  border-color:rgba(10,102,71,.12);
-}
-
-.overview-bar.rank-gold{
-  border-color:rgba(184,135,22,.34);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,250,228,.98),
-      rgba(255,255,255,.98)
-    );
-  box-shadow:0 4px 12px rgba(184,135,22,.08);
-}
-
-.overview-bar.rank-silver{
-  border-color:rgba(115,128,138,.32);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(242,245,247,.98),
-      rgba(255,255,255,.98)
-    );
-  box-shadow:0 4px 12px rgba(73,87,97,.06);
-}
-
-.overview-bar.rank-copper{
-  border-color:rgba(181,106,66,.32);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(249,237,229,.98),
-      rgba(255,255,255,.98)
-    );
-  box-shadow:0 4px 12px rgba(181,106,66,.06);
-}
-
-.overview-bar.rank-gold::before{
-  background:linear-gradient(180deg,#F0D46B,#B88716);
-}
-
-.overview-bar.rank-silver::before{
-  background:linear-gradient(180deg,#D9E0E5,#7C8992);
-}
-
-.overview-bar.rank-copper::before{
-  background:linear-gradient(180deg,#E1A687,#B56A42);
-}
-
-.overview-bar.rank-gold .overview-rank{
-  color:#765100!important;
-  background:#FFF4C2!important;
-}
-
-.overview-bar.rank-silver .overview-rank{
-  color:#46525B!important;
-  background:#EEF2F5!important;
-}
-
-.overview-bar.rank-copper .overview-rank{
-  color:#82472E!important;
-  background:#F7E5DA!important;
-}
-
-
-/* =========================================================
-   INDIVIDUAL WIN SET
-   ========================================================= */
-
-.ind-win-item::before{
-  display:none!important;
-}
-
-.ind-win-item{
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.99),
-      rgba(242,248,245,.98)
-    );
-  border-color:rgba(10,102,71,.13);
-  box-shadow:
-    0 3px 9px rgba(10,102,71,.035),
-    inset 0 1px 0 rgba(255,255,255,.9);
-}
-
-.ind-win-item:nth-child(1),
-.ind-win-item:nth-child(2),
-.ind-win-item:nth-child(3){
-  border-color:rgba(184,135,22,.20);
-}
-
-.ind-win-item strong{
-  font-size:.88rem;
-}
-
-
-/* =========================================================
-   5 MATHEMATICAL MODELS
-   ========================================================= */
-
-.formula-card{
-  background:
-    linear-gradient(
-      145deg,
-      #fff,
-      #F5FAF7
-    );
-  border-color:rgba(10,102,71,.13);
-  box-shadow:
-    0 5px 14px rgba(10,102,71,.045),
-    inset 0 1px 0 rgba(255,255,255,.9);
-}
-
-.formula-card::before{
-  width:3px;
-  background:
-    linear-gradient(
-      180deg,
-      #0A6647,
-      #10B981
-    );
-}
-
-.formula-head{
-  padding-bottom:7px;
-  border-bottom:1px solid rgba(10,102,71,.08);
-}
-
-.formula-name{
-  font-size:.62rem;
-  line-height:1.25;
-}
-
-.formula-badge,
-.compact-badge{
-  min-width:54px;
-  text-align:center;
-  font-family:'IBM Plex Mono',monospace;
-  font-weight:800;
-}
-
-.formula-pairs{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:5px;
-  margin-top:8px;
-}
-
-.formula-pair{
-  min-height:43px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  padding:5px 2px;
-  border-radius:9px;
-  background:#F7FBF9;
-  border:1px solid rgba(10,102,71,.10);
-}
-
-.formula-pair strong{
-  font-size:.67rem;
-  color:var(--emerald);
-}
-
-.formula-pair small{
-  margin-top:2px;
-  font-size:.35rem;
-}
-
-.formula-sub{
-  margin-top:6px;
-  padding:6px 7px;
-  border-radius:8px;
-  background:rgba(238,248,243,.65);
-  border:1px solid rgba(10,102,71,.07);
-  line-height:1.5;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.42rem;
+.pair-analysis-empty{
+grid-column:1/-1;
+padding:7px;
+text-align:center;
+color:var(--muted);
+font-size:.43rem;
 }
 
 @media(max-width:400px){
-  .deep-scan-pairs{
-    grid-template-columns:repeat(3,1fr);
-    gap:4px;
-  }
-
-  .deep-pair{
-    min-height:42px;
-  }
-
-  .formula-pairs{
-    gap:4px;
-  }
+.top3-row{
+grid-template-columns:23px 32px minmax(0,1fr) 45px;
+gap:5px;
+padding-left:6px;
+padding-right:6px;
 }
+
+.top3-title{font-size:.75rem}
+.top3-sub{display:none}
+
+.top10-row,
+.top10-header-row{
+grid-template-columns:24px minmax(0,1fr) 46px 55px;
+gap:4px;
+}
+
+.top10-number{font-size:.64rem}
+.top10-grade{font-size:.34rem;padding:2px 4px}
+.pair-analysis-grid{grid-template-columns:repeat(4,1fr)}
+}
+
+
+/* =========================================================
+   BALANCE
+========================================================= */
+
+.stats-analytics-card{
+padding:11px 12px;
+margin-bottom:9px;
+}
+
+.stats-flex{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:8px;
+}
+
+.stats-title{
+font-size:.75rem;
+font-weight:800;
+}
+
+.stats-badge{
+padding:3px 8px;
+border-radius:7px;
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.18);
+font-family:'IBM Plex Mono',monospace;
+font-size:.44rem;
+font-weight:700;
+}
+
+.ratio-bar-container{
+display:flex;
+width:100%;
+height:9px;
+margin-bottom:6px;
+border-radius:99px;
+overflow:hidden;
+background:var(--surface3);
+border:1px solid rgba(10,102,71,.10);
+}
+
+.ratio-even{
+height:100%;
+background:linear-gradient(90deg,#0A6647,#10B981);
+transition:width .4s var(--ease);
+}
+
+.ratio-odd{
+height:100%;
+background:linear-gradient(90deg,#9E6C02,#EAB308);
+transition:width .4s var(--ease);
+}
+
+.ratio-legend{
+display:flex;
+justify-content:space-between;
+color:var(--muted);
+font-family:'IBM Plex Mono',monospace;
+font-size:.46rem;
+font-weight:700;
+}
+
+/* =========================================================
+   SECTION MARKER
+========================================================= */
+
+.section-marker{
+display:flex;
+align-items:center;
+gap:7px;
+margin:5px 2px 7px;
+color:var(--muted);
+font-size:.46rem;
+font-weight:800;
+letter-spacing:.8px;
+}
+
+.section-marker::after{
+content:"";
+flex:1;
+height:1px;
+background:
+linear-gradient(
+90deg,
+rgba(10,102,71,.22),
+transparent
+);
+}
+
+/* =========================================================
+   AI PROBABILITY RANKING — PREMIUM
+========================================================= */
+
+.overview-panel{
+padding:12px;
+margin-bottom:9px;
+}
+
+.overview-head{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:8px;
+margin-bottom:9px;
+}
+
+.overview-title{
+font-size:.80rem;
+font-weight:800;
+}
+
+.overview-sub{
+margin-top:2px;
+color:var(--muted);
+font-size:.46rem;
+}
+
+.overview-badge{
+padding:4px 8px;
+border-radius:7px;
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.18);
+font-family:'IBM Plex Mono',monospace;
+font-size:.44rem;
+font-weight:700;
+}
+
+.overview-bars{
+display:grid;
+grid-template-columns:repeat(10,1fr);
+gap:4px;
+align-items:end;
+padding:4px 2px 0;
+}
+
+.overview-bar{
+position:relative;
+height:76px;
+display:flex;
+align-items:flex-end;
+justify-content:center;
+border-radius:8px;
+overflow:hidden;
+background:
+linear-gradient(
+180deg,
+rgba(247,252,249,.75),
+rgba(236,247,241,.95)
+);
+border:1px solid rgba(10,102,71,.12);
+transition:
+transform .22s var(--ease),
+border-color .22s ease,
+box-shadow .22s ease;
+}
+
+.overview-bar:hover{
+transform:translateY(-2px);
+border-color:rgba(10,102,71,.28);
+box-shadow:0 6px 14px rgba(10,102,71,.07);
+}
+
+.overview-bar::before{
+content:"";
+position:absolute;
+left:2px;
+right:2px;
+bottom:2px;
+height:var(--bar-height);
+border-radius:6px;
+background:
+linear-gradient(
+180deg,
+var(--bar-color-top),
+var(--bar-color)
+);
+box-shadow:
+0 -2px 8px var(--bar-glow);
+transition:height .7s var(--ease);
+}
+
+.overview-bar::after{
+content:"";
+position:absolute;
+left:0;
+right:0;
+bottom:0;
+height:1px;
+background:rgba(10,102,71,.13);
+}
+
+.overview-bar.rank-1{
+border-color:rgba(158,108,2,.34);
+background:
+linear-gradient(
+180deg,
+rgba(254,249,195,.32),
+rgba(247,252,249,.95)
+);
+box-shadow:
+0 5px 15px rgba(158,108,2,.08);
+}
+
+.overview-bar.rank-2{
+border-color:rgba(10,102,71,.27);
+}
+
+.overview-bar.rank-3{
+border-color:rgba(8,115,128,.28);
+}
+
+.overview-rank{
+position:absolute;
+top:4px;
+left:50%;
+transform:translateX(-50%);
+z-index:3;
+padding:2px 4px;
+border-radius:5px;
+background:rgba(255,255,255,.88);
+border:1px solid rgba(10,102,71,.10);
+font-family:'IBM Plex Mono',monospace;
+font-size:.34rem;
+font-weight:800;
+color:var(--muted);
+white-space:nowrap;
+}
+
+.overview-bar.rank-1 .overview-rank{
+color:var(--gold);
+border-color:rgba(158,108,2,.20);
+background:rgba(254,249,195,.88);
+}
+
+.overview-bar.rank-2 .overview-rank{
+color:var(--emerald);
+border-color:rgba(10,102,71,.18);
+background:rgba(227,248,238,.90);
+}
+
+.overview-bar.rank-3 .overview-rank{
+color:var(--cyan);
+border-color:rgba(8,115,128,.18);
+background:rgba(224,249,247,.90);
+}
+
+.overview-digit{
+position:absolute;
+left:50%;
+bottom:5px;
+transform:translateX(-50%);
+z-index:4;
+color:#17372B;
+font-family:'IBM Plex Mono',monospace;
+font-size:.55rem;
+font-weight:800;
+}
+
+.overview-bar.rank-1 .overview-digit{
+color:#5F4300;
+}
+
+.overview-bar.rank-2 .overview-digit{
+color:var(--emerald);
+}
+
+.overview-bar.rank-3 .overview-digit{
+color:var(--cyan);
+}
+
+.overview-score{
+position:absolute;
+left:50%;
+bottom:20px;
+transform:translateX(-50%);
+z-index:4;
+font-family:'IBM Plex Mono',monospace;
+font-size:.31rem;
+font-weight:800;
+color:var(--muted);
+white-space:nowrap;
+}
+
+.overview-bar.rank-1 .overview-score{
+color:var(--gold);
+}
+
+.overview-bar.rank-2 .overview-score{
+color:var(--emerald);
+}
+
+.overview-bar.rank-3 .overview-score{
+color:var(--cyan);
+}
+
+.overview-axis{
+display:flex;
+justify-content:space-between;
+margin-top:6px;
+color:var(--muted2);
+font-family:'IBM Plex Mono',monospace;
+font-size:.41rem;
+}
+
+/* =========================================================
+   DEEP SCAN — TOP 3 COLOR SYSTEM
+========================================================= */
+
+.deep-scan-board{
+padding:12px;
+margin-bottom:9px;
+border-radius:20px;
+background:
+radial-gradient(
+circle at 95% 5%,
+rgba(16,185,129,.11),
+transparent 42%
+),
+linear-gradient(
+135deg,
+#FFFFFF,
+#F1F9F5
+);
+border-color:rgba(10,102,71,.19);
+}
+
+.deep-scan-board::before{
+content:"";
+position:absolute;
+top:0;
+left:0;
+right:0;
+height:2px;
+background:
+linear-gradient(
+90deg,
+transparent,
+#EAB308,
+#10B981,
+#14B8A6,
+transparent
+);
+opacity:.75;
+}
+
+.deep-scan-head{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:8px;
+margin-bottom:9px;
+}
+
+.deep-scan-kicker{
+color:var(--emerald);
+font-family:'IBM Plex Mono',monospace;
+font-size:.46rem;
+font-weight:800;
+letter-spacing:1px;
+}
+
+.deep-scan-title{
+margin-top:2px;
+font-size:.83rem;
+font-weight:800;
+}
+
+.deep-scan-sub{
+margin-top:1px;
+color:var(--muted);
+font-size:.45rem;
+}
+
+.deep-scan-grid{
+display:grid;
+grid-template-columns:1fr;
+gap:6px;
+}
+
+.deep-scan-card{
+position:relative;
+overflow:hidden;
+padding:9px;
+border-radius:13px;
+background:
+linear-gradient(
+135deg,
+rgba(255,255,255,.95),
+rgba(240,249,244,.95)
+);
+border:1px solid rgba(10,102,71,.14);
+transition:
+transform .22s var(--ease),
+box-shadow .22s ease;
+}
+
+.deep-scan-card:hover{
+transform:translateY(-1px);
+box-shadow:0 7px 16px rgba(10,102,71,.065);
+}
+
+.deep-scan-card::before{
+content:"";
+position:absolute;
+left:0;
+top:0;
+bottom:0;
+width:3px;
+background:linear-gradient(180deg,#9E6C02,#EAB308);
+}
+
+.deep-scan-card::after{
+content:"";
+position:absolute;
+top:0;
+right:0;
+width:95px;
+height:95px;
+border-radius:50%;
+background:rgba(234,179,8,.045);
+pointer-events:none;
+}
+
+.deep-scan-card.rank-two::before{
+background:linear-gradient(180deg,#0A6647,#10B981);
+}
+
+.deep-scan-card.rank-two::after{
+background:rgba(16,185,129,.045);
+}
+
+.deep-scan-card.rank-three::before{
+background:linear-gradient(180deg,#087380,#14B8A6);
+}
+
+.deep-scan-card.rank-three::after{
+background:rgba(20,184,166,.045);
+}
+
+.deep-scan-top{
+position:relative;
+z-index:2;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:6px;
+margin-bottom:7px;
+}
+
+.deep-scan-name{
+display:flex;
+align-items:center;
+gap:7px;
+font-size:.55rem;
+font-weight:800;
+}
+
+.deep-rank-label{
+display:block;
+margin-bottom:1px;
+font-family:'IBM Plex Mono',monospace;
+font-size:.37rem;
+font-weight:800;
+letter-spacing:.5px;
+color:var(--muted);
+}
+
+.deep-scan-digit{
+width:29px;
+height:29px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:8px;
+color:#5F4300;
+background:
+linear-gradient(
+135deg,
+#FEF9C3,
+#FDE68A
+);
+border:1px solid rgba(158,108,2,.34);
+box-shadow:
+0 4px 10px rgba(158,108,2,.09),
+inset 0 1px 0 rgba(255,255,255,.65);
+font-family:'IBM Plex Mono',monospace;
+font-size:.76rem;
+font-weight:800;
+}
+
+.deep-scan-card.rank-two .deep-scan-digit{
+color:#fff;
+background:
+linear-gradient(
+135deg,
+#0A6647,
+#10B981
+);
+border-color:rgba(16,185,129,.40);
+box-shadow:
+0 4px 10px rgba(10,102,71,.10),
+inset 0 1px 0 rgba(255,255,255,.25);
+}
+
+.deep-scan-card.rank-three .deep-scan-digit{
+color:#fff;
+background:
+linear-gradient(
+135deg,
+#087380,
+#14B8A6
+);
+border-color:rgba(20,184,166,.40);
+box-shadow:
+0 4px 10px rgba(8,115,128,.10),
+inset 0 1px 0 rgba(255,255,255,.25);
+}
+
+.deep-scan-rank{
+padding:3px 6px;
+border-radius:6px;
+font-family:'IBM Plex Mono',monospace;
+font-size:.38rem;
+font-weight:800;
+color:var(--gold);
+background:rgba(254,249,195,.78);
+border:1px solid rgba(158,108,2,.18);
+}
+
+.deep-scan-card.rank-two .deep-scan-rank{
+color:var(--emerald);
+background:rgba(227,248,238,.82);
+border-color:rgba(10,102,71,.17);
+}
+
+.deep-scan-card.rank-three .deep-scan-rank{
+color:var(--cyan);
+background:rgba(224,249,247,.84);
+border-color:rgba(8,115,128,.17);
+}
+
+.deep-scan-score{
+color:var(--gold);
+font-family:'IBM Plex Mono',monospace;
+font-size:.47rem;
+font-weight:800;
+}
+
+.deep-scan-card.rank-two .deep-scan-score{
+color:var(--emerald);
+}
+
+.deep-scan-card.rank-three .deep-scan-score{
+color:var(--cyan);
+}
+
+.deep-scan-pairs{
+position:relative;
+z-index:2;
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:4px;
+}
+
+.deep-pair{
+position:relative;
+overflow:hidden;
+padding:5px 2px;
+border-radius:8px;
+text-align:center;
+background:#fff;
+border:1px solid rgba(10,102,71,.12);
+cursor:pointer;
+transition:
+transform .2s ease,
+box-shadow .2s ease,
+border-color .2s ease;
+}
+
+.deep-pair:hover{
+transform:translateY(-1px);
+box-shadow:0 4px 10px rgba(10,102,71,.06);
+}
+
+.deep-pair strong{
+display:block;
+font-family:'IBM Plex Mono',monospace;
+font-size:.62rem;
+color:var(--gold);
+}
+
+.deep-scan-card.rank-two .deep-pair{
+border-color:rgba(10,102,71,.13);
+}
+
+.deep-scan-card.rank-two .deep-pair strong{
+color:var(--emerald);
+}
+
+.deep-scan-card.rank-three .deep-pair{
+border-color:rgba(8,115,128,.13);
+}
+
+.deep-scan-card.rank-three .deep-pair strong{
+color:var(--cyan);
+}
+
+.deep-pair small{
+display:block;
+margin-top:1px;
+font-family:'IBM Plex Mono',monospace;
+font-size:.36rem;
+color:var(--muted);
+}
+
+/* =========================================================
+   3D SMART SCAN
+========================================================= */
+
+.three-d-scan{
+margin-top:7px;
+padding-top:8px;
+border-top:1px solid rgba(10,102,71,.09);
+}
+
+.three-d-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:5px;
+}
+
+.three-d-title{
+font-size:.55rem;
+font-weight:800;
+}
+
+.three-d-score{
+padding:3px 6px;
+border-radius:6px;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.18);
+font-family:'IBM Plex Mono',monospace;
+font-size:.43rem;
+font-weight:800;
+}
+
+.three-d-grid{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:4px;
+}
+
+.three-d-item{
+position:relative;
+overflow:hidden;
+padding:6px 2px;
+border-radius:8px;
+text-align:center;
+background:
+linear-gradient(
+135deg,
+#fff,
+#F7F9F5
+);
+border:1px solid rgba(158,108,2,.18);
+cursor:pointer;
+transition:
+transform .2s ease,
+box-shadow .2s ease,
+border-color .2s ease;
+}
+
+.three-d-item:hover{
+transform:translateY(-1px);
+box-shadow:0 4px 10px rgba(158,108,2,.06);
+}
+
+.three-d-item strong{
+display:block;
+font-family:'IBM Plex Mono',monospace;
+font-size:.63rem;
+color:var(--gold);
+}
+
+.three-d-item small{
+display:block;
+margin-top:1px;
+font-family:'IBM Plex Mono',monospace;
+font-size:.35rem;
+color:var(--muted);
+}
+
+/* =========================================================
+   WIN SET
+========================================================= */
+
+.ind-win-set{
+padding:10px 12px;
+margin-bottom:9px;
+}
+
+.ind-win-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:7px;
+margin-bottom:7px;
+}
+
+.ind-win-title{
+font-size:.76rem;
+font-weight:800;
+}
+
+.ind-win-title small{
+display:block;
+margin-top:1px;
+color:var(--muted);
+font-size:.41rem;
+font-weight:600;
+letter-spacing:.2px;
+}
+
+.ind-win-badge{
+padding:3px 8px;
+border-radius:99px;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.22);
+font-family:'IBM Plex Mono',monospace;
+font-size:.43rem;
+font-weight:700;
+}
+
+.ind-win-grid{
+display:grid;
+grid-template-columns:repeat(6,1fr);
+gap:4px;
+}
+
+.ind-win-item{
+position:relative;
+overflow:hidden;
+padding:7px 2px;
+text-align:center;
+border-radius:10px;
+background:
+linear-gradient(
+135deg,
+#fff,
+#F1F8F4
+);
+border:1px solid rgba(10,102,71,.14);
+cursor:pointer;
+transition:
+transform .2s var(--ease),
+box-shadow .2s ease,
+border-color .2s ease;
+}
+
+.ind-win-item:hover{
+transform:translateY(-1px);
+box-shadow:0 5px 12px rgba(10,102,71,.07);
+border-color:rgba(16,185,129,.28);
+}
+
+.ind-win-item strong{
+display:block;
+color:var(--text);
+font-family:'IBM Plex Mono',monospace;
+font-size:.82rem;
+font-weight:800;
+}
+
+.ind-win-item span{
+display:block;
+margin-top:1px;
+color:var(--muted);
+font-size:.35rem;
+font-weight:700;
+}
+
+/* =========================================================
+   FORMULA
+========================================================= */
+
+.formula-section{
+margin-top:2px;
+}
+
+.formula-toggle{
+width:100%;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:11px 13px;
+border-radius:14px;
+border:1px solid rgba(10,102,71,.22);
+color:var(--text2);
+background:var(--greenSoft);
+cursor:pointer;
+font-size:.59rem;
+font-weight:800;
+}
+
+.formula-toggle span:last-child{
+color:var(--emerald);
+font-family:'IBM Plex Mono',monospace;
+font-size:.49rem;
+}
+
+.formula-card{
+padding:10px;
+margin-bottom:6px;
+border-radius:14px;
+background:#fff;
+}
+
+.formula-card::before{
+content:"";
+position:absolute;
+top:0;
+bottom:0;
+left:0;
+width:3px;
+background:linear-gradient(180deg,#0A6647,#087380);
+}
+
+.formula-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:6px;
+}
+
+.formula-name{
+display:flex;
+align-items:center;
+gap:5px;
+font-size:.61rem;
+font-weight:800;
+}
+
+.compact-badge{
+padding:2px 6px;
+border-radius:6px;
+color:var(--gold);
+background:var(--goldSoft);
+border:1px solid rgba(158,108,2,.20);
+font-size:.40rem;
+font-weight:700;
+}
+
+.formula-badge{
+padding:4px 7px;
+border-radius:7px;
+color:var(--emerald);
+background:var(--greenSoft);
+border:1px solid rgba(10,102,71,.18);
+font-family:'IBM Plex Mono',monospace;
+font-size:.45rem;
+font-weight:700;
+}
+
+.formula-sub{
+margin-top:5px;
+padding-bottom:5px;
+border-bottom:1px solid rgba(10,102,71,.12);
+color:var(--muted);
+font-size:.47rem;
+}
+
+.formula-sub strong{
+color:var(--gold);
+font-family:'IBM Plex Mono',monospace;
+}
+
+.formula-pairs{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:4px;
+margin-top:6px;
+}
+
+.formula-pair{
+padding:5px 2px;
+text-align:center;
+border-radius:8px;
+background:var(--bg2);
+border:1px solid rgba(10,102,71,.13);
+cursor:pointer;
+}
+
+.formula-pair strong{
+display:block;
+font-family:'IBM Plex Mono',monospace;
+color:var(--emerald);
+font-size:.61rem;
+}
+
+.formula-pair small{
+color:var(--muted);
+font-family:'IBM Plex Mono',monospace;
+font-size:.37rem;
+}
+
+/* =========================================================
+   DISCLAIMER / LOGOUT / TOAST
+========================================================= */
+
+.disclaimer{
+margin-top:9px;
+padding:9px 11px;
+border-radius:12px;
+color:var(--muted);
+background:var(--bg2);
+border:1px solid rgba(10,102,71,.14);
+text-align:center;
+font-size:.45rem;
+line-height:1.45;
+}
+
+.disclaimer strong{
+color:var(--text2);
+}
+
+.logout-btn{
+width:100%;
+height:42px;
+margin-top:9px;
+border-radius:12px;
+border:1px solid rgba(10,102,71,.16);
+background:#fff;
+color:var(--muted);
+font-size:.58rem;
+font-weight:700;
+cursor:pointer;
+transition:
+transform .2s ease,
+border-color .2s ease,
+background .2s ease;
+}
+
+.logout-btn:hover{
+transform:translateY(-1px);
+background:var(--bg2);
+border-color:rgba(10,102,71,.28);
+}
+
+#toast{
+position:fixed;
+left:50%;
+bottom:22px;
+z-index:9999;
+min-width:180px;
+padding:10px 16px;
+border-radius:99px;
+transform:translate(-50%,22px);
+opacity:0;
+pointer-events:none;
+color:#fff;
+background:#081B14;
+box-shadow:0 10px 25px rgba(10,102,71,.28);
+text-align:center;
+font-size:.57rem;
+font-weight:700;
+transition:.25s;
+}
+
+#toast.show{
+opacity:1;
+transform:translate(-50%,0);
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:400px){
+
+.ind-win-grid{
+grid-template-columns:repeat(3,1fr);
+}
+
+.top3-row{
+grid-template-columns:23px 32px minmax(0,1fr) 45px;
+gap:5px;
+padding-left:6px;
+padding-right:6px;
+}
+
+.top3-title{
+font-size:.75rem;
+}
+
+.top3-sub{
+font-size:.42rem;
+}
+
+.deep-scan-pairs{
+gap:3px;
+}
+
+.overview-bars{
+gap:3px;
+}
+
+.overview-bar{
+height:70px;
+}
+
+.overview-rank{
+font-size:.30rem;
+padding:2px 3px;
+}
+
+.overview-score{
+font-size:.29rem;
+}
+
+}
+
+@media(prefers-reduced-motion:reduce){
+
+*,
+*::before,
+*::after{
+animation-duration:.001ms!important;
+animation-iteration-count:1!important;
+scroll-behavior:auto!important;
+transition:none!important;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="snowCanvas"></canvas>
+
+<div class="ambient">
+<div class="grid-overlay"></div>
+</div>
+
+<div class="app-shell">
+<div class="app-card">
+<div class="app-inner">
+
+<!-- =========================================================
+LOGIN
+========================================================= -->
+
+<div id="loginView">
+
+<div class="top-nav">
+
+<div class="brand-mini">
+
+<div class="brand-mark">AI</div>
+
+<div>
+<div class="brand-name">Enterprise Quant</div>
+<div class="brand-sub">Predictive Data Engine</div>
+</div>
+
+</div>
+
+<div class="system-pill">
+<span class="live-dot"></span>
+SYSTEM READY
+</div>
+
+</div>
+
+<section class="hero">
+
+<div class="hero-kicker">
+<span></span>
+QUANT ANALYSIS ENGINE
+</div>
+
+<h1>
+Mester Lotto <em>VIP+</em>
+</h1>
+
+<p>
+ระบบคำนวณและวิเคราะห์ข้อมูล AI อัจฉริยะ<br>
+<b>Predictive Data Engine</b>
+</p>
+
+<div class="hero-meta">
+<div class="meta-chip">AI Pattern</div>
+<div class="meta-chip">Digit Ranking</div>
+<div class="meta-chip">Win Set</div>
+<div class="meta-chip">Neural Matrix</div>
+</div>
+
+</section>
+
+<div class="login-dashboard">
+
+<div class="mini-stat">
+<div class="mini-stat-label">
+ผู้ใช้งานระบบ / MEMBERS
+</div>
+
+<div
+class="mini-stat-value"
+id="totalUsersStat"
+>
+2,637
+</div>
+
+</div>
+
+<div class="mini-stat">
+
+<div class="mini-stat-label">
+สถานะระบบ / STATUS
+</div>
+
+<div class="mini-stat-value green">
+ONLINE
+</div>
+
+</div>
+
+</div>
+
+<div class="packages">
+
+<div class="package">
+<div class="package-title">7 วัน / 7 DAYS</div>
+<div class="package-price">99 ฿</div>
+<div class="package-desc">Starter Tier</div>
+</div>
+
+<div class="package">
+<div class="package-title">15 วัน / 15 DAYS</div>
+<div class="package-price">199 ฿</div>
+<div class="package-desc">รายงวด / Period</div>
+</div>
+
+<div class="package">
+<div class="package-title">1 เดือน / 1 MONTH</div>
+<div class="package-price">299 ฿</div>
+<div class="package-desc">ยอดนิยม / Popular</div>
+</div>
+
+<div class="package">
+<div class="package-title">1 ปี / 1 YEAR</div>
+<div class="package-price">1,890 ฿</div>
+<div class="package-desc">VIP ระยะยาว</div>
+</div>
+
+</div>
+
+<a
+href="https://line.me/ti/p/cWXNwvCmqc"
+target="_blank"
+rel="noopener noreferrer"
+class="contact-btn"
+onclick="_app._audio('click')"
+>
+💬 ติดต่อแอดมิน / CONTACT ADMIN
+</a>
+
+<section class="login-panel">
+
+<div class="section-eyebrow">
+SECURE ACCESS / ระบบสมาชิก
+</div>
+
+<div class="login-heading">
+เชื่อมต่อ Master Engine
+</div>
+
+<div class="login-description">
+กรุณากรอกรหัสผ่านเพื่อเข้าสู่ระบบ
+</div>
+
+<input
+type="password"
+id="passwordInput"
+placeholder="••• System Access Key •••"
+autocomplete="off"
+spellcheck="false"
+>
+
+<button
+class="primary-btn"
+id="loginButton"
+type="button"
+>
+🔐 CONNECT TO ENGINE / เข้าสู่ระบบ
+</button>
+
+<div id="errorMsg">
+❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED
+</div>
+
+</section>
+
+</div>
+
+<!-- =========================================================
+CALCULATOR
+========================================================= -->
+
+<div id="calculatorView">
+
+<div class="top-nav">
+
+<div class="brand-mini">
+
+<div class="brand-mark">AI</div>
+
+<div>
+<div class="brand-name">Enterprise Quant</div>
+<div class="brand-sub">AI Intelligence Console</div>
+</div>
+
+</div>
+
+<div class="system-pill">
+<span class="live-dot"></span>
+ENGINE ONLINE
+</div>
+
+</div>
+
+<section class="hero">
+
+<div class="hero-kicker">
+<span></span>
+PREMIUM ANALYSIS CONSOLE
+</div>
+
+<h1>
+Mester Lotto <em>VIP+</em>
+</h1>
+
+<p>
+วิเคราะห์ด้วย AI อัจฉริยะ<br>
+<b>Multi-Layer AI Processing</b>
+</p>
+
+<div class="hero-meta">
+<div class="meta-chip">ชุดเด่น</div>
+<div class="meta-chip">ชุดรอง</div>
+<div class="meta-chip">ชุดวิน 6 ตัว</div>
+<div class="meta-chip">AI Score</div>
+</div>
+
+</section>
+
+<div class="engine-strip">
+
+<div class="engine-card">
+
+<div class="engine-label">
+ประมวลผลทั้งหมดในระบบ
+</div>
+
+<div class="engine-value cyan">
+
+<span class="total-dot-wrap">
+<span
+class="total-dot"
+id="totalDot"
+></span>
+</span>
+
+<span id="totalProcessedCount">
+4,100
+</span>
+
+ครั้ง
+
+</div>
+
+</div>
+
+<div class="engine-card">
+
+<div class="engine-label">
+<span>👤</span>
+สมาชิกออนไลน์
+</div>
+
+<div
+class="engine-value green"
+id="onlineUsersCount"
+>
+1,150 คน
+</div>
+
+</div>
+
+<div class="engine-card">
+
+<div class="engine-label">
+<span>🖥️</span>
+ความเร็วเซิร์ฟเวอร์
+</div>
+
+<div
+class="engine-value gold"
+id="serverLatencyCount"
+>
+18 ms
+</div>
+
+</div>
+
+</div>
+
+<div
+id="lastSessionBadge"
+class="last-session"
+>
+
+<span>อ้างอิงจากผลล่าสุด:</span>
+
+<strong id="lbl3"></strong>
+
+<span>•</span>
+
+<strong id="lbl2"></strong>
+
+</div>
+
+<section class="command-center">
+
+<div class="command-header">
+
+<div>
+
+<div class="command-title">
+Analysis Input
+</div>
+
+<div class="command-sub">
+กรอกข้อมูลล่าสุด เพื่อเริ่มประมวลผล
+</div>
+
+</div>
+
+<div class="command-badge">
+INPUT READY
+</div>
+
+</div>
+
+<div class="input-grid">
+
+<div class="field-card">
+
+<label
+class="field-label"
+for="num3top"
+>
+เลข 3 ตัวบน
+</label>
+
+<input
+type="tel"
+inputmode="numeric"
+pattern="[0-9]*"
+id="num3top"
+placeholder="000"
+maxlength="3"
+autocomplete="off"
+spellcheck="false"
+>
+
+</div>
+
+<div class="field-card">
+
+<label
+class="field-label"
+for="num2bottom"
+>
+เลข 2 ตัวล่าง
+</label>
+
+<input
+type="tel"
+inputmode="numeric"
+pattern="[0-9]*"
+id="num2bottom"
+placeholder="00"
+maxlength="2"
+autocomplete="off"
+spellcheck="false"
+>
+
+</div>
+
+</div>
+
+<div class="action-row">
+
+<button
+class="calculate-btn"
+id="calculateButton"
+type="button"
+>
+⚡ RUN ANALYSIS / เริ่มประมวลผล
+</button>
+
+<button
+class="clear-btn"
+id="clearButton"
+type="button"
+>
+ล้าง / CLEAR
+</button>
+
+</div>
+
+</section>
+
+<div id="aiScannerBox">
+
+<div class="scanner-ring"></div>
+
+<div id="aiScannerText">
+INITIALIZING QUANT ANALYSIS...
+</div>
+
+</div>
+
+<div id="resultContainer"></div>
+
+<button
+class="logout-btn"
+id="logoutButton"
+type="button"
+>
+ออกจากระบบ / LOGOUT
+</button>
+
+</div>
+
+</div>
+</div>
+</div>
+
+<div id="toast">
+✓ คัดลอกตัวเลขแล้ว / COPIED
+</div>
+
+<script>
+
+/* =========================================================
+   AMBIENT PARTICLES
+========================================================= */
+
+(function(){
+
+const canvas=document.getElementById("snowCanvas");
+
+if(!canvas)return;
+
+const ctx=canvas.getContext("2d");
+
+let width=canvas.width=window.innerWidth;
+let height=canvas.height=window.innerHeight;
+
+window.addEventListener(
+"resize",
+()=>{
+width=canvas.width=window.innerWidth;
+height=canvas.height=window.innerHeight;
+}
+);
+
+const flakes=[];
+
+for(let i=0;i<45;i++){
+
+flakes.push({
+
+x:Math.random()*width,
+y:Math.random()*height,
+
+radius:Math.random()*2.2+.8,
+
+depth:Math.random()*.8+.2,
+
+speedY:Math.random()*.4+.2,
+
+speedX:Math.random()*.2-.1,
+
+opacity:Math.random()*.5+.35,
+
+swing:Math.random()*Math.PI*2,
+
+swingSpeed:Math.random()*.01+.005
+
+});
+
+}
+
+function render(){
+
+ctx.clearRect(0,0,width,height);
+
+flakes.forEach(f=>{
+
+f.swing+=f.swingSpeed;
+
+f.x+=Math.sin(f.swing)*.3+f.speedX;
+
+f.y+=f.speedY*f.depth;
+
+if(f.y>height+10){
+
+f.y=-10;
+f.x=Math.random()*width;
+
+}
+
+if(f.x>width+10)f.x=-10;
+if(f.x<-10)f.x=width+10;
+
+ctx.beginPath();
+
+ctx.arc(
+f.x,
+f.y,
+f.radius*f.depth,
+0,
+Math.PI*2
+);
+
+ctx.fillStyle=
+`rgba(16,185,129,${f.opacity*f.depth*.35})`;
+
+ctx.fill();
+
+});
+
+requestAnimationFrame(render);
+
+}
+
+render();
+
+})();
+
+
+/* =========================================================
+   SYSTEM COUNTERS
+========================================================= */
+
+let totalProcessed=
+parseInt(
+localStorage.getItem("ml_total_processed_v1"),
+10
+);
+
+if(
+!totalProcessed||
+isNaN(totalProcessed)||
+totalProcessed<35000
+){
+
+totalProcessed=35000;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
+}
+
+function updateProcessedUI(triggerRipple=true){
+
+const el=
+document.getElementById(
+"totalProcessedCount"
+);
+
+if(el)
+el.innerText=
+totalProcessed.toLocaleString();
+
+if(triggerRipple){
+
+const dot=
+document.getElementById("totalDot");
+
+if(dot){
+
+dot.classList.remove("ripple");
+
+void dot.offsetWidth;
+
+dot.classList.add("ripple");
+
+}
+
+}
+
+}
+
+function scheduleProcessedIncrements(){
+
+const count=
+Math.floor(Math.random()*3)+5;
+
+const intervals=[];
+
+for(let i=0;i<count;i++){
+
+intervals.push(
+Math.floor(Math.random()*58000)+1000
+);
+
+}
+
+intervals.sort((a,b)=>a-b);
+
+intervals.forEach(delay=>{
+
+setTimeout(()=>{
+
+totalProcessed+=1;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
+updateProcessedUI(true);
+
+},delay);
+
+});
+
+setTimeout(
+scheduleProcessedIncrements,
+60000
+);
+
+}
+
+let currentOnline=
+parseInt(
+localStorage.getItem(
+"ml_online_users_v1"
+),
+10
+);
+
+if(
+!currentOnline||
+isNaN(currentOnline)
+)
+currentOnline=1150;
+
+function updateOnlineUsers(){
+
+const change=
+Math.floor(Math.random()*100)+1;
+
+if(Math.random()>.45)
+currentOnline+=change;
+else
+currentOnline-=change;
+
+if(currentOnline<1050){
+
+currentOnline+=
+Math.floor(Math.random()*40)+20;
+
+}
+
+if(currentOnline>1280){
+
+currentOnline-=
+Math.floor(Math.random()*40)+20;
+
+}
+
+localStorage.setItem(
+"ml_online_users_v1",
+currentOnline
+);
+
+const el=
+document.getElementById(
+"onlineUsersCount"
+);
+
+if(el)
+el.innerText=
+currentOnline.toLocaleString()+" คน";
+
+}
+
+function updateServerLatency(){
+
+const latency=
+Math.floor(
+Math.random()*(26-18+1)
+)+18;
+
+const el=
+document.getElementById(
+"serverLatencyCount"
+);
+
+if(el)
+el.innerText=
+latency+" ms";
+
+}
+
+document.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+updateProcessedUI(false);
+
+scheduleProcessedIncrements();
+
+updateOnlineUsers();
+
+setInterval(
+updateOnlineUsers,
+60000
+);
+
+updateServerLatency();
+
+setInterval(
+updateServerLatency,
+3500
+);
+
+}
+);
+
+
+/* =========================================================
+   SECURITY / ACCESS KEY
+========================================================= */
+
+const _secEnc={
+
+_dbToken:[
+"4d617374657241646d696e32303236",
+"54396b4c326d5037",
+"5a71345738785431"
+],
+
+_hexDecode(hex){
+
+let str="";
+
+for(
+let i=0;
+i<hex.length;
+i+=2
+){
+
+str+=String.fromCharCode(
+parseInt(hex.substr(i,2),16)
+);
+
+}
+
+return str;
+
+},
+
+async _checkMatch(inputVal){
+
+const value=String(inputVal||"").trim();
+
+for(
+const hex of this._dbToken
+){
+
+if(
+value===
+this._hexDecode(hex)
+)
+return true;
+
+}
+
+return false;
+
+}
+
+};
+
+
+/* =========================================================
+   MAIN APP
+========================================================= */
+
+const _app={
+
+_toastTimer:null,
+
+async _verify(p){
+
+return await _secEnc._checkMatch(p);
+
+},
+
+_audio(type="click"){
+
+try{
+
+const AC=
+window.AudioContext||
+window.webkitAudioContext;
+
+if(!AC)return;
+
+const c=new AC();
+
+const o=c.createOscillator();
+const g=c.createGain();
+
+const now=c.currentTime;
+
+o.type=
+type==="error"
+?"triangle"
+:"sine";
+
+o.frequency.setValueAtTime(
+type==="error"
+?190
+:520,
+now
+);
+
+o.frequency.exponentialRampToValueAtTime(
+type==="error"
+?130
+:720,
+now+.08
+);
+
+g.gain.setValueAtTime(
+type==="error"
+?.035
+:.025,
+now
+);
+
+g.gain.exponentialRampToValueAtTime(
+.001,
+now+.12
+);
+
+o.connect(g);
+g.connect(c.destination);
+
+o.start(now);
+o.stop(now+.13);
+
+}catch(e){}
+
+},
+
+_esc(s){
+
+return String(s)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+},
+
+async login(){
+
+this._audio("click");
+
+const input=
+document.getElementById(
+"passwordInput"
+);
+
+const error=
+document.getElementById(
+"errorMsg"
+);
+
+if(!input||!error){
+return;
+}
+
+const value=input.value.trim();
+
+if(
+!value||
+!(await this._verify(value))
+){
+
+this._audio("error");
+
+error.style.display="block";
+
+input.focus();
+
+return;
+
+}
+
+error.style.display="none";
+
+localStorage.setItem(
+"ml_auth_status_v3",
+"active"
+);
+
+document.getElementById(
+"loginView"
+).style.display="none";
+
+document.getElementById(
+"calculatorView"
+).style.display="block";
+
+this.checkSessionBadge();
+
+const num3=
+document.getElementById("num3top");
+
+if(num3)
+num3.focus();
+
+},
+
+logout(){
+
+this._audio("click");
+
+localStorage.removeItem(
+"ml_auth_status_v3"
+);
+
+document.getElementById(
+"calculatorView"
+).style.display="none";
+
+document.getElementById(
+"loginView"
+).style.display="block";
+
+[
+"passwordInput",
+"num3top",
+"num2bottom"
+].forEach(id=>{
+
+const el=
+document.getElementById(id);
+
+if(el)el.value="";
+
+});
+
+document.getElementById(
+"resultContainer"
+).innerHTML="";
+
+document.getElementById(
+"errorMsg"
+).style.display="none";
+
+},
+
+clearCalc(){
+
+this._audio("click");
+
+document.getElementById(
+"resultContainer"
+).innerHTML="";
+
+document.getElementById(
+"num3top"
+).value="";
+
+document.getElementById(
+"num2bottom"
+).value="";
+
+document.getElementById(
+"num3top"
+).focus();
+
+},
+
+checkSessionBadge(){
+
+const n3=
+localStorage.getItem(
+"ml_l_n3_v3"
+);
+
+const n2=
+localStorage.getItem(
+"ml_l_n2_v3"
+);
+
+const badge=
+document.getElementById(
+"lastSessionBadge"
+);
+
+if(!badge)return;
+
+if(n3&&n2){
+
+document.getElementById(
+"lbl3"
+).innerText=n3;
+
+document.getElementById(
+"lbl2"
+).innerText=n2;
+
+badge.style.display="flex";
+
+}else{
+
+badge.style.display="none";
+
+}
+
+},
+
+calculate(){
+
+this._audio("click");
+
+const n3=
+document.getElementById(
+"num3top"
+).value.trim();
+
+const n2=
+document.getElementById(
+"num2bottom"
+).value.trim();
+
+if(
+!/^\d{3}$/.test(n3)||
+!/^\d{2}$/.test(n2)
+){
+
+this._audio("error");
+
+alert(
+"กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก"
+);
+
+return;
+
+}
+
+localStorage.setItem(
+"ml_l_n3_v3",
+n3
+);
+
+localStorage.setItem(
+"ml_l_n2_v3",
+n2
+);
+
+this.checkSessionBadge();
+
+const scan=
+document.getElementById(
+"aiScannerBox"
+);
+
+const btn=
+document.getElementById(
+"calculateButton"
+);
+
+btn.disabled=true;
+
+scan.style.display="block";
+
+const messages=[
+"READING INPUT STRUCTURE...",
+"CALCULATING DIGIT MOMENTUM...",
+"RUNNING BACKEND COMPASS & SCORING...",
+"EVALUATING 5 MATHEMATICAL MODELS...",
+"BUILDING NUMBER MATRIX...",
+"MAPPING DIGIT DISTRIBUTION...",
+"GENERATING WIN SET...",
+"FINALIZING ANALYSIS..."
+];
+
+let index=0;
+
+const scannerText=
+document.getElementById(
+"aiScannerText"
+);
+
+scannerText.innerText=
+messages[0];
+
+const timer=setInterval(()=>{
+
+index++;
+
+if(index<messages.length){
+
+scannerText.innerText=
+messages[index];
+
+}
+
+},100);
+
+setTimeout(()=>{
+
+clearInterval(timer);
+
+scan.style.display="none";
+
+btn.disabled=false;
+
+this.runAnalysis(n3,n2);
+
+document.getElementById(
+"resultContainer"
+).scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
+
+totalProcessed+=1;
+
+localStorage.setItem(
+"ml_total_processed_v1",
+totalProcessed
+);
+
+updateProcessedUI(true);
+
+},800);
+
+},
+
+/* =========================================================
+   NORMALIZE
+========================================================= */
+
+_normalize(x){
+
+return(x%10+10)%10;
+
+},
+
+/* =========================================================
+   PAIR NORMALIZATION — AB = BA
+========================================================= */
+
+_normalizePair(pair){
+
+const raw=String(pair??"")
+.replace(/\D/g,"")
+.slice(0,2);
+
+if(raw.length!==2)
+return null;
+
+return raw.split("").sort().join("");
+
+},
+
+/* =========================================================
+   PREMIUM GRADE — derived from real confidence score
+========================================================= */
+
+_getPremiumGrade(score){
+
+const value=Number(score)||0;
+
+if(value>=97)
+return"PREMIUM";
+
+if(value>=94)
+return"A+";
+
+if(value>=90)
+return"A";
+
+if(value>=85)
+return"B";
+
+return"C";
+
+},
+
+/* =========================================================
+   5-MODEL PAIR ANALYSIS — occurrence based
+   Each normalized pair occurrence adds +1.
+========================================================= */
+
+_buildPairAnalysis(models){
+
+const pairMap={};
+
+(models||[]).forEach(model=>{
+
+Object.values(model.pairsMap||{}).forEach(pairList=>{
+
+(pairList||[]).forEach(pair=>{
+
+const key=this._normalizePair(pair);
+
+if(!key)
+return;
+
+if(!pairMap[key]){
+
+pairMap[key]={
+pair:key,
+score:0,
+models:new Set()
+};
+
+}
+
+pairMap[key].score+=1;
+pairMap[key].models.add(model.id);
+
+});
+
+});
+
+});
+
+return Object.values(pairMap)
+.sort(
+(a,b)=>
+b.score-a.score||
+b.models.size-a.models.size||
+a.pair.localeCompare(b.pair)
+);
+
+},
+
+/* =========================================================
+   ORIGINAL 100 FORMULA ENGINE
+========================================================= */
+
+_run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
+){
+
+const rawFormulas=[
+
+H+T_top,
+H+U_top,
+T_top+U_top,
+H+T_bot,
+H+U_bot,
+T_top+T_bot,
+T_top+U_bot,
+U_top+T_bot,
+U_top+U_bot,
+T_bot+U_bot,
+
+sumTop+T_bot,
+sumTop+U_bot,
+sumTop+H,
+sumTop+T_top,
+sumTop+U_top,
+
+10-H,
+10-T_top,
+10-U_top,
+10-T_bot,
+10-U_bot,
+
+H+T_top+T_bot,
+H+U_top+U_bot,
+T_top+U_top+T_bot,
+T_top+U_top+U_bot,
+H+T_bot+U_bot,
+T_top+T_bot+U_bot,
+
+sumTop-T_bot,
+sumTop-U_bot,
+sumTop+sumBot,
+sumTop-sumBot,
+
+H+T_top-U_bot,
+T_top+U_top-T_bot,
+H+U_top-T_bot,
+
+20-(T_top+T_bot),
+20-(U_top+U_bot),
+
+H+T_top+U_top-T_bot,
+H+T_top+U_top-U_bot,
+
+10+T_top-U_bot,
+10+U_top-T_bot,
+
+sumTop+10-U_bot,
+
+H+U_bot-T_top,
+T_top+U_bot-H,
+U_top+T_bot-H,
+
+sumBot+H-T_top,
+sumBot+H-U_top,
+
+H+sumBot-T_top,
+H+sumBot-U_top,
+
+T_top+sumBot-H,
+T_top+sumBot-U_top,
+
+U_top+sumBot-H,
+U_top+sumBot-T_top,
+
+30-(H+T_top+T_bot),
+30-(H+U_top+U_bot),
+30-(T_top+U_top+T_bot),
+30-(H+T_bot+U_bot),
+
+H+T_top+T_bot-U_bot,
+H+U_top+U_bot-T_bot,
+T_top+U_top+T_bot-H,
+
+sumTop+T_bot-U_bot,
+sumTop+U_bot-T_bot,
+
+H+T_top+sumBot,
+H+U_top+sumBot,
+T_top+U_top+sumBot,
+
+H+T_bot+sumTop,
+H+U_bot+sumTop,
+T_top+T_bot+sumTop,
+T_top+U_bot+sumTop,
+U_top+T_bot+sumTop,
+U_top+U_bot+sumTop,
+T_bot+U_bot+sumTop,
+
+10+H+T_top,
+10+H+U_top,
+10+T_top+U_top,
+10+T_bot+U_bot,
+10+H+T_bot,
+10+H+U_bot,
+10+T_top+T_bot,
+10+T_top+U_bot,
+10+U_top+T_bot,
+10+U_top+U_bot,
+
+H-T_top+U_bot,
+H-U_top+T_bot,
+T_top-U_top+U_bot,
+
+T_bot-U_bot+H,
+T_bot-U_bot+T_top,
+T_bot-U_bot+U_top,
+
+20-H-T_top,
+20-H-U_top,
+20-T_top-U_top,
+20-T_bot-U_bot,
+20-H-T_bot,
+20-H-U_bot,
+20-T_top-T_bot,
+20-T_top-U_bot,
+20-U_top-T_bot,
+20-U_top-U_bot,
+
+totalSum,
+2*totalSum,
+totalSum+H,
+totalSum+T_bot
+
+];
+
+const countedDigits={};
+
+for(let d=0;d<=9;d++)
+countedDigits[d]=0;
+
+rawFormulas.forEach(rawVal=>{
+
+const unit=
+(rawVal%10+10)%10;
+
+countedDigits[unit]=
+(countedDigits[unit]||0)+1;
+
+});
+
+const sortedByCount=
+Object.keys(countedDigits)
+.map(Number)
+.sort(
+(a,b)=>
+countedDigits[b]-countedDigits[a]||
+b-a
+);
+
+return{
+ranking:sortedByCount.slice(0,10),
+counts:countedDigits
+};
+
+},
+
+/* =========================================================
+   MAIN ANALYSIS
+========================================================= */
+
+runAnalysis(n3,n2){
+
+const inputDigits3=
+n3.split("").map(Number);
+
+const inputDigits2=
+n2.split("").map(Number);
+
+const[
+H,
+T_top,
+U_top
+]=inputDigits3;
+
+const[
+T_bot,
+U_bot
+]=inputDigits2;
+
+const sumTop=
+H+T_top+U_top;
+
+const sumBot=
+T_bot+U_bot;
+
+const totalSum=
+sumTop+sumBot;
+
+const formula100Engine=
+this._run100FormulasEngine(
+H,
+T_top,
+U_top,
+T_bot,
+U_bot,
+sumTop,
+sumBot,
+totalSum
+);
+
+const getUnitDirect=v=>{
+
+const str=String(v);
+
+const first=
+parseInt(
+str.slice(-1),
+10
+);
+
+return[
+first,
+(first+1)%10
+];
+
+};
+
+const fixedBase=7;
+
+const anchorRaw=
+fixedBase-H;
+
+const anchor=
+(Math.abs(anchorRaw)%10+10)%10;
+
+let rawM1=
+(T_top+T_bot)%10;
+
+let rawM2=
+sumTop%10;
+
+let rawM3=
+(H+T_bot)%10;
+
+let rawM4=
+(U_top+U_bot)%10;
+
+let rawM5=
+(10-U_bot)%10;
+
+let modelRawValues=[
+rawM1,
+rawM2,
+rawM3,
+rawM4,
+rawM5
+];
+
+let uniqueModelDigits=
+new Set(modelRawValues);
+
+if(uniqueModelDigits.size<4){
+
+const fallbackFormulas=[
+
+(T_top+U_bot)%10,
+(H+U_top)%10,
+sumBot%10,
+(H+sumBot)%10,
+totalSum%10
+
+];
+
+for(
+let fbVal of fallbackFormulas
+){
+
+const normFb=
+(fbVal%10+10)%10;
+
+uniqueModelDigits.add(normFb);
+
+if(uniqueModelDigits.size>=6)
+break;
+
+}
+
+}
+
+const fList=[
+
+{
+id:1,
+name:"AI โมเดล 01",
+subName:"B + R1 -> ใช้หลักหน่วยดิบเพียวๆ",
+set:getUnitDirect(rawM1),
+positionalWeight:1
+},
+
+{
+id:2,
+name:"AI โมเดล 02",
+subName:"A + B + C -> ใช้หลักหน่วยดิบเพียวๆ",
+set:getUnitDirect(rawM2),
+positionalWeight:1
+},
+
+{
+id:3,
+name:"AI โมเดล 03",
+subName:"A + R1 -> ใช้หลักหน่วยดิบเพียวๆ",
+set:getUnitDirect(rawM3),
+positionalWeight:1
+},
+
+{
+id:4,
+name:"AI โมเดล 04",
+subName:"C + R2 -> ใช้หลักหน่วยดิบเพียวๆ",
+set:getUnitDirect(rawM4),
+positionalWeight:1
+},
+
+{
+id:5,
+name:"AI โมเดล 05",
+subName:"10 - R2 -> ใช้หลักหน่วยดิบเพียวๆ",
+set:getUnitDirect(rawM5),
+positionalWeight:1
+}
+
+];
+
+const allowedModelDigits=new Set;
+
+fList.forEach(item=>{
+
+item.set.forEach(d=>
+allowedModelDigits.add(d)
+);
+
+});
+
+const evaluated=
+fList.map(model=>{
+
+const formulaSet=
+model.set;
+
+let rawRange=[];
+
+let hasCollision=false;
+
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
+
+const val=
+this._normalize(
+anchor+offset
+);
+
+if(formulaSet.includes(val)){
+
+hasCollision=true;
+break;
+
+}
+
+}
+
+if(hasCollision){
+
+for(
+let offset=-3;
+offset<=3;
+offset++
+){
+
+rawRange.push(
+this._normalize(
+anchor+offset
+)
+);
+
+}
+
+}else{
+
+for(
+let offset=-2;
+offset<=2;
+offset++
+){
+
+rawRange.push(
+this._normalize(
+anchor+offset
+)
+);
+
+}
+
+}
+
+const excludedDigits=
+[...new Set(formulaSet)];
+
+let cleanedPool=
+rawRange.filter(
+dg=>!excludedDigits.includes(dg)
+);
+
+const generatedPairs=[];
+const rejectedPairs=[];
+
+formulaSet.forEach(sourceDigit=>{
+
+cleanedPool.forEach(poolDigit=>{
+
+if(sourceDigit===poolDigit){
+
+rejectedPairs.push(
+`${sourceDigit}${poolDigit} (self-match)`
+);
+
+return;
+
+}
+
+generatedPairs.push({
+
+digitA:sourceDigit,
+digitB:poolDigit,
+pairStr:`${sourceDigit}${poolDigit}`
+
+});
+
+});
+
+});
+
+const pMap={};
+
+formulaSet.forEach(sourceDigit=>{
+
+let pairsForDigit=
+generatedPairs
+.filter(
+p=>p.digitA===sourceDigit
+)
+.map(
+p=>p.pairStr
+);
+
+let nextFill=
+(sourceDigit+1)%10;
+
+while(
+pairsForDigit.length<5
+){
+
+if(
+nextFill!==sourceDigit&&
+!pairsForDigit.includes(
+`${sourceDigit}${nextFill}`
+)&&
+!excludedDigits.includes(nextFill)
+){
+
+pairsForDigit.push(
+`${sourceDigit}${nextFill}`
+);
+
+}
+
+nextFill=
+(nextFill+1)%10;
+
+}
+
+pairsForDigit=
+[
+...new Set(pairsForDigit)
+]
+.filter(
+p=>p[0]!==p[1]
+)
+.sort();
+
+if(
+pairsForDigit.length>5
+)
+pairsForDigit=
+pairsForDigit.slice(0,5);
+
+pMap[sourceDigit]=
+pairsForDigit;
+
+});
+
+return{
+
+id:model.id,
+name:model.name,
+subName:model.subName,
+positionalWeight:model.positionalWeight,
+set:model.set,
+pairsMap:pMap
+
+};
+
+});
+
+const digitScores={};
+
+for(let d=0;d<=9;d++){
+
+digitScores[d]={
+digit:d,
+modelScore:0,
+formula100Score:0,
+radarScore:0,
+backendScore:0,
+winSetScore:0,
+totalScore:0
+};
+
+}
+
+evaluated.forEach(model=>{
+
+model.set.forEach(dig=>{
+
+digitScores[dig].modelScore+=1;
+
+});
+
+});
+
+const maxFormCount=
+Math.max(
+...Object.values(
+formula100Engine.counts
+),
+1
+);
+
+for(let d=0;d<=9;d++){
+
+const matchCount=
+formula100Engine.counts[d]||0;
+
+digitScores[d].formula100Score=
+matchCount/maxFormCount;
+
+}
+
+const X_val=
+(T_bot+U_bot)%10;
+
+const radar1Range=[
+(X_val-1+10)%10,
+X_val,
+(X_val+1)%10
+];
+
+const Y_val=
+(H+T_top+U_top)%10;
+
+const radar2Range=[
+(Y_val-1+10)%10,
+Y_val,
+(Y_val+1)%10
+];
+
+const Z_val=
+(H+T_top+U_top+T_bot+U_bot)%10;
+
+const radar3Range=[
+(Z_val-1+10)%10,
+Z_val,
+(Z_val+1)%10
+];
+
+for(let d=0;d<=9;d++){
+
+let rHits=0;
+
+if(radar1Range.includes(d))
+rHits++;
+
+if(radar2Range.includes(d))
+rHits++;
+
+if(radar3Range.includes(d))
+rHits++;
+
+digitScores[d].radarScore=
+rHits/3;
+
+}
+
+const backendFormulasSet=[
+
+(2*H+T_bot)%10,
+(T_top+U_bot)%10,
+sumTop%10,
+Math.abs(T_top-U_top)%10,
+totalSum%10
+
+];
+
+for(let d=0;d<=9;d++){
+
+if(
+backendFormulasSet.includes(d)
+)
+digitScores[d].backendScore=1;
+
+}
+
+const winCandidate=
+(H+T_top+U_top+T_bot+U_bot)%10;
+
+for(let d=0;d<=9;d++){
+
+if(
+d===winCandidate||
+d===(winCandidate+5)%10
+)
+digitScores[d].winSetScore=1;
+
+}
+
+for(let d=0;d<=9;d++){
+
+const item=
+digitScores[d];
+
+item.totalScore=
+.35*item.modelScore+
+.25*item.formula100Score+
+.15*item.radarScore+
+.15*item.backendScore+
+.1*item.winSetScore;
+
+if(
+allowedModelDigits.has(d)
+)
+item.totalScore*=1.15;
+
+}
+
+const matrixSortedAll=
+Object.values(digitScores)
+.sort(
+(a,b)=>
+b.totalScore-a.totalScore||
+b.digit-a.digit
+);
+
+const allowedModelArray=
+Array.from(allowedModelDigits);
+
+const filteredModelScores=
+matrixSortedAll.filter(
+item=>
+allowedModelArray.includes(
+item.digit
+)
+);
+
+let primaryDigitObj=
+filteredModelScores[0];
+
+let secondaryDigitObj=
+filteredModelScores[1];
+
+if(!primaryDigitObj)
+primaryDigitObj=
+matrixSortedAll[0];
+
+if(!secondaryDigitObj)
+secondaryDigitObj=
+matrixSortedAll.find(
+item=>
+item.digit!==primaryDigitObj.digit
+)||
+matrixSortedAll[1];
+
+const d1=
+primaryDigitObj.digit;
+
+const d2_dig=
+secondaryDigitObj.digit;
+
+const matrixSorted=
+matrixSortedAll;
+
+const allScores=
+matrixSorted.map(
+s=>s.totalScore
+);
+
+const minScore=
+Math.min(...allScores);
+
+const maxScore=
+Math.max(...allScores);
+
+const scoreRange=
+maxScore-minScore||1;
+
+const calcConfidence=score=>{
+
+const normalizedPct=
+80+
+(score-minScore)/
+scoreRange*
+18.5;
+
+return Number(
+Math.min(
+98.5,
+Math.max(
+80,
+normalizedPct
+)
+).toFixed(1)
+);
+
+};
+
+evaluated.forEach(model=>{
+
+const modelScoreSum=
+model.set.reduce(
+(sum,dig)=>
+sum+
+(
+digitScores[dig].totalScore>0
+?digitScores[dig].totalScore
+:0
+),
+0
+);
+
+model.aiScore=
+calcConfidence(
+modelScoreSum/2
+);
+
+});
+
+evaluated.sort(
+(a,b)=>
+b.aiScore-a.aiScore
+);
+
+evaluated.forEach(
+(model,idx)=>{
+model.isRecommended=
+idx<2;
+}
+);
+
+const winnerModel=
+evaluated[0];
+
+
+/* =========================================================
+   PREMIUM PAIR ANALYSIS — 5 MODEL EVIDENCE
+========================================================= */
+
+const pairRanking=
+this._buildPairAnalysis(evaluated);
+
+
+/* =========================================================
+   TOP 3 — ACTUAL MATRIX RANKING
+========================================================= */
+
+const top3Digits=
+matrixSorted.slice(0,3);
+
+const thirdRankDigit=
+top3Digits[2]
+?top3Digits[2].digit
+:null;
+
+
+/* ===============================================
+   DEEP SCAN — 3 REAL TOP DIGIT SETS
+=============================================== */
+
+function findPairsForDigit(digit){
+
+return winnerModel.pairsMap[digit]||
+evaluated.find(
+m=>m.pairsMap[digit]
+)?.pairsMap[digit]||
+[];
+
+}
+
+const deepSets=
+top3Digits.map(
+item=>({
+
+digit:item.digit,
+score:calcConfidence(item.totalScore),
+pairs:findPairsForDigit(item.digit).slice(0,5)
+
+})
+);
+
+/* =========================================================
+   3 DIGIT SMART SCAN
+========================================================= */
+
+const arr1=
+findPairsForDigit(d1);
+
+const arr2=
+findPairsForDigit(d2_dig);
+
+const arr3=
+thirdRankDigit!==null
+?findPairsForDigit(thirdRankDigit)
+:[];
+
+const matrixArr3d=
+arr1.slice(0,5)
+.map(
+p=>
+`${p.slice(-1)}${d1}${d2_dig}`
+);
+
+const cScore3=
+Number(
+(
+50.1+
+.8*Math.random()
+).toFixed(1)
+);
+
+/* =========================================================
+   WIN SET
+========================================================= */
+
+let top5Digits=
+matrixSorted
+.slice(0,5)
+.map(
+item=>item.digit
+);
+
+let wildcardCandidate=
+matrixSorted.find(
+item=>
+!allowedModelDigits.has(item.digit)&&
+!top5Digits.includes(item.digit)
+);
+
+if(!wildcardCandidate){
+
+wildcardCandidate=
+matrixSorted.find(
+item=>
+!top5Digits.includes(item.digit)
+);
+
+}
+
+let currentSet=[
+...top5Digits,
+wildcardCandidate
+?wildcardCandidate.digit
+:matrixSorted[5].digit
+];
+
+const checkBalance=digits=>{
+
+const evenCount=
+digits.filter(
+d=>d%2===0
+).length;
+
+const oddCount=
+digits.length-evenCount;
+
+const lowCount=
+digits.filter(
+d=>d>=0&&d<=4
+).length;
+
+const highCount=
+digits.length-lowCount;
+
+return{
+
+isBalanced:
+evenCount>=2&&
+oddCount>=2&&
+lowCount>=2&&
+highCount>=2
+
+};
+
+};
+
+if(
+!checkBalance(currentSet).isBalanced
+){
+
+const candidatesIndex=[
+6,7,8,9
+];
+
+let bestSet=[
+...currentSet
+];
+
+let foundReplacement=false;
+
+for(
+let idx of candidatesIndex
+){
+
+if(
+idx<matrixSorted.length
+){
+
+const testSet=[
+...currentSet.slice(0,5),
+matrixSorted[idx].digit
+];
+
+if(
+checkBalance(testSet).isBalanced
+){
+
+bestSet=testSet;
+foundReplacement=true;
+break;
+
+}
+
+}
+
+}
+
+if(foundReplacement)
+currentSet=bestSet;
+
+}
+
+const winSet=
+currentSet.sort(
+(a,b)=>a-b
+);
+
+const combinedAnalysisPool=[
+...matrixSorted
+.slice(0,5)
+.map(i=>i.digit),
+...winSet
+];
+
+const evenCountTotal=
+combinedAnalysisPool.filter(
+d=>d%2===0
+).length;
+
+const oddCountTotal=
+combinedAnalysisPool.length-
+evenCountTotal;
+
+const evenPct=
+Number(
+(
+evenCountTotal/
+combinedAnalysisPool.length*
+100
+).toFixed(1)
+);
+
+const oddPct=
+Number(
+(
+100-evenPct
+).toFixed(1)
+);
+
+const maxScoreVal=
+Math.max(
+...matrixSorted.map(
+s=>s.totalScore
+),
+1
+);
+
+/* =========================================================
+   DISTRIBUTION — PREMIUM 0-9 RANKING
+========================================================= */
+
+const distributionHTML=
+matrixSorted.map(
+(item,index)=>{
+
+const digit=
+item.digit;
+
+const height=
+item.totalScore>0
+?Math.max(
+12,
+Math.round(
+item.totalScore/
+maxScoreVal*
+100
+)
+)
+:6;
+
+let barColor="#0A6647";
+let barTop="#10B981";
+let glow="rgba(16,185,129,.12)";
+let rankClass="";
+let rankLabel=`#${index+1}`;
+
+if(index===0){
+
+barColor="#EAB308";
+barTop="#FEF3A6";
+glow="rgba(234,179,8,.22)";
+rankClass="rank-1";
+
+}
+else if(index===1){
+
+barColor="#10B981";
+barTop="#D1FAE5";
+glow="rgba(16,185,129,.18)";
+rankClass="rank-2";
+
+}
+else if(index===2){
+
+barColor="#14B8A6";
+barTop="#CCFBF1";
+glow="rgba(20,184,166,.17)";
+rankClass="rank-3";
+
+}
+else if(index===3||index===4){
+
+barColor="#0A6647";
+barTop="#A7F3D0";
+glow="rgba(10,102,71,.12)";
+
+}
+else if(index===5||index===6){
+
+barColor="#9E6C02";
+barTop="#FEF3C7";
+glow="rgba(158,108,2,.10)";
+
+}
+else if(index===7||index===8){
+
+barColor="#087380";
+barTop="#CCFBF1";
+glow="rgba(8,115,128,.10)";
+
+}
+else{
+
+barColor="#BE123C";
+barTop="#FFE4E6";
+glow="rgba(190,18,60,.08)";
+
+}
+
+const scorePct=
+calcConfidence(item.totalScore);
+
+return`
+<div
+class="overview-bar ${rankClass}"
+style="
+--bar-height:${height}%;
+--bar-color:${barColor};
+--bar-color-top:${barTop};
+--bar-glow:${glow};
+"
+data-copy="${digit}"
+title="Rank ${index+1} • Digit ${digit} • ${scorePct.toFixed(1)}%"
+>
+
+<span class="overview-rank">
+${rankLabel}
+</span>
+
+<span class="overview-score">
+${scorePct.toFixed(1)}%
+</span>
+
+<span class="overview-digit">
+${digit}
+</span>
+
+</div>
+`;
+
+}
+).join("");
+
+/* =========================================================
+   WIN SET HTML
+========================================================= */
+
+const indWinSetHTML=
+winSet.map(
+(digit,index)=>
+`
+<div
+class="ind-win-item"
+data-copy="${digit}"
+>
+<strong>${digit}</strong>
+<span>POS ${index+1}</span>
+</div>
+`
+).join("");
+
+/* =========================================================
+   DEEP SCAN HTML — RANK COLORS MATCH TOP 3
+========================================================= */
+
+const deepScanHTML=
+deepSets.map(
+(set,index)=>{
+
+const rankNames=[
+"AI ALPHA SCAN",
+"AI BETA SCAN",
+"AI GAMMA SCAN"
+];
+
+const rankClasses=[
+"rank-one",
+"rank-two",
+"rank-three"
+];
+
+const rankNumbers=[
+"#1",
+"#2",
+"#3"
+];
+
+const pairHTML=
+set.pairs.length
+?set.pairs.map(
+(p,pIndex)=>{
+
+const pct=
+Number(
+(
+set.score-
+.3*pIndex
+).toFixed(1)
+);
+
+return`
+<div
+class="deep-pair"
+data-copy="${this._esc(p)}"
+>
+<strong>
+${this._esc(p)}
+</strong>
+<small>
+${pct}%
+</small>
+</div>
+`;
+
+}
+).join("")
+:
+`
+<div
+style="
+grid-column:1/-1;
+padding:7px;
+text-align:center;
+color:var(--muted);
+font-size:.46rem;
+"
+>
+ไม่มีชุดข้อมูล
+</div>
+`;
+
+return`
+<div class="deep-scan-card ${rankClasses[index]}">
+
+<div class="deep-scan-top">
+
+<div class="deep-scan-name">
+
+<div class="deep-scan-digit">
+${set.digit}
+</div>
+
+<div>
+
+<span class="deep-rank-label">
+${rankNumbers[index]} / ${rankNames[index]}
+</span>
+
+<div>
+${rankNames[index]}
+</div>
+
+</div>
+
+</div>
+
+<div>
+
+<div class="deep-scan-score">
+${set.score.toFixed(1)}%
+</div>
+
+</div>
+
+</div>
+
+<div class="deep-scan-pairs">
+${pairHTML}
+</div>
+
+</div>
+`;
+
+}
+).join("");
+
+/* =========================================================
+   3D HTML
+========================================================= */
+
+const threeHTML=
+matrixArr3d.length
+?matrixArr3d.map(
+(p,index)=>{
+
+const pct=
+Number(
+(
+cScore3-
+.05*index
+).toFixed(1)
+);
+
+return`
+<div
+class="three-d-item"
+data-copy="${this._esc(p)}"
+>
+<strong>
+${this._esc(p)}
+</strong>
+
+<small>
+${pct}%
+</small>
+
+</div>
+`;
+
+}
+).join("")
+:
+`
+<div
+style="
+grid-column:1/-1;
+color:var(--muted);
+font-size:.46rem;
+text-align:center;
+"
+>
+ไม่มีชุดข้อมูล
+</div>
+`;
+
+/* =========================================================
+   TOP 3 HTML
+========================================================= */
+
+const top3Class=[
+"rank-one",
+"rank-two",
+"rank-three"
+];
+
+const top3Names=[
+"ALPHA SIGNAL",
+"BETA SIGNAL",
+"GAMMA SIGNAL"
+];
+
+const top3HTML=
+top3Digits.map(
+(item,index)=>{
+
+const pct=
+calcConfidence(
+item.totalScore
+);
+
+return`
+<div
+class="top3-row ${top3Class[index]}"
+data-copy="${item.digit}"
+>
+
+<div class="top3-position">
+#${index+1}
+</div>
+
+<div class="top3-digit">
+${item.digit}
+</div>
+
+<div class="top3-info">
+
+<div class="top3-label">
+${top3Names[index]}
+<span>RANK ${index+1}</span>
+</div>
+
+<div class="top3-bar">
+
+<div
+class="top3-bar-fill"
+style="width:${pct}%;"
+></div>
+
+</div>
+
+</div>
+
+<div class="top3-score">
+${pct.toFixed(1)}%
+</div>
+
+</div>
+`;
+
+}
+).join("");
+
+/* =========================================================
+   TOP 10 HTML — existing matrix ranking, no new scoring
+========================================================= */
+
+const top10HTML=
+matrixSorted
+.slice(0,10)
+.map(
+(item,index)=>{
+
+const score=
+calcConfidence(item.totalScore);
+
+const grade=
+this._getPremiumGrade(score);
+
+return`
+<div class="top10-row" data-copy="${item.digit}">
+<span class="top10-rank">#${index+1}</span>
+<strong class="top10-number">${item.digit}</strong>
+<span class="top10-score">${score.toFixed(1)}</span>
+<span class="top10-grade">${grade}</span>
+</div>
+`;
+
+}
+).join("");
+
+const top10HeaderHTML=`
+<div class="top10-header-row">
+<span>RANK</span>
+<span>NUMBER / CANDIDATE</span>
+<span>SCORE</span>
+<span>GRADE</span>
+</div>
+`;
+
+/* =========================================================
+   PREMIUM PAIR HTML — normalized AB = BA
+========================================================= */
+
+const premiumPairs=
+pairRanking.slice(0,8);
+
+const premiumPairHTML=
+premiumPairs.length
+?premiumPairs.map(item=>`
+<div class="pair-analysis-item" data-copy="${this._esc(item.pair)}">
+<strong>${this._esc(item.pair)}</strong>
+<span>+${item.score} • ${item.models.size} MODEL${item.models.size===1?"":"S"}</span>
+</div>
+`).join("")
+:
+`
+<div class="pair-analysis-empty">
+ไม่มีข้อมูลคู่ตัวเลขจาก 5 โมเดล
+</div>
+`;
+
+/* =========================================================
+   FORMULA DETAILS
+========================================================= */
+
+let allFormulasHTML="";
+
+evaluated.forEach(item=>{
+
+let pairs=[];
+
+item.set.forEach(digit=>{
+
+const list=
+item.pairsMap[digit]||[];
+
+list.forEach(p=>{
+
+pairs.push({
+pair:p
+});
+
+});
+
+});
+
+const pairCards=
+pairs.map(
+(obj,idx)=>{
+
+const subPct=
+Number(
+(
+item.aiScore-
+.3*idx
+).toFixed(1)
+);
+
+return`
+<div
+class="formula-pair"
+data-copy="${this._esc(obj.pair)}"
+>
+
+<strong>
+${this._esc(obj.pair)}
+</strong>
+
+<small>
+${subPct}%
+</small>
+
+</div>
+`;
+
+}
+).join("");
+
+const badgeHtml=
+item.isRecommended
+?'<span class="compact-badge">สูตรแนะนำ</span>'
+:"";
+
+allFormulasHTML+=`
+
+<div class="formula-card">
+
+<div class="formula-head">
+
+<div class="formula-name">
+
+${this._esc(item.name)}
+
+${badgeHtml}
+
+</div>
+
+<div class="formula-badge">
+AI Score ${item.aiScore}%
+</div>
+
+</div>
+
+<div class="formula-sub">
+
+เลขเด่น:
+
+<strong>
+${item.set.join(" - ")}
+</strong>
+
+</div>
+
+<div class="formula-pairs">
+${pairCards}
+</div>
+
+</div>
+
+`;
+
+});
+
+/* =========================================================
+   FINAL HTML
+========================================================= */
+
+const html=`
+
+<div class="result-shell">
+
+<div class="result-head">
+
+<div>
+
+<div class="result-kicker">
+​SCAN COMPLETE
+</div>
+
+<div class="result-title">
+​AI PROCESSING COMPLETE
+</div>
+
+</div>
+
+<div class="result-note">
+${new Date().toLocaleTimeString("th-TH")}
+</div>
+
+</div>
+
+
+<!-- =======================================================
+     TOP 3 SIGNALS
+======================================================= -->
+
+<section class="top3-signal-board">
+
+<div class="top3-head">
+
+<div>
+
+<div class="top3-kicker">
+DIGIT PRIORITY MATRIX
+</div>
+
+<div class="top3-title">
+🏆 ALPHA TOP 3 SIGNALS
+</div>
+
+<div class="top3-sub">
+
+</div>
+
+</div>
+
+<div class="top3-badge">
+​BEST
+</div>
+
+</div>
+
+<div class="top3-list">
+${top3HTML}
+</div>
+
+<div class="top3-footnote">
+
+<span class="mini-live"></span>
+
+<span>
+จัดอันดับตาม
+<strong>AI Real-Time Score</strong>
+
+</span>
+
+</div>
+
+</section>
+
+
+<section class="top10-panel">
+
+<div class="top10-head">
+<div>
+<div class="top10-title">TOP 10 PREMIUM RANKING</div>
+<div class="top10-sub">จัดอันดับจาก matrix score เดิมของระบบ</div>
+</div>
+<div class="top10-badge">AI SCORE</div>
+</div>
+
+${top10HeaderHTML}
+<div class="top10-list">
+${top10HTML}
+</div>
+
+</section>
+
+
+<section class="pair-analysis-panel">
+
+<div class="pair-analysis-head">
+<div>
+<div class="pair-analysis-title">PREMIUM PAIR ANALYSIS</div>
+<div class="pair-analysis-sub">รวม evidence จาก 5 โมเดล • AB = BA • พบแต่ละครั้ง +1</div>
+</div>
+<div class="pair-analysis-badge">5 MODEL</div>
+</div>
+
+<div class="pair-analysis-grid">
+${premiumPairHTML}
+</div>
+
+</section>
+
+
+<section class="stats-analytics-card">
+
+<div class="stats-flex">
+
+<div class="stats-title">
+⚖️ อัตราส่วน เลขคู่ / เลขคี่
+</div>
+
+<div class="stats-badge">
+AI BALANCE
+</div>
+
+</div>
+
+<div class="ratio-bar-container">
+
+<div
+class="ratio-even"
+style="width:${evenPct}%"
+></div>
+
+<div
+class="ratio-odd"
+style="width:${oddPct}%"
+></div>
+
+</div>
+
+<div class="ratio-legend">
+
+<span>
+เลขคู่: ${evenPct}%
+</span>
+
+<span>
+เลขคี่: ${oddPct}%
+</span>
+
+</div>
+
+</section>
+
+
+<div class="section-marker">
+DIGIT OVERVIEW
+</div>
+
+
+<!-- =======================================================
+     AI PROBABILITY RANKING
+======================================================= -->
+
+<section class="overview-panel">
+
+<div class="overview-head">
+
+<div>
+
+<div class="overview-title">
+AI PROBABILITY RANKING
+</div>
+
+<div class="overview-sub">
+อันดับคะแนนเลข 0-9
+</div>
+
+</div>
+
+<div class="overview-badge">
+​🟢 AI ACTIVE
+</div>
+
+</div>
+
+<div class="overview-bars">
+${distributionHTML}
+</div>
+
+<div class="overview-axis">
+
+<span>
+#1 TOP
+</span>
+
+<span>
+DIGIT SCORE
+</span>
+
+<span>
+#10
+</span>
+
+</div>
+
+</section>
+
+<div class="section-marker">
+​ALPHA DEEP SCAN
+</div>
+
+<!-- =======================================================
+     DEEP SCAN
+======================================================= -->
+
+<section class="deep-scan-board">
+
+<div class="deep-scan-head">
+
+<div>
+
+<div class="deep-scan-kicker">
+TOP 3 MATRIX SIGNALS
+</div>
+
+<div class="deep-scan-title">
+🎯 ชุดเจาะ TOP 3
+</div>
+
+<div class="deep-scan-sub">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="deep-scan-grid">
+${deepScanHTML}
+</div>
+
+<div class="three-d-scan">
+
+<div class="three-d-head">
+
+<div class="three-d-title">
+​🎲 ชุด 3 ตัวบน
+</div>
+
+<div class="three-d-score">
+ACCURACY ${cScore3.toFixed(1)}%
+</div>
+
+</div>
+
+<div class="three-d-grid">
+${threeHTML}
+</div>
+
+</div>
+
+</section>
+
+
+<section class="ind-win-set">
+
+<div class="ind-win-header">
+
+<div class="ind-win-title">
+​🧩 ชุดวิน 6 ตัว
+
+<small>
+
+</small>
+
+</div>
+
+<div class="ind-win-badge">
+VIP SET
+</div>
+
+</div>
+
+<div class="ind-win-grid">
+${indWinSetHTML}
+</div>
+
+</section>
+
+
+<section class="formula-section">
+
+<button
+class="formula-toggle"
+id="toggleMainFormulasBtn"
+type="button"
+>
+
+<span>
+​🧠 TOP 5 Model / AI ALGORITHM DETAILS
+</span>
+
+<span>
+▼
+</span>
+
+</button>
+
+<div
+id="allFormulasWrapper"
+style="display:none;margin-top:6px;"
+>
+
+${allFormulasHTML}
+
+</div>
+
+</section>
+
+
+<div class="disclaimer">
+
+<strong>หมายเหตุ:</strong>
+
+ข้อมูลวิเคราะห์เชิงสถิติเพื่อเป็นแนวทางเท่านั้น
+โปรดใช้วิจารณญาณในการตัดสินใจ
+
+</div>
+
+</div>
+`;
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+document.getElementById(
+"resultContainer"
+).innerHTML=html;
+
+/* =========================================================
+   COPY
+========================================================= */
+
+document.querySelectorAll(
+"[data-copy]"
+).forEach(node=>{
+
+const clone=
+node.cloneNode(true);
+
+node.parentNode.replaceChild(
+clone,
+node
+);
+
+clone.addEventListener(
+"click",
+()=>{
+this.copyText(
+clone.dataset.copy
+);
+}
+);
+
+});
+
+/* =========================================================
+   FORMULA TOGGLE
+========================================================= */
+
+const toggleMainBtn=
+document.getElementById(
+"toggleMainFormulasBtn"
+);
+
+const allWrapper=
+document.getElementById(
+"allFormulasWrapper"
+);
+
+if(
+toggleMainBtn&&
+allWrapper
+){
+
+toggleMainBtn.addEventListener(
+"click",
+()=>{
+
+this._audio("click");
+
+const isOpen=
+allWrapper.style.display==="block";
+
+allWrapper.style.display=
+isOpen
+?"none"
+:"block";
+
+toggleMainBtn.querySelector(
+"span:last-child"
+).innerText=
+isOpen
+?"▼"
+:"▲";
+
+}
+);
+
+}
+
+},
+
+/* =========================================================
+   COPY
+========================================================= */
+
+copyText(text){
+
+this._audio("click");
+
+if(
+navigator.clipboard&&
+navigator.clipboard.writeText
+){
+
+navigator.clipboard
+.writeText(text)
+.then(
+()=>this.showToast()
+)
+.catch(
+()=>this.fallbackCopyText(text)
+);
+
+}else{
+
+this.fallbackCopyText(text);
+
+}
+
+},
+
+fallbackCopyText(text){
+
+const ta=
+document.createElement("textarea");
+
+ta.value=text;
+
+ta.style.position="fixed";
+ta.style.opacity="0";
+
+document.body.appendChild(ta);
+
+ta.focus();
+ta.select();
+
+try{
+
+document.execCommand("copy");
+
+this.showToast();
+
+}catch(e){}
+
+document.body.removeChild(ta);
+
+},
+
+showToast(){
+
+clearTimeout(
+this._toastTimer
+);
+
+const t=
+document.getElementById(
+"toast"
+);
+
+t.classList.add("show");
+
+this._toastTimer=
+setTimeout(
+()=>{
+t.classList.remove("show");
+},
+1600
+);
+
+}
+
+};
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+const loginButton=
+document.getElementById(
+"loginButton"
+);
+
+const passwordInput=
+document.getElementById(
+"passwordInput"
+);
+
+const calculateButton=
+document.getElementById(
+"calculateButton"
+);
+
+const clearButton=
+document.getElementById(
+"clearButton"
+);
+
+const logoutButton=
+document.getElementById(
+"logoutButton"
+);
+
+if(loginButton){
+
+loginButton.addEventListener(
+"click",
+()=>_app.login()
+);
+
+}
+
+if(passwordInput){
+
+passwordInput.addEventListener(
+"keyup",
+e=>{
+
+if(e.key==="Enter")
+_app.login();
+
+}
+);
+
+}
+
+if(calculateButton){
+
+calculateButton.addEventListener(
+"click",
+()=>_app.calculate()
+);
+
+}
+
+if(clearButton){
+
+clearButton.addEventListener(
+"click",
+()=>_app.clearCalc()
+);
+
+}
+
+if(logoutButton){
+
+logoutButton.addEventListener(
+"click",
+()=>_app.logout()
+);
+
+}
+
+
+/* =========================================================
+   INPUT AUTO JUMP
+========================================================= */
+
+const n3Input=
+document.getElementById(
+"num3top"
+);
+
+const n2Input=
+document.getElementById(
+"num2bottom"
+);
+
+if(n3Input){
+
+n3Input.addEventListener(
+"input",
+()=>{
+
+n3Input.value=
+n3Input.value.replace(
+/\D/g,
+""
+);
+
+if(
+n3Input.value.length>=3&&
+n2Input
+)
+n2Input.focus();
+
+}
+);
+
+}
+
+if(n2Input){
+
+n2Input.addEventListener(
+"input",
+()=>{
+
+n2Input.value=
+n2Input.value.replace(
+/\D/g,
+""
+);
+
+}
+);
+
+}
+
+[
+"num3top",
+"num2bottom"
+].forEach(id=>{
+
+const el=
+document.getElementById(id);
+
+if(el){
+
+el.addEventListener(
+"keyup",
+e=>{
+
+if(e.key==="Enter")
+_app.calculate();
+
+}
+);
+
+}
+
+});
+
+
+/* =========================================================
+   SESSION RESTORE
+========================================================= */
+
+(function initApp(){
+
+try{
+
+const active=
+localStorage.getItem(
+"ml_auth_status_v3"
+);
+
+if(active==="active"){
+
+const loginView=
+document.getElementById(
+"loginView"
+);
+
+const calculatorView=
+document.getElementById(
+"calculatorView"
+);
+
+if(loginView)
+loginView.style.display="none";
+
+if(calculatorView)
+calculatorView.style.display="block";
+
+_app.checkSessionBadge();
+
+}
+
+}catch(e){
+
+/*
+   หาก localStorage ใช้งานไม่ได้
+   ให้ระบบยังคงหน้า Login ทำงานตามปกติ
+*/
+
+}
+
+})();
+
+</script>
+
+</body>
+   </html>
