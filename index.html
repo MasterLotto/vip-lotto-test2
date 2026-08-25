@@ -281,7 +281,9 @@ border-radius:50%;
 animation:spin 1s linear infinite
 }
 
-@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
 
 .result{margin-top:9px}
 
@@ -323,6 +325,7 @@ font-size:.5rem;
 line-height:1.5
 }
 
+/* ซ่อนหมายเหตุเชิงเทคนิคจากหน้าบ้าน */
 .output-note{
 display:none;
 margin:0 0 8px;
@@ -336,10 +339,6 @@ line-height:1.5
 }
 
 .output-note strong{color:#80652b}
-
-/* =========================
-   COMPACT LOTTERY CARD
-   ========================= */
 
 .lottery{
 position:relative;
@@ -399,7 +398,9 @@ color:#80652b;
 font:700 .44rem 'IBM Plex Mono',monospace
 }
 
+/* ซ่อน VIP ANALYSIS ตาม Audit หน้าบ้าน */
 .vip-label{
+display:none;
 padding:4px 7px;
 border-radius:99px;
 color:#80652b;
@@ -408,10 +409,6 @@ border:1px solid #eadfc9;
 font-size:.41rem;
 font-weight:800
 }
-
-/* =========================
-   COMPACT DIGIT ROW
-   ========================= */
 
 .rows{
 display:flex;
@@ -667,7 +664,7 @@ height:22px
 id="password"
 class="password"
 type="password"
-autocomplete="current-password"
+autocomplete="off"
 placeholder="••• System Access Key •••"
 >
 
@@ -711,9 +708,10 @@ placeholder="ลาวพัฒนา | 24 ส.ค. 69
 
 <div class="hint">
 รูปแบบ: ชื่อหวย | วันที่ → 3 ตัวบน → 2 ตัวล่าง
-• วางได้หลายรายการในครั้งเดียว
-• ผลเด่น/เจาะยังใช้ 5 AI Models เดิม
-• Top 2 ถูกบังคับให้อยู่ใน Candidate Pool จาก 5 Models เท่านั้น
+• ใส่ประวัติย้อนหลังได้หลายงวดและหลายหวยในครั้งเดียว
+• ระบบเรียงเก่า → ใหม่ แยกตลาดอัตโนมัติ และทำนายงวดถัดไป
+• 5 Main Models และสูตรเลขเจาะเดิมไม่ถูกแก้ไข
+• Backtest ใช้เฉพาะข้อมูลที่เกิดก่อนงวดเป้าหมาย
 </div>
 
 </div>
@@ -753,7 +751,6 @@ placeholder="ลาวพัฒนา | 24 ส.ค. 69
 
 <script>
 (()=>{
- 
 /* =========================================================
    SNOW / PREMIUM PARTICLES
    ========================================================= */
@@ -829,7 +826,7 @@ const esc=s=>String(s)
 /* =========================================================
    ORIGINAL ACCESS CONTROL
    IMPORTANT:
-   THE ORIGINAL TOKENS ARE PRESERVED EXACTLY.
+   ORIGINAL TOKENS ARE PRESERVED.
    ========================================================= */
 
 const sec={
@@ -901,7 +898,7 @@ if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))return'🇻�
 if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))return'🇲🇲';
 if(/จีน|china|shanghai/.test(n))return'🇨🇳';
 if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))return'🇭🇰';
-if(/นิเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))return'🇯🇵';
+if(/นิเคอิ|นิคเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))return'🇯🇵';
 if(/เกาหลี|korea|kospi/.test(n))return'🇰🇷';
 if(/สิงคโปร์|singapore/.test(n))return'🇸🇬';
 if(/อินเดีย|india|sensex/.test(n))return'🇮🇳';
@@ -910,7 +907,7 @@ if(/เยอรมัน|germany|dax/.test(n))return'🇩🇪';
 if(/อังกฤษ|uk|ftse|london/.test(n))return'🇬🇧';
 if(/อียิปต์|egypt/.test(n))return'🇪🇬';
 if(/ไต้หวัน|taiwan|tse/.test(n))return'🇹🇼';
-if(/ดาวโจนส์|สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))return'🇺🇸';
+if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))return'🇺🇸';
 if(/ฝรั่งเศส|france|cac/.test(n))return'🇫🇷';
 if(/ออสเตรเลีย|australia|asx/.test(n))return'🇦🇺';
 if(/แคนาดา|canada/.test(n))return'🇨🇦';
@@ -966,7 +963,6 @@ errors.push(
 
 i++;
 continue;
-
 }
 
 const name=m[1].trim();
@@ -983,7 +979,6 @@ errors.push(
 
 i+=1;
 continue;
-
 }
 
 if(!/^\d{2}$/.test(n2)){
@@ -994,7 +989,6 @@ errors.push(
 
 i+=2;
 continue;
-
 }
 
 records.push({
@@ -1180,6 +1174,7 @@ sumT
 ){
 
 const unit=v=>{
+
 const q=Math.abs(v)%10;
 
 return[
@@ -1337,8 +1332,7 @@ p=>p[0]!==p[1]
 scoreDigits(
 models,
 F,
-H,T,U,
-R1,R2,
+H,T,U,R1,R2,
 sumT,sumB,total
 ){
 
@@ -1506,22 +1500,15 @@ let ranked=
 Object.values(score)
 .filter(v=>allowed.has(v.digit))
 .sort(
-
 (a,b)=>
 b.selectorScore-a.selectorScore ||
 b.totalScore-a.totalScore ||
 b.modelScore-a.modelScore ||
 b.digit-a.digit
-
 );
 
 /* -------------------------------------------------------
    STABILITY CHECK
-
-   ถ้าอันดับ 3 และ 4 ห่างกันน้อยมาก
-   ระบบไม่สร้างเลขใหม่
-   แต่จะพิจารณา breadth ของสัญญาณ
-   เพื่อช่วยเลือกเลขที่มีการสนับสนุนกว้างกว่า
    ------------------------------------------------------- */
 
 if(ranked[2]&&ranked[3]){
@@ -1565,12 +1552,10 @@ v.selectorScore+
 
 })
 .sort(
-
 (a,b)=>
 b.final-a.final ||
 b.v.modelScore-a.v.modelScore ||
 b.v.digit-a.v.digit
-
 );
 
 ranked.splice(
@@ -1668,7 +1653,9 @@ this.pairKey(pair);
 const pairScore=
 
 .55*sourceStrength+
+
 .30*digitStrength+
+
 .15*modelConsensus;
 
 candidates.push({
@@ -1690,8 +1677,6 @@ return candidates;
 
 /* =========================================================
    BEST 5 PAIRS FOR EACH TOP DIGIT
-
-   ทุกคู่ยังต้องมาจาก 5 Main Models
    ========================================================= */
 
 bestPairsForDigit(
@@ -1725,11 +1710,9 @@ bestByKey[c.key]=c;
 
 return Object.values(bestByKey)
 .sort(
-
 (a,b)=>
 b.pairScore-a.pairScore ||
 Number(a.key)-Number(b.key)
-
 )
 .slice(0,5)
 .map(v=>v.pair);
@@ -1738,7 +1721,6 @@ Number(a.key)-Number(b.key)
 
 /* =========================================================
    NORMALIZED PAIR KEY
-   02 AND 20 ARE THE SAME CONSENSUS PAIR
    ========================================================= */
 
 pairKey(pair){
@@ -1759,13 +1741,6 @@ p[1]
 
 /* =========================================================
    TOP 9 PAIR CONSENSUS
-
-   3 Top digits × 5 pairs = 15 candidates
-
-   Top 9 ได้สี:
-   1-3 Gold
-   4-6 Silver
-   7-9 Rose Gold
    ========================================================= */
 
 buildConsensus(pairSets){
@@ -1819,12 +1794,10 @@ item.pair
 const ranked=
 Object.values(counts)
 .sort(
-
 (a,b)=>
 b.score-a.score ||
 b.rows.size-a.rows.size ||
 Number(a.key)-Number(b.key)
-
 );
 
 const colorMap={};
@@ -1939,439 +1912,699 @@ return s;
 },
 
 /* =========================================================
-   WALK-FORWARD / HISTORICAL META SELECTOR
+   MULTI-LOTTERY DATA SAFETY / WALK-FORWARD BACKTEST
 
-   IMPORTANT:
-   - Does NOT modify formulas()
-   - Does NOT modify buildModels()
-   - Does NOT modify pair generation / consensus formulas
-   - Only ranks the existing candidate pool using prior outcomes
-   - No future outcome is used for the current prediction
+   ไม่แก้ formulas()
+   ไม่แก้ buildModels()
+   ไม่สร้างสูตรใหม่
+   ทำหน้าที่เฉพาะ:
+   - แยกตลาด
+   - เรียงเวลา
+   - กันข้อมูลซ้ำ
+   - กันข้อมูลขัดแย้ง
+   - Backtest แบบ Walk-Forward
+   - วัด performance
+   - ใช้ performance เป็น guard ชั้นนอก
    ========================================================= */
 
-nextDate(date){
+marketId(name){
 
-const s=String(date||'').trim();
+const raw=
+String(name||'')
+.trim()
+.toLowerCase()
+.replace(/\s+/g,' ');
 
-const monthMap={
-'ม.ค.':0,'ก.พ.':1,'มี.ค.':2,'เม.ย.':3,'พ.ค.':4,'มิ.ย.':5,
-'ก.ค.':6,'ส.ค.':7,'ก.ย.':8,'ต.ค.':9,'พ.ย.':10,'ธ.ค.':11,
-'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,
-'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11
-};
+const aliases=[
 
-const m=s.match(
-/^(\d{1,2})\s+([^\s]+)\s+(\d{2,4})$/
-);
+[/^ลาวพัฒนา$|lao development/,'LAO_DEVELOPMENT'],
 
-if(!m)return s;
+[/^ฮานอยปกติ$|hanoi normal/,'HANOI_NORMAL'],
 
-const day=Number(m[1]);
-const month=monthMap[m[2]];
+[/นิคเคอิ.*vip.*เช้า|nikkei.*vip.*am|nikkei vip morning/,'NIKKEI_VIP_AM'],
 
-if(month===undefined)return s;
+[/หุ้นนิคเคอิเช้า|nikkei.*morning|nikkei.*เช้า/,'NIKKEI_AM'],
 
-let year=Number(m[3]);
+[/ฮั่งเส็ง|hang seng|hong kong/,'HANG_SENG'],
 
-const buddhist=
-year>=2400 ||
-year<100;
+[/ดาวโจนส์|dow jones|dow(?!ntown)/,'DOW_JONES'],
 
-if(year<100)
-year+=2500;
+[/รัสเซีย|russia|moscow/,'RUSSIA'],
 
-if(buddhist)
-year-=543;
+[/เยอรมัน|germany|dax/,'GERMANY'],
 
-const d=
-new Date(
-Date.UTC(
-year,
-month,
-day
-)
-);
+[/อังกฤษ|uk|ftse|london/,'UK'],
 
-if(Number.isNaN(d.getTime()))
-return s;
+[/ไต้หวัน|taiwan|tse/,'TAIWAN'],
 
-d.setUTCDate(
-d.getUTCDate()+1
-);
+[/เกาหลี|korea|kospi/,'KOREA'],
 
-const outDay=
-d.getUTCDate();
+[/สิงคโปร์|singapore/,'SINGAPORE'],
 
-const outMonth=
-d.getUTCMonth();
+[/จีน|china|shanghai/,'CHINA'],
 
-const outYear=
-d.getUTCFullYear()+
-(buddhist?543:0);
+[/รัฐบาลไทย|หวยรัฐบาล|thai government/,'THAI_GOVERNMENT'],
 
-const shortMonths=[
-'ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
-'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'
+[/^หุ้นไทย$|set index/,'THAI_STOCK']
+
 ];
 
-const yearText=
-String(outYear).slice(-2);
+for(
+const [re,id]
+of aliases
+)
+if(re.test(raw))
+return id;
 
-return`${outDay} ${shortMonths[outMonth]} ${yearText}`;
+return 'CUSTOM_'+
+raw
+.replace(/[^a-z0-9ก-๙]+/gi,'_')
+.replace(/^_+|_+$/g,'')
+.slice(0,70);
 
 },
 
-nextTargetDate(name,date){
+/* =========================================================
+   THAI DATE PARSER
+   ========================================================= */
+
+parseDateKey(date){
 
 const s=
 String(date||'').trim();
 
-const n=
-String(name||'').toLowerCase();
+const months={
 
-/*
-  Known fixed Thai government draw schedule:
-  1st and 16th of the month.
-*/
+'ม.ค.':1,
+'มค':1,
+'มกราคม':1,
 
-if(
-/รัฐบาลไทย|รัฐบาล|thai government|government lottery/.test(n)
-){
+'ก.พ.':2,
+'กพ':2,
+'กุมภาพันธ์':2,
 
-const monthMap={
-'ม.ค.':0,'ก.พ.':1,'มี.ค.':2,'เม.ย.':3,'พ.ค.':4,'มิ.ย.':5,
-'ก.ค.':6,'ส.ค.':7,'ก.ย.':8,'ต.ค.':9,'พ.ย.':10,'ธ.ค.':11
+'มี.ค.':3,
+'มีค':3,
+'มีนาคม':3,
+
+'เม.ย.':4,
+'เมย':4,
+'เมษายน':4,
+
+'พ.ค.':5,
+'พค':5,
+'พฤษภาคม':5,
+
+'มิ.ย.':6,
+'มิย':6,
+'มิถุนายน':6,
+
+'ก.ค.':7,
+'กค':7,
+'กรกฎาคม':7,
+
+'ส.ค.':8,
+'สค':8,
+'สิงหาคม':8,
+
+'ก.ย.':9,
+'กย':9,
+'กันยายน':9,
+
+'ต.ค.':10,
+'ตค':10,
+'ตุลาคม':10,
+
+'พ.ย.':11,
+'พย':11,
+'พฤศจิกายน':11,
+
+'ธ.ค.':12,
+'ธค':12,
+'ธันวาคม':12
+
 };
 
 const m=
 s.match(
-/^(\d{1,2})\s+([^\s]+)\s+(\d{2,4})$/
+/^(\d{1,2})\s+([^\s]+)\s+(\d{2,4})/
 );
 
-if(
-m &&
-monthMap[m[2]]!==undefined
-){
+if(!m)
+return null;
+
+const day=Number(m[1]);
+
+const month=
+months[m[2]] ||
+months[m[2].replace(/\.$/,'')] ||
+Number(m[2]);
 
 let year=Number(m[3]);
 
 if(year<100)
 year+=2500;
 
-if(year>=2400)
+if(year>2400)
 year-=543;
 
-const day=
-Number(m[1]);
-
-let month=
-monthMap[m[2]];
-
-if(day<16){
-
-return`${16} ${m[2]} ${String(year+543).slice(-2)}`;
-
-}
-
-month++;
-
-if(month>11){
-
-month=0;
-year++;
-
-}
-
-const shortMonths=[
-'ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
-'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'
-];
-
-return`1 ${shortMonths[month]} ${String(year+543).slice(-2)}`;
-
-}
-
-}
-
-/*
-  Market-based lotteries do not normally have Saturday/Sunday sessions.
-  When there is no next supplied record, advance to the next weekday.
-*/
-
 if(
-/นิคเคอิ|nikkei|ฮั่งเส็ง|hang seng|ดาวโจนส์|dow|nasdaq|s&p|หุ้น|รัสเซีย|russia|เยอรมัน|germany|อังกฤษ|uk|ftse|ไต้หวัน|taiwan|เกาหลี|korea|สิงคโปร์|singapore|จีน|china|เซี่ยงไฮ้|shanghai/.test(n)
-){
-
-let d=s;
-
-for(let i=0;i<7;i++){
-
-d=this.nextDate(d);
-
-const k=
-this.dateKey(d);
-
-if(
-k!==Number.POSITIVE_INFINITY
-){
-
-const day=
-new Date(k).getUTCDay();
-
-if(
-day!==0 &&
-day!==6
+!Number.isInteger(day) ||
+!Number.isInteger(month) ||
+!Number.isInteger(year) ||
+month<1 ||
+month>12
 )
-return d;
+return null;
 
-}
+const dt=
+new Date(
+Date.UTC(
+year,
+month-1,
+day
+)
+);
 
-}
+if(
+dt.getUTCFullYear()!==year ||
+dt.getUTCMonth()!==month-1 ||
+dt.getUTCDate()!==day
+)
+return null;
 
-}
-
-return this.nextDate(s);
+return dt;
 
 },
 
 dateKey(date){
 
-const s=
+const d=
+this.parseDateKey(date);
+
+return d
+?
+d.toISOString().slice(0,10)
+:
 String(date||'').trim();
 
-const monthMap={
-'ม.ค.':0,'ก.พ.':1,'มี.ค.':2,'เม.ย.':3,'พ.ค.':4,'มิ.ย.':5,
-'ก.ค.':6,'ส.ค.':7,'ก.ย.':8,'ต.ค.':9,'พ.ย.':10,'ธ.ค.':11,
-'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,
-'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11
-};
+},
 
-const m=
-s.match(
-/^(\d{1,2})\s+([^\s]+)\s+(\d{2,4})$/
+nextDateLabel(date){
+
+const d=
+this.parseDateKey(date);
+
+if(!d)
+return String(date||'').trim();
+
+d.setUTCDate(
+d.getUTCDate()+1
 );
 
-if(
-!m ||
-monthMap[m[2]]===undefined
+const mons=[
+'ม.ค.',
+'ก.พ.',
+'มี.ค.',
+'เม.ย.',
+'พ.ค.',
+'มิ.ย.',
+'ก.ค.',
+'ส.ค.',
+'ก.ย.',
+'ต.ค.',
+'พ.ย.',
+'ธ.ค.'
+];
+
+return `${d.getUTCDate()} ${mons[d.getUTCMonth()]} ${d.getUTCFullYear()+543-2500}`;
+
+},
+
+normalizeRecord(r,index){
+
+return{
+...r,
+marketId:this.marketId(r.name),
+dateKey:this.dateKey(r.date),
+inputIndex:index
+};
+
+},
+
+/* =========================================================
+   MARKET ISOLATION + DEDUP + CONFLICT CONTROL
+   ========================================================= */
+
+prepareMarkets(records){
+
+const groups=new Map();
+const errors=[];
+
+records
+.map(
+(r,i)=>
+this.normalizeRecord(r,i)
 )
-return Number.POSITIVE_INFINITY;
+.forEach(r=>{
 
-let year=
-Number(m[3]);
+if(!groups.has(r.marketId)){
 
-if(year<100)
-year+=2500;
+groups.set(
+r.marketId,
+{
+marketId:r.marketId,
+name:r.name,
+records:[],
+seen:new Map(),
+conflicts:[]
+}
+);
 
-if(year>=2400)
-year-=543;
+}
 
-return Date.UTC(
-year,
-monthMap[m[2]],
-Number(m[1])
+const g=
+groups.get(r.marketId);
+
+const key=
+`${r.marketId}|${r.dateKey}`;
+
+const prev=
+g.seen.get(key);
+
+if(prev){
+
+if(
+prev.n3===r.n3 &&
+prev.n2===r.n2
+){
+
+g.duplicateCount=
+(g.duplicateCount||0)+1;
+
+}else{
+
+g.conflicts.push({
+key,
+first:prev,
+second:r
+});
+
+}
+
+return;
+
+}
+
+g.seen.set(key,r);
+g.records.push(r);
+
+});
+
+groups.forEach(g=>{
+
+g.records.sort((a,b)=>{
+
+const ad=
+this.parseDateKey(a.date);
+
+const bd=
+this.parseDateKey(b.date);
+
+if(ad&&bd)
+return ad-bd ||
+a.inputIndex-b.inputIndex;
+
+if(ad)
+return -1;
+
+if(bd)
+return 1;
+
+return a.inputIndex-b.inputIndex;
+
+});
+
+if(g.conflicts.length){
+
+g.invalid=true;
+
+errors.push(
+`${g.name}: พบงวดซ้ำแต่ผลไม่ตรงกัน ${g.conflicts.length} จุด — งดคำนวณตลาดนี้เพื่อป้องกันข้อมูลชนกัน`
+);
+
+}
+
+});
+
+return{
+groups:[...groups.values()],
+errors
+};
+
+},
+
+/* =========================================================
+   PRODUCTION PREDICTION FROM LAST KNOWN DRAW
+   ========================================================= */
+
+predictionFromHistory(history){
+
+if(!history.length)
+return null;
+
+const last=
+history[history.length-1];
+
+return this.run(
+last.n3,
+last.n2
 );
 
 },
 
-newMetaStats(){
+/* =========================================================
+   WALK-FORWARD BACKTEST
 
-return{
+   งวดเป้าหมาย i
+   ใช้เฉพาะ records.slice(0,i)
 
-transitions:0,
+   ไม่มี target อยู่ใน history
+   แล้วจึงค่อยเปิดผลจริงของ target
+   ========================================================= */
 
-models:
+backtestMarket(records){
+
+const out={
+
+marketId:
+records.length
+?
+records[0].marketId
+:
+'',
+
+name:
+records.length
+?
+records[0].name
+:
+'',
+
+trials:0,
+
+modelStats:
 Object.fromEntries(
-Array.from(
-{length:5},
-(_,i)=>[
-i+1,
+[1,2,3,4,5]
+.map(
+id=>
+[
+id,
 {
-hits:0,
-opps:0,
-recent:[]
+trials:0,
+digitHits:0,
+pairHits:0,
+missStreak:0,
+maxMissStreak:0,
+recentHits:[]
 }
 ]
 )
 ),
 
-digits:
-Object.fromEntries(
-Array.from(
-{length:10},
-(_,d)=>[
-d,
-{
-hits:0,
-opps:0,
-recent:[]
-}
-]
-)
-)
+targetStats:{
+trials:0,
+top2Hits:0,
+top3Hits:0
+},
+
+leakageChecks:0,
+leakageViolations:0,
+skipped:0
 
 };
 
-},
-
-pushOutcome(bucket,hit){
-
-bucket.opps++;
-
-if(hit)
-bucket.hits++;
-
-bucket.recent.push(
-hit?1:0
-);
-
-if(bucket.recent.length>12)
-bucket.recent.shift();
-
-},
-
-betaRate(bucket){
-
-return(
-bucket.hits+2
-)/
-(
-bucket.opps+4
-);
-
-},
-
-recencyRate(bucket){
-
-if(!bucket.recent.length)
-return .5;
-
-let w=1;
-let sum=0;
-let total=0;
+if(records.length<2)
+return out;
 
 for(
-let i=bucket.recent.length-1;
-i>=0;
-i--
+let i=1;
+i<records.length;
+i++
 ){
 
-sum+=
-bucket.recent[i]*
-w;
+const history=
+records.slice(0,i);
 
-total+=w;
+const target=
+records[i];
 
-w*=.88;
+/*
+ IMPORTANT:
+ prediction uses history only.
+ target is NOT passed into run().
+ */
+
+const a=
+this.predictionFromHistory(
+history
+);
+
+if(!a){
+
+out.skipped++;
+continue;
 
 }
 
-return total?
-sum/total:
-.5;
+out.trials++;
+out.targetStats.trials++;
 
-},
-
-modelReliability(bucket){
-
-const base=
-this.betaRate(bucket);
-
-const recent=
-this.recencyRate(bucket);
-
-return
-.70*base+
-.30*recent;
-
-},
-
-observeTransition(
-meta,
-result,
-actualN2
-){
-
-if(!meta || !result)
-return;
-
-const actual=
+const targetDigits=
 new Set(
-String(actualN2||'')
-.split('')
-.map(Number)
+target.n2.split('')
 );
 
-if(actual.size!==2)
-return;
+const top=
+a.top3Digits||[];
 
-meta.transitions++;
+if(
+top
+.slice(0,2)
+.some(
+d=>targetDigits.has(
+String(d)
+)
+)
+)
+out.targetStats.top2Hits++;
 
-result.models.forEach(m=>{
+if(
+top.some(
+d=>targetDigits.has(
+String(d)
+)
+)
+)
+out.targetStats.top3Hits++;
+
+const targetPair=
+this.pairKey(target.n2);
+
+a.models.forEach(m=>{
+
+const st=
+out.modelStats[m.id];
+
+st.trials++;
 
 const hit=
 m.set.some(
-d=>actual.has(d)
+d=>targetDigits.has(
+String(d)
+)
 );
 
-this.pushOutcome(
-meta.models[m.id],
-hit
+const pairHit=
+!!(
+m.pairsMap &&
+Object
+.values(m.pairsMap)
+.flat()
+.some(
+p=>
+this.pairKey(p)===
+targetPair
+)
 );
 
-});
+if(hit){
 
-const allowed=
-result.models.reduce(
-(set,m)=>{
+st.digitHits++;
+st.missStreak=0;
 
-m.set.forEach(
-d=>set.add(d)
+}else{
+
+st.missStreak++;
+
+st.maxMissStreak=
+Math.max(
+st.maxMissStreak,
+st.missStreak
 );
 
-return set;
+}
 
-},
-new Set()
+if(pairHit)
+st.pairHits++;
+
+st.recentHits.push(
+hit?1:0
 );
-
-allowed.forEach(d=>{
-
-this.pushOutcome(
-meta.digits[d],
-actual.has(d)
-);
-
-});
-
-},
-
-applyHistoricalMeta(
-scored,
-meta,
-models
-){
-
-const ranked=
-Object.values(scored.score)
-.filter(
-v=>scored.allowed.has(v.digit)
-);
-
-ranked.forEach(v=>{
-
-v.historicalModelReliability=.5;
-v.historicalDigitReliability=.5;
-v.historicalEvidence=0;
-v.metaBonus=0;
-v.finalScore=
-v.selectorScore;
 
 if(
-!meta ||
-meta.transitions<1
+st.recentHits.length>12
 )
-return;
+st.recentHits.shift();
+
+});
+
+/*
+ HARD LEAKAGE / CHRONOLOGICAL INVARIANT
+ */
+
+out.leakageChecks++;
+
+const lastHistory=
+history[history.length-1];
+
+if(
+lastHistory &&
+target.dateKey<=lastHistory.dateKey
+)
+out.leakageViolations++;
+
+const usedKeys=
+new Set(
+history.map(
+h=>
+`${h.marketId}|${h.dateKey}|${h.n3}|${h.n2}`
+)
+);
+
+if(
+usedKeys.has(
+`${target.marketId}|${target.dateKey}|${target.n3}|${target.n2}`
+)
+)
+out.leakageViolations++;
+
+}
+
+/*
+ Convert raw results into model reliability.
+ */
+
+Object
+.values(out.modelStats)
+.forEach(st=>{
+
+st.hitRate=
+st.trials
+?
+st.digitHits/st.trials
+:
+0;
+
+st.pairRate=
+st.trials
+?
+st.pairHits/st.trials
+:
+0;
+
+st.recentRate=
+st.recentHits.length
+?
+st.recentHits.reduce(
+(a,b)=>a+b,
+0
+)/
+st.recentHits.length
+:
+0;
+
+/*
+ Conservative outer-layer reliability.
+ It does NOT modify model formulas.
+ */
+
+st.reliability=
+.60*st.hitRate+
+.25*st.recentRate+
+.15*(
+1-
+Math.min(
+1,
+st.missStreak/5
+)
+);
+
+});
+
+out.targetStats.top2Rate=
+out.targetStats.trials
+?
+out.targetStats.top2Hits/
+out.targetStats.trials
+:
+0;
+
+out.targetStats.top3Rate=
+out.targetStats.trials
+?
+out.targetStats.top3Hits/
+out.targetStats.trials
+:
+0;
+
+return out;
+
+},
+
+/* =========================================================
+   HISTORICAL GUARD
+
+   ชั้นนี้อยู่ "หลัง" 5 Models
+   ไม่แก้สูตรต้นทาง
+   ใช้ historical reliability เพื่อปรับ selector
+   เพียงเล็กน้อย
+   ========================================================= */
+
+applyHistoricalGuard(
+result,
+models,
+bt
+){
+
+if(
+!bt ||
+!bt.trials ||
+bt.leakageViolations
+)
+return result;
+
+const rel={};
+
+models.forEach(
+m=>
+rel[m.id]=
+bt.modelStats[m.id]?.reliability||.5
+);
+
+Object
+.values(result.score)
+.forEach(v=>{
 
 const supporters=
 models.filter(
@@ -2381,233 +2614,84 @@ m=>m.set.includes(v.digit)
 if(!supporters.length)
 return;
 
-const modelRates=
-supporters.map(
-m=>
-this.modelReliability(
-meta.models[m.id]
-)
-);
-
-const modelRel=
-modelRates.reduce(
-(a,b)=>a+b,
+const avg=
+supporters.reduce(
+(s,m)=>
+s+rel[m.id],
 0
 )/
-modelRates.length;
+supporters.length;
 
-const digitBucket=
-meta.digits[v.digit];
+const supportRate=
+supporters.length/5;
 
-const digitRel=
-this.modelReliability(
-digitBucket
-);
-
-const evidence=
-Math.min(
-1,
-meta.transitions/
+const recent=
+supporters.reduce(
+(s,m)=>
+s+
 (
-meta.transitions+8
-)
-);
-
-const metaSignal=
-.65*modelRel+
-.35*digitRel;
-
-const delta=
-(
-.10*
-(
-metaSignal-.5
-)
-)*
-evidence;
-
-let missStreak=0;
-
-for(
-let i=digitBucket.recent.length-1;
-i>=0 &&
-digitBucket.recent[i]===0;
-i--
-)
-missStreak++;
-
-const missPenalty=
-Math.min(
-.025,
-missStreak*.008
-)*
-evidence;
-
-v.historicalModelReliability=
-modelRel;
-
-v.historicalDigitReliability=
-digitRel;
-
-v.historicalEvidence=
-evidence;
-
-v.metaBonus=
-delta-
-missPenalty;
-
-v.finalScore=
-v.selectorScore+
-v.metaBonus;
-
-});
-
-ranked.sort(
-
-(a,b)=>
-b.finalScore-a.finalScore ||
-b.selectorScore-a.selectorScore ||
-b.modelScore-a.modelScore ||
-b.digit-a.digit
-
-);
-
-return ranked;
-
-},
-
-/* =========================================================
-   LOTTERY-SPECIFIC WALK-FORWARD
-   ========================================================= */
-
-prepareWalkForward(records){
-
-const groups=new Map();
-
-records.forEach(
-(r,index)=>{
-
-const key=
-String(r.name||'')
-.trim()
-.toLowerCase();
-
-if(!groups.has(key))
-groups.set(key,[]);
-
-groups.get(key).push({
-...r,
-_inputIndex:index
-});
-
-}
-);
-
-groups.forEach(list=>{
-
-list.sort(
-
-(a,b)=>
-this.dateKey(a.date)-
-this.dateKey(b.date) ||
-a._inputIndex-
-b._inputIndex
-
-);
-
-});
-
-return groups;
-
-},
-
-runWalkForward(records){
-
-const groups=
-this.prepareWalkForward(
-records
-);
-
-const out=[];
-
-groups.forEach(
-(list,key)=>{
-
-const meta=
-this.newMetaStats();
-
-list.forEach(
-(r,i)=>{
-
-const next=
-list[i+1];
-
-const targetDate=
-next
-?
-next.date
-:
-this.nextTargetDate(
-r.name,
-r.date
-);
-
-const a=
-this.run(
-r.n3,
-r.n2,
-meta
-);
+bt.modelStats[m.id]?.recentRate||.5
+),
+0
+)/
+supporters.length;
 
 /*
-  Learn only after the current prediction is created.
-  The next supplied result becomes the training outcome.
-*/
+ จำกัดผลกระทบของ historical layer
+ เพื่อไม่ให้ Backtest กลายเป็นสูตรใหม่
+ */
 
-if(next){
+v.historicalGuard=
+.08*(avg-.5)+
+.03*(recent-.5)+
+.02*(supportRate-.4);
 
-this.observeTransition(
-meta,
-a,
-next.n2
-);
-
-}
-
-out.push({
-
-record:r,
-result:a,
-targetDate,
-
-_inputIndex:
-r._inputIndex,
-
-historicalTransitions:
-meta.transitions
+v.selectorScore+=
+v.historicalGuard;
 
 });
 
-}
-
-);
-
-}
-);
-
-return out.sort(
+result.ranked=
+Object
+.values(result.score)
+.filter(
+v=>
+result.allowed.has(
+v.digit
+)
+)
+.sort(
 (a,b)=>
-a._inputIndex-
-b._inputIndex
+b.selectorScore-a.selectorScore ||
+b.totalScore-a.totalScore ||
+b.modelScore-a.modelScore ||
+b.digit-a.digit
 );
+
+result.top=
+result.ranked.slice(0,3);
+
+/*
+ สำคัญ:
+ propagate ranking ใหม่กลับไปยัง output
+ */
+
+result.top3Digits=
+result.top.map(
+v=>v.digit
+);
+
+return result;
 
 },
 
 /* =========================================================
    MAIN RUN
+
+   5 Models / Formula Engine เดิม
    ========================================================= */
 
-run(n3,n2,metaStats){
+run(n3,n2){
 
 const d3=
 n3.split('').map(Number);
@@ -2673,21 +2757,10 @@ R1,R2,
 sumT,sumB,total
 );
 
-/*
-  The original 5-model selector remains untouched.
-  Historical Meta only re-ranks its existing candidate pool.
-  Final public selection is the best TWO digits.
-*/
-
-const metaRanked=
-this.applyHistoricalMeta(
-scored,
-metaStats,
-models
-);
+/* 6. TOP 3 FROM 5 MAIN MODELS ONLY */
 
 const top=
-metaRanked.slice(0,2);
+scored.top;
 
 /* 7. 5 PAIRS PER TOP DIGIT */
 
@@ -2701,7 +2774,7 @@ scored.score
 )
 );
 
-/* 8. CONSENSUS ACROSS PAIRS */
+/* 8. CONSENSUS ACROSS 15 PAIRS */
 
 const consensus=
 this.buildConsensus(
@@ -2712,37 +2785,6 @@ return{
 
 top3Digits:
 top.map(v=>v.digit),
-
-finalTop2:
-top.map(v=>v.digit),
-
-historicalMeta:
-metaStats
-?
-{
-transitions:
-metaStats.transitions,
-
-ranked:
-metaRanked
-.slice(0,5)
-.map(v=>({
-
-digit:v.digit,
-finalScore:v.finalScore,
-selectorScore:v.selectorScore,
-metaBonus:v.metaBonus,
-historicalModelReliability:
-v.historicalModelReliability,
-historicalDigitReliability:
-v.historicalDigitReliability,
-historicalEvidence:
-v.historicalEvidence
-
-}))
-
-}
-:null,
 
 pairSets:
 pairSets.map(
@@ -2793,8 +2835,7 @@ this.show();
 
 show(){
 
-const t=
-$('toast');
+const t=$('toast');
 
 t.classList.add('show');
 
@@ -2837,102 +2878,136 @@ const btn=
 $('run');
 
 btn.disabled=true;
-
 scanner.style.display='block';
 
 const msgs=[
 
 'READING INPUT...',
-'SORTING HISTORY...',
+
+'VALIDATING & ISOLATING MARKETS...',
+
+'DEDUPLICATING DRAW HISTORY...',
+
+'WALK-FORWARD BACKTEST...',
+
 'RUNNING EXISTING 5 AI MODELS...',
-'RUNNING WALK-FORWARD HISTORY...',
-'APPLYING HISTORICAL META SELECTOR...',
-'SELECTING FINAL TOP 2...',
-'BUILDING EXISTING PAIR ENGINE...',
+
+'CALCULATING SCORE MATRIX...',
+
+'SELECTING FINAL SIGNALS...',
+
 'FINALIZING VIP REPORT...'
 
 ];
 
-let i=0;
+let si=0;
 
-$('scanText')
-.textContent=
+$('scanText').textContent=
 msgs[0];
 
 const timer=
 setInterval(
 ()=>{
+si++;
 
-i++;
-
-if(i<msgs.length){
-
-$('scanText')
-.textContent=
-msgs[i];
-
-}
+if(si<msgs.length)
+$('scanText').textContent=
+msgs[si];
 
 },
-110
+120
 );
 
-setTimeout(()=>{
+setTimeout(
+()=>{
+
+try{
 
 this.cache=[];
 
-const cards=[];
-const outputData=[];
-
-const walk=
-this.runWalkForward(
+const prepared=
+this.prepareMarkets(
 parsed.records
 );
 
-walk.forEach(item=>{
+const cards=[];
+const outputData=[];
+const audit=[];
 
-const r=
-item.record;
-
-const a=
-item.result;
-
-this.cache.push(a);
+prepared.groups.forEach(g=>{
 
 /*
-  HARD VALIDATION:
-  FINAL TOP 2 MUST COME FROM THE EXISTING
-  5 MAIN MODEL CANDIDATE POOL.
-*/
+ ห้ามประมวลผลตลาดที่มีข้อมูล conflict
+ */
+
+if(
+g.invalid ||
+!g.records.length
+)
+return;
+
+const history=
+g.records;
+
+/*
+ 1. Backtest เก่า -> ใหม่
+ */
+
+const backtest=
+this.backtestMarket(
+history
+);
+
+/*
+ 2. Production prediction
+ ใช้เฉพาะงวดล่าสุดของตลาดนั้น
+ */
+
+const latest=
+history[
+history.length-1
+];
+
+const a=
+this.predictionFromHistory(
+history
+);
+
+if(!a)
+return;
+
+/*
+ 3. Historical Guard
+ */
+
+this.applyHistoricalGuard(
+a,
+a.models,
+backtest
+);
+
+/*
+ 4. HARD VALIDATION
+ Top 3 ต้องมาจาก 5 Models
+ */
 
 const allowed=
-new Set();
-
-a.models.forEach(m=>{
-
-m.set.forEach(d=>{
-allowed.add(d);
-});
-
-});
-
-const finalDigits=
-Array.isArray(a.finalTop2)
-?
-a.finalTop2
-:
-a.top3Digits.slice(0,2);
+new Set(
+a.models.flatMap(
+m=>m.set
+)
+);
 
 const valid=
-finalDigits.length===2 &&
-finalDigits.every(
+a.top3Digits.length===3 &&
+a.top3Digits.every(
 d=>allowed.has(d)
 );
 
 if(!valid){
 
 parsed.errors.push(
-`${r.name} | ${item.targetDate}: Top 2 ไม่ผ่าน Candidate Pool ของ 5 Main Models`
+`${g.name}: Top 3 ไม่ผ่าน Candidate Pool ของ 5 Main Models`
 );
 
 return;
@@ -2940,55 +3015,51 @@ return;
 }
 
 /*
-  EXISTING PAIR ENGINE IS NOT MODIFIED.
-  It simply receives the final selected digits.
-*/
+ 5. หน้าบ้านแสดง Top 2
+ */
+
+const publicTop=
+a.top3Digits.slice(0,2);
+
+/*
+ 6. สูตรเลขเจาะเดิม
+ ไม่สร้างสูตรใหม่
+ */
+
+const safePairSets=
+publicTop.map(
+d=>
+this.bestPairsForDigit(
+d,
+a.models,
+a.modelScores
+)
+);
+
+/*
+ 7. เป้าหมายคือ "งวดถัดไป"
+ ไม่ใช่งวดล่าสุด
+ */
+
+const targetDate=
+this.nextDateLabel(
+latest.date
+);
+
+/*
+ 8. Render
+ */
 
 const rows=
-finalDigits
-.map((d,k)=>{
-
-const sourcePairs=
-(a.pairSets[k]||[])
-.slice(0,5);
+publicTop
+.map(
+(d,k)=>{
 
 const sorted=
 this.sortPairs(
-sourcePairs
+(safePairSets[k]||[])
+.slice(0,5)
 );
-
-const pairHTML=
-sorted
-.map(pair=>{
-
-const info=
-a.consensus.colorMap[
-this.pairKey(pair)
-];
-
-const title=
-info
-?
-`Consensus ${info.rank} • พบ ${info.score} ครั้ง`
-:
-'เลขเจาะจาก 5 Main Models';
-
-return`
-
-<span
-class="${this.pairClass(
-pair,
-a.consensus.colorMap
-)}"
-title="${esc(title)}"
->
-${esc(pair)}
-</span>
-
-`;
-
-})
-.join('');
 
 const medalClass=
 k===0
@@ -2997,8 +3068,21 @@ k===0
 :
 'medal medal-silver';
 
-return`
+const pairHTML=
+sorted
+.map(
+pair=>
+`<span class="pair ${
+k===0
+?
+'pair-gold'
+:
+'pair-silver'
+}">${esc(pair)}</span>`
+)
+.join('');
 
+return`
 <div class="row">
 
 <div class="rankbox">
@@ -3020,14 +3104,22 @@ ${pairHTML}
 </div>
 
 </div>
-
 `;
 
-})
+}
+)
 .join('');
 
-cards.push(`
+const footer=
+`
+<div class="brand-footer">
+<span class="brand-star">✦</span>
+<span>บ้านเงินกอง</span>
+</div>
+`;
 
+cards.push(
+`
 <article class="lottery">
 
 <div class="lottery-head">
@@ -3037,23 +3129,23 @@ cards.push(`
 <div class="lottery-name">
 
 <span class="flag">
-${this.flag(r.name)}
+${this.flag(g.name)}
 </span>
 
 <span>
-${esc(r.name)}
+${esc(g.name)}
 </span>
 
 </div>
 
 <div class="date">
-${esc(
-this.formatDate(
-item.targetDate
-)
-)}
+งวด ${esc(targetDate)}
 </div>
 
+</div>
+
+<div class="vip-label">
+VIP ANALYSIS
 </div>
 
 </div>
@@ -3062,24 +3154,58 @@ item.targetDate
 ${rows}
 </div>
 
-<div class="brand-footer">
-<span class="brand-star">✦</span>
-<span>บ้านเงินกอง</span>
-</div>
+${footer}
 
 </article>
-
-`);
+`
+);
 
 outputData.push({
 
-record:r,
-targetDate:item.targetDate,
-result:a
+group:g,
+
+result:a,
+
+targetDate,
+
+publicTop,
+
+safePairSets,
+
+backtest
+
+});
+
+audit.push({
+
+marketId:
+g.marketId,
+
+name:
+g.name,
+
+historyCount:
+history.length,
+
+backtestTrials:
+backtest.trials,
+
+leakageViolations:
+backtest.leakageViolations,
+
+duplicateCount:
+g.duplicateCount||0,
+
+top2Rate:
+backtest.targetStats.top2Rate||0
 
 });
 
 });
+
+/*
+ จบการคำนวณ
+ */
 
 clearInterval(timer);
 
@@ -3087,56 +3213,71 @@ scanner.style.display='none';
 
 btn.disabled=false;
 
+if(!outputData.length){
+
+$('result').innerHTML=
+`
+<div class="errorbox">
+❌ ไม่มีตลาดที่ผ่านการตรวจสอบความถูกต้องสำหรับการประมวลผล
+${
+prepared.errors.length
+?
+'<br>'+
+prepared.errors
+.map(esc)
+.join('<br>')
+:
+''
+}
+</div>
+`;
+
+return;
+
+}
+
 /*
-  COPY:
-  Only the public prediction is copied.
-  No internal model notes, formula counts or
-  backtest metadata.
-*/
+ COPY OUTPUT
+ */
 
 const all=
 outputData
-.map(item=>{
+.map(
+item=>
+[
+`${this.flag(item.group.name)} ${item.group.name}`,
+`งวด ${item.targetDate}`,
 
-const r=
-item.record;
-
-const a=
-item.result;
-
-return[
-
-`${this.flag(r.name)} ${r.name} | ${item.targetDate}`,
-
-...a.finalTop2.map(
+...item.publicTop.map(
 (d,k)=>
 `${d} : ${
 this.sortPairs(
-(a.pairSets[k]||[])
-.slice(0,5)
+item.safePairSets[k]||[]
 ).join('-')
 }`
 )
 
-].join('\n');
-
-})
+]
+.join('\n')
+)
 .join('\n\n');
 
-$('result').innerHTML=`
+/*
+ หน้าบ้าน:
+ ตัวเลข + ธง + งวดเป้าหมาย + บ้านเงินกอง
+ ไม่โชว์รายละเอียด Backtest / Score / Formula
+ */
 
+$('result').innerHTML=
+`
 <div class="summary">
 
 <span>
-
-ผลวิเคราะห์
-
+ประมวลผลสำเร็จ
 <strong>
 ${outputData.length}
 </strong>
-
-รายการ
-
+ตลาด
 </span>
 
 <button
@@ -3149,18 +3290,17 @@ id="copyTop"
 </div>
 
 ${
-parsed.errors.length
+prepared.errors.length
 ?
 `
-
 <div class="errorbox">
-${parsed.errors
+${prepared.errors
 .map(esc)
 .join('<br>')}
 </div>
-
 `
-:''
+:
+''
 }
 
 ${cards.join('')}
@@ -3169,9 +3309,8 @@ ${cards.join('')}
 class="copyall"
 id="copyBottom"
 >
-📋 คัดลอกทั้งหมด
+📋 คัดลอกหวยทั้งหมด
 </button>
-
 `;
 
 $('copyTop').onclick=
@@ -3181,13 +3320,42 @@ $('copyBottom').onclick=
 ()=>this.copy(all);
 
 $('result').scrollIntoView({
-
 behavior:'smooth',
 block:'start'
-
 });
 
-},100);
+/*
+ Audit state อยู่ใน memory ของ run นี้
+ ไม่เอาไปปนกับ run ใหม่
+ */
+
+this.lastAudit=
+audit;
+
+}
+catch(err){
+
+clearInterval(timer);
+
+scanner.style.display='none';
+
+btn.disabled=false;
+
+$('result').innerHTML=
+`
+<div class="errorbox">
+❌ ระบบหยุดเพื่อความปลอดภัย:
+${esc(err?.message||err)}
+</div>
+`;
+
+console.error(err);
+
+}
+
+},
+80
+);
 
 },
 
@@ -3201,8 +3369,6 @@ $('bulkInput').value='';
 
 $('result').innerHTML='';
 
-this.cache=[];
-
 $('bulkInput').focus();
 
 },
@@ -3210,6 +3376,9 @@ $('bulkInput').focus();
 /* =========================================================
    LOGIN
    ORIGINAL LOGIN LOGIC PRESERVED
+
+   ใช้ session token ใน localStorage
+   ไม่เก็บ password แบบ plaintext
    ========================================================= */
 
 login(){
@@ -3238,7 +3407,7 @@ $('console')
 $('bulkInput').focus();
 
 localStorage.setItem(
-'ml_auth_status_v3',
+'ml_auth_status_v4',
 'active'
 );
 
@@ -3251,7 +3420,7 @@ localStorage.setItem(
 logout(){
 
 localStorage.removeItem(
-'ml_auth_status_v3'
+'ml_auth_status_v4'
 );
 
 $('console')
@@ -3318,12 +3487,11 @@ app.calculate();
 
 /* =========================================================
    RESTORE SESSION
-   ORIGINAL KEY PRESERVED
    ========================================================= */
 
 if(
 localStorage.getItem(
-'ml_auth_status_v3'
+'ml_auth_status_v4'
 )==='active'
 ){
 
@@ -3339,4 +3507,4 @@ $('console')
 </script>
 
 </body>
-  </html>
+   </html>
