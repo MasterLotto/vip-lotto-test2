@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mester Lotto VIP+ — Multi Lottery Engine</title>
+<title>Mester Lotto VIP+ — Quant Engine PRO</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,20 +13,25 @@
 :root{
 --bg:#f8f7f3;
 --card:#fff;
---green:#7b6843;
---green2:#b99a58;
---light:#f8f1df;
 --text:#433f39;
 --muted:#8d877f;
 --line:#e7dfd2;
 --gold:#c39a43;
---silver:#8d959c;
---rose:#b98279;
+--gold2:#806329;
+--gold-bg:#fff8df;
+--silver:#7d858c;
+--silver-bg:#eef1f3;
+--rose:#a56d66;
+--rose-bg:#f8e8e5;
 --red:#b84f58;
+--green:#657d61;
 --shadow:0 16px 40px rgba(93,78,55,.10)
 }
+
 *{box-sizing:border-box}
+
 html{scroll-behavior:smooth}
+
 body{
 margin:0;
 min-height:100vh;
@@ -38,30 +43,36 @@ radial-gradient(circle at 90% 15%,rgba(185,130,121,.12),transparent 35%),
 linear-gradient(135deg,#fff,#f8f7f3);
 overflow-x:hidden
 }
+
 button,input,textarea{font-family:Prompt,sans-serif}
 button{cursor:pointer}
+
 #snow{
 position:fixed;
 inset:0;
 z-index:0;
 pointer-events:none
 }
+
 .shell{
 position:relative;
 z-index:1;
-width:min(560px,100%);
+width:min(580px,100%);
 margin:auto;
 padding:10px
 }
+
 .app{
 overflow:hidden;
 border:1px solid #ddd2c0;
 border-radius:24px;
-background:rgba(255,255,255,.95);
+background:rgba(255,255,255,.96);
 box-shadow:0 25px 60px rgba(93,78,55,.12);
 backdrop-filter:blur(18px)
 }
+
 .inner{padding:14px}
+
 .top{
 display:flex;
 justify-content:space-between;
@@ -69,11 +80,13 @@ align-items:center;
 gap:8px;
 margin-bottom:11px
 }
+
 .brand{
 display:flex;
 align-items:center;
 gap:8px
 }
+
 .logo{
 width:38px;
 height:38px;
@@ -85,21 +98,25 @@ font-weight:800;
 background:linear-gradient(135deg,#403a31,#a88748);
 box-shadow:0 5px 14px rgba(93,78,55,.20)
 }
+
 .brand b{font-size:.82rem}
+
 .brand small{
 display:block;
 color:var(--muted);
 font-size:.5rem
 }
+
 .pill{
 padding:5px 9px;
 border-radius:99px;
 color:#80652b;
-background:var(--light);
+background:#f8f1df;
 border:1px solid rgba(174,140,66,.24);
 font-size:.5rem;
 font-weight:800
 }
+
 .hero{
 padding:14px;
 margin-bottom:9px;
@@ -108,30 +125,36 @@ border-radius:18px;
 background:linear-gradient(135deg,#fff,#fbf7ed);
 box-shadow:var(--shadow)
 }
+
 .hero-tag{
 display:inline-block;
 padding:4px 9px;
 border-radius:99px;
 color:#80652b;
-background:var(--light);
+background:#f8f1df;
 font-size:.5rem;
 font-weight:800
 }
+
 .hero h1{
 margin:7px 0 3px;
 font-size:1.48rem
 }
+
 .hero h1 em{
 font-style:normal;
 color:#9c782e
 }
+
 .hero p{
 margin:0;
 color:var(--muted);
 font-size:.57rem
 }
+
 .login,.console{display:none}
 .login.active,.console.active{display:block}
+
 .panel{
 padding:13px;
 border:1px solid var(--line);
@@ -139,12 +162,14 @@ border-radius:18px;
 background:linear-gradient(135deg,#fff,#fbf8f2);
 box-shadow:var(--shadow)
 }
+
 .label{
 display:block;
 margin-bottom:6px;
 font-size:.58rem;
 font-weight:800
 }
+
 .password{
 width:100%;
 height:44px;
@@ -155,10 +180,12 @@ outline:0;
 background:#fff;
 color:var(--text)
 }
+
 .password:focus{
 border-color:#c8a864;
 box-shadow:0 0 0 3px rgba(195,154,67,.10)
 }
+
 .btn{
 width:100%;
 height:44px;
@@ -170,6 +197,12 @@ background:linear-gradient(135deg,#b8944a,#806329);
 font-weight:800;
 box-shadow:0 6px 15px rgba(128,99,41,.14)
 }
+
+.btn:disabled{
+opacity:.55;
+cursor:wait
+}
+
 .err{
 display:none;
 margin-top:7px;
@@ -177,21 +210,24 @@ text-align:center;
 color:var(--red);
 font-size:.55rem
 }
+
 .bulkbox{
 padding:10px;
 border:1px solid var(--line);
 border-radius:14px;
 background:#faf7f0
 }
+
 .bulkbox label{
 display:block;
 margin-bottom:6px;
 font-size:.58rem;
 font-weight:800
 }
+
 .bulk{
 width:100%;
-min-height:230px;
+min-height:250px;
 padding:11px;
 resize:vertical;
 border:1px solid var(--line);
@@ -201,22 +237,26 @@ background:#fff;
 color:var(--text);
 font:700 .76rem/1.65 'IBM Plex Mono',monospace
 }
+
 .bulk:focus{
 border-color:#b8944a;
 box-shadow:0 0 0 3px rgba(184,148,74,.10)
 }
+
 .hint{
 margin-top:6px;
 color:var(--muted);
 font-size:.48rem;
-line-height:1.45
+line-height:1.5
 }
+
 .actions{
 display:grid;
 grid-template-columns:1fr 88px;
 gap:7px;
 margin-top:8px
 }
+
 .clear{
 height:44px;
 border:1px solid var(--line);
@@ -225,6 +265,7 @@ background:#faf8f4;
 color:var(--muted);
 font-weight:700
 }
+
 .scanner{
 display:none;
 margin:9px 0;
@@ -236,6 +277,7 @@ background:#fbf7ed;
 color:#80652b;
 font:700 .55rem 'IBM Plex Mono',monospace
 }
+
 .ring{
 width:42px;
 height:42px;
@@ -245,8 +287,13 @@ border-top-color:#b8944a;
 border-radius:50%;
 animation:spin 1s linear infinite
 }
-@keyframes spin{to{transform:rotate(360deg)}}
+
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+
 .result{margin-top:9px}
+
 .summary{
 display:flex;
 justify-content:space-between;
@@ -260,7 +307,9 @@ background:#fbf5e7;
 font-size:.51rem;
 color:var(--muted)
 }
+
 .summary strong{color:#856728}
+
 .copy{
 padding:7px 10px;
 border:0;
@@ -271,6 +320,7 @@ font-size:.52rem;
 font-weight:800;
 white-space:nowrap
 }
+
 .errorbox{
 padding:9px;
 margin-bottom:8px;
@@ -281,17 +331,20 @@ color:var(--red);
 font-size:.5rem;
 line-height:1.5
 }
+
 .output-note{
 margin:0 0 8px;
-padding:7px 9px;
+padding:8px 9px;
 border:1px solid #eee7dc;
 border-radius:10px;
 background:#fcfaf6;
 color:var(--muted);
 font-size:.48rem;
-line-height:1.5
+line-height:1.55
 }
+
 .output-note strong{color:#80652b}
+
 .lottery{
 position:relative;
 padding:10px;
@@ -301,6 +354,7 @@ border-radius:15px;
 background:#fff;
 box-shadow:0 5px 16px rgba(93,78,55,.055)
 }
+
 .lottery::before{
 content:"";
 position:absolute;
@@ -311,6 +365,7 @@ width:3px;
 border-radius:99px;
 background:linear-gradient(180deg,#c8a052,#9b7a39,#b98279)
 }
+
 .lottery-head{
 display:flex;
 justify-content:space-between;
@@ -319,6 +374,7 @@ padding:0 2px 6px 5px;
 margin-bottom:6px;
 border-bottom:1px solid #eee8df
 }
+
 .lottery-name{
 display:flex;
 align-items:center;
@@ -326,10 +382,12 @@ gap:5px;
 font-size:.78rem;
 font-weight:800
 }
+
 .flag{
 font-size:.9rem;
 line-height:1
 }
+
 .date{
 display:inline-block;
 margin-top:3px;
@@ -339,6 +397,7 @@ background:#faf5e9;
 color:#80652b;
 font:700 .44rem 'IBM Plex Mono',monospace
 }
+
 .vip-label{
 padding:4px 7px;
 border-radius:99px;
@@ -348,85 +407,139 @@ border:1px solid #eadfc9;
 font-size:.41rem;
 font-weight:800
 }
+
 .rows{
 display:flex;
 flex-direction:column;
-gap:2px
+gap:3px
 }
+
 .row{
 display:grid;
 grid-template-columns:30px 7px 1fr;
 align-items:center;
 gap:4px;
-min-height:40px;
-padding:3px 5px 3px 3px;
+min-height:42px;
+padding:4px 5px 4px 3px;
 border-radius:8px;
 background:#fff;
 border:1px solid #f0ebe3
 }
+
 .digit{
 display:block;
 font:800 .98rem/1 'IBM Plex Mono',monospace;
 text-align:center;
-letter-spacing:-.35px;
-color:#403b35
+letter-spacing:-.35px
 }
-.digit-gold{
-color:#b1842f;
-text-shadow:0 1px 0 rgba(255,255,255,.75)
+
+.digit-gold{color:#b1842f}
+.digit-silver{color:#737b82}
+.digit-rose{color:#a56d66}
+
+.pairs{
+display:flex;
+flex-wrap:wrap;
+gap:3px
 }
-.digit-silver{
-color:#737b82;
-text-shadow:0 1px 0 rgba(255,255,255,.9)
-}
-.digit-rose{
-color:#a56d66;
-text-shadow:0 1px 0 rgba(255,255,255,.85)
-}
+
 .pair{
 display:inline-flex;
 align-items:center;
 justify-content:center;
-min-width:32px;
-height:24px;
+min-width:34px;
+height:25px;
 padding:0 5px;
 border-radius:7px;
 font:700 .51rem 'IBM Plex Mono',monospace;
 border:1px solid #e8e3dc;
 background:#faf9f7;
-color:#625c54;
-box-shadow:none
+color:#625c54
 }
+
 .pair-gold{
 color:#684e1c;
 border-color:#d7b86c;
 background:linear-gradient(145deg,#fff8df,#f1dc99)
 }
+
 .pair-silver{
 color:#4e565d;
 border-color:#b9bec2;
 background:linear-gradient(145deg,#fff,#dfe3e6)
 }
+
 .pair-rose{
 color:#744b46;
 border-color:#d1a19a;
 background:linear-gradient(145deg,#fff1ee,#e9c5bf)
 }
+
+.meta{
+display:flex;
+flex-wrap:wrap;
+gap:4px;
+margin:6px 0 0 38px
+}
+
+.meta-chip{
+padding:3px 6px;
+border-radius:7px;
+border:1px solid #eee8df;
+background:#fcfaf6;
+color:#8b8378;
+font-size:.39rem;
+font-weight:700
+}
+
+.meta-chip.good{
+color:#657d61;
+border-color:#d9e4d7;
+background:#f4f8f2
+}
+
+.meta-chip.warn{
+color:#9b6d32;
+border-color:#ead9b7;
+background:#fff9eb
+}
+
+.meta-chip.low{
+color:#a05e62;
+border-color:#efd2d5;
+background:#fff4f5
+}
+
+.focus{
+margin-top:7px;
+padding:7px 8px;
+border-radius:9px;
+background:#fbf8f2;
+border:1px dashed #e4dac9;
+font-size:.44rem;
+line-height:1.5;
+color:#827b72
+}
+
+.focus b{color:#806329}
+
 .brand-footer{
 display:flex;
 justify-content:center;
 align-items:center;
 gap:7px;
-padding-top:6px;
+padding-top:7px;
 color:#80652b;
 font-size:.44rem;
 font-weight:800;
 letter-spacing:.2px
 }
+
 .brand-star{
 color:#c39a43;
 font-size:.58rem
 }
+
 .copyall{
 width:100%;
 height:43px;
@@ -436,6 +549,7 @@ color:#fff;
 background:linear-gradient(135deg,#b8944a,#806329);
 font-weight:800
 }
+
 .logout{
 margin-top:9px;
 width:100%;
@@ -447,6 +561,7 @@ color:var(--muted);
 font-size:.57rem;
 font-weight:700
 }
+
 .toast{
 position:fixed;
 left:50%;
@@ -462,37 +577,46 @@ font-size:.55rem;
 font-weight:700;
 transition:.2s
 }
+
 .toast.show{
 opacity:1;
 transform:translate(-50%,0)
 }
+
 @media(max-width:390px){
-.bulk{min-height:250px}
-.pairs{gap:2px}
+.bulk{min-height:270px}
 .pair{
-min-width:30px;
-height:23px;
-font-size:.50rem;
+min-width:31px;
+height:24px;
+font-size:.49rem;
 padding:0 4px
 }
 .row{
 grid-template-columns:27px 6px 1fr;
-min-height:39px;
+min-height:41px;
 padding:3px 4px 3px 2px;
 gap:3px
 }
 .digit{font-size:.92rem}
+.meta{margin-left:35px}
 }
+
 @media(max-width:420px){
 .lottery{padding:9px}
-.lottery-head{padding-left:4px;padding-right:1px}
-.vip-label{font-size:.39rem;padding:3px 6px}
-.pair{min-width:31px}
+.lottery-head{
+padding-left:4px;
+padding-right:1px
+}
+.vip-label{
+font-size:.39rem;
+padding:3px 6px
+}
 }
 </style>
 </head>
 
 <body>
+
 <canvas id="snow"></canvas>
 
 <div class="shell">
@@ -504,21 +628,27 @@ gap:3px
 <div class="logo">AI</div>
 <div>
 <b>Mester Lotto VIP+</b>
-<small>Multi-Lottery Quant Engine</small>
+<small>Multi-Lottery Quant Engine PRO</small>
 </div>
 </div>
-<div class="pill">● ENGINE READY</div>
+<div class="pill">● ENGINE PRO</div>
 </div>
 
 <section class="hero">
-<span class="hero-tag">QUANT ANALYSIS ENGINE</span>
+<span class="hero-tag">QUANT + WALK-FORWARD ANALYSIS</span>
 <h1>Multi-Lottery <em>VIP+</em></h1>
-<p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้ 5 AI Models เดิม</p>
+<p>
+5 AI Models เดิม • Historical Performance • Dynamic Weight • Stability • Consensus
+</p>
 </section>
 
 <div id="login" class="login active">
 <section class="panel">
-<label class="label">🔐 SYSTEM ACCESS KEY</label>
+
+<label class="label">
+🔐 SYSTEM ACCESS KEY
+</label>
+
 <input
 id="password"
 class="password"
@@ -526,21 +656,31 @@ type="password"
 autocomplete="off"
 placeholder="••• System Access Key •••"
 >
-<button id="loginBtn" class="btn">
+
+<button
+id="loginBtn"
+class="btn"
+>
 เข้าสู่ระบบ / CONNECT ENGINE
 </button>
+
 <div id="loginErr" class="err">
 ❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED
 </div>
+
 </section>
 </div>
 
 <div id="console" class="console">
+
 <section class="panel">
+
 <div class="bulkbox">
+
 <label for="bulkInput">
 📥 วางสถิติหวยทั้งหมด / MULTI-LOTTERY INPUT
 </label>
+
 <textarea
 id="bulkInput"
 class="bulk"
@@ -553,37 +693,68 @@ placeholder="ลาวพัฒนา | 24 ส.ค. 69
 253
 02
 
+ลาวพัฒนา | 18 ส.ค. 69
+781
+46
+
 ลาวสตาร์ | 24 ส.ค. 69
 781
 46"
 ></textarea>
+
 <div class="hint">
-รูปแบบ: ชื่อหวย | วันที่ → 3 ตัวบน → 2 ตัวล่าง
-• วางได้หลายรายการในครั้งเดียว
-• Top 2 และคู่เจาะอิง 5 AI Models เดิม • รองรับ Backtest ย้อนหลัง
+รูปแบบ:
+ชื่อหวย | วันที่ → 3 ตัวบน → 2 ตัวล่าง
+
+รองรับหลายงวดและหลายหวยในครั้งเดียว
+
+ระบบจะเรียงประวัติจากข้อมูลที่คุณวางตามลำดับ
+และทำ Walk-Forward Validation โดยใช้เฉพาะข้อมูลก่อนงวดเป้าหมาย
+
+แนะนำ 10–20 งวดขึ้นไปเพื่อให้ Historical Performance มีข้อมูลมากขึ้น
 </div>
+
 </div>
 
 <div class="actions">
-<button id="run" class="btn">
-⚡ RUN ALL / ประมวลผลทั้งหมด
+
+<button
+id="run"
+class="btn"
+>
+⚡ RUN QUANT ENGINE
 </button>
-<button id="clear" class="clear">
+
+<button
+id="clear"
+class="clear"
+>
 ล้าง / CLEAR
 </button>
+
 </div>
+
 </section>
 
 <div id="scanner" class="scanner">
+
 <div class="ring"></div>
-<span id="scanText">READING MULTI-LOTTERY INPUT...</span>
+
+<span id="scanText">
+READING MULTI-LOTTERY INPUT...
+</span>
+
 </div>
 
 <div id="result" class="result"></div>
 
-<button id="logout" class="logout">
+<button
+id="logout"
+class="logout"
+>
 ออกจากระบบ / LOGOUT
 </button>
+
 </div>
 
 </div>
@@ -596,22 +767,27 @@ placeholder="ลาวพัฒนา | 24 ส.ค. 69
 
 <script>
 (()=>{
-const c=document.getElementById('snow');
-const x=c.getContext('2d');
 
-let w=c.width=innerWidth;
-let h=c.height=innerHeight;
+/* =========================================================
+   SNOW / VISUAL
+========================================================= */
+
+const canvas=document.getElementById('snow');
+const ctx=canvas.getContext('2d');
+
+let W=canvas.width=innerWidth;
+let H=canvas.height=innerHeight;
 
 addEventListener('resize',()=>{
-w=c.width=innerWidth;
-h=c.height=innerHeight;
+W=canvas.width=innerWidth;
+H=canvas.height=innerHeight;
 });
 
-const particles=Array.from(
+const snow=Array.from(
 {length:42},
 ()=>({
-x:Math.random()*w,
-y:Math.random()*h,
+x:Math.random()*W,
+y:Math.random()*H,
 r:.7+Math.random()*1.8,
 s:.15+Math.random()*.45,
 a:.18+Math.random()*.35,
@@ -620,29 +796,42 @@ tone:Math.random()>.72?'rose':'gold'
 })
 );
 
-(function draw(){
-x.clearRect(0,0,w,h);
+(function animateSnow(){
 
-particles.forEach(q=>{
+ctx.clearRect(0,0,W,H);
+
+snow.forEach(q=>{
+
 q.p+=.01;
 q.y+=q.s;
 q.x+=Math.sin(q.p)*.25;
 
-if(q.y>h+5){
+if(q.y>H+5){
 q.y=-5;
-q.x=Math.random()*w;
+q.x=Math.random()*W;
 }
 
-x.beginPath();
-x.arc(q.x,q.y,q.r,0,Math.PI*2);
-x.fillStyle=q.tone==='rose'
-?`rgba(185,130,121,${q.a*.55})`
-:`rgba(195,154,67,${q.a})`;
-x.fill();
+ctx.beginPath();
+ctx.arc(q.x,q.y,q.r,0,Math.PI*2);
+
+ctx.fillStyle=
+q.tone==='rose'
+?
+`rgba(185,130,121,${q.a*.55})`
+:
+`rgba(195,154,67,${q.a})`;
+
+ctx.fill();
+
 });
 
-requestAnimationFrame(draw);
+requestAnimationFrame(animateSnow);
+
 })();
+
+/* =========================================================
+   HELPERS
+========================================================= */
 
 const $=id=>document.getElementById(id);
 
@@ -653,43 +842,64 @@ const esc=s=>String(s)
 .replace(/"/g,'&quot;')
 .replace(/'/g,'&#039;');
 
+/* =========================================================
+   ACCESS
+========================================================= */
+
 const sec={
+
 tokens:[
 '4d617374657241646d696e32303236',
 '54396b4c326d5037',
 '5a71345738785431'
 ],
 
-dec(h){
-let s='';
-for(let i=0;i<h.length;i+=2){
-s+=String.fromCharCode(
-parseInt(h.slice(i,i+2),16)
+dec(hex){
+
+let out='';
+
+for(
+let i=0;
+i<hex.length;
+i+=2
+){
+
+out+=String.fromCharCode(
+parseInt(hex.slice(i,i+2),16)
 );
+
 }
-return s;
+
+return out;
+
 },
 
-ok(v){
+ok(value){
+
 return this.tokens.some(
-t=>v===this.dec(t)
+token=>value===this.dec(token)
 );
+
 }
+
 };
+
+/* =========================================================
+   ENGINE
+========================================================= */
 
 const app={
 
 cache:[],
 toastTimer:null,
 
-audio(){},
-
 norm(x){
 return(x%10+10)%10;
 },
 
-flag(n){
-n=String(n).toLowerCase();
+flag(name){
+
+const n=String(name||'').toLowerCase();
 
 if(/ลาว|lao/.test(n))return'🇱🇦';
 if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))return'🇻🇳';
@@ -712,21 +922,29 @@ if(/แคนาดา|canada/.test(n))return'🇨🇦';
 if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n))return'🇹🇭';
 
 return'🌐';
+
 },
 
+/* =========================================================
+   INPUT PARSER
+========================================================= */
+
 parse(text){
-const z=String(text||'')
+
+const raw=String(text||'')
 .replace(/\r/g,'')
 .trim();
 
-if(!z){
+if(!raw){
+
 return{
 records:[],
 errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
 };
+
 }
 
-const lines=z
+const lines=raw
 .split('\n')
 .map(v=>v.trim());
 
@@ -742,62 +960,85 @@ i++;
 continue;
 }
 
-const m=lines[i]
+const header=lines[i]
 .match(/^(.+?)\s*\|\s*(.+?)$/);
 
-if(!m){
+if(!header){
+
 errors.push(
 `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
 );
+
 i++;
 continue;
+
 }
 
-const name=m[1].trim();
-const date=m[2].trim();
+const name=header[1].trim();
+const date=header[2].trim();
 
 const n3raw=lines[i+1]||'';
 const n2raw=lines[i+2]||'';
 
-const n3=/^[\d\s]+$/.test(n3raw)
-?n3raw.replace(/\s+/g,'')
-:n3raw;
+const n3=
+/^[\d\s]+$/.test(n3raw)
+?
+n3raw.replace(/\s+/g,'')
+:
+n3raw;
 
-const n2=/^[\d\s]+$/.test(n2raw)
-?n2raw.replace(/\s+/g,'')
-:n2raw;
+const n2=
+/^[\d\s]+$/.test(n2raw)
+?
+n2raw.replace(/\s+/g,'')
+:
+n2raw;
 
 if(!/^\d{3}$/.test(n3)){
+
 errors.push(
 `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
 );
-i+=1;
+
+i++;
 continue;
+
 }
 
 if(!/^\d{2}$/.test(n2)){
+
 errors.push(
 `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
 );
+
 i+=2;
 continue;
+
 }
 
 records.push({
 name,
 date,
 n3,
-n2
+n2,
+order:records.length
 });
 
 i+=3;
+
 }
 
 return{
 records,
 errors
 };
+
 },
+
+/* =========================================================
+   ORIGINAL FORMULA ENGINE
+   สูตรเดิมคงไว้
+========================================================= */
 
 formulas(
 H,T,U,R1,R2,
@@ -805,6 +1046,7 @@ sumT,sumB,total
 ){
 
 const raw=[
+
 H+T,
 H+U,
 T+U,
@@ -929,6 +1171,7 @@ total,
 2*total,
 total+H,
 total+R1
+
 ];
 
 const counts=
@@ -939,11 +1182,13 @@ Array.from(
 )
 );
 
-const signals=raw.map((value,index)=>({
+const signals=raw.map(
+(value,index)=>({
 id:index+1,
 value:this.norm(value),
 raw:value
-}));
+})
+);
 
 raw.forEach(v=>{
 counts[this.norm(v)]++;
@@ -951,9 +1196,16 @@ counts[this.norm(v)]++;
 
 return{
 counts,
-signals
+signals,
+formulaCount:raw.length
 };
+
 },
+
+/* =========================================================
+   ORIGINAL 5 MODELS
+   สูตร/โครงสร้างโมเดลเดิมคงไว้
+========================================================= */
 
 buildModels(
 H,T,U,R1,R2,
@@ -961,69 +1213,90 @@ sumT
 ){
 
 const unit=v=>{
+
 const q=Math.abs(v)%10;
+
 return[
 q,
 (q+1)%10
 ];
+
 };
 
 const raw=[
+
 (T+R1)%10,
 sumT%10,
 (H+R1)%10,
 (U+R2)%10,
 (10-R2)%10
+
 ];
 
 return[
+
 {
 id:1,
 name:'AI โมเดล 01',
 set:unit(raw[0])
 },
+
 {
 id:2,
 name:'AI โมเดล 02',
 set:unit(raw[1])
 },
+
 {
 id:3,
 name:'AI โมเดล 03',
 set:unit(raw[2])
 },
+
 {
 id:4,
 name:'AI โมเดล 04',
 set:unit(raw[3])
 },
+
 {
 id:5,
 name:'AI โมเดล 05',
 set:unit(raw[4])
 }
+
 ];
+
 },
 
-buildPairs(
-models,
-anchor
-){
+/* =========================================================
+   PAIR ENGINE
+========================================================= */
+
+buildPairs(models,anchor){
 
 models.forEach(m=>{
 
 let range=[];
 let collision=false;
 
-for(let o=-2;o<=2;o++){
+for(
+let o=-2;
+o<=2;
+o++
+){
+
 if(
 m.set.includes(
 this.norm(anchor+o)
 )
 ){
+
 collision=true;
 break;
+
 }
+
 }
 
 for(
@@ -1031,9 +1304,11 @@ let o=collision?-3:-2;
 o<=(collision?3:2);
 o++
 ){
+
 range.push(
 this.norm(anchor+o)
 );
+
 }
 
 m.pairsMap={};
@@ -1052,7 +1327,12 @@ p=>`${src}${p}`
 
 let next=(src+1)%10;
 
-while(pairs.length<5){
+let guard=0;
+
+while(
+pairs.length<5 &&
+guard<20
+){
 
 if(
 next!==src &&
@@ -1061,12 +1341,16 @@ next!==src &&
 `${src}${next}`
 )
 ){
+
 pairs.push(
 `${src}${next}`
 );
+
 }
 
 next=(next+1)%10;
+guard++;
+
 }
 
 m.pairsMap[src]=[
@@ -1076,14 +1360,22 @@ m.pairsMap[src]=[
 p=>p[0]!==p[1]
 )
 .slice(0,5);
+
 });
 
 });
+
 },
+
+/* =========================================================
+   HISTORICAL ENGINE
+   Walk-forward / no future leakage
+========================================================= */
 
 buildHistory(records){
 
-const modelPerf=Object.fromEntries(
+const modelPerf=
+Object.fromEntries(
 Array.from(
 {length:5},
 (_,i)=>[
@@ -1095,13 +1387,18 @@ stability:.5,
 samples:0,
 hits:0,
 recentHits:0,
-recentWeight:0
+recentWeight:0,
+variance:.25,
+lastHit:0,
+missStreak:0,
+maxMissStreak:0
 }
 ]
 )
 );
 
-const formulaPerf=Object.fromEntries(
+const formulaPerf=
+Object.fromEntries(
 Array.from(
 {length:100},
 (_,i)=>[
@@ -1118,7 +1415,8 @@ recentWeight:0
 )
 );
 
-const digitPerf=Object.fromEntries(
+const digitPerf=
+Object.fromEntries(
 Array.from(
 {length:10},
 (_,d)=>[
@@ -1132,49 +1430,94 @@ hits:0,
 recentHits:0,
 recentWeight:0,
 streak:0,
-maxStreak:0
+maxStreak:0,
+missStreak:0,
+maxMissStreak:0
 }
 ]
 )
 );
 
-const transitions=[];
-const usable=Math.max(0,records.length-1);
-const recentWindow=Math.min(8,usable);
+const modelOutcomes=
+Array.from(
+{length:5},
+()=>[]
+);
+
+const formulaOutcomes=
+Array.from(
+{length:100},
+()=>[]
+);
+
+const usable=
+Math.max(
+0,
+records.length-1
+);
+
+const recentWindow=
+Math.min(
+8,
+usable
+);
 
 if(!usable){
+
 return{
 modelPerf,
 formulaPerf,
 digitPerf,
-transitions,
+modelOutcomes,
+formulaOutcomes,
 usable:0,
 recentWindow:0
 };
+
 }
 
-for(let i=1;i<records.length;i++){
+/*
+  สำคัญ:
+  แต่ละ target ใช้เฉพาะข้อมูลก่อน target
+  ไม่มีการนำ target เองกลับไปสร้าง signal
+*/
+
+for(
+let i=1;
+i<records.length;
+i++
+){
 
 const prev=records[i-1];
 const target=records[i];
 
-const d3=prev.n3.split('').map(Number);
-const d2=prev.n2.split('').map(Number);
+const d3=
+prev.n3
+.split('')
+.map(Number);
+
+const d2=
+prev.n2
+.split('')
+.map(Number);
 
 const H=d3[0];
 const T=d3[1];
 const U=d3[2];
+
 const R1=d2[0];
 const R2=d2[1];
 
 const sumT=H+T+U;
+const sumB=R1+R2;
+const total=sumT+sumB;
 
 const F=this.formulas(
 H,T,U,
 R1,R2,
 sumT,
-R1+R2,
-sumT+R1+R2
+sumB,
+total
 );
 
 const models=this.buildModels(
@@ -1183,8 +1526,12 @@ R1,R2,
 sumT
 );
 
-const actual=new Set(
-(target.n3+target.n2)
+const actualDigits=
+new Set(
+(
+target.n3+
+target.n2
+)
 .split('')
 .map(Number)
 );
@@ -1192,139 +1539,216 @@ const actual=new Set(
 const recent=
 i>records.length-1-recentWindow;
 
+const age=
+records.length-1-i;
+
 const recencyWeight=
-Math.pow(
-.82,
-records.length-1-i
-);
+Math.pow(.82,age);
 
 models.forEach(m=>{
 
-const unique=[
-...new Set(m.set)
-];
+const unique=
+[...new Set(m.set)];
 
-const hit=
+const hits=
 unique.filter(
-d=>actual.has(d)
-).length/
-Math.max(1,unique.length);
+d=>actualDigits.has(d)
+).length;
+
+const rate=
+hits/
+Math.max(
+1,
+unique.length
+);
 
 const mp=modelPerf[m.id];
 
-mp.hits+=hit;
+mp.hits+=rate;
 mp.samples++;
 
+mp.lastHit=rate;
+
+modelOutcomes[m.id-1].push(rate);
+
+if(rate>=.5){
+mp.missStreak=0;
+}else{
+mp.missStreak++;
+mp.maxMissStreak=
+Math.max(
+mp.maxMissStreak,
+mp.missStreak
+);
+}
+
 if(recent){
+
 mp.recentHits+=
-hit*recencyWeight;
+rate*recencyWeight;
 
 mp.recentWeight+=
 recencyWeight;
+
 }
 
 });
 
 F.signals.forEach(sig=>{
 
-const fp=formulaPerf[sig.id];
+const fp=
+formulaPerf[sig.id];
 
 const hit=
-actual.has(sig.value)?1:0;
+actualDigits.has(sig.value)
+?
+1
+:
+0;
 
 fp.hits+=hit;
 fp.samples++;
 
+formulaOutcomes[sig.id-1].push(hit);
+
 if(recent){
+
 fp.recentHits+=
 hit*recencyWeight;
 
 fp.recentWeight+=
 recencyWeight;
+
 }
 
 });
 
 for(let d=0;d<=9;d++){
 
-if(
-!models.some(
-m=>m.set.includes(d)
-)
-)continue;
-
 const dp=digitPerf[d];
 
 const hit=
-actual.has(d)?1:0;
+actualDigits.has(d)
+?
+1
+:
+0;
 
 dp.hits+=hit;
+
 dp.samples++;
 
 if(recent){
+
 dp.recentHits+=
 hit*recencyWeight;
 
 dp.recentWeight+=
 recencyWeight;
-}
+
 }
 
-transitions.push({
-index:i,
-models,
-formulaSignals:F.signals,
-actual:[...actual]
-});
 }
 
-Object.values(modelPerf).forEach(mp=>{
+}
+
+/* model statistics */
+
+Object.values(modelPerf)
+.forEach(mp=>{
 
 mp.long=
-mp.samples?
-mp.hits/mp.samples:
+mp.samples
+?
+mp.hits/mp.samples
+:
 .5;
 
 mp.recent=
-mp.recentWeight?
-mp.recentHits/mp.recentWeight:
+mp.recentWeight
+?
+mp.recentHits/mp.recentWeight
+:
 mp.long;
 
+const values=
+modelOutcomes[
+Object.values(modelPerf)
+.indexOf(mp)
+]||[];
+
+if(values.length){
+
+const mean=
+values.reduce(
+(a,b)=>a+b,
+0
+)/values.length;
+
+const variance=
+values.reduce(
+(a,b)=>a+
+Math.pow(b-mean,2),
+0
+)/values.length;
+
+mp.variance=variance;
+
 mp.stability=
-1-
+Math.max(
+0,
 Math.min(
 1,
-Math.abs(
-mp.long-mp.recent
-)*2
+1-Math.sqrt(variance)
+)
 );
+
+}else{
+
+mp.stability=.5;
+
+}
+
 });
 
-Object.values(formulaPerf).forEach(fp=>{
+/* formula statistics */
+
+Object.values(formulaPerf)
+.forEach(fp=>{
 
 fp.long=
-fp.samples?
-fp.hits/fp.samples:
+fp.samples
+?
+fp.hits/fp.samples
+:
 .5;
 
 fp.recent=
-fp.recentWeight?
-fp.recentHits/fp.recentWeight:
+fp.recentWeight
+?
+fp.recentHits/fp.recentWeight
+:
 fp.long;
+
 });
+
+/* digit statistics */
 
 for(let d=0;d<=9;d++){
 
 const dp=digitPerf[d];
 
-if(!dp.samples)continue;
+if(!dp.samples)
+continue;
 
 dp.long=
 dp.hits/dp.samples;
 
 dp.recent=
-dp.recentWeight?
-dp.recentHits/dp.recentWeight:
+dp.recentWeight
+?
+dp.recentHits/dp.recentWeight
+:
 dp.long;
 
 dp.stability=
@@ -1337,95 +1761,243 @@ dp.long-dp.recent
 );
 
 let streak=0;
+let missStreak=0;
 
 for(
-let j=transitions.length-1;
-j>=0;
-j--
+let i=records.length-1;
+i>=1;
+i--
 ){
 
-const tr=transitions[j];
+const target=
+records[i];
 
-if(
-!tr.models.some(
-m=>m.set.includes(d)
+const actual=
+(
+target.n3+
+target.n2
 )
-)continue;
+.split('')
+.map(Number);
+
+if(actual.includes(d)){
 
 if(
-tr.actual.includes(d)
+missStreak>0
 ){
+break;
+}
+
 streak++;
+
+}else{
+
+if(streak===0)
+missStreak++;
+else
+break;
+
+}
+
+}
+
+dp.streak=streak;
 dp.maxStreak=
 Math.max(
 dp.maxStreak,
 streak
 );
-}else{
-break;
-}
-}
 
-dp.streak=streak;
+dp.missStreak=missStreak;
+
 }
 
 return{
 modelPerf,
 formulaPerf,
 digitPerf,
-transitions,
+modelOutcomes,
+formulaOutcomes,
 usable,
 recentWindow
 };
+
 },
 
-modelWeight(m,history){
+/* =========================================================
+   DYNAMIC MODEL WEIGHT
+========================================================= */
+
+modelWeight(model,history){
+
+if(
+!history ||
+!history.modelPerf ||
+!history.modelPerf[model.id]
+)
+return 1;
 
 const hp=
-history&&
-history.modelPerf[m.id];
+history.modelPerf[model.id];
 
-if(!hp)return 1;
+const long=
+Math.max(
+0,
+Math.min(
+1,
+hp.long
+)
+);
 
-const blended=
-.55*hp.long+
-.30*hp.recent+
-.15*hp.stability;
+const recent=
+Math.max(
+0,
+Math.min(
+1,
+hp.recent
+)
+);
 
-return .70+
-.60*
+const stability=
+Math.max(
+0,
+Math.min(
+1,
+hp.stability
+)
+);
+
+/*
+  Long term + recent + stability
+  พร้อม dampening ไม่ให้โมเดลใดครองระบบ
+*/
+
+let blended=
+.45*long+
+.35*recent+
+.20*stability;
+
+/*
+  Bayesian-style shrinkage
+  ป้องกันข้อมูลน้อยแล้วคะแนนเหวี่ยง
+*/
+
+const confidence=
+Math.min(
+1,
+hp.samples/12
+);
+
+blended=
+.5+
+(blended-.5)*
+(.35+.65*confidence);
+
+/*
+  ลดน้ำหนักโมเดลที่ miss ติดต่อกัน
+*/
+
+const missPenalty=
+Math.max(
+.72,
+1-
+Math.min(
+.28,
+hp.maxMissStreak*.035
+)
+);
+
+return(
+.72+
+.56*
 Math.max(
 0,
 Math.min(
 1,
 blended
 )
-);
+)
+)*
+missPenalty;
+
 },
+
+/* =========================================================
+   FORMULA DYNAMIC WEIGHT
+========================================================= */
 
 formulaWeight(id,history){
 
+if(
+!history ||
+!history.formulaPerf ||
+!history.formulaPerf[id]
+)
+return 1;
+
 const fp=
-history&&
 history.formulaPerf[id];
 
-if(!fp)return 1;
+const confidence=
+Math.min(
+1,
+fp.samples/12
+);
 
 const blended=
 .60*fp.long+
 .30*fp.recent+
 .10;
 
-return .75+
-.50*
+const adjusted=
+.5+
+(blended-.5)*
+(.35+.65*confidence);
+
+return(
+.78+
+.44*
 Math.max(
 0,
 Math.min(
 1,
-blended
+adjusted
+)
 )
 );
+
 },
+
+/* =========================================================
+   CORRELATION / REDUNDANCY
+========================================================= */
+
+signalRedundancy(values){
+
+const active=
+values.filter(
+v=>v>=.75
+).length;
+
+if(active<=1)
+return 1;
+
+if(active===2)
+return .96;
+
+if(active===3)
+return .91;
+
+if(active===4)
+return .86;
+
+return .82;
+
+},
+
+/* =========================================================
+   SCORE ENGINE
+========================================================= */
 
 scoreDigits(
 models,
@@ -1443,27 +2015,36 @@ Array.from(
 d,
 {
 digit:d,
+
 modelScore:0,
 formula100Score:0,
 radarScore:0,
 backendScore:0,
 winSetScore:0,
+
+historicalScore:.5,
+recentFormScore:.5,
+stabilityScore:.5,
+
 selectorBonus:0,
 selectorScore:0,
-historicalScore:0,
-recentFormScore:0,
-stabilityScore:0,
-hotStreakPenalty:1,
+totalScore:0,
+
 confidence:0,
+margin:0,
+
+hotStreakPenalty:1,
+missRiskPenalty:1,
 redundancyPenalty:1,
-totalScore:0
+
+candidate:false
 }
 ]
 )
 );
 
 const allowed=new Set();
-const modelWeights={};
+
 let totalModelWeight=0;
 
 models.forEach(m=>{
@@ -1474,24 +2055,36 @@ m,
 history
 );
 
-modelWeights[m.id]=mw;
 m.historyWeight=mw;
+
 totalModelWeight+=mw;
 
 m.set.forEach(d=>{
+
 allowed.add(d);
+
 score[d].modelScore+=mw;
+
 });
+
 });
 
 for(let d=0;d<=9;d++){
 
 score[d].modelScore=
-totalModelWeight?
+totalModelWeight
+?
 score[d].modelScore/
-totalModelWeight:
+totalModelWeight
+:
 0;
+
+score[d].candidate=
+allowed.has(d);
+
 }
+
+/* Formula score */
 
 const weightedFormulaCounts=
 Object.fromEntries(
@@ -1502,14 +2095,16 @@ Array.from(
 );
 
 F.signals.forEach(sig=>{
+
 weightedFormulaCounts[sig.value]+=
 this.formulaWeight(
 sig.id,
 history
 );
+
 });
 
-const maxF=
+const maxFormula=
 Math.max(
 ...Object.values(
 weightedFormulaCounts
@@ -1521,12 +2116,20 @@ for(let d=0;d<=9;d++){
 
 score[d].formula100Score=
 weightedFormulaCounts[d]/
-maxF;
+maxFormula;
+
 }
 
-const x=(R1+R2)%10;
-const y=sumT%10;
-const z=total%10;
+/* Radar */
+
+const x=
+(R1+R2)%10;
+
+const y=
+sumT%10;
+
+const z=
+total%10;
 
 const r1=[
 this.norm(x-1),
@@ -1548,16 +2151,20 @@ this.norm(z+1)
 
 for(let d=0;d<=9;d++){
 
-let h=0;
+let hits=0;
 
-if(r1.includes(d))h++;
-if(r2.includes(d))h++;
-if(r3.includes(d))h++;
+if(r1.includes(d))hits++;
+if(r2.includes(d))hits++;
+if(r3.includes(d))hits++;
 
-score[d].radarScore=h/3;
+score[d].radarScore=
+hits/3;
+
 }
 
-const back=[
+/* Backend */
+
+const backend=[
 (2*H+R1)%10,
 (T+R2)%10,
 sumT%10,
@@ -1567,7 +2174,7 @@ total%10
 
 for(let d=0;d<=9;d++){
 
-if(back.includes(d))
+if(backend.includes(d))
 score[d].backendScore=1;
 
 if(
@@ -1576,11 +2183,16 @@ d===this.norm(z+5)
 )
 score[d].winSetScore=1;
 
-const dp=
-history&&
-history.digitPerf[d];
+/* Historical */
 
-if(dp&&dp.samples){
+if(
+history &&
+history.digitPerf &&
+history.digitPerf[d]
+){
+
+const dp=
+history.digitPerf[d];
 
 score[d].historicalScore=
 dp.long;
@@ -1591,66 +2203,95 @@ dp.recent;
 score[d].stabilityScore=
 dp.stability;
 
+/* Hot streak protection */
+
+if(dp.streak>2){
+
 score[d].hotStreakPenalty=
 1-
 Math.min(
-.12,
-Math.max(
-0,
-dp.streak-2
-)*.03
+.14,
+(dp.streak-2)*.035
 );
 
-}else{
-
-score[d].historicalScore=.5;
-score[d].recentFormScore=.5;
-score[d].stabilityScore=.5;
 }
 
-score[d].totalScore=
-.28*score[d].modelScore+
-.20*score[d].formula100Score+
-.13*score[d].radarScore+
-.12*score[d].backendScore+
-.07*score[d].winSetScore+
-.10*score[d].historicalScore+
-.06*score[d].recentFormScore+
-.04*score[d].stabilityScore;
+/* Miss streak protection */
 
-score[d].totalScore*=
-score[d].hotStreakPenalty;
+if(dp.missStreak>2){
 
-if(allowed.has(d))
-score[d].totalScore*=1.15;
+score[d].missRiskPenalty=
+1-
+Math.min(
+.18,
+(dp.missStreak-2)*.04
+);
+
 }
 
-Object.values(score).forEach(v=>{
+}
 
-const consensus=
-v.modelScore;
+}
 
-const highSignals=[
+/*
+  Signal redundancy:
+  ไม่ให้หลักฐานที่ซ้ำกันดันคะแนนเกินจริง
+*/
+
+for(let d=0;d<=9;d++){
+
+const v=score[d];
+
+v.redundancyPenalty=
+this.signalRedundancy([
 v.formula100Score,
 v.radarScore,
 v.backendScore,
 v.winSetScore
-].filter(
-x=>x>=.75
-).length;
+]);
 
-const redundancyPenalty=
-1-
-Math.min(
-.18,
-Math.max(
-0,
-highSignals-1
-)*.06
-);
+/*
+  Final score
+  น้ำหนักถูกออกแบบให้ Historical ไม่สามารถล้มสูตรเดิมทั้งหมด
+  และสูตรเดิมยังเป็นแกนหลัก
+*/
 
-v.redundancyPenalty=
-redundancyPenalty;
+v.totalScore=
+
+.27*v.modelScore+
+.21*v.formula100Score+
+.13*v.radarScore+
+.11*v.backendScore+
+.06*v.winSetScore+
+.10*v.historicalScore+
+.07*v.recentFormScore+
+.05*v.stabilityScore;
+
+v.totalScore*=
+v.redundancyPenalty;
+
+v.totalScore*=
+v.hotStreakPenalty;
+
+v.totalScore*=
+v.missRiskPenalty;
+
+/*
+  Candidate Pool bonus
+*/
+
+if(v.candidate){
+
+v.totalScore*=1.12;
+
+}
+
+/*
+  Consensus
+*/
+
+const consensus=
+v.modelScore;
 
 const signalAgreement=
 (
@@ -1658,15 +2299,14 @@ v.formula100Score+
 v.radarScore+
 v.backendScore+
 v.winSetScore
-)/4*
-redundancyPenalty;
+)/4;
 
 v.selectorBonus=
-allowed.has(v.digit)
+v.candidate
 ?
 (
-.055*consensus+
-.045*signalAgreement
+.050*consensus+
+.040*signalAgreement
 )
 :
 0;
@@ -1674,144 +2314,219 @@ allowed.has(v.digit)
 v.selectorScore=
 v.totalScore+
 v.selectorBonus;
-});
+
+}
+
+/* =====================================================
+   CONFIDENCE-AWARE RANKING
+===================================================== */
 
 let ranked=
 Object.values(score)
-.filter(
-v=>allowed.has(v.digit)
-)
+.filter(v=>v.candidate)
 .sort(
 (a,b)=>
 b.selectorScore-a.selectorScore ||
-b.totalScore-a.totalScore ||
 b.modelScore-a.modelScore ||
-b.digit-a.digit
+b.formula100Score-a.formula100Score ||
+a.digit-b.digit
 );
 
-if(ranked[2]&&ranked[3]){
+/*
+  Anti-overfit tie breaker:
+  ถ้าคะแนนติดกันมาก จะดู breadth/stability
+*/
 
-const a=ranked[2];
-const b=ranked[3];
+for(let i=0;i<ranked.length-1;i++){
+
+const a=ranked[i];
+const b=ranked[i+1];
 
 const gap=
-a.selectorScore-
-b.selectorScore;
+a.selectorScore-b.selectorScore;
 
 const close=
-gap<=.08 ||
+gap<=.018 ||
 (
 a.selectorScore>0 &&
-gap/a.selectorScore<=.07
+gap/a.selectorScore<=.035
 );
 
 if(close){
 
-const candidates=
-ranked
-.slice(2,5)
-.map(v=>{
-
-const breadth=
+const breadthA=
 (
-v.modelScore+
-v.formula100Score+
-v.radarScore+
-v.backendScore+
-v.winSetScore
-)/5;
+a.modelScore+
+a.formula100Score+
+a.radarScore+
+a.backendScore+
+a.winSetScore+
+a.historicalScore+
+a.recentFormScore+
+a.stabilityScore
+)/8;
 
-return{
-v,
-final:
-v.selectorScore+
-.025*breadth
-};
-})
-.sort(
-(a,b)=>
-b.final-a.final ||
-b.v.modelScore-a.v.modelScore ||
-b.v.digit-a.v.digit
-);
+const breadthB=
+(
+b.modelScore+
+b.formula100Score+
+b.radarScore+
+b.backendScore+
+b.winSetScore+
+b.historicalScore+
+b.recentFormScore+
+b.stabilityScore
+)/8;
 
-ranked.splice(
-2,
-candidates.length,
-...candidates.map(
-x=>x.v
-)
-);
+const stabilityGap=
+a.stabilityScore-
+b.stabilityScore;
+
+if(
+breadthB>breadthA ||
+stabilityGap>.05
+){
+
+ranked[i]=b;
+ranked[i+1]=a;
+
 }
+
 }
 
-ranked.forEach((v,i)=>{
+}
 
-const next=ranked[i+1];
+/*
+  Top 2 เท่านั้น
+*/
+
+const top=ranked.slice(0,2);
+
+for(let i=0;i<ranked.length;i++){
+
+const current=ranked[i];
+
+const next=
+ranked[i+1];
 
 const margin=
-next?
+next
+?
 Math.max(
 0,
-v.selectorScore-
+current.selectorScore-
 next.selectorScore
-):
-v.selectorScore;
+)
+:
+current.selectorScore;
 
-v.confidence=
+current.margin=margin;
+
+/*
+  Confidence ไม่ใช่ probability ของการถูกหวย
+  เป็น confidence เชิงระบบในการจัดอันดับ
+*/
+
+const evidence=
+(
+.current
+);
+
+const scoreStrength=
 Math.max(
 0,
 Math.min(
 1,
-.55+
-.45*
-Math.min(
-1,
-margin/.15
-)
+current.selectorScore/.65
 )
 );
-});
 
-const top=
-ranked.slice(0,2);
+const marginStrength=
+Math.max(
+0,
+Math.min(
+1,
+margin/.12
+)
+);
+
+const historyStrength=
+history&&history.usable
+?
+Math.min(
+1,
+history.usable/12
+)
+:
+0;
+
+current.confidence=
+Math.max(
+0,
+Math.min(
+1,
+.40*scoreStrength+
+.35*marginStrength+
+.25*historyStrength
+)
+);
+
+}
+
+/*
+  Model AI score
+*/
 
 models.forEach(m=>{
 
-const sm=
-m.set.reduce(
-(a,d)=>
-a+score[d].totalScore,
-0
+const digitScores=
+m.set.map(
+d=>score[d].selectorScore
 );
 
-const hp=
-history&&
-history.modelPerf[m.id];
+const average=
+digitScores.length
+?
+digitScores.reduce(
+(a,b)=>a+b,
+0
+)/digitScores.length
+:
+0;
 
-const perf=
-hp?.long??.5;
-
-const recent=
-hp?.recent??perf;
+const historyWeight=
+m.historyWeight||1;
 
 m.aiScore=
-80+
+70+
 Math.min(
-18.5,
-sm*4
+22,
+average*28
 )+
-(perf-.5)*12+
-(recent-.5)*6;
+(historyWeight-1)*15;
+
 });
 
 return{
 score,
 allowed,
 top,
-ranked
+ranked,
+modelWeights:
+models.map(
+m=>({
+id:m.id,
+weight:m.historyWeight,
+aiScore:m.aiScore
+})
+)
 };
+
 },
+
+/* =========================================================
+   PAIR CANDIDATES
+========================================================= */
 
 collectPairCandidates(
 digit,
@@ -1831,9 +2546,9 @@ const sourceStrength=
 Math.min(
 1,
 .55*
-((m.aiScore||80)/98.5)+
+((m.aiScore||70)/92)+
 .45*
-(m.historyWeight||1)/1.30
+((m.historyWeight||1)/1.28)
 );
 
 const digitStrength=
@@ -1843,12 +2558,26 @@ score[digit].selectorScore
 :
 0;
 
-const modelConsensus=
+const consensus=
 score[digit]
 ?
 score[digit].modelScore
 :
 0;
+
+const historical=
+score[digit]
+?
+score[digit].historicalScore
+:
+.5;
+
+const recent=
+score[digit]
+?
+score[digit].recentFormScore
+:
+.5;
 
 (
 m.pairsMap[digit]||[]
@@ -1858,10 +2587,17 @@ m.pairsMap[digit]||[]
 const key=
 this.pairKey(pair);
 
+/*
+  Pair score:
+  โมเดล + digit quality + consensus + history
+*/
+
 const pairScore=
-.55*sourceStrength+
-.30*digitStrength+
-.15*modelConsensus;
+.40*sourceStrength+
+.25*digitStrength+
+.15*consensus+
+.10*historical+
+.10*recent;
 
 candidates.push({
 pair:String(pair),
@@ -1869,11 +2605,18 @@ key,
 pairScore,
 modelId:m.id
 });
+
 });
+
 });
 
 return candidates;
+
 },
+
+/* =========================================================
+   BEST 5 PAIRS / DIGIT
+========================================================= */
 
 bestPairsForDigit(
 digit,
@@ -1888,20 +2631,23 @@ models,
 score
 );
 
-const bestByKey={};
+const byKey={};
 
 candidates.forEach(c=>{
 
 if(
-!bestByKey[c.key] ||
+!byKey[c.key] ||
 c.pairScore>
-bestByKey[c.key].pairScore
+byKey[c.key].pairScore
 ){
-bestByKey[c.key]=c;
+
+byKey[c.key]=c;
+
 }
+
 });
 
-return Object.values(bestByKey)
+return Object.values(byKey)
 .sort(
 (a,b)=>
 b.pairScore-a.pairScore ||
@@ -1909,22 +2655,13 @@ Number(a.key)-Number(b.key)
 )
 .slice(0,5)
 .map(v=>v.pair);
+
 },
 
-pairKey(pair){
-
-const p=String(pair);
-
-if(!/^\d{2}$/.test(p))
-return p;
-
-return[
-p[0],
-p[1]
-]
-.sort()
-.join('');
-},
+/* =========================================================
+   CONSENSUS 6 PAIRS
+   2 GOLD / 2 SILVER / 2 ROSE
+========================================================= */
 
 buildConsensus(pairSets){
 
@@ -1933,14 +2670,17 @@ const all=[];
 pairSets.forEach(
 (set,rowIndex)=>{
 
-set.slice(0,5)
+set
+.slice(0,5)
 .forEach(pair=>{
 
 all.push({
 pair:String(pair),
 rowIndex
 });
+
 });
+
 }
 );
 
@@ -1959,6 +2699,7 @@ score:0,
 rows:new Set(),
 pairs:new Set()
 };
+
 }
 
 counts[key].score++;
@@ -1968,6 +2709,7 @@ item.rowIndex
 counts[key].pairs.add(
 item.pair
 );
+
 });
 
 const ranked=
@@ -1978,6 +2720,11 @@ b.score-a.score ||
 b.rows.size-a.rows.size ||
 Number(a.key)-Number(b.key)
 );
+
+/*
+  เพื่อไม่ให้สีซ้ำจากคู่ที่มาจากเลขหลักเดียวกัน
+  ใช้ consensus + row diversity
+*/
 
 const colorMap={};
 
@@ -1998,16 +2745,40 @@ color='rose';
 colorMap[item.key]={
 color,
 rank:index+1,
-score:item.score
+score:item.score,
+rows:item.rows.size
 };
+
 }
 );
 
 return{
 counts,
 ranked,
-colorMap
+colorMap,
+focus:ranked.slice(0,6)
 };
+
+},
+
+/* =========================================================
+   PAIR KEY
+========================================================= */
+
+pairKey(pair){
+
+const p=String(pair);
+
+if(!/^\d{2}$/.test(p))
+return p;
+
+return[
+p[0],
+p[1]
+]
+.sort()
+.join('');
+
 },
 
 sortPairs(pairs){
@@ -2018,12 +2789,10 @@ return pairs
 (a,b)=>
 Number(a)-Number(b)
 );
+
 },
 
-pairClass(
-pair,
-colorMap
-){
+pairClass(pair,colorMap){
 
 const info=
 colorMap[
@@ -2043,7 +2812,12 @@ if(info.color==='rose')
 return'pair pair-rose';
 
 return'pair';
+
 },
+
+/* =========================================================
+   DATE
+========================================================= */
 
 formatDate(date){
 
@@ -2063,13 +2837,24 @@ p[0],
 p[1],
 p.slice(2).join(' ')
 ].join(' · ');
+
 }
+
 }
 
 return s;
+
 },
 
-run(n3,n2,history=null){
+/* =========================================================
+   RUN ONE TARGET
+========================================================= */
+
+run(
+n3,
+n2,
+history=null
+){
 
 const d3=
 n3.split('').map(Number);
@@ -2077,22 +2862,16 @@ n3.split('').map(Number);
 const d2=
 n2.split('').map(Number);
 
-const[
-H,T,U
-]=d3;
+const H=d3[0];
+const T=d3[1];
+const U=d3[2];
 
-const[
-R1,R2
-]=d2;
+const R1=d2[0];
+const R2=d2[1];
 
-const sumT=
-H+T+U;
-
-const sumB=
-R1+R2;
-
-const total=
-sumT+sumB;
+const sumT=H+T+U;
+const sumB=R1+R2;
+const total=sumT+sumB;
 
 const F=
 this.formulas(
@@ -2109,6 +2888,10 @@ H,T,U,
 R1,R2,
 sumT
 );
+
+/*
+  สูตรเลขจอก / โครงสร้างคู่เดิม
+*/
 
 const anchor=
 this.norm(7-H);
@@ -2133,6 +2916,10 @@ history
 const top=
 scored.top;
 
+/*
+  เหลือ Top 2
+*/
+
 const pairSets=
 top.map(
 t=>
@@ -2142,6 +2929,10 @@ models,
 scored.score
 )
 );
+
+/*
+  10 คู่
+*/
 
 const consensus=
 this.buildConsensus(
@@ -2163,20 +2954,62 @@ scored.score,
 
 modelCount:5,
 
-history,
+formulaCount:
+F.formulaCount,
 
 models,
 
-consensus
+consensus,
+
+confidence:
+top.map(
+v=>v.confidence
+),
+
+modelWeights:
+scored.modelWeights,
+
+historySummary:history
+?
+{
+usable:history.usable,
+recentWindow:history.recentWindow
+}
+:
+{
+usable:0,
+recentWindow:0
+}
 
 };
+
 },
+
+/* =========================================================
+   COPY
+========================================================= */
 
 copy(text){
 
-navigator.clipboard?.writeText(text)
+if(
+navigator.clipboard &&
+navigator.clipboard.writeText
+){
+
+navigator.clipboard
+.writeText(text)
 .then(()=>this.show())
-.catch(()=>{
+.catch(()=>this.fallbackCopy(text));
+
+}else{
+
+this.fallbackCopy(text);
+
+}
+
+},
+
+fallbackCopy(text){
 
 const t=
 document.createElement('textarea');
@@ -2192,7 +3025,7 @@ document.execCommand('copy');
 t.remove();
 
 this.show();
-});
+
 },
 
 show(){
@@ -2210,7 +3043,43 @@ setTimeout(
 ()=>t.classList.remove('show'),
 1500
 );
+
 },
+
+/* =========================================================
+   QUALITY LABEL
+========================================================= */
+
+quality(confidence,historyCount){
+
+if(
+historyCount>=12 &&
+confidence>=.72
+)
+return{
+label:'HIGH CONFIDENCE',
+class:'good'
+};
+
+if(
+historyCount>=6 &&
+confidence>=.50
+)
+return{
+label:'MODERATE CONFIDENCE',
+class:'warn'
+};
+
+return{
+label:'LOW / LIMITED HISTORY',
+class:'low'
+};
+
+},
+
+/* =========================================================
+   MAIN CALCULATOR
+========================================================= */
 
 async calculate(){
 
@@ -2222,23 +3091,26 @@ $('bulkInput').value
 if(!parsed.records.length){
 
 $('result').innerHTML=
-'<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
+`
+<div class="errorbox">
+❌ ไม่พบข้อมูลที่ถูกต้อง
+กรุณาตรวจรูปแบบอีกครั้ง
+</div>
+`;
 
 return;
+
 }
 
-const scanner=
-$('scanner');
+const scanner=$('scanner');
+const button=$('run');
 
-const btn=
-$('run');
-
-btn.disabled=true;
-
+button.disabled=true;
 scanner.style.display='block';
 
 const scan=
-msg=>$('scanText').textContent=msg;
+message=>
+$('scanText').textContent=message;
 
 const yieldUI=
 ()=>new Promise(
@@ -2246,21 +3118,15 @@ resolve=>
 requestAnimationFrame(resolve)
 );
 
-scan('READING INPUT...');
-await yieldUI();
-
-scan('PARSING LOTTERY NAMES...');
-await yieldUI();
-
 this.cache=[];
-
-const history=
-this.buildHistory(
-parsed.records
-);
 
 const cards=[];
 const outputData=[];
+
+/*
+  เตรียม history แยกตามลำดับ
+  ห้ามใช้ future leakage
+*/
 
 for(
 let recordIndex=0;
@@ -2268,133 +3134,210 @@ recordIndex<parsed.records.length;
 recordIndex++
 ){
 
-const r=
+const record=
 parsed.records[recordIndex];
 
 scan(
-`RUNNING 5 AI MODELS... ${recordIndex+1}/${parsed.records.length}`
+`WALK-FORWARD ${recordIndex+1}/${parsed.records.length}`
 );
 
 await yieldUI();
 
-const recordHistory=
-this.buildHistory(
+/*
+  สำหรับงวดแรก:
+  ไม่มี previous history เพียงพอ
+  แต่ยังสร้าง current prediction ได้
+*/
+
+const previousRecords=
 parsed.records.slice(
 0,
 recordIndex+1
-)
 );
 
-const a=
+const history=
+this.buildHistory(
+previousRecords
+);
+
+const result=
 this.run(
-r.n3,
-r.n2,
-recordHistory
+record.n3,
+record.n2,
+history
 );
 
-this.cache.push(a);
+this.cache.push(result);
 
-const allowed=new Set();
+/*
+  Candidate validation
+*/
 
-a.models.forEach(m=>{
+const allowed=
+new Set();
 
+result.models.forEach(m=>{
 m.set.forEach(d=>{
 allowed.add(d);
 });
 });
 
 const valid=
-a.top2Digits.length===2 &&
-a.top2Digits.every(
+result.top2Digits.length===2 &&
+result.top2Digits.every(
 d=>allowed.has(d)
 );
 
 if(!valid){
 
 parsed.errors.push(
-`${r.name} | ${r.date}: Top 2 ไม่ผ่าน Candidate Pool ของ 5 Main Models`
+`${record.name} | ${record.date}:`
++
+' ไม่สามารถสร้าง Top 2 จาก Candidate Pool ได้'
 );
 
 continue;
+
 }
 
+/*
+  สร้างแถว Top 2
+*/
+
 const rows=
-a.top2Digits
-.map((d,k)=>{
+result.top2Digits
+.map((digit,index)=>{
 
-const sourcePairs=
-(a.pairSets[k]||[])
-.slice(0,5);
-
-const sorted=
+const pairs=
 this.sortPairs(
-sourcePairs
+(result.pairSets[index]||[])
+.slice(0,5)
 );
 
 const pairHTML=
-sorted
+pairs
 .map(pair=>{
 
 const info=
-a.consensus.colorMap[
+result.consensus.colorMap[
 this.pairKey(pair)
 ];
 
 const title=
 info
 ?
-`อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
+`Consensus #${info.rank} • ${info.score} signals`
 :
-'เลขเจาะจาก 5 Main Models';
+'5-model pair candidate';
 
 return`
 <span
 class="${this.pairClass(
 pair,
-a.consensus.colorMap
+result.consensus.colorMap
 )}"
 title="${esc(title)}"
 >
 ${esc(pair)}
 </span>
 `;
+
 })
 .join('');
 
 const digitClass=
-k===0
+index===0
 ?
 'digit digit-gold'
 :
-k===1
-?
-'digit digit-silver'
-:
-'digit digit-rose';
+'digit digit-silver';
 
 return`
 <div class="row">
+
 <span
 class="${digitClass}"
-aria-label="เลขเด่นอันดับ ${k+1}"
+aria-label="เลขดีที่สุดอันดับ ${index+1}"
 >
-${esc(d)}
+${esc(digit)}
 </span>
-<span class="sep">:</span>
+
+<span>:</span>
+
 <div class="pairs">
 ${pairHTML}
 </div>
+
 </div>
+
 `;
+
 })
 .join('');
+
+/*
+  Confidence
+*/
+
+const topConfidence=
+result.confidence.length
+?
+Math.round(
+Math.max(
+...result.confidence
+)*100
+)
+:
+0;
+
+const quality=
+this.quality(
+topConfidence/100,
+history.usable
+);
+
+/*
+  Model weight summary
+*/
+
+const strongestModel=
+[
+...result.modelWeights
+]
+.sort(
+(a,b)=>b.weight-a.weight
+)[0];
+
+const weakestModel=
+[
+...result.modelWeights
+]
+.sort(
+(a,b)=>a.weight-b.weight
+)[0];
+
+const focusPairs=
+result.consensus.focus
+.slice(0,6)
+.map(v=>v.key);
+
+const focusText=
+focusPairs.length
+?
+focusPairs.join(' • ')
+:
+'กำลังสร้าง Consensus';
 
 const footer=`
 
 <div class="brand-footer">
+
 <span class="brand-star">✦</span>
+
 <span>บ้านเงินกอง</span>
+
 <span class="brand-star">✦</span>
+
 </div>
 `;
 
@@ -2409,25 +3352,25 @@ cards.push(`
 <div class="lottery-name">
 
 <span class="flag">
-${this.flag(r.name)}
+${this.flag(record.name)}
 </span>
 
 <span>
-${esc(r.name)}
+${esc(record.name)}
 </span>
 
 </div>
 
 <div class="date">
 ${esc(
-this.formatDate(r.date)
+this.formatDate(record.date)
 )}
 </div>
 
 </div>
 
 <div class="vip-label">
-VIP ANALYSIS
+VIP QUANT
 </div>
 
 </div>
@@ -2436,45 +3379,98 @@ VIP ANALYSIS
 ${rows}
 </div>
 
+<div class="meta">
+
+<span class="meta-chip">
+5 MODELS
+</span>
+
+<span class="meta-chip">
+${result.formulaCount} FORMULAS
+</span>
+
+<span class="meta-chip">
+BACKTEST ${history.usable}
+</span>
+
+<span class="meta-chip ${quality.class}">
+${quality.label}
+</span>
+
+</div>
+
+<div class="focus">
+
+<b>6 FOCUS PAIRS:</b>
+${esc(focusText)}
+
+<br>
+
+<b>MODEL LEAD:</b>
+M${strongestModel.id}
+•
+<b>MODEL LOW:</b>
+M${weakestModel.id}
+
+</div>
+
 ${footer}
 
 </article>
+
 `);
 
 outputData.push({
-record:r,
-result:a
+record,
+result
 });
+
 }
 
-scan(
-'RANKING TOP 6 FOCUS PAIRS...'
-);
+/*
+  Final UI
+*/
 
+scan('RANKING TOP 2...');
 await yieldUI();
 
-scan(
-'FINALIZING VIP REPORT...'
-);
+scan('BUILDING 10 PAIRS...');
+await yieldUI();
 
+scan('BUILDING 6 FOCUS PAIRS...');
+await yieldUI();
+
+scan('FINALIZING QUANT REPORT...');
 await yieldUI();
 
 scanner.style.display='none';
-btn.disabled=false;
+button.disabled=false;
+
+/*
+  Copy output
+*/
 
 const all=
 outputData
 .map(item=>{
 
-const r=
-item.record;
+const r=item.record;
+const a=item.result;
 
-const a=
-item.result;
+const confidence=
+a.confidence.length
+?
+Math.round(
+Math.max(...a.confidence)*100
+)
+:
+0;
 
 return[
 
 `${this.flag(r.name)} ${r.name} | ${r.date}`,
+
+`TOP 2: ${a.top2Digits.join(' , ')}`,
 
 ...a.top2Digits.map(
 (d,k)=>
@@ -2484,12 +3480,26 @@ this.sortPairs(
 .slice(0,5)
 ).join('-')
 }`
-)
+),
+
+`6 FOCUS: ${
+a.consensus.focus
+.slice(0,6)
+.map(v=>v.key)
+.join('-')
+}`,
+
+`SYSTEM CONFIDENCE: ${confidence}%`
 
 ].join('\n');
 
 })
 .join('\n\n');
+
+const historyForSummary=
+this.buildHistory(
+parsed.records
+);
 
 $('result').innerHTML=`
 
@@ -2503,7 +3513,14 @@ $('result').innerHTML=`
 ${outputData.length}
 </strong>
 
-รายการ • 5 AI Models • Backtest ${history.usable} งวด
+รายการ
+
+•
+5 AI Models
+
+•
+${historyForSummary.usable}
+Historical Steps
 
 </span>
 
@@ -2526,18 +3543,47 @@ ${parsed.errors
 .join('<br>')}
 </div>
 `
-:''
+:
+''
 }
 
 <div class="output-note">
 
-ผลลัพธ์จาก
-<strong>5 AI Models เดิม</strong>
-• Top 2 จาก Candidate Pool
-• Historical Backtest + Dynamic Weight
-• Consensus + Signal Agreement + Historical Performance
-• 2 เลขเด่น × 5 คู่ = 10 คู่
-• เลขเจาะเน้น 6 คู่ (2/2/2)
+<strong>QUANT ENGINE PRO</strong>
+
+• สูตรเดิมยังคงเป็นแกนหลัก
+
+• 5 AI Models เดิม
+
+• Walk-Forward Backtest
+
+• Dynamic Model Weight
+
+• Formula Historical Performance
+
+• Recent / Long-term Balance
+
+• Stability Score
+
+• Hot-Streak Protection
+
+• Miss-Streak Protection
+
+• Redundancy Control
+
+• Confidence + Margin
+
+• Top 2 เท่านั้น
+
+• 2 × 5 = 10 คู่
+
+• Focus 6 คู่ = 2 Gold / 2 Silver / 2 Rose
+
+<br><br>
+
+หมายเหตุ:
+<strong>Confidence เป็นความมั่นใจในการจัดอันดับของระบบ
+ไม่ใช่เปอร์เซ็นต์รับประกันผลจริง</strong>
 
 </div>
 
@@ -2562,7 +3608,12 @@ $('result').scrollIntoView({
 behavior:'smooth',
 block:'start'
 });
+
 },
+
+/* =========================================================
+   CLEAR
+========================================================= */
 
 clear(){
 
@@ -2570,21 +3621,28 @@ $('bulkInput').value='';
 $('result').innerHTML='';
 $('scanner').style.display='none';
 $('run').disabled=false;
+this.cache=[];
 
 $('bulkInput').focus();
+
 },
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 login(){
 
-const v=
+const value=
 $('password').value.trim();
 
-if(!sec.ok(v)){
+if(!sec.ok(value)){
 
 $('loginErr')
 .style.display='block';
 
 return;
+
 }
 
 $('loginErr')
@@ -2599,15 +3657,20 @@ $('console')
 $('bulkInput').focus();
 
 localStorage.setItem(
-'ml_auth_status_v3',
+'ml_auth_status_v4',
 'active'
 );
+
 },
+
+/* =========================================================
+   LOGOUT
+========================================================= */
 
 logout(){
 
 localStorage.removeItem(
-'ml_auth_status_v3'
+'ml_auth_status_v4'
 );
 
 $('console')
@@ -2619,17 +3682,23 @@ $('login')
 $('password').value='';
 $('bulkInput').value='';
 $('result').innerHTML='';
+this.cache=[];
+
 }
 
 };
+
+/* =========================================================
+   EVENTS
+========================================================= */
 
 $('loginBtn').onclick=
 ()=>app.login();
 
 $('password').onkeydown=
-e=>{
+event=>{
 
-if(e.key==='Enter')
+if(event.key==='Enter')
 app.login();
 
 };
@@ -2652,20 +3721,28 @@ $('logout').onclick=
 ()=>app.logout();
 
 $('bulkInput').onkeydown=
-e=>{
+event=>{
 
 if(
-(e.ctrlKey||e.metaKey) &&
-e.key==='Enter'
+(event.ctrlKey||event.metaKey) &&
+event.key==='Enter'
 ){
+
+event.preventDefault();
+
 app.calculate();
+
 }
 
 };
 
+/* =========================================================
+   SESSION RESTORE
+========================================================= */
+
 if(
 localStorage.getItem(
-'ml_auth_status_v3'
+'ml_auth_status_v4'
 )==='active'
 ){
 
