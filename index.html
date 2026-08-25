@@ -349,6 +349,7 @@ const _app = {
       alert("กรุณากรอกชุดข้อมูลที่ 1 ให้ครบ 3 หลัก และข้อมูลชุดที่ 2 ให้ครบ 2 หลัก");
       return;
     }
+
     localStorage.setItem("ml_l_n3_v3", n3);
     localStorage.setItem("ml_l_n2_v3", n2);
     this.checkSessionBadge();
@@ -385,9 +386,6 @@ const _app = {
   },
   _normalize(x){ return (x % 10 + 10) % 10; },
 
-  // ==========================================
-  // สูตรเลขเจาะ (คงเดิม 100% ตามต้นฉบับเป๊ะ)
-  // ==========================================
   _run100FormulasEngine(H, T_top, U_top, T_bot, U_bot, sumTop, sumBot, totalSum){
     const rawFormulas = [
       H+T_top, H+U_top, T_top+U_top, H+T_bot, H+U_bot, T_top+T_bot, T_top+U_bot, U_top+T_bot, U_top+U_bot, T_bot+U_bot,
@@ -441,11 +439,8 @@ const _app = {
 
     let modelRawValues = [rawM1, rawM2, rawM3, rawM4, rawM5], uniqueModelDigits = new Set(modelRawValues);
     
-    // [อัปเกรดข้อ 3] ปรับปรุงเงื่อนไข Fallback ด้วย Moving Average ย้อนหลังเพื่อป้องกันหลุดช่วงตลาดออกเบิ้ล/หาม
     if(uniqueModelDigits.size < 4){
-      let prevN3 = parseInt(localStorage.getItem("ml_l_n3_v3")) || sumTop;
-      let maOffset = Math.floor(prevN3 / 100) % 10;
-      const fallbackFormulas = [(T_top + U_bot + maOffset) % 10, (H + U_top) % 10, (sumBot + maOffset) % 10, (H + sumBot) % 10, totalSum % 10];
+      const fallbackFormulas = [(T_top + U_bot) % 10, (H + U_top) % 10, sumBot % 10, (H + sumBot) % 10, totalSum % 10];
       for(let fbVal of fallbackFormulas){
         const normFb = (fbVal % 10 + 10) % 10;
         uniqueModelDigits.add(normFb);
@@ -531,15 +526,8 @@ const _app = {
 
     for(let d=0; d<=9; d++){
       const item = digitScores[d];
-      // [อัปเกรดข้อ 1] ปรับสัดส่วนน้ำหนักคะแนนรวม (Scoring Weights) ใหม่ให้สมดุลและลดการพึ่งพิงโมเดลหลักเกินไป
       item.totalScore = .35 * item.modelScore + .25 * item.formula100Score + .15 * item.radarScore + .15 * item.backendScore + .1 * item.winSetScore;
       if(allowedModelDigits.has(d)) item.totalScore *= 1.15;
-    }
-
-    // [อัปเกรดข้อ 2] เพิ่มตัวกรองความถี่และป้องกันเลขซ้ำซ้อน (Frequency Penalty & Anti-Collision)
-    const prevChosen = parseInt(localStorage.getItem("ml_last_chosen_digit") || "-1");
-    if(prevChosen >= 0 && digitScores[prevChosen]){
-      digitScores[prevChosen].totalScore *= 0.85; // ตัดแต้ม (Penalty) หากออกซ้ำติดกัน
     }
 
     const matrixSortedAll = Object.values(digitScores).sort((a,b)=>b.totalScore-a.totalScore||b.digit-a.digit);
@@ -549,7 +537,6 @@ const _app = {
     if(!secondaryDigitObj) secondaryDigitObj = matrixSortedAll.find(item => item.digit !== primaryDigitObj.digit) || matrixSortedAll[1];
 
     const d1 = primaryDigitObj.digit, d2_dig = secondaryDigitObj.digit, matrixSorted = matrixSortedAll;
-    localStorage.setItem("ml_last_chosen_digit", d1);
 
     const allScores = matrixSorted.map(s => s.totalScore), minScore = Math.min(...allScores), maxScore = Math.max(...allScores), scoreRange = maxScore - minScore || 1;
     const calcConfidence = score => {
@@ -571,15 +558,10 @@ const _app = {
     const matrixArr3d = arr1.slice(0, 5).map(p => `${p.slice(-1)}${d1}${d2_dig}`);
     const cScore3 = Number((50.1 + .8 * Math.random()).toFixed(1));
 
-    // =========================================================================
-    // [อัปเกรดข้อ 4] ระบบเวทและจัดอันดับ Top 5 "เลขชุดเจาะ" (Consensus Ranking for 2-Digit Pairs)
-    // รองรับเลขสลับกัน (เช่น 02 กับ 20) พร้อมใส่สีไฮไลท์ไล่ระดับและป้าย Top 1 ตัวจิ๋ว
-    // =========================================================================
     const pairFrequencyMap = {};
     evaluated.forEach(m => {
       Object.keys(m.pairsMap).forEach(digKey => {
         m.pairsMap[digKey].forEach(pairStr => {
-          // ทำให้เลขสลับกันเป็นมาตรฐานเดียวกัน (เรียงตัวเลขจากน้อยไปมาก) เพื่อจับคู่ซ้ำกันได้แม่นยำ
           const normPair = pairStr.split("").map(Number).sort((a,b)=>a-b).join("");
           if(!pairFrequencyMap[normPair]){
             pairFrequencyMap[normPair] = { canonical: normPair, originalDisplay: pairStr, count: 0, models: new Set() };
