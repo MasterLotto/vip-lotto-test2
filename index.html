@@ -5,980 +5,696 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mester Lotto VIP+ — Multi Lottery Engine</title>
 
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-
 <style>
 :root{
-  --bg:#f8f7f3;
-  --surface:#ffffff;
-  --surface-soft:#fcfbf8;
-  --surface-warm:#f8f4ec;
-  --text:#4b4640;
-  --text-dark:#3f3a35;
-  --muted:#8d877f;
-  --line:#e8e1d7;
-  --line-soft:#f0ebe4;
-
-  --champagne:#c9a24d;
-  --champagne-dark:#9d7628;
-  --champagne-soft:#f7eed8;
-
-  --silver:#8b9299;
-  --silver-dark:#626a72;
-  --silver-soft:#eef0f2;
-
-  --rose:#b97870;
-  --rose-dark:#8f5953;
-  --rose-soft:#f4e4e1;
-
-  --success:#718b78;
-  --success-soft:#edf4ef;
-  --danger:#b86b6b;
-
-  --shadow:0 18px 45px rgba(107,94,75,.09);
-  --shadow-soft:0 8px 24px rgba(107,94,75,.07);
+--bg:#f8f7f3;
+--card:#fff;
+--green:#7b6843;
+--green2:#b99a58;
+--light:#f8f1df;
+--text:#433f39;
+--muted:#8d877f;
+--line:#e7dfd2;
+--gold:#c39a43;
+--silver:#8d959c;
+--rose:#b98279;
+--red:#b84f58;
+--shadow:0 16px 40px rgba(93,78,55,.10)
 }
 
-*{
-  box-sizing:border-box
-}
+*{box-sizing:border-box}
 
-html{
-  scroll-behavior:smooth;
-}
+html{scroll-behavior:smooth}
 
 body{
-  margin:0;
-  min-height:100vh;
-  font-family:Prompt,sans-serif;
-  color:var(--text);
-  background:
-    radial-gradient(circle at 10% 0%,rgba(222,205,166,.22),transparent 34%),
-    radial-gradient(circle at 90% 12%,rgba(226,211,204,.20),transparent 34%),
-    linear-gradient(135deg,#fff,#f8f7f3 55%,#f5f1ea);
-  overflow-x:hidden;
+margin:0;
+min-height:100vh;
+font-family:Prompt,sans-serif;
+color:var(--text);
+background:
+radial-gradient(circle at 10% 0%,rgba(201,162,77,.18),transparent 38%),
+radial-gradient(circle at 90% 15%,rgba(185,130,121,.12),transparent 35%),
+linear-gradient(135deg,#fff,#f8f7f3);
+overflow-x:hidden
 }
 
-button,input,textarea{
-  font-family:Prompt,sans-serif;
-}
-
-button{
-  cursor:pointer;
-}
+button,input,textarea{font-family:Prompt,sans-serif}
+button{cursor:pointer}
 
 #snow{
-  position:fixed;
-  inset:0;
-  z-index:0;
-  pointer-events:none;
-  opacity:.7;
+position:fixed;
+inset:0;
+z-index:0;
+pointer-events:none
 }
 
 .shell{
-  position:relative;
-  z-index:1;
-  width:min(580px,100%);
-  margin:auto;
-  padding:12px;
+position:relative;
+z-index:1;
+width:min(560px,100%);
+margin:auto;
+padding:10px
 }
 
 .app{
-  overflow:hidden;
-  border:1px solid rgba(210,199,180,.75);
-  border-radius:26px;
-  background:rgba(255,255,255,.94);
-  box-shadow:0 28px 70px rgba(100,88,70,.11);
-  backdrop-filter:blur(18px);
+overflow:hidden;
+border:1px solid #ddd2c0;
+border-radius:24px;
+background:rgba(255,255,255,.95);
+box-shadow:0 25px 60px rgba(93,78,55,.12);
+backdrop-filter:blur(18px)
 }
 
-.inner{
-  padding:16px;
-}
+.inner{padding:14px}
 
 .top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin-bottom:13px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+margin-bottom:11px
 }
 
 .brand{
-  display:flex;
-  align-items:center;
-  gap:9px;
+display:flex;
+align-items:center;
+gap:8px
 }
 
 .logo{
-  width:40px;
-  height:40px;
-  border-radius:13px;
-  display:grid;
-  place-items:center;
-  color:#fffaf0;
-  font-weight:800;
-  font-size:.72rem;
-  background:linear-gradient(145deg,#e1c77f,#a98031);
-  border:1px solid rgba(157,118,40,.35);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.75),
-    0 7px 18px rgba(157,118,40,.20);
+width:38px;
+height:38px;
+border-radius:11px;
+display:grid;
+place-items:center;
+color:#fff;
+font-weight:800;
+background:linear-gradient(135deg,#403a31,#a88748);
+box-shadow:0 5px 14px rgba(93,78,55,.20)
 }
 
-.brand b{
-  display:block;
-  color:var(--text-dark);
-  font-size:.82rem;
-  letter-spacing:.1px;
-}
-
+.brand b{font-size:.82rem}
 .brand small{
-  display:block;
-  color:var(--muted);
-  font-size:.49rem;
-  letter-spacing:.15px;
+display:block;
+color:var(--muted);
+font-size:.5rem
 }
 
 .pill{
-  padding:5px 9px;
-  border-radius:99px;
-  color:#806528;
-  background:var(--champagne-soft);
-  border:1px solid #eadbb8;
-  font-size:.48rem;
-  font-weight:800;
-  white-space:nowrap;
+padding:5px 9px;
+border-radius:99px;
+color:#80652b;
+background:var(--light);
+border:1px solid rgba(174,140,66,.24);
+font-size:.5rem;
+font-weight:800
 }
 
 .hero{
-  padding:17px;
-  margin-bottom:11px;
-  border:1px solid var(--line);
-  border-radius:19px;
-  background:
-    linear-gradient(135deg,#fff,#fdfbf7 62%,#f7f0e4);
-  box-shadow:var(--shadow);
-  position:relative;
-  overflow:hidden;
-}
-
-.hero::after{
-  content:"";
-  position:absolute;
-  width:170px;
-  height:170px;
-  right:-75px;
-  top:-85px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(218,191,130,.22),transparent 68%);
-  pointer-events:none;
+padding:14px;
+margin-bottom:9px;
+border:1px solid var(--line);
+border-radius:18px;
+background:linear-gradient(135deg,#fff,#fbf7ed);
+box-shadow:var(--shadow)
 }
 
 .hero-tag{
-  display:inline-block;
-  padding:4px 9px;
-  border-radius:99px;
-  color:#856a31;
-  background:#faf2df;
-  border:1px solid #eee0bf;
-  font-size:.48rem;
-  font-weight:800;
-  letter-spacing:.25px;
+display:inline-block;
+padding:4px 9px;
+border-radius:99px;
+color:#80652b;
+background:var(--light);
+font-size:.5rem;
+font-weight:800
 }
 
 .hero h1{
-  margin:7px 0 3px;
-  color:var(--text-dark);
-  font-size:1.55rem;
-  letter-spacing:-.3px;
+margin:7px 0 3px;
+font-size:1.48rem
 }
 
 .hero h1 em{
-  font-style:normal;
-  color:var(--champagne-dark);
+font-style:normal;
+color:#9c782e
 }
 
 .hero p{
-  margin:0;
-  color:var(--muted);
-  font-size:.57rem;
+margin:0;
+color:var(--muted);
+font-size:.57rem
 }
 
-.login,
-.console{
-  display:none;
-}
-
-.login.active,
-.console.active{
-  display:block;
-}
+.login,.console{display:none}
+.login.active,.console.active{display:block}
 
 .panel{
-  padding:14px;
-  border:1px solid var(--line);
-  border-radius:19px;
-  background:linear-gradient(135deg,#fff,#fcfaf6);
-  box-shadow:var(--shadow-soft);
+padding:13px;
+border:1px solid var(--line);
+border-radius:18px;
+background:linear-gradient(135deg,#fff,#fbf8f2);
+box-shadow:var(--shadow)
 }
 
 .label{
-  display:block;
-  margin-bottom:6px;
-  color:var(--text-dark);
-  font-size:.58rem;
-  font-weight:800;
+display:block;
+margin-bottom:6px;
+font-size:.58rem;
+font-weight:800
 }
 
 .password{
-  width:100%;
-  height:44px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  text-align:center;
-  outline:0;
-  color:var(--text-dark);
-  background:#fff;
+width:100%;
+height:44px;
+border:1px solid var(--line);
+border-radius:12px;
+text-align:center;
+outline:0;
+background:#fff;
+color:var(--text)
 }
 
 .password:focus{
-  border-color:#d5bd84;
-  box-shadow:0 0 0 3px rgba(201,162,77,.10);
+border-color:#c8a864;
+box-shadow:0 0 0 3px rgba(195,154,67,.10)
 }
 
 .btn{
-  width:100%;
-  height:44px;
-  margin-top:8px;
-  border:0;
-  border-radius:12px;
-  color:#fffaf0;
-  background:linear-gradient(135deg,#d2b365,#a67c2d);
-  box-shadow:0 7px 18px rgba(166,124,45,.17);
-  font-weight:800;
-  transition:.18s ease;
-}
-
-.btn:hover{
-  transform:translateY(-1px);
-  box-shadow:0 10px 22px rgba(166,124,45,.22);
+width:100%;
+height:44px;
+margin-top:8px;
+border:0;
+border-radius:12px;
+color:#fff;
+background:linear-gradient(135deg,#b8944a,#806329);
+font-weight:800;
+box-shadow:0 6px 15px rgba(128,99,41,.14)
 }
 
 .err{
-  display:none;
-  margin-top:7px;
-  text-align:center;
-  color:var(--danger);
-  font-size:.55rem;
+display:none;
+margin-top:7px;
+text-align:center;
+color:var(--red);
+font-size:.55rem
 }
 
 .bulkbox{
-  padding:10px;
-  border:1px solid var(--line);
-  border-radius:15px;
-  background:#faf8f4;
+padding:10px;
+border:1px solid var(--line);
+border-radius:14px;
+background:#faf7f0
 }
 
 .bulkbox label{
-  display:block;
-  margin-bottom:6px;
-  color:var(--text-dark);
-  font-size:.58rem;
-  font-weight:800;
+display:block;
+margin-bottom:6px;
+font-size:.58rem;
+font-weight:800
 }
 
 .bulk{
-  width:100%;
-  min-height:230px;
-  padding:12px;
-  resize:vertical;
-  border:1px solid var(--line);
-  border-radius:12px;
-  outline:0;
-  background:#fff;
-  color:var(--text-dark);
-  font:700 .76rem/1.65 'IBM Plex Mono',monospace;
+width:100%;
+min-height:230px;
+padding:11px;
+resize:vertical;
+border:1px solid var(--line);
+border-radius:12px;
+outline:0;
+background:#fff;
+color:var(--text);
+font:700 .76rem/1.65 'IBM Plex Mono',monospace
 }
 
 .bulk:focus{
-  border-color:#d5bd84;
-  box-shadow:0 0 0 3px rgba(201,162,77,.10);
+border-color:#b8944a;
+box-shadow:0 0 0 3px rgba(184,148,74,.10)
 }
 
 .hint{
-  margin-top:6px;
-  color:var(--muted);
-  font-size:.48rem;
-  line-height:1.45;
+margin-top:6px;
+color:var(--muted);
+font-size:.48rem;
+line-height:1.45
 }
 
 .actions{
-  display:grid;
-  grid-template-columns:1fr 88px;
-  gap:7px;
-  margin-top:8px;
+display:grid;
+grid-template-columns:1fr 88px;
+gap:7px;
+margin-top:8px
 }
 
 .clear{
-  height:44px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:#fff;
-  color:var(--muted);
-  font-weight:700;
-}
-
-.clear:hover{
-  background:#faf8f4;
-  color:var(--text-dark);
+height:44px;
+border:1px solid var(--line);
+border-radius:12px;
+background:#faf8f4;
+color:var(--muted);
+font-weight:700
 }
 
 .scanner{
-  display:none;
-  margin:10px 0;
-  padding:15px;
-  text-align:center;
-  border:1px solid #e7dcc8;
-  border-radius:16px;
-  background:#fcf7ed;
-  color:#92733b;
-  font:700 .55rem 'IBM Plex Mono',monospace;
+display:none;
+margin:9px 0;
+padding:14px;
+text-align:center;
+border:1px solid var(--line);
+border-radius:16px;
+background:#fbf7ed;
+color:#80652b;
+font:700 .55rem 'IBM Plex Mono',monospace
 }
 
 .ring{
-  width:42px;
-  height:42px;
-  margin:0 auto 8px;
-  border:3px solid #eee4d2;
-  border-top-color:var(--champagne);
-  border-radius:50%;
-  animation:spin 1s linear infinite;
+width:42px;
+height:42px;
+margin:0 auto 8px;
+border:3px solid #eadfc9;
+border-top-color:#b8944a;
+border-radius:50%;
+animation:spin 1s linear infinite
 }
 
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.result{
-  margin-top:10px;
-}
+.result{margin-top:9px}
 
 .summary{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  padding:10px 11px;
-  margin-bottom:8px;
-  border:1px solid #e7dcc8;
-  border-radius:13px;
-  background:linear-gradient(135deg,#fffaf0,#f9f3e7);
-  font-size:.52rem;
-  color:var(--muted);
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+padding:8px 10px;
+margin-bottom:7px;
+border:1px solid #e6d8bb;
+border-radius:12px;
+background:#fbf5e7;
+font-size:.51rem;
+color:var(--muted)
 }
 
-.summary strong{
-  color:var(--champagne-dark);
-}
+.summary strong{color:#856728}
 
 .copy{
-  padding:7px 10px;
-  border:0;
-  border-radius:9px;
-  color:#fffaf0;
-  background:linear-gradient(135deg,#cfae61,#a77d31);
-  font-size:.52rem;
-  font-weight:800;
-  white-space:nowrap;
+padding:7px 10px;
+border:0;
+border-radius:9px;
+color:#fff;
+background:#9d7b38;
+font-size:.52rem;
+font-weight:800;
+white-space:nowrap
 }
 
 .errorbox{
-  padding:9px;
-  margin-bottom:8px;
-  border-radius:12px;
-  background:#fff5f5;
-  border:1px solid #efd5d5;
-  color:var(--danger);
-  font-size:.5rem;
-  line-height:1.5;
+padding:9px;
+margin-bottom:8px;
+border-radius:12px;
+background:#fff1f2;
+border:1px solid #fecdd3;
+color:var(--red);
+font-size:.5rem;
+line-height:1.5
 }
 
 .output-note{
-  margin:0 0 8px;
-  padding:8px 10px;
-  border:1px solid #eee8df;
-  border-radius:11px;
-  background:#fcfbf8;
-  color:var(--muted);
-  font-size:.49rem;
-  line-height:1.45;
+margin:0 0 8px;
+padding:7px 9px;
+border:1px solid #eee7dc;
+border-radius:10px;
+background:#fcfaf6;
+color:var(--muted);
+font-size:.48rem;
+line-height:1.5
 }
 
-.output-note strong{
-  color:#766038;
-}
+.output-note strong{color:#80652b}
 
-/* =========================================================
-   PREMIUM LOTTERY CARD
-   ========================================================= */
+/* =========================
+   COMPACT LOTTERY CARD
+   ========================= */
 
 .lottery{
-  position:relative;
-  padding:13px;
-  margin-bottom:11px;
-  border:1px solid #e5ddd2;
-  border-radius:18px;
-  background:
-    linear-gradient(145deg,#ffffff 0%,#fffefa 58%,#faf6ef 100%);
-  box-shadow:
-    0 10px 28px rgba(100,88,70,.07),
-    inset 0 1px 0 rgba(255,255,255,.95);
-  overflow:hidden;
+position:relative;
+padding:10px;
+margin-bottom:8px;
+border:1px solid #e4dbce;
+border-radius:15px;
+background:#fff;
+box-shadow:0 5px 16px rgba(93,78,55,.055)
 }
 
 .lottery::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:13px;
-  bottom:13px;
-  width:3px;
-  border-radius:99px;
-  background:linear-gradient(
-    180deg,
-    #dfc276 0%,
-    #c9a24d 45%,
-    #d5aaa2 100%
-  );
-}
-
-.lottery::after{
-  content:"";
-  position:absolute;
-  width:150px;
-  height:150px;
-  right:-80px;
-  top:-80px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(213,190,148,.13),transparent 70%);
-  pointer-events:none;
+content:"";
+position:absolute;
+left:0;
+top:11px;
+bottom:11px;
+width:3px;
+border-radius:99px;
+background:linear-gradient(
+180deg,
+#c8a052,
+#9b7a39,
+#b98279
+)
 }
 
 .lottery-head{
-  position:relative;
-  z-index:1;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding:1px 3px 9px 7px;
-  margin-bottom:8px;
-  border-bottom:1px solid #eee8df;
-}
-
-.lottery-name-wrap{
-  min-width:0;
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+padding:0 2px 6px 5px;
+margin-bottom:6px;
+border-bottom:1px solid #eee8df
 }
 
 .lottery-name{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  color:var(--text-dark);
-  font-size:.82rem;
-  font-weight:800;
-  line-height:1.2;
+display:flex;
+align-items:center;
+gap:5px;
+font-size:.78rem;
+font-weight:800
 }
 
-.lottery-name .flag{
-  font-size:.96rem;
+.flag{
+font-size:.9rem;
+line-height:1
 }
 
 .date{
-  display:inline-block;
-  margin-top:4px;
-  padding:2px 8px;
-  border-radius:7px;
-  color:#8a795b;
-  background:#f8f3e9;
-  border:1px solid #eee4d2;
-  font:700 .46rem 'IBM Plex Mono',monospace;
-  letter-spacing:.35px;
+display:inline-block;
+margin-top:3px;
+padding:2px 7px;
+border-radius:7px;
+background:#faf5e9;
+color:#80652b;
+font:700 .44rem 'IBM Plex Mono',monospace
 }
 
 .vip-label{
-  flex:none;
-  padding:4px 7px;
-  border-radius:99px;
-  color:#92733b;
-  background:#faf3e3;
-  border:1px solid #ecdfc4;
-  font-size:.42rem;
-  font-weight:800;
-  letter-spacing:.25px;
+padding:4px 7px;
+border-radius:99px;
+color:#80652b;
+background:#faf5e9;
+border:1px solid #eadfc9;
+font-size:.41rem;
+font-weight:800
 }
 
-/* =========================================================
-   COMPACT TOP 3 DIGIT ROW
-   ========================================================= */
+/* =========================
+   COMPACT DIGIT ROW
+   ========================= */
 
 .rows{
-  display:flex;
-  flex-direction:column;
-  gap:5px;
+display:flex;
+flex-direction:column;
+gap:3px
 }
 
 .row{
-  position:relative;
-  display:grid;
-  grid-template-columns:39px 8px 1fr;
-  align-items:center;
-  gap:3px;
-  min-height:50px;
-  padding:5px 7px 5px 5px;
-  border:1px solid #eee8df;
-  border-radius:11px;
-  background:
-    linear-gradient(135deg,#fff,#fbfaf7);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+display:grid;
+grid-template-columns:32px 8px 1fr;
+align-items:center;
+gap:3px;
+min-height:43px;
+padding:4px 6px 4px 4px;
+border-radius:9px;
+background:linear-gradient(135deg,#fff,#faf8f4);
+border:1px solid #eee8df
 }
 
-.digit-rank{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
+.rankbox{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:3px
 }
 
 .medal{
-  position:relative;
-  width:27px;
-  height:27px;
-  flex:none;
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  font:800 .62rem 'IBM Plex Mono',monospace;
-  box-shadow:
-    inset 0 1px 1px rgba(255,255,255,.9),
-    inset 0 -2px 3px rgba(90,70,40,.16),
-    0 4px 9px rgba(90,70,40,.12);
+position:relative;
+width:23px;
+height:23px;
+display:grid;
+place-items:center;
+border-radius:50%;
+font:800 .52rem 'IBM Plex Mono',monospace;
+box-shadow:
+inset 0 1px 1px rgba(255,255,255,.9),
+inset 0 -2px 3px rgba(80,60,35,.12),
+0 3px 7px rgba(80,60,35,.10)
 }
 
 .medal::before{
-  content:"";
-  position:absolute;
-  inset:3px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.42);
+content:"";
+position:absolute;
+inset:3px;
+border-radius:50%;
+border:1px solid rgba(255,255,255,.45)
 }
 
 .medal-gold{
-  color:#70531d;
-  background:
-    radial-gradient(circle at 32% 25%,#fff8d9 0,#e9ce7b 22%,#c9a24d 58%,#9e7429 100%);
-  border:1px solid #b98f39;
+color:#654c1d;
+background:radial-gradient(
+circle at 32% 25%,
+#fff9dc,
+#e5c878 28%,
+#c39a43 62%,
+#9d7428
+);
+border:1px solid #b78c37
 }
 
 .medal-silver{
-  color:#4f575e;
-  background:
-    radial-gradient(circle at 32% 25%,#ffffff 0,#d9dde0 25%,#aab0b5 62%,#7b838a 100%);
-  border:1px solid #939aa0;
+color:#4f565d;
+background:radial-gradient(
+circle at 32% 25%,
+#fff,
+#dce0e3 28%,
+#aab1b6 62%,
+#7b838a
+);
+border:1px solid #959da3
 }
 
 .medal-rose{
-  color:#754a45;
-  background:
-    radial-gradient(circle at 32% 25%,#fff2ef 0,#e6b6ad 25%,#c58980 62%,#a4635b 100%);
-  border:1px solid #b87870;
+color:#704944;
+background:radial-gradient(
+circle at 32% 25%,
+#fff2ef,
+#e3b7b0 28%,
+#bf857b 62%,
+#a2635b
+);
+border:1px solid #ad7068
 }
 
 .digit{
-  color:var(--text-dark);
-  font:800 .90rem 'IBM Plex Mono',monospace;
-  text-align:center;
+font:800 .82rem 'IBM Plex Mono',monospace;
+text-align:center;
+color:#403b35
 }
 
 .sep{
-  color:#b5aea5;
-  font:700 .68rem 'IBM Plex Mono',monospace;
+font:700 .58rem 'IBM Plex Mono',monospace;
+color:#aaa298
 }
 
 .pairs{
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  flex-wrap:wrap;
-  gap:4px;
-  min-width:0;
+display:flex;
+align-items:center;
+flex-wrap:wrap;
+gap:3px;
+min-width:0
 }
-
-/* =========================================================
-   PAIR CHIP
-   ========================================================= */
 
 .pair{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:35px;
-  height:27px;
-  padding:0 6px;
-  border-radius:8px;
-  border:1px solid #e7e1d9;
-  background:#f8f7f4;
-  color:#655f58;
-  font:700 .57rem 'IBM Plex Mono',monospace;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
-  transition:.15s ease;
-}
-
-.pair:hover{
-  transform:translateY(-1px);
+display:inline-flex;
+align-items:center;
+justify-content:center;
+min-width:32px;
+height:24px;
+padding:0 5px;
+border-radius:7px;
+font:700 .53rem 'IBM Plex Mono',monospace;
+border:1px solid #e6e0d8;
+background:#f7f5f2;
+color:#635d55;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.9)
 }
 
 .pair-gold{
-  color:#6d531d;
-  border-color:#d8bc76;
-  background:linear-gradient(145deg,#fff8df,#f3df9d);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9),
-    0 3px 8px rgba(201,162,77,.16);
+color:#684e1c;
+border-color:#d7b86c;
+background:linear-gradient(145deg,#fff8df,#f1dc99);
+box-shadow:0 2px 6px rgba(195,154,67,.12)
 }
 
 .pair-silver{
-  color:#4e565d;
-  border-color:#b9bec2;
-  background:linear-gradient(145deg,#ffffff,#dfe3e6);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.95),
-    0 3px 8px rgba(110,118,125,.13);
+color:#4e565d;
+border-color:#b9bec2;
+background:linear-gradient(145deg,#fff,#dfe3e6);
+box-shadow:0 2px 6px rgba(110,118,125,.10)
 }
 
 .pair-rose{
-  color:#754c47;
-  border-color:#d2a39b;
-  background:linear-gradient(145deg,#fff1ee,#eac6c0);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9),
-    0 3px 8px rgba(185,120,112,.13);
-}
-
-.pair-normal{
-  color:#69635d;
-  background:#f7f5f2;
-}
-
-/* =========================================================
-   BRAND FOOTER
-   ========================================================= */
-
-.consensus{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  margin-top:4px;
-  padding-right:0;
-  color:#9d7628;
-  font-size:.44rem;
-  font-weight:800;
-  letter-spacing:.25px;
-}
-
-.consensus-item{
-  display:inline-flex;
-  align-items:center;
-  gap:3px;
-}
-
-.consensus-dot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-}
-
-.dot-gold{
-  background:#c9a24d;
-  box-shadow:0 0 0 2px #f7eed8;
-}
-
-.dot-silver{
-  background:#858e96;
-  box-shadow:0 0 0 2px #eef0f2;
-}
-
-.dot-rose{
-  background:#b97870;
-  box-shadow:0 0 0 2px #f4e4e1;
+color:#744b46;
+border-color:#d1a19a;
+background:linear-gradient(145deg,#fff1ee,#e9c5bf);
+box-shadow:0 2px 6px rgba(185,130,121,.10)
 }
 
 .brand-footer{
-  min-height:14px;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:4px;
+padding-top:5px;
+color:#80652b;
+font-size:.44rem;
+font-weight:800;
+letter-spacing:.2px
 }
 
 .brand-star{
-  color:#c9a24d;
-  font-size:.58rem;
-  line-height:1;
-  text-shadow:0 1px 4px rgba(201,162,77,.18);
+color:#c39a43;
+font-size:.58rem
 }
-
-/* =========================================================
-   COPY / LOGOUT / TOAST
-   ========================================================= */
 
 .copyall{
-  width:100%;
-  height:45px;
-  border:0;
-  border-radius:13px;
-  color:#fffaf0;
-  background:linear-gradient(135deg,#d0ae62,#a57b30);
-  box-shadow:0 8px 20px rgba(165,123,48,.16);
-  font-weight:800;
-}
-
-.copyall:hover{
-  transform:translateY(-1px);
+width:100%;
+height:43px;
+border:0;
+border-radius:12px;
+color:#fff;
+background:linear-gradient(135deg,#b8944a,#806329);
+font-weight:800
 }
 
 .logout{
-  margin-top:10px;
-  width:100%;
-  height:42px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:#fff;
-  color:var(--muted);
-  font-size:.58rem;
-  font-weight:700;
-}
-
-.logout:hover{
-  background:#faf8f4;
-  color:var(--text-dark);
+margin-top:9px;
+width:100%;
+height:41px;
+border:1px solid var(--line);
+border-radius:12px;
+background:#fff;
+color:var(--muted);
+font-size:.57rem;
+font-weight:700
 }
 
 .toast{
-  position:fixed;
-  left:50%;
-  bottom:22px;
-  z-index:9;
-  transform:translate(-50%,20px);
-  opacity:0;
-  padding:9px 15px;
-  border-radius:99px;
-  color:#fffaf0;
-  background:#9d7628;
-  font-size:.55rem;
-  font-weight:700;
-  box-shadow:0 8px 25px rgba(100,80,40,.18);
-  transition:.2s;
+position:fixed;
+left:50%;
+bottom:22px;
+z-index:9;
+transform:translate(-50%,20px);
+opacity:0;
+padding:9px 15px;
+border-radius:99px;
+color:#fff;
+background:#806329;
+font-size:.55rem;
+font-weight:700;
+transition:.2s
 }
 
 .toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
-}
-
-@media(max-width:470px){
-  .shell{padding:8px}
-  .inner{padding:12px}
-
-  .row{
-    grid-template-columns:37px 8px 1fr;
-    min-height:48px;
-    padding:5px 6px 5px 4px;
-  }
-
-  .medal{
-    width:26px;
-    height:26px;
-  }
-
-  .digit{
-    font-size:.86rem;
-  }
-
-  .pair{
-    min-width:33px;
-    height:26px;
-    padding:0 5px;
-    font-size:.54rem;
-  }
-
-  .pairs{
-    gap:3px;
-  }
+opacity:1;
+transform:translate(-50%,0)
 }
 
 @media(max-width:390px){
-  .bulk{min-height:250px}
-  .lottery-name{font-size:.75rem}
-
-  .row{
-    grid-template-columns:35px 7px 1fr;
-    min-height:46px;
-  }
-
-  .medal{
-    width:25px;
-    height:25px;
-  }
-
-  .digit{
-    font-size:.82rem;
-  }
-
-  .pair{
-    min-width:31px;
-    height:25px;
-    padding:0 4px;
-    font-size:.51rem;
-  }
+.bulk{min-height:250px}
+.pairs{gap:2px}
+.pair{
+min-width:30px;
+height:23px;
+font-size:.50rem;
+padding:0 4px
+}
+.row{
+grid-template-columns:31px 7px 1fr;
+min-height:41px
+}
+.medal{
+width:22px;
+height:22px
+}
+.digit{font-size:.79rem}
 }
 </style>
 </head>
 
-
 <body>
-
 
 <canvas id="snow"></canvas>
 
-
 <div class="shell">
-
-
 <div class="app">
-
-
 <div class="inner">
 
-
 <div class="top">
-
-
 <div class="brand">
-
-
 <div class="logo">AI</div>
-
-
 <div>
 <b>Mester Lotto VIP+</b>
 <small>Multi-Lottery Quant Engine</small>
 </div>
-
-
 </div>
-
-
 <div class="pill">● ENGINE READY</div>
-
-
 </div>
-
-
-
 
 <section class="hero">
-
-
 <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
-
-
-<h1>
-Multi-Lottery <em>VIP+</em>
-</h1>
-
-
-<p>
-ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้ 5 AI Models เดิม
-</p>
-
-
+<h1>Multi-Lottery <em>VIP+</em></h1>
+<p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้ 5 AI Models เดิม</p>
 </section>
 
-
-
-
-<div
-  id="login"
-  class="login active"
->
-
-
+<div id="login" class="login active">
 <section class="panel">
 
-
-<label class="label">
-🔐 SYSTEM ACCESS KEY
-</label>
-
+<label class="label">🔐 SYSTEM ACCESS KEY</label>
 
 <input
-  id="password"
-  class="password"
-  type="password"
-  autocomplete="off"
-  placeholder="••• System Access Key •••"
-/>
-
-
-<button
-  id="loginBtn"
-  class="btn"
+id="password"
+class="password"
+type="password"
+autocomplete="off"
+placeholder="••• System Access Key •••"
 >
+
+<button id="loginBtn" class="btn">
 เข้าสู่ระบบ / CONNECT ENGINE
 </button>
 
-
-<div
-  id="loginErr"
-  class="err"
->
+<div id="loginErr" class="err">
 ❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED
 </div>
 
-
 </section>
-
-
 </div>
 
-
-
-
-<div
-  id="console"
-  class="console"
->
-
+<div id="console" class="console">
 
 <section class="panel">
 
-
 <div class="bulkbox">
-
 
 <label for="bulkInput">
 📥 วางสถิติหวยทั้งหมด / MULTI-LOTTERY INPUT
 </label>
 
-
 <textarea
-  id="bulkInput"
-  class="bulk"
-  spellcheck="false"
-  placeholder="ลาวพัฒนา | 24 ส.ค. 69
+id="bulkInput"
+class="bulk"
+spellcheck="false"
+placeholder="ลาวพัฒนา | 24 ส.ค. 69
 552
 55
 
@@ -991,176 +707,107 @@ Multi-Lottery <em>VIP+</em>
 46"
 ></textarea>
 
-
 <div class="hint">
 รูปแบบ: ชื่อหวย | วันที่ → 3 ตัวบน → 2 ตัวล่าง
 • วางได้หลายรายการในครั้งเดียว
 • ผลเด่น/เจาะใช้เฉพาะ 5 AI Models เดิม
-• แต่ละหวยถูกประมวลผลแยกจากกันอย่างชัดเจน
+• Top 3 ถูกบังคับให้อยู่ใน Candidate Pool จาก 5 Models เท่านั้น
 </div>
 
-
 </div>
-
 
 <div class="actions">
-
-
-<button
-  id="run"
-  class="btn"
->
+<button id="run" class="btn">
 ⚡ RUN ALL / ประมวลผลทั้งหมด
 </button>
 
-
-<button
-  id="clear"
-  class="clear"
->
+<button id="clear" class="clear">
 ล้าง / CLEAR
 </button>
-
-
 </div>
-
 
 </section>
 
-
-<div
-  id="scanner"
-  class="scanner"
->
-
-
+<div id="scanner" class="scanner">
 <div class="ring"></div>
-
-
-<span id="scanText">
-READING MULTI-LOTTERY INPUT...
-</span>
-
-
+<span id="scanText">READING MULTI-LOTTERY INPUT...</span>
 </div>
 
+<div id="result" class="result"></div>
 
-<div
-  id="result"
-  class="result"
-></div>
-
-
-<button
-  id="logout"
-  class="logout"
->
+<button id="logout" class="logout">
 ออกจากระบบ / LOGOUT
 </button>
 
-
 </div>
 
-
+</div>
+</div>
 </div>
 
-
-</div>
-
-
-</div>
-
-
-<div
-  id="toast"
-  class="toast"
->
+<div id="toast" class="toast">
 ✓ คัดลอกผลทั้งหมดแล้ว
 </div>
-
 
 <script>
 (()=>{
 
-
 /* =========================================================
-   SOFT LUXURY PARTICLES
+   SNOW / PREMIUM PARTICLES
    ========================================================= */
 
+const c=document.getElementById('snow');
+const x=c.getContext('2d');
 
-const canvas=document.getElementById('snow');
-const ctx=canvas.getContext('2d');
-
-
-let w=canvas.width=innerWidth;
-let h=canvas.height=innerHeight;
-
+let w=c.width=innerWidth;
+let h=c.height=innerHeight;
 
 addEventListener('resize',()=>{
-  w=canvas.width=innerWidth;
-  h=canvas.height=innerHeight;
+w=c.width=innerWidth;
+h=c.height=innerHeight;
 });
 
-
 const particles=Array.from(
-  {length:38},
-  ()=>({
-    x:Math.random()*w,
-    y:Math.random()*h,
-    r:.55+Math.random()*1.45,
-    s:.10+Math.random()*.30,
-    a:.10+Math.random()*.28,
-    p:Math.random()*Math.PI*2
-  })
+{length:42},
+()=>({
+x:Math.random()*w,
+y:Math.random()*h,
+r:.7+Math.random()*1.8,
+s:.15+Math.random()*.45,
+a:.18+Math.random()*.35,
+p:Math.random()*6.28
+})
 );
-
 
 (function draw(){
 
+x.clearRect(0,0,w,h);
 
-  ctx.clearRect(0,0,w,h);
+particles.forEach(q=>{
 
+q.p+=.01;
+q.y+=q.s;
+q.x+=Math.sin(q.p)*.25;
 
-  particles.forEach(q=>{
+if(q.y>h+5){
+q.y=-5;
+q.x=Math.random()*w;
+}
 
+x.beginPath();
+x.arc(q.x,q.y,q.r,0,Math.PI*2);
 
-    q.p+=.008;
-    q.y+=q.s;
-    q.x+=Math.sin(q.p)*.18;
+const rose=Math.random()>.72;
 
+x.fillStyle=rose
+?`rgba(185,130,121,${q.a*.55})`
+:`rgba(195,154,67,${q.a})`;
 
-    if(q.y>h+5){
-      q.y=-5;
-      q.x=Math.random()*w;
-    }
+x.fill();
 
+});
 
-    ctx.beginPath();
-    ctx.arc(
-      q.x,
-      q.y,
-      q.r,
-      0,
-      Math.PI*2
-    );
-
-
-    const rose=Math.random()>.58;
-
-
-    ctx.fillStyle=rose
-      ?`rgba(185,120,112,${q.a*.55})`
-      :`rgba(201,162,77,${q.a})`;
-
-
-    ctx.fill();
-
-
-  });
-
-
-  requestAnimationFrame(draw);
-
+requestAnimationFrame(draw);
 
 })();
 
@@ -1169,2198 +816,1829 @@ const particles=Array.from(
    HELPERS
    ========================================================= */
 
-
 const $=id=>document.getElementById(id);
 
-
 const esc=s=>String(s)
-  .replace(/&/g,'&amp;')
-  .replace(/</g,'&lt;')
-  .replace(/>/g,'&gt;')
-  .replace(/"/g,'&quot;')
-  .replace(/'/g,'&#039;');
+.replace(/&/g,'&amp;')
+.replace(/</g,'&lt;')
+.replace(/>/g,'&gt;')
+.replace(/"/g,'&quot;')
+.replace(/'/g,'&#039;');
 
 
 /* =========================================================
-   ACCESS CONTROL
+   ORIGINAL ACCESS CONTROL
+   IMPORTANT:
+   THE ORIGINAL TOKENS ARE PRESERVED EXACTLY.
    ========================================================= */
-
 
 const sec={
 
-  /*
-    Compatible access keys retained from the original
-    working build.
+tokens:[
+'4d617374657241646d696e32303236',
+'54396b4c326d5037',
+'5a71345738785431'
+],
 
-    Primary key:
-    MasterAdmin2026
+dec(h){
 
-    Backup keys:
-    9kL2mP7
-    Zq4V8xT1
-  */
+let s='';
 
-  tokens:[
-    '4d617374657241646d696e32303236',
-    '54396b4c326d5037',
-    '5a71345738785431'
-  ],
+for(
+let i=0;
+i<h.length;
+i+=2
+){
 
+s+=String.fromCharCode(
+parseInt(
+h.slice(i,i+2),
+16
+)
+);
 
-  dec(h){
-    let s='';
+}
 
-    for(let i=0;i<h.length;i+=2){
+return s;
 
-      s+=String.fromCharCode(
-        parseInt(
-          h.slice(i,i+2),
-          16
-        )
-      );
+},
 
-    }
+ok(v){
 
-    return s;
-  },
+return this.tokens.some(
+t=>v===this.dec(t)
+);
 
-
-  ok(v){
-
-    const input=String(v??'')
-      .normalize('NFKC')
-      .trim();
-
-
-    return this.tokens.some(
-      t=>input===this.dec(t)
-    );
-
-  }
+}
 
 };
 
 
 /* =========================================================
-   MAIN APPLICATION
+   APPLICATION
    ========================================================= */
-
 
 const app={
 
+cache:[],
+toastTimer:null,
 
-  cache:[],
-  toastTimer:null,
+audio(){},
 
+norm(x){
+return(x%10+10)%10;
+},
 
-  audio(){},
 
+/* =========================================================
+   FLAG DETECTION
+   ========================================================= */
 
-  norm(x){
-    return (x%10+10)%10;
-  },
+flag(n){
 
+n=String(n).toLowerCase();
 
-  /* =======================================================
-     FLAGS
-     ======================================================= */
+if(/ลาว|lao/.test(n))return'🇱🇦';
+if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))return'🇻🇳';
+if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))return'🇲🇲';
+if(/จีน|china|shanghai/.test(n))return'🇨🇳';
+if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))return'🇭🇰';
+if(/นิเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))return'🇯🇵';
+if(/เกาหลี|korea|kospi/.test(n))return'🇰🇷';
+if(/สิงคโปร์|singapore/.test(n))return'🇸🇬';
+if(/อินเดีย|india|sensex/.test(n))return'🇮🇳';
+if(/รัสเซีย|russia|moscow/.test(n))return'🇷🇺';
+if(/เยอรมัน|germany|dax/.test(n))return'🇩🇪';
+if(/อังกฤษ|uk|ftse|london/.test(n))return'🇬🇧';
+if(/อียิปต์|egypt/.test(n))return'🇪🇬';
+if(/ไต้หวัน|taiwan|tse/.test(n))return'🇹🇼';
+if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))return'🇺🇸';
+if(/ฝรั่งเศส|france|cac/.test(n))return'🇫🇷';
+if(/ออสเตรเลีย|australia|asx/.test(n))return'🇦🇺';
+if(/แคนาดา|canada/.test(n))return'🇨🇦';
+if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n))return'🇹🇭';
 
+return'🌐';
 
-  flag(n){
+},
 
 
-    n=String(n).toLowerCase();
+/* =========================================================
+   INPUT PARSER
+   ========================================================= */
 
+parse(text){
 
-    if(/ลาว|lao/.test(n))
-      return'🇱🇦';
+const z=String(text||'')
+.replace(/\r/g,'')
+.trim();
 
+if(!z){
 
-    if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))
-      return'🇻🇳';
+return{
+records:[],
+errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
+};
 
+}
 
-    if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))
-      return'🇲🇲';
+const lines=z
+.split('\n')
+.map(v=>v.trim());
 
+const records=[];
+const errors=[];
 
-    if(/จีน|china|shanghai/.test(n))
-      return'🇨🇳';
+let i=0;
 
+while(i<lines.length){
 
-    if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))
-      return'🇭🇰';
+if(!lines[i]){
+i++;
+continue;
+}
 
+const m=lines[i]
+.match(/^(.+?)\s*\|\s*(.+?)$/);
 
-    if(/นิเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))
-      return'🇯🇵';
+if(!m){
 
+errors.push(
+`บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
+);
 
-    if(/เกาหลี|korea|kospi/.test(n))
-      return'🇰🇷';
+i++;
+continue;
 
+}
 
-    if(/สิงคโปร์|singapore/.test(n))
-      return'🇸🇬';
+const name=m[1].trim();
+const date=m[2].trim();
 
+const n3=lines[i+1]||'';
+const n2=lines[i+2]||'';
 
-    if(/อินเดีย|india|sensex/.test(n))
-      return'🇮🇳';
+if(!/^\d{3}$/.test(n3)){
 
+errors.push(
+`${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
+);
 
-    if(/รัสเซีย|russia|moscow/.test(n))
-      return'🇷🇺';
+i+=1;
+continue;
 
+}
 
-    if(/เยอรมัน|germany|dax/.test(n))
-      return'🇩🇪';
+if(!/^\d{2}$/.test(n2)){
 
+errors.push(
+`${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
+);
 
-    if(/อังกฤษ|uk|ftse|london/.test(n))
-      return'🇬🇧';
+i+=2;
+continue;
+
+}
 
+records.push({
+name,
+date,
+n3,
+n2
+});
 
-    if(/อียิปต์|egypt/.test(n))
-      return'🇪🇬';
+i+=3;
 
+}
 
-    if(/ไต้หวัน|taiwan|tse/.test(n))
-      return'🇹🇼';
+return{
+records,
+errors
+};
+
+},
+
+
+/* =========================================================
+   ORIGINAL FORMULA ENGINE
+   ========================================================= */
+
+formulas(
+H,T,U,R1,R2,
+sumT,sumB,total
+){
+
+const raw=[
+
+H+T,
+H+U,
+T+U,
+H+R1,
+H+R2,
+T+R1,
+T+R2,
+U+R1,
+U+R2,
+R1+R2,
+
+sumT+R1,
+sumT+R2,
+sumT+H,
+sumT+T,
+sumT+U,
+
+10-H,
+10-T,
+10-U,
+10-R1,
+10-R2,
+
+H+T+R1,
+H+U+R2,
+T+U+R1,
+T+U+R2,
+H+R1+R2,
+T+R1+R2,
+
+sumT-R1,
+sumT-R2,
+sumT+sumB,
+sumT-sumB,
+
+H+T-R2,
+T+U-R1,
+H+U-R1,
+
+20-(T+R1),
+20-(U+R2),
+
+H+T+U-R1,
+H+T+U-R2,
+
+10+T-R2,
+10+U-R1,
+
+sumT+10-R2,
+
+H+R2-T,
+T+R2-H,
+U+R1-H,
+
+sumB+H-T,
+sumB+H-U,
+
+H+sumB-T,
+H+sumB-U,
+T+sumB-H,
+T+sumB-U,
+U+sumB-H,
+U+sumB-T,
+
+30-(H+T+R1),
+30-(H+U+R2),
+30-(T+U+R1),
+30-(H+R1+R2),
+
+H+T+R1-R2,
+H+U+R2-R1,
+T+U+R1-H,
+
+sumT+R1-R2,
+sumT+R2-R1,
+
+H+T+sumB,
+H+U+sumB,
+T+U+sumB,
+
+H+R1+sumT,
+H+R2+sumT,
+T+R1+sumT,
+T+R2+sumT,
+U+R1+sumT,
+U+R2+sumT,
+R1+R2+sumT,
+
+10+H+T,
+10+H+U,
+10+T+U,
+10+R1+R2,
+
+10+H+R1,
+10+H+R2,
+10+T+R1,
+10+T+R2,
+10+U+R1,
+10+U+R2,
+
+H-T+R2,
+H-U+R1,
+T-U+R2,
+
+R1-R2+H,
+R1-R2+T,
+R1-R2+U,
+
+20-H-T,
+20-H-U,
+20-T-U,
+20-R1-R2,
+
+20-H-R1,
+20-H-R2,
+20-T-R1,
+20-T-R2,
+20-U-R1,
+20-U-R2,
+
+total,
+2*total,
+total+H,
+total+R1
+
+];
 
+const counts=
+Object.fromEntries(
+Array.from(
+{length:10},
+(_,d)=>[d,0]
+)
+);
+
+raw.forEach(v=>{
+counts[this.norm(v)]++;
+});
+
+return{counts};
+
+},
+
+
+/* =========================================================
+   5 MAIN MODELS
+   ORIGINAL MODEL GENERATION PRESERVED
+   ========================================================= */
+
+buildModels(
+H,T,U,R1,R2,
+sumT
+){
+
+const unit=v=>{
+
+const q=Math.abs(v)%10;
 
-    if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))
-      return'🇺🇸';
+return[
+q,
+(q+1)%10
+];
 
+};
 
-    if(/ฝรั่งเศส|france|cac/.test(n))
-      return'🇫🇷';
+const raw=[
 
+(T+R1)%10,
+sumT%10,
+(H+R1)%10,
+(U+R2)%10,
+(10-R2)%10
+
+];
 
-    if(/ออสเตรเลีย|australia|asx/.test(n))
-      return'🇦🇺';
+return[
 
+{
+id:1,
+name:'AI โมเดล 01',
+set:unit(raw[0])
+},
+
+{
+id:2,
+name:'AI โมเดล 02',
+set:unit(raw[1])
+},
+
+{
+id:3,
+name:'AI โมเดล 03',
+set:unit(raw[2])
+},
 
-    if(/แคนาดา|canada/.test(n))
-      return'🇨🇦';
+{
+id:4,
+name:'AI โมเดล 04',
+set:unit(raw[3])
+},
+
+{
+id:5,
+name:'AI โมเดล 05',
+set:unit(raw[4])
+}
 
+];
 
-    if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n))
-      return'🇹🇭';
+},
 
 
-    return'🌐';
+/* =========================================================
+   PAIR GENERATOR
+   ========================================================= */
 
+buildPairs(
+models,
+anchor
+){
 
-  },
+models.forEach(m=>{
 
+let range=[];
+let collision=false;
 
-  /* =======================================================
-     INPUT PARSER
-     ======================================================= */
+for(
+let o=-2;
+o<=2;
+o++
+){
+
+if(
+m.set.includes(
+this.norm(anchor+o)
+)
+){
+
+collision=true;
+break;
+
+}
+
+}
+
+for(
+let o=collision?-3:-2;
+o<=(collision?3:2);
+o++
+){
+
+range.push(
+this.norm(anchor+o)
+);
 
+}
 
-  parse(text){
+m.pairsMap={};
 
+m.set.forEach(src=>{
 
-    const z=String(text||'')
-      .replace(/\r/g,'')
-      .trim();
+let pairs=range
+.filter(
+p=>
+p!==src &&
+!m.set.includes(p)
+)
+.map(
+p=>`${src}${p}`
+);
 
+let next=(src+1)%10;
 
-    if(!z){
+while(pairs.length<5){
 
-      return{
-        records:[],
-        errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
-      };
+if(
+next!==src &&
+!m.set.includes(next) &&
+!pairs.includes(
+`${src}${next}`
+)
+){
 
-    }
+pairs.push(
+`${src}${next}`
+);
 
+}
 
-    const lines=z
-      .split('\n')
-      .map(v=>v.trim());
+next=(next+1)%10;
 
+}
 
-    const records=[];
-    const errors=[];
+m.pairsMap[src]=[
+...new Set(pairs)
+]
+.filter(
+p=>p[0]!==p[1]
+)
+.slice(0,5);
 
+});
 
-    let i=0;
+});
 
+},
 
-    while(i<lines.length){
 
+/* =========================================================
+   SCORE ENGINE
+   ========================================================= */
 
-      if(!lines[i]){
-        i++;
-        continue;
-      }
+scoreDigits(
+models,
+F,
+H,T,U,R1,R2,
+sumT,sumB,total
+){
 
+const score=
+Object.fromEntries(
+Array.from(
+{length:10},
+(_,d)=>[
+d,
+{
+digit:d,
+modelScore:0,
+formula100Score:0,
+radarScore:0,
+backendScore:0,
+winSetScore:0,
+selectorBonus:0,
+selectorScore:0,
+totalScore:0
+}
+]
+)
+);
 
-      const m=lines[i].match(
-        /^(.+?)\s*\|\s*(.+?)$/
-      );
+const allowed=new Set();
 
+models.forEach(m=>{
 
-      if(!m){
+m.set.forEach(d=>{
 
-        errors.push(
-          `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
-        );
+allowed.add(d);
+score[d].modelScore++;
 
-        i++;
-        continue;
+});
 
-      }
+});
 
 
-      const name=m[1].trim();
-      const date=m[2].trim();
+const maxF=
+Math.max(
+...Object.values(F.counts),
+1
+);
 
+for(let d=0;d<=9;d++){
 
-      const n3=lines[i+1]||'';
-      const n2=lines[i+2]||'';
+score[d].formula100Score=
+(F.counts[d]||0)/maxF;
 
+}
 
-      if(!/^\d{3}$/.test(n3)){
 
-        errors.push(
-          `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
-        );
+const x=(R1+R2)%10;
+const y=sumT%10;
+const z=total%10;
 
-        i+=1;
-        continue;
+const r1=[
+this.norm(x-1),
+x,
+this.norm(x+1)
+];
 
-      }
+const r2=[
+this.norm(y-1),
+y,
+this.norm(y+1)
+];
 
+const r3=[
+this.norm(z-1),
+z,
+this.norm(z+1)
+];
 
-      if(!/^\d{2}$/.test(n2)){
+for(let d=0;d<=9;d++){
 
-        errors.push(
-          `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
-        );
+let h=0;
 
-        i+=2;
-        continue;
+if(r1.includes(d))h++;
+if(r2.includes(d))h++;
+if(r3.includes(d))h++;
 
-      }
+score[d].radarScore=h/3;
 
+}
 
-      records.push({
-        name,
-        date,
-        n3,
-        n2
-      });
 
+const back=[
 
-      i+=3;
+(2*H+R1)%10,
+(T+R2)%10,
+sumT%10,
+Math.abs(T-U)%10,
+total%10
 
+];
 
-    }
+for(let d=0;d<=9;d++){
 
+if(back.includes(d))
+score[d].backendScore=1;
 
-    return{
-      records,
-      errors
-    };
+if(
+d===z ||
+d===this.norm(z+5)
+)
+score[d].winSetScore=1;
 
+score[d].totalScore=
 
-  },
+.35*score[d].modelScore+
 
+.25*score[d].formula100Score+
 
-  /* =======================================================
-     ORIGINAL FORMULA ENGINE
-     ======================================================= */
+.15*score[d].radarScore+
 
+.15*score[d].backendScore+
 
-  formulas(H,T,U,R1,R2,sumT,sumB,total){
+.10*score[d].winSetScore;
 
+if(allowed.has(d))
+score[d].totalScore*=1.15;
 
-    const raw=[
+}
 
 
-      H+T,
-      H+U,
-      T+U,
-      H+R1,
-      H+R2,
-      T+R1,
-      T+R2,
-      U+R1,
-      U+R2,
-      R1+R2,
+/* =======================================================
+   UPGRADED TOP-3 SELECTOR
 
+   กติกาหลัก:
+   1. เลขต้องมาจาก 5 Models
+   2. คะแนนเดิมยังเป็นฐานหลัก
+   3. เพิ่ม Consensus ของ Models
+   4. เพิ่ม Signal Agreement
+   5. ใช้ Stability Check เฉพาะกรณีอันดับ 3/4 สูสี
+   6. ห้ามสร้างเลขใหม่จากนอก 5 Models
+   ======================================================= */
 
-      sumT+R1,
-      sumT+R2,
-      sumT+H,
-      sumT+T,
-      sumT+U,
+Object.values(score).forEach(v=>{
 
+const consensus=
+v.modelScore/5;
 
-      10-H,
-      10-T,
-      10-U,
-      10-R1,
-      10-R2,
+const signalAgreement=
+(
+v.formula100Score+
+v.radarScore+
+v.backendScore+
+v.winSetScore
+)/4;
 
+v.selectorBonus=
+allowed.has(v.digit)
+?
+(
+.055*consensus+
+.045*signalAgreement
+)
+:
+0;
 
-      H+T+R1,
-      H+U+R2,
-      T+U+R1,
-      T+U+R2,
-      H+R1+R2,
-      T+R1+R2,
+v.selectorScore=
+v.totalScore+
+v.selectorBonus;
 
+});
 
-      sumT-R1,
-      sumT-R2,
-      sumT+sumB,
-      sumT-sumB,
 
+let ranked=
+Object.values(score)
+.filter(v=>allowed.has(v.digit))
+.sort(
 
-      H+T-R2,
-      T+U-R1,
-      H+U-R1,
+(a,b)=>
+b.selectorScore-a.selectorScore ||
+b.totalScore-a.totalScore ||
+b.modelScore-a.modelScore ||
+b.digit-a.digit
 
+);
 
-      20-(T+R1),
-      20-(U+R2),
 
+/* -------------------------------------------------------
+   STABILITY CHECK
 
-      H+T+U-R1,
-      H+T+U-R2,
+   ถ้าอันดับ 3 และ 4 ห่างกันน้อยมาก
+   ระบบไม่สร้างเลขใหม่
+   แต่จะพิจารณา breadth ของสัญญาณ
+   เพื่อช่วยเลือกเลขที่มีการสนับสนุนกว้างกว่า
+   ------------------------------------------------------- */
 
+if(ranked[2]&&ranked[3]){
 
-      10+T-R2,
-      10+U-R1,
+const a=ranked[2];
+const b=ranked[3];
 
+const gap=
+a.selectorScore-
+b.selectorScore;
 
-      sumT+10-R2,
+const close=
+gap<=.08 ||
+(
+a.selectorScore>0 &&
+gap/a.selectorScore<=.07
+);
 
+if(close){
 
-      H+R2-T,
-      T+R2-H,
-      U+R1-H,
+const candidates=
+ranked
+.slice(2,5)
+.map(v=>{
 
+const breadth=
+(
+v.modelScore/5+
+v.formula100Score+
+v.radarScore+
+v.backendScore+
+v.winSetScore
+)/5;
 
-      sumB+H-T,
-      sumB+H-U,
+return{
+v,
+final:
+v.selectorScore+
+.025*breadth
+};
 
+})
+.sort(
 
-      H+sumB-T,
-      H+sumB-U,
-      T+sumB-H,
-      T+sumB-U,
-      U+sumB-H,
-      U+sumB-T,
+(a,b)=>
+b.final-a.final ||
+b.v.modelScore-a.v.modelScore ||
+b.v.digit-a.v.digit
 
+);
 
-      30-(H+T+R1),
-      30-(H+U+R2),
-      30-(T+U+R1),
-      30-(H+R1+R2),
+ranked.splice(
+2,
+candidates.length,
+...candidates.map(
+x=>x.v
+)
+);
 
+}
 
-      H+T+R1-R2,
-      H+U+R2-R1,
-      T+U+R1-H,
+}
 
+const top=
+ranked.slice(0,3);
 
-      sumT+R1-R2,
-      sumT+R2-R1,
 
+/* =======================================================
+   MODEL QUALITY SCORE
+   ======================================================= */
 
-      H+T+sumB,
-      H+U+sumB,
-      T+U+sumB,
+models.forEach(m=>{
 
+const sm=
+m.set.reduce(
+(a,d)=>
+a+score[d].totalScore,
+0
+);
 
-      H+R1+sumT,
-      H+R2+sumT,
-      T+R1+sumT,
-      T+R2+sumT,
-      U+R1+sumT,
-      U+R2+sumT,
-      R1+R2+sumT,
+m.aiScore=
+80+
+Math.min(
+18.5,
+sm*4
+);
 
+});
 
-      10+H+T,
-      10+H+U,
-      10+T+U,
-      10+R1+R2,
 
+return{
+score,
+allowed,
+top,
+ranked
+};
 
-      10+H+R1,
-      10+H+R2,
-      10+T+R1,
-      10+T+R2,
-      10+U+R1,
-      10+U+R2,
+},
 
 
-      H-T+R2,
-      H-U+R1,
-      T-U+R2,
+/* =========================================================
+   PAIR CANDIDATE COLLECTION
+   ========================================================= */
 
+collectPairCandidates(
+digit,
+models,
+score
+){
 
-      R1-R2+H,
-      R1-R2+T,
-      R1-R2+U,
+const candidates=[];
 
+models
+.filter(
+m=>m.set.includes(digit)
+)
+.forEach(m=>{
 
-      20-H-T,
-      20-H-U,
-      20-T-U,
-      20-R1-R2,
+const sourceStrength=
+Math.min(
+1,
+(m.aiScore||80)/98.5
+);
 
+const digitStrength=
+score[digit]
+?
+score[digit].selectorScore
+:
+0;
 
-      20-H-R1,
-      20-H-R2,
-      20-T-R1,
-      20-T-R2,
-      20-U-R1,
-      20-U-R2,
+const modelConsensus=
+score[digit]
+?
+score[digit].modelScore/5
+:
+0;
 
+(
+m.pairsMap[digit]||[]
+)
+.forEach(pair=>{
 
-      total,
-      2*total,
-      total+H,
-      total+R1
+const key=
+this.pairKey(pair);
 
-    ];
+const pairScore=
 
+.55*sourceStrength+
 
-    const counts=Object.fromEntries(
-      Array.from(
-        {length:10},
-        (_,d)=>[d,0]
-      )
-    );
+.30*digitStrength+
 
+.15*modelConsensus;
 
-    raw.forEach(v=>{
-      counts[this.norm(v)]++;
-    });
+candidates.push({
 
+pair:String(pair),
+key,
+pairScore,
+modelId:m.id
 
-    return{
-      counts
-    };
+});
 
+});
 
-  },
+});
 
+return candidates;
 
-  /* =======================================================
-     CORE 5-MODEL ENGINE
-     ======================================================= */
+},
 
 
-  run(n3,n2){
+/* =========================================================
+   BEST 5 PAIRS FOR EACH TOP DIGIT
 
+   ทุกคู่ยังต้องมาจาก 5 Main Models
+   ========================================================= */
 
-    const d3=n3.split('').map(Number);
-    const d2=n2.split('').map(Number);
+bestPairsForDigit(
+digit,
+models,
+score
+){
 
+const candidates=
+this.collectPairCandidates(
+digit,
+models,
+score
+);
 
-    const [H,T,U]=d3;
-    const [R1,R2]=d2;
+const bestByKey={};
 
+candidates.forEach(c=>{
 
-    const sumT=H+T+U;
-    const sumB=R1+R2;
-    const total=sumT+sumB;
+if(
+!bestByKey[c.key] ||
+c.pairScore>
+bestByKey[c.key].pairScore
+){
 
+bestByKey[c.key]=c;
 
-    const F=this.formulas(
-      H,T,U,R1,R2,
-      sumT,sumB,total
-    );
+}
 
+});
 
-    const unit=v=>{
+return Object.values(bestByKey)
+.sort(
 
-      const q=Math.abs(v)%10;
+(a,b)=>
+b.pairScore-a.pairScore ||
+Number(a.key)-Number(b.key)
 
-      return[
-        q,
-        (q+1)%10
-      ];
+)
+.slice(0,5)
+.map(v=>v.pair);
 
-    };
+},
 
 
-    const anchor=this.norm(7-H);
+/* =========================================================
+   NORMALIZED PAIR KEY
+   02 AND 20 ARE THE SAME CONSENSUS PAIR
+   ========================================================= */
 
+pairKey(pair){
 
-    const raw=[
+const p=String(pair);
 
-      (T+R1)%10,
-      sumT%10,
-      (H+R1)%10,
-      (U+R2)%10,
-      (10-R2)%10
+if(!/^\d{2}$/.test(p))
+return p;
 
-    ];
+return[
+p[0],
+p[1]
+]
+.sort()
+.join('');
 
+},
 
-    const models=[
 
+/* =========================================================
+   TOP 9 PAIR CONSENSUS
 
-      {
-        id:1,
-        name:'AI โมเดล 01',
-        set:unit(raw[0])
-      },
+   3 Top digits × 5 pairs = 15 candidates
 
+   Top 9 ได้สี:
+   1-3 Gold
+   4-6 Silver
+   7-9 Rose Gold
+   ========================================================= */
 
-      {
-        id:2,
-        name:'AI โมเดล 02',
-        set:unit(raw[1])
-      },
+buildConsensus(pairSets){
 
+const all=[];
 
-      {
-        id:3,
-        name:'AI โมเดล 03',
-        set:unit(raw[2])
-      },
+pairSets.forEach(
+(set,rowIndex)=>{
 
+set.slice(0,5)
+.forEach(pair=>{
 
-      {
-        id:4,
-        name:'AI โมเดล 04',
-        set:unit(raw[3])
-      },
+all.push({
+pair:String(pair),
+rowIndex
+});
 
+});
 
-      {
-        id:5,
-        name:'AI โมเดล 05',
-        set:unit(raw[4])
-      }
+}
+);
 
+const counts={};
 
-    ];
+all.forEach(item=>{
 
+const key=
+this.pairKey(item.pair);
 
-    const allowed=new Set();
+if(!counts[key]){
 
+counts[key]={
+key,
+score:0,
+rows:new Set(),
+pairs:new Set()
+};
 
-    models.forEach(m=>{
+}
 
-      m.set.forEach(d=>{
-        allowed.add(d);
-      });
+counts[key].score++;
+counts[key].rows.add(
+item.rowIndex
+);
+counts[key].pairs.add(
+item.pair
+);
 
-    });
+});
 
 
-    /* =====================================================
-       BUILD 5 PAIRS FOR EVERY DIGIT GENERATED BY EACH MODEL
-       ===================================================== */
+const ranked=
+Object.values(counts)
+.sort(
 
+(a,b)=>
+b.score-a.score ||
+b.rows.size-a.rows.size ||
+Number(a.key)-Number(b.key)
 
-    models.forEach(m=>{
+);
 
 
-      let range=[];
-      let collision=false;
+const colorMap={};
 
+ranked
+.slice(0,9)
+.forEach(
+(item,index)=>{
 
-      for(let o=-2;o<=2;o++){
+let color;
 
+if(index<3)
+color='gold';
 
-        if(
-          m.set.includes(
-            this.norm(anchor+o)
-          )
-        ){
+else if(index<6)
+color='silver';
 
-          collision=true;
-          break;
+else
+color='rose';
 
-        }
+colorMap[item.key]={
+color,
+rank:index+1,
+score:item.score
+};
 
+}
+);
 
-      }
 
+return{
+counts,
+ranked,
+colorMap
+};
 
-      for(
-        let o=collision?-3:-2;
-        o<=(collision?3:2);
-        o++
-      ){
+},
 
 
-        range.push(
-          this.norm(anchor+o)
-        );
+/* =========================================================
+   PAIR DISPLAY SORT
+   ========================================================= */
 
+sortPairs(pairs){
 
-      }
+return pairs
+.map(String)
+.sort(
+(a,b)=>
+Number(a)-Number(b)
+);
 
+},
 
-      m.pairsMap={};
 
+/* =========================================================
+   PAIR CSS
+   ========================================================= */
 
-      m.set.forEach(src=>{
+pairClass(
+pair,
+colorMap
+){
 
+const info=
+colorMap[
+this.pairKey(pair)
+];
 
-        let pairs=range
-          .filter(p=>
-            p!==src &&
-            !m.set.includes(p)
-          )
-          .map(p=>`${src}${p}`);
+if(!info)
+return'pair';
 
+if(info.color==='gold')
+return'pair pair-gold';
 
-        let next=(src+1)%10;
+if(info.color==='silver')
+return'pair pair-silver';
 
+if(info.color==='rose')
+return'pair pair-rose';
 
-        while(pairs.length<5){
+return'pair';
 
+},
 
-          if(
-            next!==src &&
-            !m.set.includes(next) &&
-            !pairs.includes(`${src}${next}`)
-          ){
 
-            pairs.push(
-              `${src}${next}`
-            );
+/* =========================================================
+   DATE
+   ========================================================= */
 
-          }
+formatDate(date){
 
+const s=
+String(date||'').trim();
 
-          next=(next+1)%10;
+if(
+/\d+\s+\S+\s+\d+/.test(s)
+){
 
+const p=s.split(/\s+/);
 
-        }
+if(p.length>=3){
 
+return[
+p[0],
+p[1],
+p.slice(2).join(' ')
+].join(' · ');
 
-        m.pairsMap[src]=[
-          ...new Set(pairs)
-        ]
-        .filter(
-          p=>p[0]!==p[1]
-        )
-        .slice(0,5);
+}
 
+}
 
-      });
+return s;
 
+},
 
-    });
 
+/* =========================================================
+   MAIN RUN
+   ========================================================= */
 
-    /* =====================================================
-       SCORE ENGINE
-       ===================================================== */
+run(n3,n2){
 
+const d3=
+n3.split('').map(Number);
 
-    const score=Object.fromEntries(
-      Array.from(
-        {length:10},
-        (_,d)=>[
-          d,
-          {
-            digit:d,
-            modelScore:0,
-            formula100Score:0,
-            radarScore:0,
-            backendScore:0,
-            winSetScore:0,
-            totalScore:0
-          }
-        ]
-      )
-    );
+const d2=
+n2.split('').map(Number);
 
+const[
+H,T,U
+]=d3;
 
-    models.forEach(m=>{
+const[
+R1,R2
+]=d2;
 
-      m.set.forEach(d=>{
-        score[d].modelScore++;
-      });
+const sumT=
+H+T+U;
 
-    });
+const sumB=
+R1+R2;
 
+const total=
+sumT+sumB;
 
-    const maxF=Math.max(
-      ...Object.values(F.counts),
-      1
-    );
 
+/* 1. ORIGINAL FORMULAS */
 
-    for(let d=0;d<=9;d++){
+const F=
+this.formulas(
+H,T,U,
+R1,R2,
+sumT,sumB,total
+);
 
-      score[d].formula100Score=
-        (F.counts[d]||0)/maxF;
 
-    }
+/* 2. ORIGINAL 5 MAIN MODELS */
 
+const models=
+this.buildModels(
+H,T,U,
+R1,R2,
+sumT
+);
 
-    const x=(R1+R2)%10;
-    const y=sumT%10;
-    const z=total%10;
 
+/* 3. ORIGINAL PAIR ANCHOR */
 
-    const r1=[
-      this.norm(x-1),
-      x,
-      this.norm(x+1)
-    ];
+const anchor=
+this.norm(7-H);
 
 
-    const r2=[
-      this.norm(y-1),
-      y,
-      this.norm(y+1)
-    ];
+/* 4. GENERATE PAIRS FOR ALL 5 MODELS */
 
+this.buildPairs(
+models,
+anchor
+);
 
-    const r3=[
-      this.norm(z-1),
-      z,
-      this.norm(z+1)
-    ];
 
+/* 5. SCORE */
 
-    for(let d=0;d<=9;d++){
+const scored=
+this.scoreDigits(
+models,
+F,
+H,T,U,
+R1,R2,
+sumT,sumB,total
+);
 
 
-      let h=0;
+/* 6. TOP 3 FROM 5 MAIN MODELS ONLY */
 
+const top=
+scored.top;
 
-      if(r1.includes(d))
-        h++;
 
+/* 7. 5 PAIRS PER TOP DIGIT */
 
-      if(r2.includes(d))
-        h++;
+const pairSets=
+top.map(
+t=>
+this.bestPairsForDigit(
+t.digit,
+models,
+scored.score
+)
+);
 
 
-      if(r3.includes(d))
-        h++;
+/* 8. CONSENSUS ACROSS 15 PAIRS */
 
+const consensus=
+this.buildConsensus(
+pairSets
+);
 
-      score[d].radarScore=h/3;
 
+return{
 
-    }
+top3Digits:
+top.map(v=>v.digit),
 
+pairSets:
+pairSets.map(
+v=>v.slice(0,5)
+),
 
-    const back=[
+modelScores:
+scored.score,
 
-      (2*H+R1)%10,
-      (T+R2)%10,
-      sumT%10,
-      Math.abs(T-U)%10,
-      total%10
+modelCount:5,
 
-    ];
+models,
 
+consensus
 
-    for(let d=0;d<=9;d++){
+};
 
+},
 
-      if(back.includes(d))
-        score[d].backendScore=1;
 
+/* =========================================================
+   COPY
+   ========================================================= */
 
-      if(
-        d===z ||
-        d===this.norm(z+5)
-      )
-        score[d].winSetScore=1;
+copy(text){
 
+navigator.clipboard?.writeText(text)
+.then(()=>this.show())
+.catch(()=>{
 
-      score[d].totalScore=
+const t=
+document.createElement('textarea');
 
-        .35*score[d].modelScore+
-        .25*score[d].formula100Score+
-        .15*score[d].radarScore+
-        .15*score[d].backendScore+
-        .10*score[d].winSetScore;
+t.value=text;
 
+document.body.appendChild(t);
 
-      /*
-        IMPORTANT:
-        Only digits generated by the 5 main models
-        receive the model eligibility multiplier.
-      */
+t.select();
 
+document.execCommand('copy');
 
-      if(allowed.has(d))
-        score[d].totalScore*=1.15;
+t.remove();
 
+this.show();
 
-    }
+});
 
+},
 
-    /* =====================================================
-       TOP-3 SELECTOR UPGRADE
 
-       ไม่สร้างเลขใหม่
-       candidate pool มาจาก 5 Main Models เท่านั้น
-       ใช้คะแนนเดิมเป็นแกนหลัก
-       เพิ่ม Consensus Strength + Signal Agreement
-       และมี Stability Check เฉพาะกรณีอันดับ 3/4 สูสี
-       ===================================================== */
+show(){
 
+const t=$('toast');
 
-    const signalStrength=v=>{
+t.classList.add('show');
 
-      const consensus=
-        v.modelScore/5;
+clearTimeout(
+this.toastTimer
+);
 
+this.toastTimer=
+setTimeout(
+()=>t.classList.remove('show'),
+1500
+);
 
-      const signalAgreement=(
+},
 
-        v.formula100Score+
-        v.radarScore+
-        v.backendScore+
-        v.winSetScore
 
-      )/4;
+/* =========================================================
+   CALCULATE
+   ========================================================= */
 
+calculate(){
 
-      return(
-        .055*consensus+
-        .045*signalAgreement
-      );
+const parsed=
+this.parse(
+$('bulkInput').value
+);
 
-    };
+if(!parsed.records.length){
 
+$('result').innerHTML=
+'<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
 
-    Object.values(score).forEach(v=>{
+return;
 
+}
 
-      v.selectorBonus=
-        allowed.has(v.digit)
-          ?signalStrength(v)
-          :0;
+const scanner=
+$('scanner');
 
+const btn=
+$('run');
 
-      v.selectorScore=
-        v.totalScore+
-        v.selectorBonus;
+btn.disabled=true;
 
+scanner.style.display='block';
 
-    });
+const msgs=[
 
+'READING INPUT...',
 
-    const eligibleRanked=
-      Object.values(score)
-        .filter(v=>allowed.has(v.digit))
-        .sort(
+'PARSING LOTTERY NAMES...',
 
-          (a,b)=>
-            b.selectorScore-a.selectorScore ||
-            b.totalScore-a.totalScore ||
-            b.modelScore-a.modelScore ||
-            b.digit-a.digit
+'RUNNING EXISTING 5 AI MODELS...',
 
-        );
+'CALCULATING SCORE MATRIX...',
 
+'SELECTING TOP 3 FROM 5 MODELS...',
 
-    /*
-      Stability Check:
+'BUILDING 15 PAIR CANDIDATES...',
 
-      ถ้าอันดับ 3 กับ 4 สูสีกัน
-      ให้ใช้ selectorScore + breadth ของสัญญาณ
-      เป็นตัวตัดสินอีกครั้ง
+'RANKING TOP 9 PAIRS...',
 
-      Candidate ยังถูกล็อกอยู่ใน 5 Main Models เท่านั้น
-    */
+'FINALIZING VIP REPORT...'
 
+];
 
-    const third=eligibleRanked[2];
-    const fourth=eligibleRanked[3];
+let i=0;
 
+$('scanText')
+.textContent=msgs[0];
 
-    if(third && fourth){
+const timer=
+setInterval(
+()=>{
 
+i++;
 
-      const gap=
-        third.selectorScore-
-        fourth.selectorScore;
+if(i<msgs.length){
 
+$('scanText')
+.textContent=msgs[i];
 
-      const close=
+}
 
-        gap<=.08 ||
+},
+110
+);
 
-        (
-          third.selectorScore>0 &&
-          gap/third.selectorScore<=.07
-        );
+setTimeout(()=>{
 
+this.cache=[];
 
-      if(close){
+const cards=[];
+const outputData=[];
 
+parsed.records.forEach(r=>{
 
-        const stablePool=
-          eligibleRanked
-            .slice(2,5)
-            .sort(
+const a=
+this.run(
+r.n3,
+r.n2
+);
 
-              (a,b)=>
-                b.selectorScore-a.selectorScore ||
-                b.modelScore-a.modelScore ||
-                b.digit-a.digit
+this.cache.push(a);
 
-            );
 
+/* =====================================================
+   HARD VALIDATION:
+   TOP 3 MUST COME FROM 5 MAIN MODELS
+   ===================================================== */
 
-        eligibleRanked.splice(
-          2,
-          stablePool.length,
-          ...stablePool
-        );
+const allowed=new Set();
 
+a.models.forEach(m=>{
 
-      }
+m.set.forEach(d=>{
+allowed.add(d);
+});
 
+});
 
-    }
+const valid=
+a.top3Digits.length===3 &&
+a.top3Digits.every(
+d=>allowed.has(d)
+);
 
+if(!valid){
 
-    const top=
-      eligibleRanked.slice(0,3);
+parsed.errors.push(
+`${r.name} | ${r.date}: Top 3 ไม่ผ่าน Candidate Pool ของ 5 Main Models`
+);
 
+return;
 
-    /* =====================================================
-       MODEL SCORES
-       ===================================================== */
+}
 
 
-    models.forEach(m=>{
+/* =====================================================
+   RENDER 3 ROWS
+   ===================================================== */
 
+const rows=
+a.top3Digits
+.map((d,k)=>{
 
-      const sm=m.set.reduce(
-        (a,d)=>
-          a+score[d].totalScore,
-        0
-      );
+const sourcePairs=
+(a.pairSets[k]||[])
+.slice(0,5);
 
+const sorted=
+this.sortPairs(
+sourcePairs
+);
 
-      m.aiScore=
-        80+
-        Math.min(
-          18.5,
-          sm*4
-        );
+const pairHTML=
+sorted
+.map(pair=>{
 
+const info=
+a.consensus.colorMap[
+this.pairKey(pair)
+];
 
-    });
+const title=
+info
+?
+`อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
+:
+'เลขเจาะจาก 5 Main Models';
 
+return`
 
-    /* =====================================================
-       PAIR SELECTION UPGRADE
+<span
+class="${this.pairClass(
+pair,
+a.consensus.colorMap
+)}"
+title="${esc(title)}"
+>
+${esc(pair)}
+</span>
 
-       รวม candidate จากทุก Main Model
-       ที่รองรับ Top-3 digit นั้น
+`;
 
-       แล้วคัด 5 คู่ที่ดีที่สุดด้วย:
+})
+.join('');
 
-       1. ความแข็งแรงของโมเดลต้นทาง
-       2. selectorScore ของเลขเด่น
-       3. จำนวนโมเดลที่สนับสนุนเลขนั้น
-       4. ไม่สร้าง candidate จากนอก 5 Main Models
-       ===================================================== */
 
+const medalClass=
+k===0
+?'medal medal-gold'
+:k===1
+?'medal medal-silver'
+:'medal medal-rose';
 
-    const pairSets=
-      top.map(t=>{
 
+return`
 
-        const candidates=[];
+<div class="row">
 
+<div class="rankbox">
 
-        models
-          .filter(
-            m=>m.set.includes(t.digit)
-          )
-          .forEach(m=>{
+<span class="${medalClass}">
+${k+1}
+</span>
 
+<span class="digit">
+${esc(d)}
+</span>
 
-            (
-              m.pairsMap[t.digit]||[]
-            )
-            .forEach(pair=>{
+</div>
 
+<span class="sep">:</span>
 
-              const key=
-                this.pairKey(pair);
+<div class="pairs">
+${pairHTML}
+</div>
 
+</div>
 
-              const sourceStrength=
-                Math.min(
-                  1,
-                  (m.aiScore||80)/98.5
-                );
+`;
 
+})
+.join('');
 
-              const pairScore=
 
-                .55*sourceStrength+
+/* =====================================================
+   BRAND FOOTER
+   REPLACES OLD GOLD / SILVER / OTHER LEGEND
+   ===================================================== */
 
-                .30*(
-                  t.selectorScore||0
-                )+
+const footer=`
 
-                .15*(
-                  t.modelScore/5
-                );
+<div class="brand-footer">
 
+<span class="brand-star">✦</span>
 
-              candidates.push({
+<span>บ้านเงินกอง</span>
 
-                pair:String(pair),
+</div>
 
-                key,
+`;
 
-                pairScore,
 
-                modelId:m.id
+cards.push(`
 
-              });
+<article class="lottery">
 
+<div class="lottery-head">
 
-            });
+<div>
 
+<div class="lottery-name">
 
-          });
+<span class="flag">
+${this.flag(r.name)}
+</span>
 
+<span>
+${esc(r.name)}
+</span>
 
-        const bestByKey={};
+</div>
 
+<div class="date">
+${esc(
+this.formatDate(r.date)
+)}
+</div>
 
-        candidates.forEach(c=>{
+</div>
 
+<div class="vip-label">
+VIP ANALYSIS
+</div>
 
-          if(
+</div>
 
-            !bestByKey[c.key] ||
+<div class="rows">
+${rows}
+</div>
 
-            c.pairScore>
-              bestByKey[c.key].pairScore ||
+${footer}
 
-            (
+</article>
 
-              c.pairScore===
-                bestByKey[c.key].pairScore &&
+`);
 
-              c.modelId<
-                bestByKey[c.key].modelId
 
-            )
+outputData.push({
+record:r,
+result:a
+});
 
-          ){
+});
 
-            bestByKey[c.key]=c;
 
-          }
+clearInterval(timer);
 
+scanner.style.display='none';
 
-        });
+btn.disabled=false;
 
 
-        return Object.values(bestByKey)
-          .sort(
+/* =====================================================
+   COPY TEXT
+   ===================================================== */
 
-            (a,b)=>
-              b.pairScore-a.pairScore ||
-              Number(a.key)-Number(b.key)
+const all=
+outputData
+.map(item=>{
 
-          )
-          .slice(0,5)
-          .map(v=>v.pair);
+const r=
+item.record;
 
+const a=
+item.result;
 
-      });
+return[
 
+`${this.flag(r.name)} ${r.name} | ${r.date}`,
 
-    return{
+...a.top3Digits.map(
+(d,k)=>
+`${d} : ${
+this.sortPairs(
+(a.pairSets[k]||[])
+.slice(0,5)
+).join('-')
+}`
+)
 
+].join('\n');
 
-      top3Digits:
-        top.map(v=>v.digit),
+})
+.join('\n\n');
 
 
-      pairSets:
-        pairSets.map(
-          v=>v.slice(0,5)
-        ),
+$('result').innerHTML=`
 
+<div class="summary">
 
-      modelScores:
-        score,
+<span>
 
+ประมวลผลสำเร็จ
 
-      modelCount:5
+<strong>
+${outputData.length}
+</strong>
 
+รายการ • 5 AI Models
 
-    };
+</span>
 
+<button
+class="copy"
+id="copyTop"
+>
+📋 COPY ALL
+</button>
 
-  },
+</div>
 
 
-  /* =======================================================
-     NORMALIZE PAIR
-     02 = 20 FOR CONSENSUS ONLY
-     ======================================================= */
+${
+parsed.errors.length
+?
+`
+<div class="errorbox">
+${parsed.errors
+.map(esc)
+.join('<br>')}
+</div>
+`
+:''
+}
 
 
-  pairKey(pair){
+<div class="output-note">
 
+ผลลัพธ์ใช้เลขจาก
+<strong>5 AI Models เดิม</strong>
+เท่านั้น
 
-    const p=String(pair);
+• Top 3 ถูกคัดจาก Candidate Pool ของ 5 Models
 
+• เพิ่ม Consensus + Signal Agreement
+เฉพาะชั้นจัดอันดับ
 
-    if(!/^\d{2}$/.test(p))
-      return p;
+• หากอันดับ 3/4 สูสี
+ระบบใช้ Stability Check
 
+• 3 เลขเด่น × 5 คู่ = 15 คู่
 
-    const a=p[0];
-    const b=p[1];
+• 15 คู่ถูกนำมาจัด Consensus
 
+• 9 คู่แรกได้รับการจัดระดับ
+Gold / Silver / Rose Gold
 
-    return[
-      a,
-      b
-    ].sort().join('');
+• ป้ายด้านล่างใช้
+<strong>✦ บ้านเงินกอง</strong>
 
+</div>
 
-  },
 
+${cards.join('')}
 
-  /* =======================================================
-     CONSENSUS RANKING ACROSS ALL 15 PAIRS
-     ======================================================= */
 
+<button
+class="copyall"
+id="copyBottom"
+>
+📋 คัดลอกหวยทั้งหมด
+</button>
 
-  buildConsensus(pairSets){
+`;
 
 
-    const all=[];
+$('copyTop').onclick=
+()=>this.copy(all);
 
+$('copyBottom').onclick=
+()=>this.copy(all);
 
-    pairSets.forEach(
-      (set,rowIndex)=>{
+$('result').scrollIntoView({
+behavior:'smooth',
+block:'start'
+});
 
+},100);
 
-        set.slice(0,5)
-          .forEach(pair=>{
+},80);
 
+},
 
-            all.push({
 
-              pair:String(pair),
+/* =========================================================
+   CLEAR
+   ========================================================= */
 
-              rowIndex
+clear(){
 
-            });
+$('bulkInput').value='';
 
+$('result').innerHTML='';
 
-          });
+$('bulkInput').focus();
 
+},
 
-      }
-    );
 
+/* =========================================================
+   LOGIN
+   ORIGINAL LOGIN LOGIC PRESERVED
+   ========================================================= */
 
-    /*
-      Count reversed pairs as the same pair:
+login(){
 
-      02 = 20
-      37 = 73
-      etc.
-    */
+const v=
+$('password').value.trim();
 
+if(!sec.ok(v)){
 
-    const counts={};
+$('loginErr')
+.style.display='block';
 
+return;
 
-    all.forEach(item=>{
+}
 
+$('loginErr')
+.style.display='none';
 
-      const key=
-        this.pairKey(item.pair);
+$('login')
+.classList.remove('active');
 
+$('console')
+.classList.add('active');
 
-      if(!counts[key]){
+$('bulkInput').focus();
 
+localStorage.setItem(
+'ml_auth_status_v3',
+'active'
+);
 
-        counts[key]={
+},
 
-          key,
 
-          score:0,
+/* =========================================================
+   LOGOUT
+   ========================================================= */
 
-          pairs:new Set()
+logout(){
 
-        };
+localStorage.removeItem(
+'ml_auth_status_v3'
+);
 
+$('console')
+.classList.remove('active');
 
-      }
+$('login')
+.classList.add('active');
 
+$('password').value='';
 
-      counts[key].score++;
+$('bulkInput').value='';
 
+$('result').innerHTML='';
 
-      counts[key].pairs.add(
-        item.pair
-      );
-
-
-    });
-
-
-    /*
-      Rank by:
-
-      1. Consensus frequency
-      2. Numeric key for deterministic ordering
-    */
-
-
-    const ranked=
-      Object.values(counts)
-        .sort(
-
-          (a,b)=>
-            b.score-a.score ||
-            Number(a.key)-Number(b.key)
-
-        );
-
-
-    /*
-      Top 9 receive premium colors:
-
-      1-3 Gold
-      4-6 Silver
-      7-9 Rose Gold
-    */
-
-
-    const colorMap={};
-
-
-    ranked
-      .slice(0,9)
-      .forEach(
-        (item,index)=>{
-
-
-          let color='';
-
-
-          if(index<3)
-            color='gold';
-
-
-          else if(index<6)
-            color='silver';
-
-
-          else
-            color='rose';
-
-
-          colorMap[item.key]={
-
-            color,
-
-            rank:index+1,
-
-            score:item.score
-
-          };
-
-
-        }
-      );
-
-
-    return{
-
-      counts,
-
-      ranked,
-
-      colorMap
-
-    };
-
-
-  },
-
-
-  /* =======================================================
-     SORT PAIRS NUMERICALLY FOR CLEAN DISPLAY
-     ======================================================= */
-
-
-  sortPairs(pairs){
-
-
-    return pairs
-      .map(String)
-      .sort(
-
-        (a,b)=>
-          Number(a)-Number(b)
-
-      );
-
-
-  },
-
-
-  /* =======================================================
-     GET DISPLAY COLOR
-     ======================================================= */
-
-
-  pairClass(pair,colorMap){
-
-
-    const key=
-      this.pairKey(pair);
-
-
-    const info=
-      colorMap[key];
-
-
-    if(!info)
-      return'pair pair-normal';
-
-
-    if(info.color==='gold')
-      return'pair pair-gold';
-
-
-    if(info.color==='silver')
-      return'pair pair-silver';
-
-
-    if(info.color==='rose')
-      return'pair pair-rose';
-
-
-    return'pair pair-normal';
-
-
-  },
-
-
-  /* =======================================================
-     FORMAT DATE
-     ======================================================= */
-
-
-  formatDate(date){
-
-
-    const s=
-      String(date||'').trim();
-
-
-    if(
-      /\d+\s+\S+\s+\d+/.test(s)
-    ){
-
-
-      const parts=
-        s.split(/\s+/);
-
-
-      if(parts.length>=3){
-
-
-        return[
-
-          parts[0],
-
-          parts[1],
-
-          parts.slice(2).join(' ')
-
-        ].join(' · ');
-
-
-      }
-
-
-    }
-
-
-    if(
-      /^\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}$/
-        .test(s)
-    ){
-
-
-      return s.replace(
-        /[\/.-]/g,
-        ' · '
-      );
-
-
-    }
-
-
-    return s;
-
-
-  },
-
-
-  /* =======================================================
-     COPY
-     ======================================================= */
-
-
-  copy(text){
-
-
-    navigator.clipboard?.writeText(text)
-      .then(()=>this.show())
-      .catch(()=>{
-
-
-        const t=
-          document.createElement(
-            'textarea'
-          );
-
-
-        t.value=text;
-
-
-        document.body.appendChild(t);
-
-
-        t.select();
-
-
-        document.execCommand('copy');
-
-
-        t.remove();
-
-
-        this.show();
-
-
-      });
-
-
-  },
-
-
-  show(){
-
-
-    const t=$('toast');
-
-
-    t.classList.add('show');
-
-
-    clearTimeout(
-      this.toastTimer
-    );
-
-
-    this.toastTimer=
-      setTimeout(
-
-        ()=>t.classList.remove('show'),
-
-        1500
-
-      );
-
-
-  },
-
-
-  /* =======================================================
-     CALCULATE ALL LOTTERIES
-     ======================================================= */
-
-
-  calculate(){
-
-
-    const parsed=
-      this.parse(
-        $('bulkInput').value
-      );
-
-
-    if(!parsed.records.length){
-
-
-      $('result').innerHTML=
-        '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
-
-
-      return;
-
-
-    }
-
-
-    const scan=
-      $('scanner');
-
-
-    const btn=
-      $('run');
-
-
-    btn.disabled=true;
-
-
-    scan.style.display='block';
-
-
-    const msgs=[
-
-      'READING INPUT...',
-
-      'PARSING LOTTERY NAMES...',
-
-      'RUNNING EXISTING 5 AI MODELS...',
-
-      'VALIDATING TOP 3...',
-
-      'BUILDING 5-PAIR SETS...',
-
-      'OPTIMIZING TOP 3 & RANKING 15 PAIRS...',
-
-      'FINALIZING VIP REPORT...'
-
-    ];
-
-
-    let i=0;
-
-
-    $('scanText')
-      .textContent=msgs[0];
-
-
-    const timer=
-      setInterval(()=>{
-
-
-        i++;
-
-
-        if(i<msgs.length)
-          $('scanText')
-            .textContent=msgs[i];
-
-
-      },110);
-
-
-    setTimeout(()=>{
-
-
-      this.cache=[];
-
-
-      const cards=[];
-
-
-      const outputData=[];
-
-
-      parsed.records.forEach(r=>{
-
-
-        const a=
-          this.run(
-            r.n3,
-            r.n2
-          );
-
-
-        /*
-          HARD VALIDATION:
-
-          Top 3 must exist and every one
-          must be generated by the 5 main models.
-        */
-
-
-        const allowedDigits=
-          new Set();
-
-
-        Object.values(
-          a.modelScores
-        ).forEach(s=>{
-
-
-          if(s.modelScore>0)
-            allowedDigits.add(
-              s.digit
-            );
-
-
-        });
-
-
-        const validTop3=
-
-          a.top3Digits.length===3 &&
-
-          a.top3Digits.every(
-            d=>allowedDigits.has(d)
-          );
-
-
-        if(!validTop3){
-
-
-          parsed.errors.push(
-
-            `${r.name} | ${r.date}: ไม่ผ่านการตรวจสอบ Top 3 จาก 5 Main Models`
-
-          );
-
-
-          return;
-
-
-        }
-
-
-        this.cache.push(a);
-
-
-        /*
-          Consensus across all 15 pairs.
-        */
-
-
-        const consensus=
-          this.buildConsensus(
-            a.pairSets
-          );
-
-
-        /*
-          Build each row with:
-
-          - exactly 5 pairs
-          - numeric ascending order
-          - colors preserved according to consensus rank
-        */
-
-
-        const rows=
-          a.top3Digits
-            .map((d,k)=>{
-
-
-              const sourcePairs=
-                (a.pairSets[k]||[])
-                  .slice(0,5);
-
-
-              const sortedPairs=
-                this.sortPairs(
-                  sourcePairs
-                );
-
-
-              const pairHTML=
-                sortedPairs
-                  .map(pair=>{
-
-
-                    return`
-
-                      <span
-                        class="${this.pairClass(
-                          pair,
-                          consensus.colorMap
-                        )}"
-                        title="Consensus ${
-                          consensus.colorMap[
-                            this.pairKey(pair)
-                          ]?.score||0
-                        } Models"
-                      >${esc(pair)}</span>
-
-                    `;
-
-
-                  })
-                  .join('');
-
-
-              const medalClass=
-
-                k===0
-                  ?'medal medal-gold'
-
-                  :k===1
-                    ?'medal medal-silver'
-
-                    :'medal medal-rose';
-
-
-              return`
-
-                <div class="row">
-
-
-                  <div class="digit-rank">
-
-
-                    <span
-                      class="${medalClass}"
-                    >
-                      ${k+1}
-                    </span>
-
-
-                    <span class="digit">
-                      ${esc(d)}
-                    </span>
-
-
-                  </div>
-
-
-                  <span class="sep">
-                    :
-                  </span>
-
-
-                  <div class="pairs">
-                    ${pairHTML}
-                  </div>
-
-
-                </div>
-
-              `;
-
-
-            })
-            .join('');
-
-
-        /*
-          Old Gold / Silver / Rose Gold legend
-          intentionally removed.
-
-          Replaced with the requested brand:
-          ✦ บ้านเงินกอง
-        */
-
-
-        const legend=`
-
-          <div class="consensus brand-footer">
-
-            <span class="brand-star">
-              ✦
-            </span>
-
-            <span>
-              บ้านเงินกอง
-            </span>
-
-          </div>
-
-        `;
-
-
-        cards.push(`
-
-          <article class="lottery">
-
-
-            <div class="lottery-head">
-
-
-              <div class="lottery-name-wrap">
-
-
-                <div class="lottery-name">
-
-
-                  <span class="flag">
-                    ${this.flag(r.name)}
-                  </span>
-
-
-                  <span>
-                    ${esc(r.name)}
-                  </span>
-
-
-                </div>
-
-
-                <div class="date">
-                  ${esc(
-                    this.formatDate(r.date)
-                  )}
-                </div>
-
-
-              </div>
-
-
-              <div class="vip-label">
-                VIP ANALYSIS
-              </div>
-
-
-            </div>
-
-
-            <div class="rows">
-              ${rows}
-            </div>
-
-
-            ${legend}
-
-
-          </article>
-
-        `);
-
-
-        outputData.push({
-
-          record:r,
-
-          result:a
-
-        });
-
-
-      });
-
-
-      clearInterval(timer);
-
-
-      scan.style.display='none';
-
-
-      btn.disabled=false;
-
-
-      /*
-        COPY ALL:
-
-        Clean output only.
-        No scores.
-        No UI labels.
-        No colors.
-      */
-
-
-      const all=
-        outputData
-          .map(item=>{
-
-
-            const r=
-              item.record;
-
-
-            const a=
-              item.result;
-
-
-            return[
-
-              `${this.flag(r.name)} ${r.name}`,
-
-              `${this.formatDate(r.date)}`,
-
-              ...a.top3Digits.map(
-                (d,k)=>
-
-                  `${d} : ${
-                    (a.pairSets[k]||[])
-                      .slice(0,5)
-                      .sort(
-                        (a,b)=>
-                          Number(a)-Number(b)
-                      )
-                      .join('-')
-                  }`
-
-              )
-
-            ].join('\n');
-
-
-          })
-          .join('\n\n');
-
-
-      $('result').innerHTML=`
-
-
-        <div class="summary">
-
-
-          <span>
-
-            ประมวลผลสำเร็จ
-
-            <strong>
-              ${outputData.length}
-            </strong>
-
-            รายการ • 5 AI Models
-
-          </span>
-
-
-          <button
-            class="copy"
-            id="copyTop"
-          >
-            📋 COPY ALL
-          </button>
-
-
-        </div>
-
-
-        ${
-          parsed.errors.length
-
-            ?`
-
-              <div class="errorbox">
-
-                ${parsed.errors
-                  .map(esc)
-                  .join('<br>')}
-
-              </div>
-
-            `
-
-            :''
-        }
-
-
-        <div class="output-note">
-
-
-          ผลลัพธ์ด้านล่างใช้เฉพาะเลขที่ถูกสร้างโดย
-          <strong>
-            AI โมเดล 01–05
-          </strong>
-          เท่านั้น
-
-
-          • เลขเด่น 3 อันดับต้องมาจาก 5 Main Models
-
-
-          • เพิ่ม Consensus + Signal Agreement
-            เฉพาะในชั้นคัดเลือก Top 3
-
-
-          • ถ้าอันดับ 3/4 สูสี
-            ระบบทำ Stability Check เพิ่ม
-
-
-          • แต่ละเลขเด่นมีเลขเจาะ 5 คู่
-
-
-          • รวม 15 คู่ต่อหวย
-
-
-          • ระบบจัด Consensus ของ 15 คู่ร่วมกัน
-
-
-          • Top 9 Consensus ถูกจัดอันดับ
-            Gold / Silver / Rose Gold
-
-
-          • ป้ายด้านล่างใช้ชื่อ
-            <strong>✦ บ้านเงินกอง</strong>
-
-        </div>
-
-
-        ${cards.join('')}
-
-
-        <button
-          class="copyall"
-          id="copyBottom"
-        >
-          📋 คัดลอกหวยทั้งหมด
-        </button>
-
-
-      `;
-
-
-      $('copyTop').onclick=
-        ()=>this.copy(all);
-
-
-      $('copyBottom').onclick=
-        ()=>this.copy(all);
-
-
-      $('result').scrollIntoView({
-
-        behavior:'smooth',
-
-        block:'start'
-
-      });
-
-
-    },80);
-
-
-  },
-
-
-  /* =======================================================
-     CLEAR
-     ======================================================= */
-
-
-  clear(){
-
-
-    $('bulkInput').value='';
-
-
-    $('result').innerHTML='';
-
-
-    $('bulkInput').focus();
-
-
-  },
-
-
-  /* =======================================================
-     LOGIN
-     ======================================================= */
-
-
-  login(){
-
-
-    const v=
-      $('password').value;
-
-
-    if(!sec.ok(v)){
-
-
-      $('loginErr')
-        .style.display='block';
-
-
-      return;
-
-
-    }
-
-
-    $('loginErr')
-      .style.display='none';
-
-
-    $('login')
-      .classList.remove(
-        'active'
-      );
-
-
-    $('console')
-      .classList.add(
-        'active'
-      );
-
-
-    $('bulkInput').focus();
-
-
-    localStorage.setItem(
-      'ml_auth_status_v3',
-      'active'
-    );
-
-
-  },
-
-
-  /* =======================================================
-     LOGOUT
-     ======================================================= */
-
-
-  logout(){
-
-
-    localStorage.removeItem(
-      'ml_auth_status_v3'
-    );
-
-
-    $('console')
-      .classList.remove(
-        'active'
-      );
-
-
-    $('login')
-      .classList.add(
-        'active'
-      );
-
-
-    $('password').value='';
-
-
-    $('bulkInput').value='';
-
-
-    $('result').innerHTML='';
-
-
-  }
-
+}
 
 };
 
@@ -3369,87 +2647,70 @@ const app={
    EVENTS
    ========================================================= */
 
-
 $('loginBtn').onclick=
-  ()=>app.login();
+()=>app.login();
 
+$('password').onkeydown=
+e=>{
 
-$('password').oninput=()=>{
-
-  $('loginErr')
-    .style.display='none';
-
-};
-
-
-$('password').onkeydown=e=>{
-
-
-  if(e.key==='Enter')
-    app.login();
-
+if(e.key==='Enter')
+app.login();
 
 };
 
+$('password').oninput=
+()=>{
+
+$('loginErr')
+.style.display='none';
+
+};
 
 $('run').onclick=
-  ()=>app.calculate();
-
+()=>app.calculate();
 
 $('clear').onclick=
-  ()=>app.clear();
-
+()=>app.clear();
 
 $('logout').onclick=
-  ()=>app.logout();
+()=>app.logout();
 
+$('bulkInput').onkeydown=
+e=>{
 
-$('bulkInput').onkeydown=e=>{
+if(
+(e.ctrlKey||e.metaKey) &&
+e.key==='Enter'
+){
 
+app.calculate();
 
-  if(
-    (e.ctrlKey||e.metaKey) &&
-    e.key==='Enter'
-  ){
-
-    app.calculate();
-
-  }
-
+}
 
 };
 
 
 /* =========================================================
    RESTORE SESSION
+   ORIGINAL KEY PRESERVED
    ========================================================= */
 
-
 if(
-  localStorage.getItem(
-    'ml_auth_status_v3'
-  )==='active'
+localStorage.getItem(
+'ml_auth_status_v3'
+)==='active'
 ){
 
+$('login')
+.classList.remove('active');
 
-  $('login')
-    .classList.remove(
-      'active'
-    );
-
-
-  $('console')
-    .classList.add(
-      'active'
-    );
-
+$('console')
+.classList.add('active');
 
 }
 
-
 })();
 </script>
-
 
 </body>
 </html>
