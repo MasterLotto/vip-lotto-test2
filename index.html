@@ -4,217 +4,352 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ระบบคำนวณเลขเด่น + เลขเจาะ</title>
+
 <style>
 :root{
   --bg:#f5f7fb;
-  --card:#fff;
-  --ink:#18212f;
+  --card:#ffffff;
+  --ink:#172033;
   --muted:#64748b;
   --line:#dbe2ea;
   --accent:#2563eb;
-  --ok:#15803d;
-  --warn:#b45309;
-  --bad:#b91c1c;
+  --danger:#dc2626;
   --soft:#eef4ff;
-  --shadow:0 10px 28px rgba(15,23,42,.08)
+  --shadow:0 8px 24px rgba(15,23,42,.07);
 }
-*{box-sizing:border-box}
+
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   background:var(--bg);
   color:var(--ink);
-  font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif
+  font-family:
+    system-ui,
+    -apple-system,
+    "Noto Sans Thai",
+    "Noto Sans",
+    sans-serif;
 }
-.wrap{max-width:1180px;margin:auto;padding:18px}
+
+.wrap{
+  max-width:1180px;
+  margin:auto;
+  padding:18px;
+}
+
 .top{
   display:flex;
   justify-content:space-between;
-  gap:12px;
   align-items:center;
-  flex-wrap:wrap
+  gap:14px;
+  flex-wrap:wrap;
 }
-.title{font-size:22px;font-weight:800}
-.sub{color:var(--muted);font-size:13px;margin-top:4px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.title{
+  font-size:22px;
+  font-weight:900;
+}
+
+.sub{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:4px;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
 button{
   border:0;
   border-radius:10px;
-  padding:10px 14px;
-  font-weight:700;
-  cursor:pointer
+  padding:10px 15px;
+  font-weight:800;
+  cursor:pointer;
+  font-family:inherit;
 }
-button.primary{background:var(--accent);color:white}
-button.secondary{background:#e8eef8;color:#20304a}
-button.danger{background:#fee2e2;color:#991b1b}
-button:disabled{opacity:.5;cursor:not-allowed}
-.panel,.card{
+
+button.primary{
+  background:var(--accent);
+  color:#fff;
+}
+
+button.secondary{
+  background:#e8eef7;
+  color:#20304a;
+}
+
+button.danger{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.panel{
+  margin-top:16px;
   background:var(--card);
   border:1px solid var(--line);
   border-radius:16px;
-  box-shadow:var(--shadow)
+  padding:16px;
+  box-shadow:var(--shadow);
 }
-.panel{padding:16px;margin-top:16px}
-textarea{
-  width:100%;
-  min-height:230px;
-  resize:vertical;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:13px;
-  font:14px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;
-  outline:none
-}
-textarea:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(37,99,235,.12)
-}
+
 .bar{
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:10px;
   flex-wrap:wrap;
-  margin-bottom:10px
+  margin-bottom:10px;
 }
-.status{font-size:13px;color:var(--muted)}
-.error{color:var(--bad);white-space:pre-wrap}
+
+.status{
+  color:var(--muted);
+  font-size:13px;
+}
+
+textarea{
+  display:block;
+  width:100%;
+  min-height:240px;
+  resize:vertical;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:13px;
+  outline:none;
+  font:14px/1.65
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+}
+
+textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(37,99,235,.1);
+}
+
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(310px,1fr));
+  grid-template-columns:
+    repeat(auto-fit,minmax(300px,1fr));
   gap:14px;
-  margin-top:16px
+  margin-top:16px;
 }
-.card{padding:16px}
-.cardhead{
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:17px;
+  box-shadow:var(--shadow);
+}
+
+.card-head{
   display:flex;
+  align-items:center;
   justify-content:space-between;
   gap:10px;
-  align-items:flex-start;
-  border-bottom:1px solid var(--line);
-  padding-bottom:12px
+  margin-bottom:14px;
 }
-.name{font-weight:800;font-size:18px}
-.target{font-size:13px;color:var(--muted);margin-top:3px}
-.badge{
-  background:var(--soft);
-  color:#1d4ed8;
-  border-radius:999px;
-  padding:5px 9px;
-  font-size:12px;
-  font-weight:800;
-  white-space:nowrap
-}
-.section{margin-top:14px}
-.section h3{font-size:14px;margin:0 0 8px}
-.numbers{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px
-}
-.numbox{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px;
-  background:#fbfdff
-}
-.lead{font-size:13px;color:var(--muted)}
-.big{
-  font-size:27px;
+
+.lottery-name{
+  font-size:19px;
   font-weight:900;
-  letter-spacing:.16em;
-  margin-top:4px
+  line-height:1.25;
 }
-.pairs{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
-.pair{
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  background:#f1f5f9;
-  border:1px solid #d9e2ec;
-  border-radius:8px;
-  padding:6px 8px;
-  font-weight:800
-}
-.summary{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px;
-  background:#fafafa
-}
-.summarygrid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px;
-  font-size:13px
-}
-.metric{
-  background:white;
-  border:1px solid var(--line);
-  border-radius:9px;
-  padding:9px
-}
-.metric b{
-  display:block;
-  font-size:16px;
-  margin-top:2px
-}
-.formula-list{display:grid;gap:7px}
-.formula-row{
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:9px;
-  background:white;
-  font-size:12px
-}
-.formula-row strong{
-  display:block;
-  font-size:13px;
-  margin-bottom:3px
-}
-.formula-out{
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace
-}
-.empty{
-  padding:35px;
-  text-align:center;
-  color:var(--muted)
-}
-.foot{
-  margin-top:16px;
+
+.target-date{
   color:var(--muted);
   font-size:12px;
-  line-height:1.6
+  margin-top:4px;
 }
-.hidden{display:none!important}
+
+.result-block{
+  display:grid;
+  gap:9px;
+}
+
+.result-line{
+  display:grid;
+  grid-template-columns:44px 1fr;
+  align-items:center;
+  gap:8px;
+  min-height:40px;
+}
+
+.lead-digit{
+  font-size:25px;
+  line-height:1;
+  font-weight:950;
+  text-align:center;
+}
+
+.drill-list{
+  min-width:0;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+  font-size:16px;
+  font-weight:850;
+  letter-spacing:.01em;
+  overflow-wrap:anywhere;
+}
+
+.empty{
+  grid-column:1/-1;
+  text-align:center;
+  padding:38px 15px;
+  color:var(--muted);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+}
+
+.error{
+  color:#991b1b;
+  background:#fff7f7;
+  border:1px solid #fecaca;
+  border-radius:10px;
+  padding:12px;
+  line-height:1.65;
+  font-size:13px;
+}
+
+.hidden{
+  display:none !important;
+}
+
+.audit{
+  margin-top:16px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  padding:16px;
+}
+
+.audit-title{
+  font-size:15px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.audit-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit,minmax(180px,1fr));
+  gap:8px;
+}
+
+.audit-item{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  background:#fbfdff;
+  font-size:12px;
+}
+
+.audit-item b{
+  display:block;
+  font-size:17px;
+  margin-top:3px;
+}
+
+.audit-note{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:10px;
+  line-height:1.6;
+}
+
 @media(max-width:600px){
-  .numbers{grid-template-columns:1fr}
-  .summarygrid{grid-template-columns:1fr}
+  .wrap{
+    padding:12px;
+  }
+
+  .result-line{
+    grid-template-columns:38px 1fr;
+  }
+
+  .drill-list{
+    font-size:14px;
+  }
+
+  .lottery-name{
+    font-size:17px;
+  }
 }
 </style>
 </head>
 
 <body>
+
 <div class="wrap">
 
   <div class="top">
+
     <div>
-      <div class="title">ระบบคำนวณเลขเด่น + เลขเจาะ</div>
+      <div class="title">
+        ระบบคำนวณเลขเด่น + เลขเจาะ
+      </div>
+
       <div class="sub">
-        แยกประเภทหวยอัตโนมัติ • ไม่มีรหัสผ่าน • ไม่มี Backend • ใช้ข้อมูลในหน้านี้เท่านั้น
+        แยกประเภทอัตโนมัติ • คำนวณจากข้อมูลล่าสุด • ไม่มี Backend
       </div>
     </div>
 
     <div class="actions">
-      <button class="primary" id="processBtn">ประมวลผล</button>
-      <button class="secondary" id="copyBtn" disabled>คัดลอกทั้งหมด</button>
-      <button class="danger" id="clearBtn">ล้างข้อมูลทั้งหมด</button>
+      <button
+        class="primary"
+        id="processBtn">
+        ประมวลผล
+      </button>
+
+      <button
+        class="secondary"
+        id="copyBtn"
+        disabled>
+        คัดลอกทั้งหมด
+      </button>
+
+      <button
+        class="danger"
+        id="clearBtn">
+        ล้างข้อมูลทั้งหมด
+      </button>
     </div>
+
   </div>
 
+
   <div class="panel">
+
     <div class="bar">
-      <strong>ข้อมูลนำเข้า</strong>
-      <span class="status" id="inputStatus">
-        วางข้อมูลรูปแบบ ชื่อหวย | วันที่ / 3 ตัวบน / 2 ตัวล่าง
+
+      <strong>
+        ข้อมูลนำเข้า
+      </strong>
+
+      <span
+        class="status"
+        id="inputStatus">
+        รอรับข้อมูล
       </span>
+
     </div>
 
     <textarea
@@ -223,236 +358,454 @@ textarea:focus{
       placeholder="ลาว VIP | 25 ส.ค. 69
 980
 79
+ลาว VIP | 24 ส.ค. 69
+326
+93
 
 ลาว HD | 25 ส.ค. 69
 123
-45"
-    ></textarea>
+45
+ลาว HD | 24 ส.ค. 69
+456
+78"></textarea>
 
-    <div class="foot">
-      ระบบเก็บเลขเป็นข้อความเพื่อรักษา 0 นำหน้า เช่น 080, 08, 02
-      และใช้ชื่อประเภทเต็มเป็นตัวแยกข้อมูล เช่น ลาว VIP ≠ ลาว HD
+  </div>
+
+
+  <div
+    id="errors"
+    class="panel hidden">
+  </div>
+
+
+  <div
+    id="results"
+    class="grid">
+
+    <div class="empty">
+      ยังไม่มีผลลัพธ์
     </div>
+
   </div>
 
-  <div id="errors" class="panel hidden"></div>
 
-  <div id="results" class="grid">
-    <div class="empty">ยังไม่มีผลลัพธ์</div>
-  </div>
+  <div
+    id="auditPanel"
+    class="audit hidden">
 
-  <div class="foot">
-    หมายเหตุ: เปอร์เซ็นต์ Backtest จะแสดงเฉพาะเมื่อข้อมูลของประเภทนั้นมีอย่างน้อย 2 งวด
-    ในช่องนำเข้า และเป็นการวัดจากข้อมูลที่ป้อนเข้ามาเท่านั้น ไม่ใช่การรับประกันผลอนาคต
+    <div class="audit-title">
+      ผลตรวจสอบ Backtest
+    </div>
+
+    <div
+      id="auditGrid"
+      class="audit-grid">
+    </div>
+
+    <div class="audit-note">
+      Backtest ใช้เฉพาะข้อมูลย้อนหลังที่ผู้ใช้ป้อนเข้ามา
+      และแยกตามประเภทหวยโดยเด็ดขาด
+      ค่านี้ใช้สำหรับตรวจสอบสูตร ไม่ถูกนำไปเป็นข้อมูลสะสม
+      หรือเป็น Backend ของระบบ
+    </div>
+
   </div>
 
 </div>
 
+
 <script>
-'use strict';
+"use strict";
+
 
 /* =========================================================
-   CORE MATH
+   GLOBAL CONSTANTS
    ========================================================= */
 
-const MOD10 = n => ((n % 10) + 10) % 10;
+const MOD10 = (n) =>
+  ((n % 10) + 10) % 10;
+
 
 /*
-  H = หลักร้อย 3 ตัวบน
-  T = หลักสิบ 3 ตัวบน
-  U = หลักหน่วย 3 ตัวบน
-  D = หลักสิบ 2 ตัวล่าง
-  E = หลักหน่วย 2 ตัวล่าง
+  ลำดับความสำคัญเมื่อคะแนนเท่ากัน
+  ใช้เพื่อให้ผล deterministic
+*/
+const FORMULA_ORDER = [
+  "A",
+  "B",
+  "C",
+  "D"
+];
+
+
+/* =========================================================
+   FOUR CORE FORMULAS
+   =========================================================
+
+   H = หลักร้อย 3 ตัวบน
+   T = หลักสิบ 3 ตัวบน
+   U = หลักหน่วย 3 ตัวบน
+   D = หลักสิบ 2 ตัวล่าง
+   E = หลักหน่วย 2 ตัวล่าง
+
+   ทุกผลถูกลดด้วย mod 10
 */
 
 const FORMULAS = {
 
-  A: {
-    name: 'สูตร A — Position',
-    desc: 'A1 = H + U ; A2 = U − T',
+  A:{
+    name:"สูตร A",
+    description:"H + U / U - T",
 
-    calc: (H,T,U,D,E) => [
+    calc:(H,T,U,D,E)=>[
       MOD10(H + U),
       MOD10(U - T)
     ]
   },
 
-  B: {
-    name: 'สูตร B — Cross',
-    desc: 'B1 = H − D ; B2 = H + 2T + 3U + D + E',
 
-    calc: (H,T,U,D,E) => [
+  B:{
+    name:"สูตร B",
+    description:"H - D / H + 2T + 3U + D + E",
+
+    calc:(H,T,U,D,E)=>[
       MOD10(H - D),
-      MOD10(H + 2*T + 3*U + D + E)
+      MOD10(
+        H +
+        2*T +
+        3*U +
+        D +
+        E
+      )
     ]
   },
 
-  C: {
-    name: 'สูตร C — Weighted Cross',
-    desc: 'C1 = E − U ; C2 = 2H + T + 3U + D + 2E',
 
-    calc: (H,T,U,D,E) => [
+  C:{
+    name:"สูตร C",
+    description:"E - U / 2H + T + 3U + D + 2E",
+
+    calc:(H,T,U,D,E)=>[
       MOD10(E - U),
-      MOD10(2*H + T + 3*U + D + 2*E)
+      MOD10(
+        2*H +
+        T +
+        3*U +
+        D +
+        2*E
+      )
     ]
   },
 
-  D: {
-    name: 'สูตร D — Balance',
-    desc: 'D1 = D − E ; D2 = H + 2T − U + D − E',
 
-    calc: (H,T,U,D,E) => [
+  D:{
+    name:"สูตร D",
+    description:"D - E / H + 2T - U + D - E",
+
+    calc:(H,T,U,D,E)=>[
       MOD10(D - E),
-      MOD10(H + 2*T - U + D - E)
+      MOD10(
+        H +
+        2*T -
+        U +
+        D -
+        E
+      )
     ]
   }
+
 };
+
 
 /* =========================================================
    THAI DATE
    ========================================================= */
 
 const MONTHS = {
-  'ม.ค.':0,
-  'มค.':0,
-  'มกราคม':0,
 
-  'ก.พ.':1,
-  'กพ.':1,
-  'กุมภาพันธ์':1,
+  "ม.ค.":0,
+  "มค.":0,
+  "มกราคม":0,
 
-  'มี.ค.':2,
-  'มีค.':2,
-  'มีนาคม':2,
+  "ก.พ.":1,
+  "กพ.":1,
+  "กุมภาพันธ์":1,
 
-  'เม.ย.':3,
-  'เมย.':3,
-  'เมษายน':3,
+  "มี.ค.":2,
+  "มีค.":2,
+  "มีนาคม":2,
 
-  'พ.ค.':4,
-  'พค.':4,
-  'พฤษภาคม':4,
+  "เม.ย.":3,
+  "เมย.":3,
+  "เมษายน":3,
 
-  'มิ.ย.':5,
-  'มิย.':5,
-  'มิถุนายน':5,
+  "พ.ค.":4,
+  "พค.":4,
+  "พฤษภาคม":4,
 
-  'ก.ค.':6,
-  'กค.':6,
-  'กรกฎาคม':6,
+  "มิ.ย.":5,
+  "มิย.":5,
+  "มิถุนายน":5,
 
-  'ส.ค.':7,
-  'สค.':7,
-  'สิงหาคม':7,
+  "ก.ค.":6,
+  "กค.":6,
+  "กรกฎาคม":6,
 
-  'ก.ย.':8,
-  'กย.':8,
-  'กันยายน':8,
+  "ส.ค.":7,
+  "สค.":7,
+  "สิงหาคม":7,
 
-  'ต.ค.':9,
-  'ตค.':9,
-  'ตุลาคม':9,
+  "ก.ย.":8,
+  "กย.":8,
+  "กันยายน":8,
 
-  'พ.ย.':10,
-  'พย.':10,
-  'พฤศจิกายน':10,
+  "ต.ค.":9,
+  "ตค.":9,
+  "ตุลาคม":9,
 
-  'ธ.ค.':11,
-  'ธค.':11,
-  'ธันวาคม':11
+  "พ.ย.":10,
+  "พย.":10,
+  "พฤศจิกายน":10,
+
+  "ธ.ค.":11,
+  "ธค.":11,
+  "ธันวาคม":11
 };
 
-function parseThaiDate(day, month, year) {
 
-  const m = MONTHS[month];
+const THAI_MONTH_NAMES = [
+  "ม.ค.",
+  "ก.พ.",
+  "มี.ค.",
+  "เม.ย.",
+  "พ.ค.",
+  "มิ.ย.",
+  "ก.ค.",
+  "ส.ค.",
+  "ก.ย.",
+  "ต.ค.",
+  "พ.ย.",
+  "ธ.ค."
+];
 
-  if (m === undefined) {
-    throw new Error(`ไม่รู้จักเดือน "${month}"`);
+
+function parseThaiDate(
+  day,
+  month,
+  year
+){
+
+  if (
+    MONTHS[month] === undefined
+  ){
+
+    throw new Error(
+      `ไม่รู้จักเดือน "${month}"`
+    );
   }
 
   let y = Number(year);
 
-  if (y < 100) {
+  if (
+    y < 100
+  ){
     y += 2500;
   }
 
-  if (y >= 2400) {
+  /*
+    พ.ศ. -> ค.ศ.
+  */
+  if (
+    y >= 2400
+  ){
     y -= 543;
   }
 
-  return new Date(Date.UTC(
-    y,
-    m,
-    Number(day)
-  ));
+  const date =
+    new Date(
+      Date.UTC(
+        y,
+        MONTHS[month],
+        Number(day)
+      )
+    );
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ){
+
+    throw new Error(
+      `วันที่ไม่ถูกต้อง: ${day} ${month} ${year}`
+    );
+  }
+
+  return date;
 }
 
-function fmtDate(d) {
 
-  const months = [
-    'ม.ค.',
-    'ก.พ.',
-    'มี.ค.',
-    'เม.ย.',
-    'พ.ค.',
-    'มิ.ย.',
-    'ก.ค.',
-    'ส.ค.',
-    'ก.ย.',
-    'ต.ค.',
-    'พ.ย.',
-    'ธ.ค.'
-  ];
+function formatThaiDate(date){
 
-  return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${String(
-    d.getUTCFullYear() + 543
-  ).slice(-2)}`;
+  return (
+    date.getUTCDate() +
+    " " +
+    THAI_MONTH_NAMES[
+      date.getUTCMonth()
+    ] +
+    " " +
+    String(
+      date.getUTCFullYear() + 543
+    ).slice(-2)
+  );
 }
 
-function nextDay(d) {
 
-  const x = new Date(d.getTime());
+function nextDay(date){
 
-  x.setUTCDate(
-    x.getUTCDate() + 1
+  const d =
+    new Date(
+      date.getTime()
+    );
+
+  d.setUTCDate(
+    d.getUTCDate() + 1
   );
 
-  return x;
+  return d;
 }
+
+
+/* =========================================================
+   LOTTERY EMOJI
+   ========================================================= */
+
+function lotteryEmoji(name){
+
+  const n =
+    String(name)
+      .toLowerCase();
+
+  if (
+    n.includes("ฮานอย") ||
+    n.includes("เวียดนาม")
+  ){
+    return "🇻🇳";
+  }
+
+  if (
+    n.includes("ลาว")
+  ){
+    return "🇱🇦";
+  }
+
+  if (
+    n.includes("จีน")
+  ){
+    return "🇨🇳";
+  }
+
+  if (
+    n.includes("นิคเคอิ") ||
+    n.includes("นิเคอิ") ||
+    n.includes("nikkei")
+  ){
+    return "🇯🇵";
+  }
+
+  if (
+    n.includes("ญี่ปุ่น")
+  ){
+    return "🇯🇵";
+  }
+
+  if (
+    n.includes("เกาหลี")
+  ){
+    return "🇰🇷";
+  }
+
+  if (
+    n.includes("รัสเซีย")
+  ){
+    return "🇷🇺";
+  }
+
+  if (
+    n.includes("ดาวโจนส์") ||
+    n.includes("dow")
+  ){
+    return "🇺🇸";
+  }
+
+  if (
+    n.includes("รัฐบาลไทย") ||
+    n.includes("ไทย")
+  ){
+    return "🇹🇭";
+  }
+
+  if (
+    n.includes("หุ้น")
+  ){
+    return "📈";
+  }
+
+  return "🎯";
+}
+
 
 /* =========================================================
    INPUT PARSER
    ========================================================= */
 
-function parseInput(text) {
+function parseInput(text){
 
-  const lines = text
-    .replace(/\r/g,'')
-    .split('\n')
-    .map(x => x.trim())
-    .filter(Boolean);
+  const lines =
+    String(text)
+      .replace(/\r/g,"")
+      .split("\n")
+      .map(
+        line => line.trim()
+      )
+      .filter(
+        Boolean
+      );
+
 
   const rows = [];
   const errors = [];
 
-  let i = 0;
 
   /*
-    รองรับ:
-    ลาว VIP | 25 ส.ค. 69
+    รูปแบบ:
+
+    ชื่อหวย | 25 ส.ค. 69
     980
     79
   */
 
-  const header =
+  const headerPattern =
     /^(.+?)\s*\|\s*(\d{1,2})\s+([^\s]+)\s+(\d{2,4})$/u;
 
-  while (i < lines.length) {
 
-    const line = lines[i];
-    const m = line.match(header);
+  let i = 0;
 
-    if (!m) {
+
+  while (
+    i < lines.length
+  ){
+
+    const line =
+      lines[i];
+
+    const match =
+      line.match(
+        headerPattern
+      );
+
+
+    if (!match){
 
       errors.push(
         `บรรทัด ${i+1}: ไม่ใช่รูปแบบ "ชื่อหวย | วันที่" → ${line}`
@@ -462,70 +815,92 @@ function parseInput(text) {
       continue;
     }
 
+
     let date;
 
-    try {
+    try{
 
-      date = parseThaiDate(
-        m[2],
-        m[3],
-        m[4]
-      );
+      date =
+        parseThaiDate(
+          match[2],
+          match[3],
+          match[4]
+        );
 
-    } catch (e) {
+    }catch(error){
 
       errors.push(
-        `บรรทัด ${i+1}: ${e.message}`
+        `บรรทัด ${i+1}: ${error.message}`
       );
 
-      i += 3;
+      i++;
       continue;
     }
 
-    if (i + 2 >= lines.length) {
+
+    if (
+      i + 2 >= lines.length
+    ){
 
       errors.push(
-        `${m[1]} | ${fmtDate(date)}: ข้อมูล 3 ตัวบน/2 ตัวล่างไม่ครบ`
+        `${match[1]} | ${formatThaiDate(date)}: ข้อมูลไม่ครบ`
       );
 
       break;
     }
 
+
+    const type =
+      match[1].trim();
+
     const top =
-      lines[i+1].replace(/\s+/g,'');
+      lines[i+1]
+        .replace(/\s+/g,"");
 
     const bottom =
-      lines[i+2].replace(/\s+/g,'');
+      lines[i+2]
+        .replace(/\s+/g,"");
 
-    if (!/^\d{3}$/.test(top)) {
+
+    if (
+      !/^\d{3}$/.test(top)
+    ){
 
       errors.push(
-        `${m[1]} | ${fmtDate(date)}: 3 ตัวบนไม่ถูกต้อง → ${lines[i+1]}`
+        `${type} | ${formatThaiDate(date)}: 3 ตัวบนไม่ถูกต้อง → ${top}`
       );
     }
 
-    if (!/^\d{2}$/.test(bottom)) {
+
+    if (
+      !/^\d{2}$/.test(bottom)
+    ){
 
       errors.push(
-        `${m[1]} | ${fmtDate(date)}: 2 ตัวล่างไม่ถูกต้อง → ${lines[i+2]}`
+        `${type} | ${formatThaiDate(date)}: 2 ตัวล่างไม่ถูกต้อง → ${bottom}`
       );
     }
+
 
     if (
       /^\d{3}$/.test(top) &&
       /^\d{2}$/.test(bottom)
-    ) {
+    ){
 
       rows.push({
-        type: m[1].trim(),
+
+        type,
         date,
         top,
         bottom
+
       });
     }
 
+
     i += 3;
   }
+
 
   return {
     rows,
@@ -533,457 +908,738 @@ function parseInput(text) {
   };
 }
 
+
 /* =========================================================
    DIGIT EXTRACTION
    ========================================================= */
 
-function digits(row) {
+function getDigits(row){
 
   return {
 
-    H: Number(row.top[0]),
-    T: Number(row.top[1]),
-    U: Number(row.top[2]),
+    H:Number(row.top[0]),
+    T:Number(row.top[1]),
+    U:Number(row.top[2]),
 
-    D: Number(row.bottom[0]),
-    E: Number(row.bottom[1])
+    D:Number(row.bottom[0]),
+    E:Number(row.bottom[1])
 
   };
 }
 
-/* =========================================================
-   FORMULA CALCULATION
-   ========================================================= */
-
-function calcAll(row) {
-
-  const {H,T,U,D,E} = digits(row);
-
-  const output = {};
-
-  for (const [key, formula] of Object.entries(FORMULAS)) {
-
-    output[key] =
-      formula.calc(H,T,U,D,E);
-
-  }
-
-  return output;
-}
 
 /* =========================================================
-   HIT CHECK
+   CALCULATE ALL FOUR FORMULAS
    ========================================================= */
 
-function hit(values, bottom) {
+function calculateAll(row){
 
-  const set = new Set(values);
+  const {
+    H,
+    T,
+    U,
+    D,
+    E
+  } = getDigits(row);
 
-  return [...bottom].some(
-    x => set.has(Number(x))
-  );
-}
 
-function exact(values, bottom) {
+  const result = {};
 
-  const a = new Set(values);
-  const b = new Set(
-    [...bottom].map(Number)
-  );
-
-  return (
-    a.size === 2 &&
-    b.size === 2 &&
-    [...a].every(x => b.has(x))
-  );
-}
-
-/* =========================================================
-   BACKTEST
-   ใช้เฉพาะข้อมูลที่ผู้ใช้ป้อนเข้ามา
-   ไม่ใช่ Backend
-   ========================================================= */
-
-function backtest(rows) {
-
-  const sorted = [...rows]
-    .sort((a,b) => a.date - b.date);
-
-  const stats = {};
-
-  for (const key of Object.keys(FORMULAS)) {
-
-    stats[key] = {
-      tested: 0,
-      hit: 0,
-      exact: 0
-    };
-  }
-
-  const consensusStats = {
-    tested: 0,
-    hit: 0,
-    exact: 0
-  };
 
   for (
-    let i = 0;
-    i < sorted.length - 1;
-    i++
-  ) {
+    const key of FORMULA_ORDER
+  ){
 
-    const current = sorted[i];
-    const next = sorted[i+1];
-
-    const results =
-      calcAll(current);
-
-    for (
-      const key of Object.keys(FORMULAS)
-    ) {
-
-      stats[key].tested++;
-
-      if (
-        hit(
-          results[key],
-          next.bottom
-        )
-      ) {
-        stats[key].hit++;
-      }
-
-      if (
-        exact(
-          results[key],
-          next.bottom
-        )
-      ) {
-        stats[key].exact++;
-      }
-    }
-
-    const combined =
-      [...new Set(
-        Object.values(results).flat()
-      )];
-
-    consensusStats.tested++;
-
-    if (
-      hit(
-        combined,
-        next.bottom
-      )
-    ) {
-      consensusStats.hit++;
-    }
-
-    if (
-      exact(
-        combined,
-        next.bottom
-      )
-    ) {
-      consensusStats.exact++;
-    }
+    result[key] =
+      FORMULAS[key]
+        .calc(
+          H,T,U,D,E
+        );
   }
 
-  return {
-    stats,
-    consensus: consensusStats
-  };
+
+  return result;
 }
+
+
+/* =========================================================
+   UNIQUE DIGITS
+   ========================================================= */
+
+function uniqueDigits(values){
+
+  return [
+    ...new Set(
+      values.map(
+        Number
+      )
+    )
+  ];
+}
+
 
 /* =========================================================
    CONSENSUS
-   ทุกสูตรมีน้ำหนักเท่ากัน
-   ใช้ความถี่การสนับสนุน + ลำดับ deterministic
-   ========================================================= */
+   =========================================================
 
-function consensus(row) {
+   จุดสำคัญ:
+   - ไม่ใช้เลขทั้ง 8 ตัวเป็น "ผลลัพธ์"
+   - ใช้เพื่อหาอันดับสนับสนุนเท่านั้น
+   - Output จริง = 2 ตัวเท่านั้น
+   - ทั้งสองตัวต้องถูกเลือกจาก consensus
+*/
+
+function getConsensus(row){
 
   const all =
-    calcAll(row);
+    calculateAll(row);
+
 
   const score =
     new Map();
 
-  const first =
+  const firstSeen =
     new Map();
 
   let sequence = 0;
 
+
   for (
-    const key of Object.keys(FORMULAS)
-  ) {
+    const key of FORMULA_ORDER
+  ){
 
-    for (
-      const number of all[key]
-    ) {
-
-      score.set(
-        number,
-        (score.get(number) || 0) + 1
+    const values =
+      uniqueDigits(
+        all[key]
       );
 
-      if (!first.has(number)) {
 
-        first.set(
-          number,
+    for (
+      const digit of values
+    ){
+
+      if (
+        !score.has(digit)
+      ){
+
+        score.set(
+          digit,
+          0
+        );
+      }
+
+
+      score.set(
+        digit,
+        score.get(digit) + 1
+      );
+
+
+      if (
+        !firstSeen.has(digit)
+      ){
+
+        firstSeen.set(
+          digit,
           sequence++
         );
       }
     }
   }
 
+
+  /*
+    จัดอันดับ:
+    1. จำนวนสูตรที่สนับสนุนมากกว่า
+    2. พบก่อน
+    3. ค่าตัวเลขน้อยกว่า
+  */
+
   const ranking =
-    [...score.keys()].sort(
-      (a,b) =>
-        (score.get(b) - score.get(a)) ||
-        (first.get(a) - first.get(b)) ||
-        (a - b)
-    );
+    [...score.keys()]
+      .sort(
+        (a,b) => {
+
+          const scoreDiff =
+            score.get(b) -
+            score.get(a);
+
+          if (
+            scoreDiff !== 0
+          ){
+            return scoreDiff;
+          }
+
+
+          const seenDiff =
+            firstSeen.get(a) -
+            firstSeen.get(b);
+
+          if (
+            seenDiff !== 0
+          ){
+            return seenDiff;
+          }
+
+
+          return a - b;
+        }
+      );
+
+
+  /*
+    ต้องมี 2 ตัวเสมอ
+  */
+
+  let selected =
+    ranking.slice(0,2);
+
+
+  /*
+    Safety fallback:
+    สูตรทั้งหมดครอบคลุมเลข 0-9 เพียงพอ
+    แต่กันกรณีผิดปกติไว้
+  */
+
+  if (
+    selected.length < 2
+  ){
+
+    for (
+      let d = 0;
+      d <= 9 &&
+      selected.length < 2;
+      d++
+    ){
+
+      if (
+        !selected.includes(d)
+      ){
+
+        selected.push(d);
+      }
+    }
+  }
+
 
   return {
 
     all,
-
+    score,
     ranking,
+    selected
 
-    selected:
-      ranking.slice(0,2),
-
-    scores:
-      score
   };
 }
 
+
 /* =========================================================
-   สูตรเลขเจาะของผู้ใช้
+   HIT TEST
    ========================================================= */
 
-function makeDrill(
-  primary,
-  secondary,
+function hasAtLeastOneHit(
+  selected,
+  bottom
+){
+
+  const actual =
+    new Set(
+      [...bottom]
+        .map(Number)
+    );
+
+
+  return selected.some(
+    digit =>
+      actual.has(digit)
+  );
+}
+
+
+/*
+  Exact 2-digit coverage:
+  เลขเด่นทั้งสองตัวอยู่ในเลขล่าง
+*/
+
+function hasExactTwoHit(
+  selected,
+  bottom
+){
+
+  const actual =
+    new Set(
+      [...bottom]
+        .map(Number)
+    );
+
+
+  return (
+    selected.length === 2 &&
+    actual.has(selected[0]) &&
+    actual.has(selected[1])
+  );
+}
+
+
+/* =========================================================
+   BACKTEST — PER LOTTERY TYPE
+   =========================================================
+
+   สำคัญ:
+   Backtest ไม่เอามาปนกับการคำนวณ production
+   ใช้เพื่อ Audit เท่านั้น
+
+   ทุกประเภทแยกจากกัน
+*/
+
+function backtestRows(rows){
+
+  const sorted =
+    [...rows].sort(
+      (a,b) =>
+        a.date - b.date
+    );
+
+
+  const formulaStats = {};
+
+
+  for (
+    const key of FORMULA_ORDER
+  ){
+
+    formulaStats[key] = {
+
+      tested:0,
+      hit:0,
+      exact:0
+
+    };
+  }
+
+
+  const selectedStats = {
+
+    tested:0,
+    hit:0,
+    exact:0
+
+  };
+
+
+  /*
+    ทดสอบ "ผลลัพธ์จริง 2 ตัว"
+    ไม่ใช่ 8 ตัวรวม
+  */
+
+  for (
+    let i = 0;
+    i < sorted.length - 1;
+    i++
+  ){
+
+    const current =
+      sorted[i];
+
+    const next =
+      sorted[i+1];
+
+
+    const formulas =
+      calculateAll(
+        current
+      );
+
+
+    /*
+      สูตรเดี่ยว
+    */
+
+    for (
+      const key of FORMULA_ORDER
+    ){
+
+      const pair =
+        uniqueDigits(
+          formulas[key]
+        );
+
+
+      formulaStats[key].tested++;
+
+
+      if (
+        hasAtLeastOneHit(
+          pair,
+          next.bottom
+        )
+      ){
+
+        formulaStats[key].hit++;
+      }
+
+
+      if (
+        hasExactTwoHit(
+          pair,
+          next.bottom
+        )
+      ){
+
+        formulaStats[key].exact++;
+      }
+    }
+
+
+    /*
+      Output จริงของระบบ
+    */
+
+    const consensus =
+      getConsensus(
+        current
+      );
+
+
+    const selected =
+      consensus.selected;
+
+
+    selectedStats.tested++;
+
+
+    if (
+      hasAtLeastOneHit(
+        selected,
+        next.bottom
+      )
+    ){
+
+      selectedStats.hit++;
+    }
+
+
+    if (
+      hasExactTwoHit(
+        selected,
+        next.bottom
+      )
+    ){
+
+      selectedStats.exact++;
+    }
+  }
+
+
+  return {
+
+    tested:
+      sorted.length > 1
+        ? sorted.length - 1
+        : 0,
+
+    formulaStats,
+
+    selectedStats
+
+  };
+}
+
+
+/* =========================================================
+   PERCENTAGE
+   ========================================================= */
+
+function percentage(
+  value,
+  total
+){
+
+  if (
+    !total
+  ){
+    return "—";
+  }
+
+
+  return (
+    (
+      value /
+      total *
+      100
+    ).toFixed(2) +
+    "%"
+  );
+}
+
+
+/* =========================================================
+   DRILL FORMULA
+   =========================================================
+
+   สูตรที่ผู้ใช้กำหนด:
+
+   Anchor = |7 - H|
+
+   ถ้า Pool ±2 ชนเลขเด่น
+   ให้เปลี่ยนเป็น ±3
+
+   จากนั้น:
+   - ใช้เฉพาะเลขใน Pool
+   - ห้ามเลขเบิ้ล
+   - ห้ามเด่นจับเด่น
+   - 5 คู่ต่อเลขเด่น
+   - เลขเจาะเป็นหลักหน่วย
+   - เรียงจากน้อยไปมาก
+*/
+
+function buildDrill(
+  lead1,
+  lead2,
   top
-) {
+){
 
   const H =
     Number(top[0]);
 
-  /*
-    Anchor:
-    |7 - H|
-    แล้ว mod 10
-  */
 
   const anchor =
     MOD10(
-      Math.abs(7 - H)
+      Math.abs(
+        7 - H
+      )
     );
 
-  const banned =
+
+  const leads =
     new Set([
-      primary,
-      secondary
+      lead1,
+      lead2
     ]);
 
+
   /*
-    ตรวจ collision ในระยะ ±2
+    ตรวจ collision ที่ ±2 ก่อน
   */
 
-  let collision = false;
+  const pool2 = [];
 
   for (
-    let d = -2;
-    d <= 2;
-    d++
-  ) {
+    let offset = -2;
+    offset <= 2;
+    offset++
+  ){
 
-    if (
-      banned.has(
-        MOD10(anchor + d)
+    pool2.push(
+      MOD10(
+        anchor + offset
       )
-    ) {
-
-      collision = true;
-      break;
-    }
+    );
   }
 
-  /*
-    ไม่ชน = ±2
-    ชน = ±3
-  */
+
+  const collision =
+    pool2.some(
+      digit =>
+        leads.has(digit)
+    );
+
 
   const radius =
-    collision ? 3 : 2;
+    collision
+      ? 3
+      : 2;
+
+
+  /*
+    Pool สุดท้าย
+  */
 
   const pool = [];
 
   for (
-    let d = -radius;
-    d <= radius;
-    d++
-  ) {
+    let offset = -radius;
+    offset <= radius;
+    offset++
+  ){
 
-    pool.push(
-      MOD10(anchor + d)
-    );
+    const digit =
+      MOD10(
+        anchor + offset
+      );
+
+
+    if (
+      !pool.includes(digit)
+    ){
+
+      pool.push(
+        digit
+      );
+    }
   }
+
 
   /*
-    สร้าง 5 คู่ต่อเลขเด่น
-    - ห้ามเบิ้ล
-    - ห้ามเด่นจับเด่น
-    - ไม่ซ้ำคู่
+    สร้าง 5 คู่
+    โดย "เลขหลักหน่วย" ต้องมาจาก Pool
   */
 
-  const used =
-    new Set();
+  function makePairs(lead){
 
-  const groups = [];
-
-  for (
-    const lead of [
-      primary,
-      secondary
-    ]
-  ) {
-
-    const pairs = [];
-
-    const directions = [
-      1,-1,
-      2,-2,
-      3,-3,
-      4,-4,
-      5,-5,
-      6,-6,
-      7,-7,
-      8,-8,
-      9,-9
-    ];
-
-    for (
-      const direction of directions
-    ) {
-
-      if (pairs.length >= 5) {
-        break;
-      }
-
-      const other =
-        MOD10(
-          lead + direction
+    const units =
+      pool
+        .filter(
+          unit =>
+            unit !== lead &&
+            unit !== lead1 &&
+            unit !== lead2
+        )
+        .sort(
+          (a,b) =>
+            a - b
         );
 
-      const pair =
-        `${lead}${other}`;
 
-      if (
-        other === lead ||
-        banned.has(other) ||
-        used.has(pair)
-      ) {
-        continue;
+    /*
+      Safety:
+      หากสูตร collision ทำให้มีไม่ถึง 5
+      ให้ใช้เลขที่ไม่ได้ชนเงื่อนไขเพิ่มเติม
+      โดยยังคงไม่เป็นเบิ้ลและไม่เป็นเด่น
+    */
+
+    if (
+      units.length < 5
+    ){
+
+      for (
+        let d = 0;
+        d <= 9 &&
+        units.length < 5;
+        d++
+      ){
+
+        if (
+          d === lead ||
+          leads.has(d) ||
+          units.includes(d)
+        ){
+
+          continue;
+        }
+
+
+        units.push(d);
       }
 
-      pairs.push(pair);
-      used.add(pair);
+
+      units.sort(
+        (a,b) =>
+          a - b
+      );
     }
 
-    groups.push(pairs);
+
+    /*
+      จำกัด 5 คู่
+    */
+
+    return units
+      .slice(0,5)
+      .map(
+        unit =>
+          `${lead}${unit}`
+      );
   }
+
 
   return {
 
     anchor,
     radius,
     pool,
-    groups
+
+    groups:[
+      makePairs(lead1),
+      makePairs(lead2)
+    ]
+
   };
 }
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
-
-function pct(a,b) {
-
-  if (!b) {
-    return '—';
-  }
-
-  return (
-    (a / b * 100)
-      .toFixed(2)
-    + '%'
-  );
-}
-
-function esc(s) {
-
-  return String(s).replace(
-    /[&<>"']/g,
-    c => ({
-      '&':'&amp;',
-      '<':'&lt;',
-      '>':'&gt;',
-      '"':'&quot;',
-      "'":'&#39;'
-    }[c])
-  );
-}
 
 /* =========================================================
-   RENDER
+   FORMAT DRILL
    ========================================================= */
 
-function render() {
+function formatPairs(pairs){
 
-  const parsed =
-    parseInput(
-      document.getElementById('input').value
+  return pairs
+    .map(
+      pair =>
+        String(pair)
+          .padStart(2,"0")
+    )
+    .sort(
+      (a,b) =>
+        Number(a) -
+        Number(b)
+    )
+    .join("-");
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
+
+function escapeHtml(value){
+
+  return String(value)
+    .replace(
+      /[&<>"']/g,
+      char => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+      }[char])
     );
+}
 
-  const errorBox =
-    document.getElementById('errors');
 
-  errorBox.classList.toggle(
-    'hidden',
-    parsed.errors.length === 0
-  );
+/* =========================================================
+   SORT / GROUP
+   ========================================================= */
 
-  errorBox.innerHTML =
-    parsed.errors.length
-      ? `
-        <div class="error">
-          <strong>ตรวจพบปัญหา</strong>
-          <br>
-          ${parsed.errors
-            .map(esc)
-            .join('<br>')}
-        </div>
-      `
-      : '';
-
-  /*
-    แยกประเภทโดยใช้ชื่อเต็ม
-    ลาว VIP และ ลาว HD จะอยู่คนละกลุ่ม
-  */
+function groupByLottery(
+  rows
+){
 
   const groups =
     new Map();
 
+
   for (
-    const row of parsed.rows
-  ) {
+    const row of rows
+  ){
+
+    /*
+      ใช้ชื่อเต็มเป็น Key
+      ทำให้:
+
+      ลาว VIP
+      ลาว HD
+
+      ไม่มีทางรวมกัน
+    */
 
     if (
-      !groups.has(row.type)
-    ) {
+      !groups.has(
+        row.type
+      )
+    ){
 
       groups.set(
         row.type,
@@ -991,638 +1647,1324 @@ function render() {
       );
     }
 
+
     groups
       .get(row.type)
       .push(row);
   }
 
-  const cards = [];
 
-  for (
-    const [type, rows] of groups
-  ) {
+  return groups;
+}
 
-    /*
-      ล่าสุดของ "ประเภทนั้น"
-    */
 
-    rows.sort(
-      (a,b) => b.date - a.date
+/* =========================================================
+   CREATE OUTPUT OBJECT
+   ========================================================= */
+
+function makeOutputForGroup(
+  type,
+  rows
+){
+
+  const sorted =
+    [...rows]
+      .sort(
+        (a,b) =>
+          b.date - a.date
+      );
+
+
+  const latest =
+    sorted[0];
+
+
+  const targetDate =
+    nextDay(
+      latest.date
     );
 
-    const latest =
-      rows[0];
 
-    const target =
-      nextDay(
-        latest.date
+  const consensus =
+    getConsensus(
+      latest
+    );
+
+
+  const selected =
+    consensus.selected;
+
+
+  const drill =
+    buildDrill(
+      selected[0],
+      selected[1],
+      latest.top
+    );
+
+
+  return {
+
+    type,
+    emoji:
+      lotteryEmoji(type),
+
+    targetDate,
+    latest,
+
+    selected,
+
+    drill,
+
+    backtest:
+      backtestRows(
+        sorted
+      )
+
+  };
+}
+
+
+/* =========================================================
+   RENDER RESULT CARDS
+   ========================================================= */
+
+function renderResults(
+  groups
+){
+
+  const output = [];
+
+
+  for (
+    const [
+      type,
+      rows
+    ] of groups
+  ){
+
+    output.push(
+      makeOutputForGroup(
+        type,
+        rows
+      )
+    );
+  }
+
+
+  /*
+    เรียงตามวันที่ล่าสุดของแต่ละหวย
+    ถ้าวันเท่ากันใช้ชื่อหวยเป็น tie-breaker
+  */
+
+  output.sort(
+    (a,b) => {
+
+      const dateDiff =
+        b.latest.date -
+        a.latest.date;
+
+      if (
+        dateDiff !== 0
+      ){
+        return dateDiff;
+      }
+
+
+      return a.type.localeCompare(
+        b.type,
+        "th"
       );
-
-    /*
-      Backtest เฉพาะข้อมูลประเภทเดียวกัน
-    */
-
-    const bt =
-      backtest(rows);
-
-    /*
-      Consensus ของงวดล่าสุด
-    */
-
-    const cs =
-      consensus(latest);
-
-    const selected =
-      cs.selected;
-
-    if (
-      selected.length < 2
-    ) {
-      continue;
     }
+  );
 
-    /*
-      สูตรเลขเจาะใช้เลขเด่น
-      ที่ Consensus เลือก
-    */
 
-    const drill =
-      makeDrill(
-        selected[0],
-        selected[1],
-        latest.top
-      );
+  const container =
+    document.getElementById(
+      "results"
+    );
 
-    const formulaRows =
-      Object.entries(FORMULAS)
-        .map(([key,formula]) => {
+
+  if (
+    !output.length
+  ){
+
+    container.innerHTML =
+      `<div class="empty">
+        ยังไม่มีผลลัพธ์
+      </div>`;
+
+    return output;
+  }
+
+
+  container.innerHTML =
+    output
+      .map(
+        item => {
+
+          const lead1 =
+            item.selected[0];
+
+          const lead2 =
+            item.selected[1];
+
+
+          const pairs1 =
+            formatPairs(
+              item.drill.groups[0]
+            );
+
+
+          const pairs2 =
+            formatPairs(
+              item.drill.groups[1]
+            );
+
 
           return `
-            <div class="formula-row">
+            <article
+              class="card">
 
-              <strong>
-                ${esc(formula.name)}
-              </strong>
+              <div
+                class="card-head">
 
-              <div>
-                ${esc(formula.desc)}
+                <div>
+
+                  <div
+                    class="lottery-name">
+
+                    ${escapeHtml(
+                      item.emoji
+                    )}
+                    ${escapeHtml(
+                      item.type
+                    )}
+
+                  </div>
+
+                  <div
+                    class="target-date">
+
+                    งวด
+                    ${escapeHtml(
+                      formatThaiDate(
+                        item.targetDate
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+
               </div>
 
-              <div class="formula-out">
-                ผล:
-                ${cs.all[key].join(', ')}
+
+              <div
+                class="result-block">
+
+                <div
+                  class="result-line">
+
+                  <div
+                    class="lead-digit">
+
+                    ${lead1}
+
+                  </div>
+
+                  <div
+                    class="drill-list">
+
+                    ${escapeHtml(
+                      pairs1
+                    )}
+
+                  </div>
+
+                </div>
+
+
+                <div
+                  class="result-line">
+
+                  <div
+                    class="lead-digit">
+
+                    ${lead2}
+
+                  </div>
+
+                  <div
+                    class="drill-list">
+
+                    ${escapeHtml(
+                      pairs2
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </article>
+          `;
+        }
+      )
+      .join("");
+
+
+  return output;
+}
+
+
+/* =========================================================
+   AUDIT PANEL
+   ========================================================= */
+
+function renderAudit(
+  groups
+){
+
+  const auditPanel =
+    document.getElementById(
+      "auditPanel"
+    );
+
+  const auditGrid =
+    document.getElementById(
+      "auditGrid"
+    );
+
+
+  const items = [];
+
+
+  for (
+    const [
+      type,
+      rows
+    ] of groups
+  ){
+
+    const audit =
+      backtestRows(
+        rows
+      );
+
+
+    /*
+      สูตรเดี่ยวที่ดีที่สุด
+    */
+
+    let bestFormula =
+      null;
+
+
+    for (
+      const key of FORMULA_ORDER
+    ){
+
+      const stat =
+        audit.formulaStats[key];
+
+
+      if (
+        !bestFormula
+      ){
+
+        bestFormula = {
+          key,
+          stat
+        };
+
+        continue;
+      }
+
+
+      const currentRate =
+        stat.tested
+          ? stat.hit /
+            stat.tested
+          : 0;
+
+
+      const bestRate =
+        bestFormula.stat.tested
+          ? bestFormula.stat.hit /
+            bestFormula.stat.tested
+          : 0;
+
+
+      if (
+        currentRate >
+        bestRate
+      ){
+
+        bestFormula = {
+          key,
+          stat
+        };
+      }
+    }
+
+
+    items.push({
+
+      type,
+
+      tested:
+        audit.selectedStats.tested,
+
+      hit:
+        audit.selectedStats.hit,
+
+      exact:
+        audit.selectedStats.exact,
+
+      bestFormula
+
+    });
+  }
+
+
+  /*
+    แสดง Audit เฉพาะเมื่อมีข้อมูลย้อนหลัง
+  */
+
+  if (
+    !items.length
+  ){
+
+    auditPanel.classList.add(
+      "hidden"
+    );
+
+    return;
+  }
+
+
+  auditPanel.classList.remove(
+    "hidden"
+  );
+
+
+  auditGrid.innerHTML =
+    items
+      .map(
+        item => {
+
+          const best =
+            item.bestFormula;
+
+
+          const bestRate =
+            best &&
+            best.stat.tested
+              ? percentage(
+                  best.stat.hit,
+                  best.stat.tested
+                )
+              : "—";
+
+
+          return `
+            <div
+              class="audit-item">
+
+              <strong>
+                ${escapeHtml(
+                  item.type
+                )}
+              </strong>
+
+              <b>
+                ${percentage(
+                  item.hit,
+                  item.tested
+                )}
+              </b>
+
+              <div>
+                เลขเด่นจริง 2 ตัว
+                :
+                ${item.hit}/${item.tested}
+                งวด
+              </div>
+
+              <div>
+                Exact 2 ตัว:
+                ${percentage(
+                  item.exact,
+                  item.tested
+                )}
+              </div>
+
+              <div
+                style="margin-top:5px">
+
+                สูตรเดี่ยวดีที่สุด:
+                ${best
+                  ? escapeHtml(
+                      best.key
+                    )
+                  : "—"}
+
+                (${bestRate})
+
               </div>
 
             </div>
           `;
-        })
-        .join('');
-
-    const overall =
-      pct(
-        bt.consensus.hit,
-        bt.consensus.tested
-      );
-
-    const exactRate =
-      pct(
-        bt.consensus.exact,
-        bt.consensus.tested
-      );
-
-    const card = `
-      <article class="card">
-
-        <div class="cardhead">
-
-          <div>
-
-            <div class="name">
-              ${esc(type)}
-            </div>
-
-            <div class="target">
-              งวดเป้าหมาย:
-              ${fmtDate(target)}
-              • ใช้ผลล่าสุด
-              ${fmtDate(latest.date)}
-              (${latest.top} / ${latest.bottom})
-            </div>
-
-          </div>
-
-          <span class="badge">
-            ${rows.length} งวดใน Input
-          </span>
-
-        </div>
-
-        <!-- เลขเด่น + เลขเจาะ อยู่ในการ์ดเดียวกัน -->
-
-        <div class="section">
-
-          <h3>
-            เลขเด่น + เลขเจาะ
-          </h3>
-
-          <div class="numbers">
-
-            <div class="numbox">
-
-              <div class="lead">
-                เลขเด่นตัวที่ 1
-              </div>
-
-              <div class="big">
-                ${selected[0]}
-              </div>
-
-              <div class="lead">
-                สนับสนุน:
-                ${cs.scores.get(selected[0]) || 0}/4 สูตร
-              </div>
-
-              <div class="pairs">
-
-                ${drill.groups[0]
-                  .map(
-                    pair =>
-                      `<span class="pair">${pair}</span>`
-                  )
-                  .join('')}
-
-              </div>
-
-            </div>
-
-            <div class="numbox">
-
-              <div class="lead">
-                เลขเด่นตัวที่ 2
-              </div>
-
-              <div class="big">
-                ${selected[1]}
-              </div>
-
-              <div class="lead">
-                สนับสนุน:
-                ${cs.scores.get(selected[1]) || 0}/4 สูตร
-              </div>
-
-              <div class="pairs">
-
-                ${drill.groups[1]
-                  .map(
-                    pair =>
-                      `<span class="pair">${pair}</span>`
-                  )
-                  .join('')}
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <!-- สรุปแยกจากกล่องเลข -->
-
-        <div class="section">
-
-          <h3>
-            สรุปการคัดเลือก
-          </h3>
-
-          <div class="summary">
-
-            <div class="summarygrid">
-
-              <div class="metric">
-
-                Consensus Backtest
-
-                <b>
-                  ${overall}
-                </b>
-
-                <span>
-                  ${bt.consensus.hit}/${bt.consensus.tested}
-                  งวด มีอย่างน้อย 1 ตัว
-                </span>
-
-              </div>
-
-              <div class="metric">
-
-                Exact 2 ตัว
-
-                <b>
-                  ${exactRate}
-                </b>
-
-                <span>
-                  ${bt.consensus.exact}/${bt.consensus.tested}
-                  งวด
-                </span>
-
-              </div>
-
-              <div class="metric">
-
-                เลขที่ 1
-
-                <b>
-                  ${selected[0]}
-                </b>
-
-                <span>
-                  ${cs.scores.get(selected[0]) || 0}/4 สูตร
-                </span>
-
-              </div>
-
-              <div class="metric">
-
-                เลขที่ 2
-
-                <b>
-                  ${selected[1]}
-                </b>
-
-                <span>
-                  ${cs.scores.get(selected[1]) || 0}/4 สูตร
-                </span>
-
-              </div>
-
-            </div>
-
-            <p style="margin:9px 0 0;font-size:13px">
-
-              เลือก
-              <b>
-                ${selected.join(' , ')}
-              </b>
-
-              เพราะเป็น 2 เลขที่ได้รับ
-              การสนับสนุนจาก 4 สูตรมากที่สุด
-              ในงวดล่าสุด
-
-            </p>
-
-          </div>
-
-        </div>
-
-        <!-- รายละเอียดสูตร -->
-
-        <div class="section">
-
-          <h3>
-            รายละเอียด 4 สูตร
-          </h3>
-
-          <div class="formula-list">
-            ${formulaRows}
-          </div>
-
-        </div>
-
-        <!-- รายละเอียดสูตรเจาะ -->
-
-        <div class="section">
-
-          <h3>
-            รายละเอียดสูตรเลขเจาะ
-          </h3>
-
-          <div
-            class="summary"
-            style="font-size:12px;line-height:1.65"
-          >
-
-            Anchor =
-            |7 − H| mod 10 =
-            <b>${drill.anchor}</b>
-
-            <br>
-
-            ระยะขยาย =
-            <b>±${drill.radius}</b>
-
-            <br>
-
-            Pool =
-            <b>
-              [${drill.pool.join(', ')}]
-            </b>
-
-            <br>
-
-            กรองเลขเบิ้ล
-            และห้ามเลขเด่นจับคู่กันเอง
-            จากนั้นจัด 5 คู่ต่อเลขเด่น
-
-          </div>
-
-        </div>
-
-      </article>
-    `;
-
-    cards.push(card);
-  }
-
-  document.getElementById('results').innerHTML =
-    cards.length
-      ? cards.join('')
-      : '<div class="empty">ยังไม่มีผลลัพธ์ที่พร้อมคำนวณ</div>';
-
-  document.getElementById('copyBtn').disabled =
-    cards.length === 0;
-
-  document.getElementById('inputStatus').innerHTML =
-    parsed.rows.length
-      ? `
-        อ่านได้
-        <b>${parsed.rows.length}</b>
-        งวด จาก
-        <b>${groups.size}</b>
-        ประเภท
-      `
-      : 'ยังไม่มีข้อมูล';
-
-  window.__cards = cards;
-  window.__parsed = parsed;
-  window.__groups = groups;
+        }
+      )
+      .join("");
 }
 
+
 /* =========================================================
-   COPY ALL
+   COPY FORMAT
+   =========================================================
+
+   สำคัญ:
+   Output สำหรับ Copy ต้องสะอาด
+   ไม่มี Backtest
+   ไม่มีคำอธิบาย
+   ไม่มีสูตร
+   ไม่มีข้อความอื่น
+
+   หลายหวย:
+   เว้น 1 บรรทัดระหว่างหวย
+*/
+
+function buildCopyText(
+  groups
+){
+
+  const outputs = [];
+
+
+  for (
+    const [
+      type,
+      rows
+    ] of groups
+  ){
+
+    const result =
+      makeOutputForGroup(
+        type,
+        rows
+      );
+
+
+    const lead1 =
+      result.selected[0];
+
+    const lead2 =
+      result.selected[1];
+
+
+    const pairs1 =
+      formatPairs(
+        result.drill.groups[0]
+      );
+
+
+    const pairs2 =
+      formatPairs(
+        result.drill.groups[1]
+      );
+
+
+    outputs.push(
+      [
+        `${result.emoji} ${result.type}`,
+        `${lead1} : ${pairs1}`,
+        `${lead2} : ${pairs2}`
+      ].join("\n")
+    );
+  }
+
+
+  /*
+    หนึ่งบรรทัดว่างระหว่างหวย
+  */
+
+  return outputs.join(
+    "\n\n"
+  );
+}
+
+
+/* =========================================================
+   CLIPBOARD
    ========================================================= */
 
-function copyAll() {
+async function copyAll(){
+
+  const groups =
+    window.__groups;
+
 
   if (
-    !window.__groups ||
-    !window.__groups.size
-  ) {
+    !groups ||
+    !groups.size
+  ){
+
     return;
   }
 
-  const output = [];
-
-  for (
-    const [type, rows0]
-    of window.__groups
-  ) {
-
-    const rows =
-      [...rows0].sort(
-        (a,b) => b.date - a.date
-      );
-
-    const latest =
-      rows[0];
-
-    const target =
-      nextDay(
-        latest.date
-      );
-
-    const bt =
-      backtest(rows);
-
-    const cs =
-      consensus(latest);
-
-    const selected =
-      cs.selected;
-
-    const drill =
-      makeDrill(
-        selected[0],
-        selected[1],
-        latest.top
-      );
-
-    output.push(`\
-${type} | ${fmtDate(target)}
-เลขเด่น: ${selected[0]} ${selected[1]}
-เลขเจาะ ${selected[0]}: ${drill.groups[0].join(' ')}
-เลขเจาะ ${selected[1]}: ${drill.groups[1].join(' ')}
-สรุป: Consensus Backtest ${pct(
-      bt.consensus.hit,
-      bt.consensus.tested
-    )} (${bt.consensus.hit}/${bt.consensus.tested}); Exact 2 ตัว ${pct(
-      bt.consensus.exact,
-      bt.consensus.tested
-    )}; สนับสนุน ${selected[0]}=${
-      cs.scores.get(selected[0]) || 0
-    }/4 สูตร, ${selected[1]}=${
-      cs.scores.get(selected[1]) || 0
-    }/4 สูตร
-`);
-  }
 
   const text =
-    output.join('\n');
+    buildCopyText(
+      groups
+    );
 
-  if (
-    navigator.clipboard &&
-    navigator.clipboard.writeText
-  ) {
 
-    navigator.clipboard
-      .writeText(text)
-      .then(
-        () => alert('คัดลอกผลลัพธ์ทั้งหมดแล้ว')
-      )
-      .catch(
-        () => fallbackCopy(text)
+  try{
+
+    if (
+      navigator.clipboard &&
+      window.isSecureContext
+    ){
+
+      await navigator
+        .clipboard
+        .writeText(
+          text
+        );
+
+    }else{
+
+      fallbackCopy(
+        text
+      );
+    }
+
+
+    const button =
+      document.getElementById(
+        "copyBtn"
       );
 
-  } else {
 
-    fallbackCopy(text);
+    const original =
+      button.textContent;
+
+
+    button.textContent =
+      "คัดลอกแล้ว ✓";
+
+
+    setTimeout(
+      () => {
+
+        button.textContent =
+          original;
+
+      },
+      1500
+    );
+
+  }catch(error){
+
+    fallbackCopy(
+      text
+    );
   }
 }
 
-function fallbackCopy(text) {
+
+function fallbackCopy(text){
 
   const textarea =
-    document.createElement('textarea');
+    document.createElement(
+      "textarea"
+    );
 
-  textarea.value = text;
+
+  textarea.value =
+    text;
+
+
+  textarea.style.position =
+    "fixed";
+
+  textarea.style.opacity =
+    "0";
+
 
   document.body.appendChild(
     textarea
   );
 
+
+  textarea.focus();
   textarea.select();
 
-  document.execCommand('copy');
 
-  textarea.remove();
+  try{
 
-  alert(
-    'คัดลอกผลลัพธ์ทั้งหมดแล้ว'
-  );
+    document.execCommand(
+      "copy"
+    );
+
+  }finally{
+
+    textarea.remove();
+  }
 }
 
+
 /* =========================================================
-   CLEAR ALL
+   MAIN PROCESS
    ========================================================= */
 
-document
-  .getElementById('clearBtn')
-  .addEventListener(
-    'click',
-    () => {
+function processData(){
 
-      if (
-        !confirm(
-          'ล้างข้อมูลทั้งหมดในหน้านี้ใช่หรือไม่?'
-        )
-      ) {
-        return;
-      }
+  const input =
+    document.getElementById(
+      "input"
+    ).value;
 
-      document.getElementById(
-        'input'
-      ).value = '';
 
-      document.getElementById(
-        'results'
-      ).innerHTML =
-        '<div class="empty">ยังไม่มีผลลัพธ์</div>';
+  const parsed =
+    parseInput(
+      input
+    );
 
-      document.getElementById(
-        'errors'
-      ).classList.add('hidden');
 
-      document.getElementById(
-        'errors'
-      ).innerHTML = '';
+  const errorBox =
+    document.getElementById(
+      "errors"
+    );
 
-      document.getElementById(
-        'copyBtn'
-      ).disabled = true;
 
-      document.getElementById(
-        'inputStatus'
-      ).textContent =
-        'ยังไม่มีข้อมูล';
+  if (
+    parsed.errors.length
+  ){
 
-      window.__groups = null;
-      window.__parsed = null;
-      window.__cards = null;
-    }
+    errorBox.classList.remove(
+      "hidden"
+    );
+
+
+    errorBox.innerHTML =
+      `
+        <div
+          class="error">
+
+          <strong>
+            ตรวจพบข้อมูลที่ต้องตรวจสอบ
+          </strong>
+
+          <br>
+
+          ${parsed.errors
+            .map(
+              escapeHtml
+            )
+            .join("<br>")}
+
+        </div>
+      `;
+
+  }else{
+
+    errorBox.classList.add(
+      "hidden"
+    );
+
+    errorBox.innerHTML =
+      "";
+  }
+
+
+  const groups =
+    groupByLottery(
+      parsed.rows
+    );
+
+
+  window.__groups =
+    groups;
+
+
+  renderResults(
+    groups
   );
 
+
+  renderAudit(
+    groups
+  );
+
+
+  const copyButton =
+    document.getElementById(
+      "copyBtn"
+    );
+
+
+  copyButton.disabled =
+    groups.size === 0;
+
+
+  const status =
+    document.getElementById(
+      "inputStatus"
+    );
+
+
+  if (
+    parsed.rows.length
+  ){
+
+    status.innerHTML =
+      `
+        อ่านได้
+        <b>${parsed.rows.length}</b>
+        งวด /
+        <b>${groups.size}</b>
+        ประเภท
+      `;
+
+  }else{
+
+    status.textContent =
+      "ไม่พบข้อมูลที่พร้อมคำนวณ";
+  }
+}
+
+
 /* =========================================================
-   PROCESS
+   CLEAR
+   ========================================================= */
+
+function clearAll(){
+
+  const confirmed =
+    confirm(
+      "ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่?"
+    );
+
+
+  if (
+    !confirmed
+  ){
+
+    return;
+  }
+
+
+  document.getElementById(
+    "input"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "results"
+  ).innerHTML =
+    `
+      <div class="empty">
+        ยังไม่มีผลลัพธ์
+      </div>
+    `;
+
+
+  document.getElementById(
+    "errors"
+  ).classList.add(
+    "hidden"
+  );
+
+
+  document.getElementById(
+    "errors"
+  ).innerHTML =
+    "";
+
+
+  document.getElementById(
+    "auditPanel"
+  ).classList.add(
+    "hidden"
+  );
+
+
+  document.getElementById(
+    "auditGrid"
+  ).innerHTML =
+    "";
+
+
+  document.getElementById(
+    "copyBtn"
+  ).disabled =
+    true;
+
+
+  document.getElementById(
+    "inputStatus"
+  ).textContent =
+    "รอรับข้อมูล";
+
+
+  window.__groups =
+    null;
+}
+
+
+/* =========================================================
+   EVENT LISTENERS
    ========================================================= */
 
 document
-  .getElementById('processBtn')
+  .getElementById(
+    "processBtn"
+  )
   .addEventListener(
-    'click',
+    "click",
     () => {
 
-      try {
+      try{
 
-        render();
+        processData();
 
-      } catch (error) {
+      }catch(error){
 
         const box =
           document.getElementById(
-            'errors'
+            "errors"
           );
 
+
         box.classList.remove(
-          'hidden'
+          "hidden"
         );
 
-        box.innerHTML = `
-          <div class="error">
-            <strong>
-              ประมวลผลไม่สำเร็จ
-            </strong>
-            <br>
-            ${esc(error.message)}
-          </div>
-        `;
+
+        box.innerHTML =
+          `
+            <div
+              class="error">
+
+              <strong>
+                เกิดข้อผิดพลาดในการประมวลผล
+              </strong>
+
+              <br>
+
+              ${escapeHtml(
+                error.message
+              )}
+
+            </div>
+          `;
       }
     }
   );
 
+
+document
+  .getElementById(
+    "copyBtn"
+  )
+  .addEventListener(
+    "click",
+    copyAll
+  );
+
+
+document
+  .getElementById(
+    "clearBtn"
+  )
+  .addEventListener(
+    "click",
+    clearAll
+  );
+
+
 /* =========================================================
-   SELF CHECKS
-   ตรวจสูตรตัวอย่างก่อนใช้งาน
-   ========================================================= */
+   MANUAL TRIPLE-CHECK
+   =========================================================
 
-console.assert(
-  JSON.stringify(
-    calcAll({
-      top:'854',
-      bottom:'71'
-    }).A
-  ) === '[2,9]'
-);
+   ชุดตรวจนี้ทำงานทันทีตอนโหลดหน้า
+   เพื่อจับ Bug สำคัญของ Core Logic
+*/
 
-console.assert(
-  JSON.stringify(
-    calcAll({
-      top:'854',
-      bottom:'71'
-    }).B
-  ) === '[1,8]'
-);
 
-console.assert(
-  JSON.stringify(
-    calcAll({
-      top:'854',
-      bottom:'71'
-    }).C
-  ) === '[7,2]'
-);
+function runSelfTests(){
 
-console.assert(
-  JSON.stringify(
-    calcAll({
-      top:'854',
-      bottom:'71'
-    }).D
-  ) === '[6,0]'
-);
+  /*
+    TEST 1:
+    Modulo ต้องรองรับค่าติดลบ
+  */
 
-console.assert(
-  parseInput(
+  console.assert(
+    MOD10(-1) === 9,
+    "TEST 1 FAILED"
+  );
+
+
+  /*
+    TEST 2:
+    ตัวอย่างสูตร A
+    854 / 71
+    H=8,T=5,U=4,D=7,E=1
+
+    H+U = 12 -> 2
+    U-T = -1 -> 9
+  */
+
+  const sample =
+    calculateAll({
+      top:"854",
+      bottom:"71"
+    });
+
+
+  console.assert(
+    JSON.stringify(
+      sample.A
+    ) ===
+    JSON.stringify(
+      [2,9]
+    ),
+    "TEST 2 FAILED"
+  );
+
+
+  /*
+    TEST 3:
+    สูตร B
+  */
+
+  console.assert(
+    JSON.stringify(
+      sample.B
+    ) ===
+    JSON.stringify(
+      [1,8]
+    ),
+    "TEST 3 FAILED"
+  );
+
+
+  /*
+    TEST 4:
+    สูตร C
+  */
+
+  console.assert(
+    JSON.stringify(
+      sample.C
+    ) ===
+    JSON.stringify(
+      [7,2]
+    ),
+    "TEST 4 FAILED"
+  );
+
+
+  /*
+    TEST 5:
+    สูตร D
+  */
+
+  console.assert(
+    JSON.stringify(
+      sample.D
+    ) ===
+    JSON.stringify(
+      [6,0]
+    ),
+    "TEST 5 FAILED"
+  );
+
+
+  /*
+    TEST 6:
+    Input parser ต้องแยกชื่อหวย
+  */
+
+  const parsed =
+    parseInput(
 `ลาว VIP | 25 ส.ค. 69
 980
 79
-ลาว VIP | 24 ส.ค. 69
-326
-93`
-  ).rows.length === 2
-);
 
-console.assert(
-  fmtDate(
-    nextDay(
-      parseThaiDate(
-        '25',
-        'ส.ค.',
-        '69'
-      )
-    )
-  ) === '26 ส.ค. 69'
-);
+ลาว HD | 25 ส.ค. 69
+123
+45`
+    );
+
+
+  console.assert(
+    parsed.rows.length === 2,
+    "TEST 6 FAILED"
+  );
+
+
+  console.assert(
+    parsed.rows[0].type ===
+      "ลาว VIP",
+    "TEST 6A FAILED"
+  );
+
+
+  console.assert(
+    parsed.rows[1].type ===
+      "ลาว HD",
+    "TEST 6B FAILED"
+  );
+
+
+  /*
+    TEST 7:
+    วันถัดไป
+  */
+
+  const d =
+    parseThaiDate(
+      "25",
+      "ส.ค.",
+      "69"
+    );
+
+
+  console.assert(
+    formatThaiDate(
+      nextDay(d)
+    ) ===
+    "26 ส.ค. 69",
+    "TEST 7 FAILED"
+  );
+
+
+  /*
+    TEST 8:
+    Drill ต้องใช้ Anchor
+  */
+
+  const drill =
+    buildDrill(
+      0,
+      4,
+      "854"
+    );
+
+
+  console.assert(
+    drill.anchor === 1,
+    "TEST 8 FAILED"
+  );
+
+
+  /*
+    TEST 9:
+    ต้องได้ 5 คู่ต่อเลขเด่น
+  */
+
+  console.assert(
+    drill.groups[0].length === 5,
+    "TEST 9A FAILED"
+  );
+
+
+  console.assert(
+    drill.groups[1].length === 5,
+    "TEST 9B FAILED"
+  );
+
+
+  /*
+    TEST 10:
+    ห้ามเบิ้ล
+  */
+
+  for (
+    const group of drill.groups
+  ){
+
+    for (
+      const pair of group
+    ){
+
+      console.assert(
+        pair[0] !== pair[1],
+        "TEST 10 FAILED"
+      );
+    }
+  }
+
+
+  /*
+    TEST 11:
+    หลักสิบต้องเป็นเลขเด่น
+  */
+
+  console.assert(
+    drill.groups[0]
+      .every(
+        pair =>
+          Number(pair[0]) === 0
+      ),
+    "TEST 11A FAILED"
+  );
+
+
+  console.assert(
+    drill.groups[1]
+      .every(
+        pair =>
+          Number(pair[0]) === 4
+      ),
+    "TEST 11B FAILED"
+  );
+
+
+  /*
+    TEST 12:
+    เลขเจาะต้องเรียงจากน้อยไปมาก
+  */
+
+  for (
+    const group of drill.groups
+  ){
+
+    const numeric =
+      group.map(
+        Number
+      );
+
+
+    const sorted =
+      [...numeric].sort(
+        (a,b) =>
+          a - b
+      );
+
+
+    console.assert(
+      JSON.stringify(
+        numeric
+      ) ===
+      JSON.stringify(
+        sorted
+      ),
+      "TEST 12 FAILED"
+    );
+  }
+
+
+  /*
+    TEST 13:
+    เลขเด่นห้ามจับกันเอง
+  */
+
+  for (
+    const group of drill.groups
+  ){
+
+    for (
+      const pair of group
+    ){
+
+      console.assert(
+        !(
+          pair[1] === "0" ||
+          pair[1] === "4"
+        ),
+        "TEST 13 FAILED"
+      );
+    }
+  }
+
+
+  /*
+    TEST 14:
+    Copy ต้องมีบรรทัดว่างระหว่างหวย
+  */
+
+  const testGroups =
+    groupByLottery(
+      parsed.rows
+    );
+
+
+  const copyText =
+    buildCopyText(
+      testGroups
+    );
+
+
+  console.assert(
+    copyText.includes(
+      "\n\n"
+    ),
+    "TEST 14 FAILED"
+  );
+
+
+  /*
+    TEST 15:
+    Copy ต้องไม่มีข้อความ Backtest
+  */
+
+  console.assert(
+    !copyText.includes(
+      "Backtest"
+    ),
+    "TEST 15 FAILED"
+  );
+
+
+  /*
+    TEST 16:
+    Copy ต้องไม่มีคำอธิบายสูตร
+  */
+
+  console.assert(
+    !copyText.includes(
+      "สูตร A"
+    ),
+    "TEST 16 FAILED"
+  );
+
+
+  /*
+    TEST 17:
+    ทุกคู่ต้องเป็นเลข 2 หลัก
+  */
+
+  for (
+    const pair of [
+      ...drill.groups[0],
+      ...drill.groups[1]
+    ]
+  ){
+
+    console.assert(
+      /^\d{2}$/.test(pair),
+      "TEST 17 FAILED"
+    );
+  }
+
+
+  console.info(
+    "Manual triple-check: CORE TESTS PASSED"
+  );
+}
+
+
+runSelfTests();
+
 </script>
+
 </body>
-</html>
+  </html>
