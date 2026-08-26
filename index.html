@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Quant Mastermind - Final Audited Edition v6.0</title>
+    <title>AI Quant Mastermind - Ultimate Masterpiece v7.0</title>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -142,8 +142,8 @@
 
 <div class="container">
     <header>
-        <h1>AI Quant Mastermind (Final Audited Edition v6.0)</h1>
-        <p>ระบบประมวลผลความแม่นยำสูง (Recency Decay Weighting & Co-occurrence Matrix)</p>
+        <h1>AI Quant Mastermind (Ultimate Masterpiece v7.0)</h1>
+        <p>ระบบประมวลผลขั้นสูงสุด (Adaptive Spread Balancer & Recency Decay Engine)</p>
     </header>
 
     <div class="card">
@@ -151,7 +151,7 @@
             <label for="rawInput">วางข้อมูลสถิติหวยดิบ / หุ้นย้อนหลัง (Batch Raw Data Input):</label>
             <textarea id="rawInput" placeholder="วางข้อมูลสถิติย้อนหลังทั้งหมดที่นี่..."></textarea>
         </div>
-        <button class="btn" onclick="runFinalMasterEngine()">🚀 ประมวลผลผ่านระบบไร้รอยต่อ v6.0</button>
+        <button class="btn" onclick="runUltimateMasterpiece()">🚀 ประมวลผลผ่านระบบ Ultimate v7.0</button>
         <div id="statusLog" class="status-log">สถานะ: พร้อมประมวลผลข้อมูล</div>
     </div>
 
@@ -163,8 +163,8 @@
 </div>
 
 <script>
-    // Final Audited Engine v6.0
-    function runFinalMasterEngine() {
+    // Ultimate Masterpiece Engine v7.0
+    function runUltimateMasterpiece() {
         const rawText = document.getElementById('rawInput').value.trim();
         const statusLog = document.getElementById('statusLog');
         
@@ -173,10 +173,10 @@
             return;
         }
 
-        statusLog.innerText = 'สถานะ: กำลังตรวจสอบและคำนวณผ่านระบบ Recency Decay & Co-occurrence Matrix...';
+        statusLog.innerText = 'สถานะ: กำลังรันระบบประมวลผลขั้นสูงสุด v7.0...';
 
         setTimeout(() => {
-            let rawLotteryTitle = "หุ้นอังกฤษ";
+            let rawLotteryTitle = "หุ้นดาวโจนส์";
             let todayStr = "26 ส.ค. 69"; 
             let top3Digits = [];
             let bottom2Digits = [];
@@ -216,32 +216,33 @@
                 if(prevLine.length >= 3) top3Digits.push(prevLine.slice(-3));
             }
 
-            // --- STEP 1: ADVANCED RECENCY DECAY WEIGHTING ---
-            let weightedScores = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0};
-            
-            // ให้น้ำหนักแบบลดหลั่น (งวดล่าสุดมีน้ำหนักสูงสุด ป้องกันข้อมูลเก่าตกค้าง)
-            let allCombined = bottom2Digits.concat(top3Digits);
-            let totalItems = allCombined.length;
+            // --- STEP 1: ADVANCED WEIGHTED MATRIX & SPREAD BALANCER ---
+            let scores = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0};
+            let poolCombined = bottom2Digits.concat(top3Digits);
+            let totalLen = poolCombined.length;
 
-            allCombined.forEach((item, index) => {
-                let weight = 1 + (index / totalItems) * 2; // ยิ่งอยู่ล่างสุด (งวดล่าสุด) ยิ่งได้น้ำหนักคูณเพิ่ม
+            poolCombined.forEach((item, idx) => {
+                let weight = 1 + (idx / (totalLen || 1)) * 2.5;
                 for(let char of item) {
                     let d = parseInt(char, 10);
-                    if(!isNaN(d)) {
-                        weightedScores[d] += weight;
-                    }
+                    if(!isNaN(d)) scores[d] += weight;
                 }
             });
 
-            let sortedRank = Object.keys(weightedScores).sort((a, b) => weightedScores[b] - weightedScores[a]);
+            let ranked = Object.keys(scores).sort((a, b) => scores[b] - scores[a]);
 
-            let core1 = parseInt(sortedRank[0], 10);
-            let core2 = parseInt(sortedRank[1], 10);
-            if(isNaN(core1)) core1 = 5;
-            if(isNaN(core2)) core2 = 9;
+            let core1 = parseInt(ranked[0], 10);
+            let core2 = parseInt(ranked[1], 10);
+            if(isNaN(core1)) core1 = 3;
+            if(isNaN(core2)) core2 = 7;
+
+            // ป้องกันเลขเด่นติดกันเกินไป (Spread Balancer)
+            if(Math.abs(core1 - core2) <= 1) {
+                core2 = parseInt(ranked[2], 10) || (core2 + 4) % 10;
+            }
 
             // --- FLAG MAPPING ---
-            let flagIcon = "🇬🇧";
+            let flagIcon = "🇺🇸";
             let lowerTitle = rawLotteryTitle.toLowerCase();
             
             if (lowerTitle.includes("นิคเคอิ")) flagIcon = "🇯🇵";
@@ -254,11 +255,12 @@
             else if (lowerTitle.includes("จีน")) flagIcon = "🇨🇳";
             else if (lowerTitle.includes("ฮั่งเส็ง")) flagIcon = "🇭🇰";
 
-            let fullLotteryName = rawLotteryTitle + " VISA";
+            let fullLotteryName = rawLotteryTitle.replace('หุ้น', '').trim() + " VISA";
+            if(rawLotteryTitle.includes('ดาวโจนส์')) fullLotteryName = "หุ้นดาวโจนส์ VISA";
 
-            // --- STEP 2: CO-OCCURRENCE OPTIMIZED PAIRS & TRIPLETS ---
-            const pairs = generateOptimizedPairs(core1, core2, bottom2Digits, 3);
-            const triplets = generateOptimizedTriplets(core1, core2, top3Digits, 3);
+            // --- STEP 2: GENERATE OPTIMIZED PAIRS & TRIPLETS ---
+            const pairs = generateMasterpiecePairs(core1, core2, bottom2Digits, 3);
+            const triplets = generateMasterpieceTriplets(core1, core2, top3Digits, 3);
 
             const formattedOutput = 
 `📅 ${todayStr}
@@ -277,45 +279,45 @@ ${triplets[0]} — ${triplets[1]} — ${triplets[2]}
 
             document.getElementById('outputBox').innerText = formattedOutput;
             document.getElementById('resultCard').style.display = 'block';
-            statusLog.innerText = 'สถานะ: ประมวลผลสมบูรณ์แบบสูงสุดผ่าน Final Audited Engine v6.0!';
+            statusLog.innerText = 'สถานะ: ประมวลผลสมบูรณ์แบบสูงสุดด้วย Ultimate Masterpiece v7.0!';
         }, 300);
     }
 
-    function generateOptimizedPairs(c1, c2, bottomList, count) {
+    function generateMasterpiecePairs(c1, c2, bottomList, count) {
         let result = [];
-        let modFactor = 1;
+        let mod = 2;
         if(bottomList.length > 0) {
             let lastB = bottomList[bottomList.length - 1];
             if(lastB.length === 2) {
-                modFactor = (parseInt(lastB[0], 10) + parseInt(lastB[1], 10)) % 4 + 1;
+                mod = (parseInt(lastB[1], 10) % 3) + 1;
             }
         }
 
         let i = 0;
         while(result.length < count) {
-            let dA = (c1 + i * modFactor) % 10;
-            let dB = (c2 + i * 3) % 10;
+            let dA = (c1 + i * mod) % 10;
+            let dB = (c2 + i * 2) % 10;
             
             if(dA === dB) {
-                dB = (dB + 5) % 10;
+                dB = (dB + 4) % 10;
             }
 
             let pairStr = `${dA}${dB}`;
             if(!result.includes(pairStr)) {
                 result.push(pairStr);
             } else {
-                result.push(`${(dA + 3) % 10}${(dB + 2) % 10}`);
+                result.push(`${(dA + 3) % 10}${(dB + 1) % 10}`);
             }
             i++;
         }
         return result.slice(0, count);
     }
 
-    function generateOptimizedTriplets(c1, c2, topList, count) {
+    function generateMasterpieceTriplets(c1, c2, topList, count) {
         let result = [];
         let i = 0;
         while(result.length < count) {
-            let d1 = (c1 + i + 2) % 10;
+            let d1 = (c1 + i + 1) % 10;
             let dMid = (i % 2 === 0) ? c1 : c2;
             let d2 = (c2 + i * 3) % 10;
             
@@ -323,7 +325,7 @@ ${triplets[0]} — ${triplets[1]} — ${triplets[2]}
             if(!result.includes(tripStr)) {
                 result.push(tripStr);
             } else {
-                result.push(`${(d1 + 4) % 10}${dMid}${(d2 + 1) % 10}`);
+                result.push(`${(d1 + 2) % 10}${dMid}${(d2 + 4) % 10}`);
             }
             i++;
         }
