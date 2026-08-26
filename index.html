@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+<!-- Source baseline: 0 1 -->
 <!--
 MESTER LOTTO VIP+ V12.0 — FORMULA/SELECTOR UPGRADE AUDIT SUMMARY
 SOURCE:
 - Upgraded from V.11.5.
-- 5 Main Models: UNCHANGED.
+- 5 Main Models: PRESERVED (metadata only); displayed Top 2 / pairs now follow the deterministic formula.
 - 100 original formulas + raw values + transformations: UNCHANGED.
-- Formula-derived pair generation rules: UNCHANGED.
+- Formula-derived pair generation rules: UPDATED to the deterministic Top-2 / anchor / collision / filtering rules supplied in this audit.
 - Login persistence/localStorage: UNCHANGED.
 - Existing CSS/color/theme: UNCHANGED.
 BACKTEST ON USER-SUPPLIED HISTORY (strict past -> future, per lottery type):
@@ -30,7 +31,7 @@ UPGRADES:
 10. No target/future record is used when scoring an earlier walk-forward target.
 IMPORTANT:
 - Backtest sample sizes are small; the percentages are diagnostic evidence, not a guarantee of future results.
-- V11.6 intentionally does NOT alter the protected 5 Main Models, the original 100 formulas, or the protected pair/number formulas.
+- Legacy 5 Main Models and 100 original formulas are retained; displayed Top 2 / pair output follows the deterministic formula specified in this audit.
 -->
 <html lang="th">
 <head>
@@ -336,8 +337,10 @@ line-height:1.5
 }
 .lottery{
 position:relative;
-padding:10px;
-margin-bottom:8px;
+height:auto!important;
+min-height:0!important;
+padding:11px 12px 8px;
+margin-bottom:9px;
 border:1px solid #e4dbce;
 border-radius:15px;
 background:#fff;
@@ -583,8 +586,10 @@ backdrop-filter:blur(10px);
 .summary strong{color:#3f8063}
 .copy,.copyall{background:linear-gradient(135deg,#4f8f73,#78b598);box-shadow:0 7px 18px rgba(79,143,115,.18)}
 .lottery{
-padding:13px;
-margin-bottom:12px;
+height:auto!important;
+min-height:0!important;
+padding:11px 12px 8px;
+margin-bottom:9px;
 border:1px solid #dcebe4;
 border-radius:18px;
 background:linear-gradient(180deg,#fff,#fbfefc);
@@ -592,11 +597,11 @@ box-shadow:0 10px 28px rgba(64,117,91,.09);
 overflow:hidden;
 }
 .lottery::before{background:linear-gradient(180deg,#69aa8a,#9ed0b8)}
-.lottery-head{border-bottom-color:#e7f1ec;padding-bottom:9px}
+.lottery-head{border-bottom-color:#e7f1ec;padding-bottom:7px;margin-bottom:5px}
 .lottery-name{font-size:.82rem;color:#2f4f41}
 .date{background:#eef8f2;color:#4d8069;border:1px solid #d8ebe1}
 .vip-label{color:#4d8069;background:#f0faf5;border-color:#d8ebe1}
-.row{min-height:45px;border-color:#e5f0eb;background:#fbfefc}
+.row{min-height:42px;border-color:#e5f0eb;background:#fbfefc;padding:3px 5px}
 .digit-gold{color:#438665}
 .digit-silver{color:#5f8e79}
 .digit-rose{color:#668f80}
@@ -604,18 +609,18 @@ overflow:hidden;
 .pair-silver{color:#426e5c;border-color:#cfe5da;background:linear-gradient(145deg,#fff,#edf7f2)}
 .pair-rose{color:#557a6b;border-color:#d1e6dc;background:linear-gradient(145deg,#fbfffd,#e7f4ee)}
 .pair{border-color:#dcebe4;background:#f8fcfa;color:#4f6f61}
-.card-actions{display:flex;justify-content:flex-end;margin-top:9px}
+.card-actions{display:flex;justify-content:flex-end;margin-top:6px}
 .card-capture{border:1px solid #cfe5da;background:#f0faf5;color:#3f745d;border-radius:10px;padding:7px 10px;font-size:.48rem;font-weight:800}
 .card-capture:active{transform:translateY(1px)}
-.brand-footer{color:#4d8069}
+.brand-footer{color:#4d8069;padding-top:4px;margin-top:1px}
 .brand-star{color:#72ad91}
 .copyall{margin-top:3px}
 @media(max-width:480px){
 .actions{grid-template-columns:1fr 1fr;position:static}
 .actions .btn{grid-column:1/-1}
 .actions .clear,.actions .copyInput{width:100%}
-.lottery{padding:12px}
-.row{grid-template-columns:32px 7px 1fr;min-height:44px}
+.lottery{padding:10px 10px 7px}
+.row{grid-template-columns:32px 7px 1fr;min-height:41px}
 .pair{min-width:33px;height:25px}
 }
 </style>
@@ -638,7 +643,7 @@ overflow:hidden;
 <section class="hero">
 <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
 <h1>Multi-Lottery <em>VIP+</em></h1>
-<p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้ 5 AI Models เดิม</p>
+<p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตร Deterministic สำหรับเลขเด่นและเลขเจาะ</p>
 </section>
 <div id="login" class="login active">
 <section class="panel">
@@ -683,7 +688,7 @@ placeholder="ลาวพัฒนา | 24 ส.ค. 69
 <div class="hint">
 รูปแบบ: ชื่อหวย | วันที่ → 3 ตัวบน → 2 ตัวล่าง
 • วางได้หลายรายการในครั้งเดียว
-• Top 2 และคู่เจาะอิง 5 AI Models เดิม
+• เลขเด่นและเลขเจาะคำนวณตามสูตร Deterministic ที่กำหนด
 • ระบบจะแยกประเภทหวยและตรวจย้อนหลังแบบ Walk-forward
 </div>
 </div>
@@ -2379,13 +2384,10 @@ this.actualDigits(
 ordered[targetIndex]
 );
 const allowed=
-new Set();
-prediction.models
-.forEach(
-m=>
-m.set.forEach(
-d=>allowed.add(d)
-)
+new Set(
+prediction.candidateDigits||
+prediction.top2Digits||
+[]
 );
 const candidateHit=
 [...actual]
@@ -2516,6 +2518,70 @@ return s;
 },
 /*
 ==========================================================
+DETERMINISTIC "เลขเด่น / เลขเจาะ" FORMULA
+==========================================================
+1) เลขเด่นตัวที่ 1 = หลักสิบ 3 ตัวบน + หลักสิบ 2 ตัวล่าง
+   ใช้เฉพาะหลักหน่วย
+2) เลขเด่นตัวที่ 2 = เลขเด่นตัวที่ 1 + 1
+3) Anchor = |7 - หลักร้อย 3 ตัวบน| แล้วใช้เลข 0-9
+4) ทดลองพูล Anchor ±2
+5) ถ้าพูล ±2 ชนเลขเด่น ให้เปลี่ยนเป็น ±3
+6) กรองเลขเบิ้ล เลขเด่นชนกันเอง และเลขที่ชนเลขเด่น
+7) สร้างเลขเจาะ 5 คู่ต่อเลขเด่นแบบ deterministic
+==========================================================
+*/
+buildFormulaSourceDigits(H,T,R1){
+const first=this.norm(T+R1);
+const second=this.norm(first+1);
+return[first,second];
+},
+buildFormulaPool(anchor,sourceDigits){
+const base=[];
+for(let o=-2;o<=2;o++){
+base.push(this.norm(anchor+o));
+}
+const collision=base.some(
+d=>sourceDigits.includes(d)
+);
+const radius=collision?3:2;
+const pool=[];
+for(let o=-radius;o<=radius;o++){
+pool.push(this.norm(anchor+o));
+}
+return{
+pool,
+collision,
+radius
+};
+},
+buildFormulaPairs(sourceDigits,anchor){
+const expansion=this.buildFormulaPool(
+anchor,
+sourceDigits
+);
+const blocked=new Set(sourceDigits);
+const pairSets=sourceDigits.map(src=>{
+const pairs=[];
+expansion.pool.forEach(d=>{
+if(d===src)return;
+if(blocked.has(d))return;
+const pair=`${src}${d}`;
+if(pair[0]===pair[1])return;
+if(!pairs.includes(pair))pairs.push(pair);
+});
+return pairs.slice(0,5);
+});
+return{
+sourceDigits:[...sourceDigits],
+anchor,
+pool:expansion.pool,
+collision:expansion.collision,
+radius:expansion.radius,
+pairSets
+};
+},
+/*
+==========================================================
 MAIN ENGINE
 ==========================================================
 */
@@ -2524,85 +2590,61 @@ n3,
 n2,
 history=null
 ){
-const d3=
-n3.split('').map(Number);
-const d2=
-n2.split('').map(Number);
+const d3=n3.split('').map(Number);
+const d2=n2.split('').map(Number);
 const[
 H,T,U
 ]=d3;
 const[
 R1,R2
 ]=d2;
-const sumT=
-H+T+U;
-const sumB=
-R1+R2;
-const total=
-sumT+sumB;
-const F=
-this.formulas(
-H,T,U,
-R1,R2,
-sumT,
-sumB,
-total
+const sourceDigits=this.buildFormulaSourceDigits(
+H,T,R1
 );
-const models=
-this.buildModels(
-H,T,U,
-R1,R2,
-sumT
+const anchor=this.norm(
+Math.abs(7-H)
 );
-const anchor=
-this.norm(
-7-H
-);
-this.buildPairs(
-models,
+const formula=this.buildFormulaPairs(
+sourceDigits,
 anchor
 );
-const scored=
-this.scoreDigits(
-models,
-F,
-H,T,U,
-R1,R2,
-sumT,
-sumB,
-total,
-history
+const models=this.buildModels(
+H,T,U,R1,R2,H+T+U
 );
-const top=
-scored.top;
-const pairSets=
-top.map(
-t=>
-this.bestPairsForDigit(
-t.digit,
-models,
-scored.score
+const modelScores=Object.fromEntries(
+Array.from(
+{length:10},
+(_,d)=>[
+d,
+{
+digit:d,
+confidence:sourceDigits.includes(d)?1:0,
+totalScore:sourceDigits.includes(d)?1:0,
+selectorScore:sourceDigits.includes(d)?1:0,
+modelConsensusCount:sourceDigits.includes(d)?1:0,
+reliabilityScore:sourceDigits.includes(d)?1:0
+}
+]
 )
 );
-const consensus=
-this.buildConsensus(
-pairSets
-);
 return{
-top2Digits:
-top.map(
-v=>v.digit
-),
-pairSets:
-pairSets.map(
-v=>v.slice(0,5)
-),
-modelScores:
-scored.score,
+top2Digits:[...sourceDigits],
+pairSets:formula.pairSets.map(v=>v.slice(0,5)),
+modelScores,
 modelCount:5,
-history,
 models,
-consensus
+history,
+formula:{
+sourceDigits:[...sourceDigits],
+anchor,
+pool:[...formula.pool],
+collision:formula.collision,
+radius:formula.radius
+},
+candidateDigits:[...sourceDigits],
+consensus:this.buildConsensus(
+formula.pairSets
+)
 };
 },
 async captureCard(cardId,name){
@@ -2667,7 +2709,7 @@ CALCULATE
 6. Predict งวดถัดไป
 7. ตรวจ Candidate Pool
 8. แสดงเฉพาะ Top 2
-9. แสดงแหล่งที่มา "บ้านเงินกอง"
+9. คง footer แหล่งที่มา "บ้านเงินกอง" และปุ่มแคปภาพไว้
 ==========================================================
 */
 async calculate(){
@@ -2774,16 +2816,14 @@ audit
 ======================================================
 CANDIDATE POOL GUARD
 ======================================================
-Top 2 ต้องมาจาก 5 Main Models เท่านั้น
+Top 2 ต้องมาจากสูตร Deterministic เท่านั้น
 ======================================================
 */
 const allowed=
-new Set();
-a.models.forEach(
-m=>
-m.set.forEach(
-d=>allowed.add(d)
-)
+new Set(
+a.candidateDigits||
+a.top2Digits||
+[]
 );
 const valid=
 a.top2Digits.length===2 &&
@@ -2795,7 +2835,7 @@ a.top2Digits
 ).size===2;
 if(!valid){
 parsed.errors.push(
-`${group.name} | ${latest.date}: Top 2 ไม่ผ่าน Candidate Pool ของ 5 Main Models`
+`${group.name} | ${latest.date}: Top 2 ไม่ผ่าน Candidate Pool ของสูตร Deterministic`
 );
 continue;
 }
@@ -2827,7 +2867,7 @@ info
 ?
 `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
 :
-'เลขเจาะจาก 5 Main Models';
+'เลขเจาะจากสูตร Deterministic';
 return`
 <span
 class="${this.pairClass(
@@ -2888,12 +2928,12 @@ records
 ไม่แสดงคะแนนหลังบ้าน
 ไม่แสดงรายละเอียดโมเดล
 */
-const auditTitle=
+const auditBadge=
 audit.trials
 ?
-`WF ${audit.trials} • C ${this.formatPct(audit.candidateCoverage)} • Top2 ${this.formatPct(audit.selectorRate)} • Top1 ${this.formatPct(audit.top1Rate)} • Lift ${audit.lift?audit.lift.toFixed(2)+'×':'—'}`
+`<div class="vip-label">WF ${audit.trials} • C ${this.formatPct(audit.candidateCoverage)} • Top2 ${this.formatPct(audit.selectorRate)} • Top1 ${this.formatPct(audit.top1Rate)} • Lift ${audit.lift?audit.lift.toFixed(2)+'×':'—'}</div>`
 :
-'ยังมีข้อมูลย้อนหลังไม่พอสำหรับ Walk-forward audit';
+'';
 const cardId=`lottery-card-${groupIndex}`;
 cards.push(`
 <article class="lottery" id="${cardId}" data-lottery-card="true">
@@ -2911,9 +2951,7 @@ ${esc(group.name)}
 ${esc(nextDate)}
 </div>
 </div>
-<div class="vip-label">
-${esc(auditTitle)}
-</div>
+${auditBadge}
 </div>
 <div class="rows">
 ${rows}
