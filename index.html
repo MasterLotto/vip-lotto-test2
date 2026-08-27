@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V14.0
+MESTER LOTTO VIP+ — V14.1
 ============================================================
-PREMIUM VIP EDITION
+OBSIDIAN VIP MEMBER CARD EDITION
 ============================================================
 AUDIT / UI IMPROVEMENTS
-- Preserved the original Model 01 calculation logic.
+- Preserved original Model 01 calculation logic.
 - Preserved Backend Support Formula 1 + 2.
 - Backend formulas only confirm VIP+ and never replace main digits.
 - Preserved protected Original Pair / เลขเจาะ engine.
 - Preserved 5 pairs per main digit / 10 pairs total.
 - Preserved no-double-digit protection.
 - Preserved no self-pairing with main digits.
-- Improved capture card specifically for screenshot output.
-- Premium black / graphite / champagne-gold visual system.
-- Added subtle luxury radial ornaments and geometric watermark.
-- Added stronger hierarchy and spacing for screenshot readability.
-- Added dedicated VIP+ treatment.
-- Added premium card header, micro-labels and footer.
-- Capture controls are automatically hidden from screenshots.
-- Capture background is optimized for a clean luxury image.
-- Improved responsive behavior for mobile screenshots.
-- Reduced visual noise and removed the "cheap dashboard" feeling.
-- Added accessible labels and safer HTML escaping.
-- Added graceful fallback when html2canvas is unavailable.
+- Reworked RESULT CARD ONLY into an Obsidian VIP Member Card.
+- Removed high-frequency textures around primary digits to reduce
+  moire / checkerboard artifacts in screenshots.
+- Replaced flat black with deep obsidian / black pearl surfaces.
+- Added restrained champagne-gold framing.
+- Primary digit is now the strongest visual focal point.
+- Primary digit uses clean solid surfaces instead of noisy gradients.
+- Added RANK 01 / RANK 02 language instead of exposing M01.
+- Added PREMIUM / VIP hierarchy without exposing backend formulas.
+- Capture mode uses a clean, stable screenshot surface.
+- Capture controls remain hidden from screenshots.
+- Main calculation engine and input system remain unchanged.
 ============================================================
 -->
 <html lang="th">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -37,39 +38,45 @@ AUDIT / UI IMPROVEMENTS
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-<title>Mester Lotto VIP+ — Premium Multi Lottery Engine V14.0</title>
+<title>Mester Lotto VIP+ — Premium Multi Lottery Engine V14.1</title>
 
 <style>
+
+/* =========================================================
+   CORE
+========================================================= */
+
 :root{
-  --bg:#090a0c;
-  --bg-soft:#111317;
+  --bg:#08090b;
+  --bg-soft:#101216;
 
-  --card:#111316;
-  --card-2:#15171b;
-  --card-3:#191b20;
+  --obsidian:#0d0f12;
+  --obsidian-2:#111318;
+  --obsidian-3:#15171c;
+  --pearl:#1a1c21;
 
-  --line:rgba(218,187,112,.18);
-  --line-soft:rgba(255,255,255,.075);
+  --line:rgba(224,195,126,.18);
+  --line-strong:rgba(224,195,126,.30);
+  --line-soft:rgba(255,255,255,.065);
 
   --text:#f4f0e7;
-  --text-soft:#d2ccbd;
-  --muted:#89877f;
+  --text-soft:#d4cec0;
+  --muted:#85837c;
 
-  --gold:#d7b66b;
-  --gold-light:#f0d99a;
-  --gold-deep:#8d6a2e;
+  --gold:#d8b86d;
+  --gold-light:#f0d99b;
+  --gold-soft:#c7a663;
+  --gold-deep:#80602c;
 
-  --champagne:#ead49b;
+  --champagne:#ead39a;
 
-  --vip:#e8c879;
+  --vip:#efd58c;
 
-  --rose:#c9958e;
+  --silver:#d8d3c8;
+  --rose:#c8a09a;
 
   --shadow:
-    0 22px 70px rgba(0,0,0,.32);
-
-  --shadow-gold:
-    0 18px 45px rgba(181,142,62,.11);
+    0 24px 75px rgba(0,0,0,.34);
 
   --radius:22px;
 }
@@ -99,17 +106,17 @@ body{
   background:
     radial-gradient(
       circle at 8% 5%,
-      rgba(215,182,107,.075),
+      rgba(216,184,109,.065),
       transparent 24%
     ),
     radial-gradient(
       circle at 92% 14%,
-      rgba(215,182,107,.045),
+      rgba(216,184,109,.035),
       transparent 25%
     ),
     radial-gradient(
       circle at 50% 100%,
-      rgba(255,255,255,.025),
+      rgba(255,255,255,.018),
       transparent 34%
     ),
     var(--bg);
@@ -119,22 +126,21 @@ body{
 
 body::before{
   content:"";
+
   position:fixed;
   inset:0;
+
   pointer-events:none;
   z-index:0;
 
-  opacity:.28;
+  opacity:.18;
 
-  background-image:
-    linear-gradient(
-      115deg,
-      transparent 0 47%,
-      rgba(255,255,255,.018) 47.2%,
-      transparent 47.4%
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0 40%,
+      rgba(255,255,255,.018) 100%
     );
-
-  background-size:140px 140px;
 }
 
 button,
@@ -153,6 +159,7 @@ textarea:focus-visible{
   outline-offset:2px;
 }
 
+
 /* =========================================================
    BACKGROUND PARTICLES
 ========================================================= */
@@ -160,12 +167,16 @@ textarea:focus-visible{
 #snow{
   position:fixed;
   inset:0;
+
   width:100%;
   height:100%;
+
   pointer-events:none;
   z-index:0;
-  opacity:.65;
+
+  opacity:.52;
 }
+
 
 /* =========================================================
    APP SHELL
@@ -191,6 +202,7 @@ textarea:focus-visible{
 .inner{
   padding:0;
 }
+
 
 /* =========================================================
    TOP BRAND
@@ -246,10 +258,14 @@ textarea:focus-visible{
 
 .logo::after{
   content:"";
+
   position:absolute;
   inset:5px;
 
-  border:1px solid rgba(0,0,0,.18);
+  border:
+    1px solid
+    rgba(0,0,0,.18);
+
   border-radius:10px;
 }
 
@@ -261,6 +277,7 @@ textarea:focus-visible{
   font-size:.79rem;
   line-height:1.1;
   font-weight:800;
+
   letter-spacing:.02em;
 }
 
@@ -275,6 +292,7 @@ textarea:focus-visible{
   line-height:1;
 
   letter-spacing:.13em;
+
   text-transform:uppercase;
 }
 
@@ -296,19 +314,17 @@ textarea:focus-visible{
   color:#c9aa68;
 
   background:
-    rgba(215,182,107,.055);
+    rgba(215,182,107,.045);
 
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.025);
 
   font-size:.43rem;
   font-weight:800;
+
   letter-spacing:.08em;
 }
 
-.pill::first-letter{
-  color:var(--gold);
-}
 
 /* =========================================================
    HERO
@@ -319,7 +335,11 @@ textarea:focus-visible{
   overflow:hidden;
 
   margin-bottom:15px;
-  padding:23px 22px 22px;
+
+  padding:
+    23px
+    22px
+    22px;
 
   border:
     1px solid
@@ -341,6 +361,7 @@ textarea:focus-visible{
 
 .hero::before{
   content:"";
+
   position:absolute;
 
   width:240px;
@@ -353,11 +374,9 @@ textarea:focus-visible{
 
   border:
     1px solid
-    rgba(215,182,107,.15);
+    rgba(215,182,107,.12);
 
-  box-shadow:
-    0 0 0 18px rgba(215,182,107,.012),
-    0 0 0 38px rgba(215,182,107,.008);
+  pointer-events:none;
 
   z-index:-1;
 }
@@ -366,10 +385,11 @@ textarea:focus-visible{
   content:"✦";
 
   position:absolute;
+
   right:28px;
   bottom:18px;
 
-  color:rgba(215,182,107,.18);
+  color:rgba(215,182,107,.14);
 
   font-size:2rem;
   line-height:1;
@@ -433,6 +453,7 @@ textarea:focus-visible{
   font-size:.53rem;
   line-height:1.75;
 }
+
 
 /* =========================================================
    PANEL
@@ -500,7 +521,9 @@ textarea:focus-visible{
 
   resize:vertical;
 
-  padding:14px 15px;
+  padding:
+    14px
+    15px;
 
   border:
     1px solid
@@ -542,6 +565,7 @@ textarea:focus-visible{
     0 0 0 3px rgba(215,182,107,.055),
     inset 0 1px 20px rgba(0,0,0,.12);
 }
+
 
 /* =========================================================
    ACTIONS
@@ -635,6 +659,7 @@ textarea:focus-visible{
   transform:none;
 }
 
+
 /* =========================================================
    SCANNER
 ========================================================= */
@@ -660,6 +685,7 @@ textarea:focus-visible{
   color:#b99b5e;
   font-weight:800;
 }
+
 
 /* =========================================================
    RESULTS
@@ -701,7 +727,9 @@ textarea:focus-visible{
 
   color:var(--gold-light);
 
-  font-family:"IBM Plex Mono",monospace;
+  font-family:
+    "IBM Plex Mono",
+    monospace;
 
   font-size:.68rem;
 }
@@ -711,112 +739,112 @@ textarea:focus-visible{
   padding:0 12px;
 }
 
+
 /* =========================================================
-   PREMIUM LOTTERY CARD
+   OBSIDIAN VIP CARD
 ========================================================= */
 
 .lottery{
   position:relative;
   overflow:hidden;
 
-  margin-bottom:11px;
+  margin-bottom:13px;
 
   border:
     1px solid
-    rgba(215,182,107,.19);
+    rgba(224,195,126,.24);
 
-  border-radius:21px;
+  border-radius:23px;
 
   background:
-    linear-gradient(
-      145deg,
-      #17191d 0%,
-      #101114 56%,
-      #0d0e10 100%
-    );
+    #0e1013;
 
   box-shadow:
-    0 18px 50px rgba(0,0,0,.28),
-    0 1px 0 rgba(255,255,255,.025) inset;
+    0 22px 58px rgba(0,0,0,.32),
+    0 1px 0 rgba(255,255,255,.035) inset;
 
   isolation:isolate;
 }
+
+
+/*
+  Very low-frequency luxury light.
+  No pattern / grid / texture is used.
+  This is intentionally clean for screenshot rendering.
+*/
 
 .lottery::before{
   content:"";
 
   position:absolute;
-
-  width:310px;
-  height:310px;
-
-  right:-160px;
-  top:-190px;
-
-  border-radius:50%;
-
-  border:
-    1px solid
-    rgba(215,182,107,.12);
-
-  box-shadow:
-    0 0 0 16px rgba(215,182,107,.012),
-    0 0 0 34px rgba(215,182,107,.008),
-    0 0 0 54px rgba(215,182,107,.005);
+  inset:0;
 
   pointer-events:none;
+
+  background:
+    radial-gradient(
+      circle at 92% 8%,
+      rgba(224,195,126,.075),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 7% 92%,
+      rgba(224,195,126,.028),
+      transparent 30%
+    );
 
   z-index:-1;
 }
 
+
+/*
+  Thin champagne inner frame.
+*/
+
 .lottery::after{
-  content:"MESTER";
+  content:"";
 
   position:absolute;
 
-  right:-9px;
-  bottom:42px;
+  inset:6px;
 
-  color:rgba(255,255,255,.018);
+  border:
+    1px solid
+    rgba(224,195,126,.065);
 
-  font-size:3.2rem;
-  font-weight:800;
-
-  letter-spacing:.2em;
-
-  transform:rotate(-90deg);
+  border-radius:18px;
 
   pointer-events:none;
 
-  z-index:-1;
+  z-index:0;
 }
+
 
 /* =========================================================
    CARD HEADER
 ========================================================= */
 
 .lottery-head{
+  position:relative;
+  z-index:1;
+
   display:flex;
   align-items:center;
 
-  min-height:73px;
+  min-height:78px;
 
   padding:
-    13px
-    12px
-    12px
-    18px;
+    14px
+    15px
+    14px
+    19px;
 
   border-bottom:
     1px solid
-    rgba(255,255,255,.055);
+    rgba(224,195,126,.10);
 
   background:
-    linear-gradient(
-      90deg,
-      rgba(255,255,255,.018),
-      rgba(215,182,107,.025)
-    );
+    rgba(255,255,255,.012);
 }
 
 .lottery-meta{
@@ -824,25 +852,26 @@ textarea:focus-visible{
 }
 
 .lottery-kicker{
-  margin-bottom:4px;
+  margin-bottom:5px;
 
-  color:#776f61;
+  color:#83765e;
 
-  font-size:.39rem;
+  font-size:.38rem;
   font-weight:800;
 
-  letter-spacing:.15em;
+  letter-spacing:.17em;
+
   text-transform:uppercase;
 }
 
 .lottery-name{
   display:flex;
   align-items:center;
-  gap:6px;
+  gap:7px;
 
-  color:#eee9df;
+  color:#f0ece3;
 
-  font-size:.69rem;
+  font-size:.70rem;
   font-weight:800;
 
   line-height:1.25;
@@ -851,24 +880,25 @@ textarea:focus-visible{
 .flag{
   flex:0 0 auto;
 
-  font-size:.82rem;
+  font-size:.81rem;
 
   filter:
-    saturate(.82);
+    saturate(.78);
 }
 
 .date{
   margin-top:4px;
 
-  color:#777771;
+  color:#77766f;
 
-  font-size:.45rem;
+  font-size:.44rem;
 
   line-height:1.3;
 }
 
+
 /* =========================================================
-   VIP BADGE
+   PREMIUM VIP BADGE
 ========================================================= */
 
 .vip-label{
@@ -876,42 +906,55 @@ textarea:focus-visible{
   align-items:center;
   justify-content:center;
 
-  min-width:56px;
-  height:24px;
+  min-width:61px;
+  height:25px;
 
   margin-left:auto;
-  margin-right:7px;
+  margin-right:9px;
 
-  padding:0 8px;
+  padding:
+    0
+    10px;
 
   border:
     1px solid
-    rgba(232,200,121,.32);
+    rgba(239,213,140,.34);
 
   border-radius:999px;
 
   color:#f1d58e;
 
   background:
-    linear-gradient(
-      135deg,
-      rgba(232,200,121,.12),
-      rgba(232,200,121,.035)
-    );
+    #17140e;
 
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    0 5px 20px rgba(215,182,107,.06);
+    inset 0 1px 0 rgba(255,255,255,.055),
+    0 5px 18px rgba(215,182,107,.05);
+
+  font-family:
+    "IBM Plex Mono",
+    monospace;
 
   font-size:.39rem;
   font-weight:900;
 
-  letter-spacing:.1em;
+  letter-spacing:.11em;
+}
+
+.vip-label::before{
+  content:"✦";
+
+  margin-right:5px;
+
+  color:#e7c875;
+
+  font-size:.45rem;
 }
 
 .vip-label.empty{
   visibility:hidden;
 }
+
 
 /* =========================================================
    CARD ACTION
@@ -919,6 +962,9 @@ textarea:focus-visible{
 
 .card-actions{
   flex:0 0 auto;
+
+  position:relative;
+  z-index:5;
 }
 
 .card-capture{
@@ -926,18 +972,20 @@ textarea:focus-visible{
   min-width:78px;
   height:34px;
 
-  padding:0 10px;
+  padding:
+    0
+    10px;
 
   border:
     1px solid
-    rgba(255,255,255,.08);
+    rgba(255,255,255,.085);
 
   border-radius:10px;
 
   color:#aaa69c;
 
   background:
-    rgba(255,255,255,.035);
+    rgba(255,255,255,.025);
 
   font-size:.48rem;
   font-weight:700;
@@ -955,28 +1003,30 @@ textarea:focus-visible{
     rgba(215,182,107,.055);
 }
 
+
 /* =========================================================
    CARD BODY
 ========================================================= */
 
 .rows{
   position:relative;
+  z-index:1;
 
   padding:
-    9px
     10px
-    6px;
+    11px
+    7px;
 }
 
 .row{
   display:flex;
   align-items:center;
 
-  min-height:53px;
+  min-height:60px;
 
   padding:
-    7px
-    8px;
+    8px
+    9px;
 
   border-bottom:
     1px solid
@@ -987,113 +1037,136 @@ textarea:focus-visible{
   border-bottom:0;
 }
 
-.row-label{
-  width:30px;
-
-  color:#77756d;
-
-  font-size:.42rem;
-  font-weight:700;
-}
-
-.row-value{
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-weight:800;
-}
 
 /* =========================================================
-   MAIN DIGITS
+   RANK LABEL
+========================================================= */
+
+.row-label{
+  width:45px;
+
+  color:#756f63;
+
+  font-size:.39rem;
+  font-weight:800;
+
+  letter-spacing:.08em;
+
+  text-transform:uppercase;
+}
+
+
+/* =========================================================
+   PRIMARY DIGIT
+   CLEAN / LOW FREQUENCY / SCREENSHOT SAFE
 ========================================================= */
 
 .digit{
   position:relative;
 
-  width:38px;
-  height:38px;
+  width:44px;
+  height:44px;
 
   display:grid;
   place-items:center;
 
-  border-radius:12px;
+  border-radius:13px;
 
   font-family:
     "IBM Plex Mono",
     monospace;
 
-  font-size:.94rem;
+  font-size:1rem;
   font-weight:900;
+
+  isolation:isolate;
 }
+
+
+/*
+  Inner frame only.
+  No repeated patterns.
+  No fine grid.
+*/
 
 .digit::after{
   content:"";
 
   position:absolute;
-  inset:3px;
+
+  inset:4px;
 
   border-radius:9px;
 
   border:
     1px solid
-    rgba(255,255,255,.08);
+    rgba(255,255,255,.09);
 
   pointer-events:none;
+
+  z-index:-1;
 }
+
+
+/*
+  GOLD / PRIMARY
+*/
 
 .digit-gold{
-  color:#f1d891;
+  color:#f2d98e;
 
   border:
     1px solid
-    rgba(215,182,107,.35);
+    rgba(232,201,126,.48);
 
   background:
-    linear-gradient(
-      145deg,
-      rgba(215,182,107,.18),
-      rgba(215,182,107,.045)
-    );
+    #17140d;
 
   box-shadow:
-    0 8px 24px rgba(215,182,107,.07),
-    inset 0 1px 0 rgba(255,255,255,.08);
+    0 9px 25px rgba(0,0,0,.26),
+    inset 0 1px 0 rgba(255,255,255,.07);
 }
 
+
+/*
+  SECONDARY / SILVER-CHAMPAGNE
+*/
+
 .digit-silver{
-  color:#d6d0c3;
+  color:#e0dbd0;
 
   border:
     1px solid
-    rgba(255,255,255,.12);
+    rgba(220,215,204,.20);
 
   background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.075),
-      rgba(255,255,255,.025)
-    );
+    #15171b;
+
+  box-shadow:
+    0 9px 25px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.055);
 }
+
 
 /* =========================================================
    SEPARATOR
 ========================================================= */
 
 .sep{
-  width:15px;
+  width:16px;
 
   text-align:center;
 
-  color:#645f56;
+  color:#655f55;
 
   font-family:
     "IBM Plex Mono",
     monospace;
 
-  font-size:.64rem;
+  font-size:.61rem;
   font-weight:700;
 }
+
 
 /* =========================================================
    PAIRS
@@ -1111,7 +1184,7 @@ textarea:focus-visible{
 
   min-width:0;
 
-  margin-left:4px;
+  margin-left:5px;
 }
 
 .pair{
@@ -1119,7 +1192,7 @@ textarea:focus-visible{
   align-items:center;
   justify-content:center;
 
-  min-width:35px;
+  min-width:36px;
   height:27px;
 
   padding:
@@ -1133,7 +1206,7 @@ textarea:focus-visible{
   border-radius:8px;
 
   background:
-    rgba(255,255,255,.028);
+    rgba(255,255,255,.025);
 
   color:#aaa69c;
 
@@ -1147,16 +1220,18 @@ textarea:focus-visible{
   letter-spacing:.02em;
 }
 
+
+/*
+  Pair hierarchy.
+  Kept restrained so primary digit remains the hero.
+*/
+
 .pair-gold{
   border-color:
     rgba(215,182,107,.30);
 
   background:
-    linear-gradient(
-      135deg,
-      rgba(215,182,107,.14),
-      rgba(215,182,107,.035)
-    );
+    #17140e;
 
   color:#e3c778;
 
@@ -1169,7 +1244,7 @@ textarea:focus-visible{
     rgba(220,216,207,.13);
 
   background:
-    rgba(220,216,207,.045);
+    #15171a;
 
   color:#cbc5b9;
 }
@@ -1179,36 +1254,40 @@ textarea:focus-visible{
     rgba(201,149,142,.18);
 
   background:
-    rgba(201,149,142,.045);
+    #171315;
 
   color:#c9a09a;
 }
+
 
 /* =========================================================
    CARD FOOTER
 ========================================================= */
 
 .card-footer{
+  position:relative;
+  z-index:1;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
 
-  min-height:35px;
+  min-height:40px;
 
   padding:
     0
-    16px;
+    17px;
 
   border-top:
     1px solid
-    rgba(255,255,255,.045);
+    rgba(224,195,126,.08);
 
   color:#625f58;
 
-  font-size:.39rem;
-  font-weight:700;
+  font-size:.37rem;
+  font-weight:800;
 
-  letter-spacing:.1em;
+  letter-spacing:.10em;
 }
 
 .footer-brand{
@@ -1216,23 +1295,38 @@ textarea:focus-visible{
   align-items:center;
   gap:6px;
 
-  color:#9e8754;
+  color:#a58b57;
 }
 
 .brand-star{
   color:#c9a75d;
-  font-size:.54rem;
+
+  font-size:.50rem;
 }
 
 .footer-code{
-  color:#55544f;
+  color:#777064;
 
   font-family:
     "IBM Plex Mono",
     monospace;
 
-  font-size:.36rem;
+  font-size:.35rem;
+
+  letter-spacing:.12em;
 }
+
+
+/*
+  IMPORTANT:
+  Backend / Model implementation is intentionally NOT shown
+  on the visible VIP card.
+*/
+
+.footer-code::after{
+  content:"";
+}
+
 
 /* =========================================================
    COPY ALL
@@ -1271,6 +1365,7 @@ textarea:focus-visible{
     inset 0 1px 0 rgba(255,255,255,.65);
 }
 
+
 /* =========================================================
    ERROR
 ========================================================= */
@@ -1278,7 +1373,9 @@ textarea:focus-visible{
 .errorbox{
   margin-bottom:10px;
 
-  padding:12px 14px;
+  padding:
+    12px
+    14px;
 
   border:
     1px solid
@@ -1294,6 +1391,7 @@ textarea:focus-visible{
   font-size:.52rem;
   line-height:1.75;
 }
+
 
 /* =========================================================
    TOAST
@@ -1347,73 +1445,124 @@ textarea:focus-visible{
     translate(-50%,0);
 }
 
+
 /* =========================================================
    CAPTURE MODE
-   Dedicated screenshot presentation
+   SCREENSHOT-SAFE PRESENTATION
 ========================================================= */
 
 .capture-mode{
   width:100% !important;
 
   border-color:
-    rgba(215,182,107,.28) !important;
+    rgba(232,201,126,.38) !important;
+
+  background:
+    #0e1013 !important;
 
   box-shadow:
-    0 24px 70px rgba(0,0,0,.42),
+    0 26px 72px rgba(0,0,0,.42),
     0 0 0 1px rgba(255,255,255,.018) inset !important;
 }
 
+
+/*
+  Remove all potentially noisy decorative layers
+  from the capture itself.
+*/
+
 .capture-mode::before{
-  opacity:1;
+  background:
+    radial-gradient(
+      circle at 92% 8%,
+      rgba(224,195,126,.065),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 7% 92%,
+      rgba(224,195,126,.022),
+      transparent 30%
+    );
 }
 
-.capture-mode .lottery-head{
-  min-height:82px;
+.capture-mode::after{
+  border-color:
+    rgba(224,195,126,.075);
+}
 
-  padding-top:16px;
-  padding-bottom:16px;
+
+/*
+  Capture header
+*/
+
+.capture-mode .lottery-head{
+  min-height:84px;
+
+  padding:
+    16px
+    16px
+    16px
+    20px;
 }
 
 .capture-mode .lottery-name{
-  font-size:.76rem;
+  font-size:.77rem;
 }
 
 .capture-mode .date{
   font-size:.47rem;
 }
 
+
+/*
+  Capture body
+*/
+
 .capture-mode .rows{
   padding:
-    12px
-    12px
+    13px
+    13px
     8px;
 }
 
 .capture-mode .row{
-  min-height:61px;
+  min-height:65px;
 
   padding:
-    8px
+    9px
     10px;
 }
 
 .capture-mode .digit{
-  width:42px;
-  height:42px;
+  width:45px;
+  height:45px;
 
-  font-size:1rem;
+  font-size:1.02rem;
 }
 
 .capture-mode .pair{
-  min-width:38px;
+  min-width:39px;
   height:29px;
 
   font-size:.51rem;
 }
 
 .capture-mode .card-footer{
-  min-height:39px;
+  min-height:42px;
 }
+
+
+/*
+  During capture the digit is intentionally flat and clean.
+  This is the key anti-moire treatment.
+*/
+
+.capture-mode .digit-gold,
+.capture-mode .digit-silver{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.065) !important;
+}
+
 
 /* =========================================================
    RESPONSIVE
@@ -1443,16 +1592,21 @@ textarea:focus-visible{
   }
 
   .vip-label{
-    min-width:51px;
-    margin-right:5px;
+    min-width:54px;
+
+    margin-right:6px;
   }
 
   .card-capture{
     min-width:70px;
-    padding:0 8px;
+
+    padding:
+      0
+      8px;
   }
 
 }
+
 
 @media(max-width:480px){
 
@@ -1476,7 +1630,8 @@ textarea:focus-visible{
   }
 
   .lottery-head{
-    min-height:68px;
+    min-height:70px;
+
     padding:
       11px
       8px
@@ -1497,12 +1652,19 @@ textarea:focus-visible{
   }
 
   .vip-label{
-    min-width:48px;
+    min-width:49px;
     height:22px;
 
-    padding:0 6px;
+    padding:
+      0
+      6px;
 
     font-size:.35rem;
+  }
+
+  .vip-label::before{
+    margin-right:3px;
+    font-size:.38rem;
   }
 
   .card-capture{
@@ -1520,29 +1682,42 @@ textarea:focus-visible{
   }
 
   .row{
-    min-height:49px;
+    min-height:52px;
 
     padding:
       6px
       5px;
   }
 
+  .row-label{
+    width:39px;
+
+    font-size:.36rem;
+  }
+
   .digit{
-    width:35px;
-    height:35px;
+    width:36px;
+    height:36px;
 
     border-radius:10px;
 
-    font-size:.88rem;
+    font-size:.89rem;
+  }
+
+  .digit::after{
+    inset:3px;
+    border-radius:7px;
   }
 
   .sep{
     width:11px;
+
     font-size:.58rem;
   }
 
   .pairs{
     gap:3px;
+
     margin-left:2px;
   }
 
@@ -1560,10 +1735,13 @@ textarea:focus-visible{
   }
 
   .card-footer{
-    padding:0 12px;
+    padding:
+      0
+      12px;
   }
 
 }
+
 
 @media(max-width:380px){
 
@@ -1603,24 +1781,34 @@ textarea:focus-visible{
 
   .vip-label{
     min-width:44px;
+
     margin-left:auto;
     margin-right:4px;
   }
 
   .card-capture{
     min-width:62px;
-    padding:0 6px;
+
+    padding:
+      0
+      6px;
+  }
+
+  .row-label{
+    width:35px;
   }
 
   .digit{
-    width:33px;
-    height:33px;
+    width:34px;
+    height:34px;
   }
 
   .pair{
     min-width:30px;
   }
+
 }
+
 
 /* =========================================================
    PRINT
@@ -1651,8 +1839,10 @@ textarea:focus-visible{
   }
 
 }
+
 </style>
 </head>
+
 
 <body>
 
@@ -1664,9 +1854,10 @@ textarea:focus-visible{
 
     <div class="inner">
 
-      <!-- ===================================================
+
+      <!-- =================================================
            TOP BRAND
-      ==================================================== -->
+      ================================================== -->
 
       <div class="top">
 
@@ -1678,10 +1869,14 @@ textarea:focus-visible{
 
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Premium Multi Lottery Engine</small>
+
+            <small>
+              Premium Multi Lottery Engine
+            </small>
           </div>
 
         </div>
+
 
         <div class="pill">
           <span>●</span>
@@ -1691,9 +1886,9 @@ textarea:focus-visible{
       </div>
 
 
-      <!-- ===================================================
+      <!-- =================================================
            HERO
-      ==================================================== -->
+      ================================================== -->
 
       <section class="hero">
 
@@ -1715,9 +1910,9 @@ textarea:focus-visible{
       </section>
 
 
-      <!-- ===================================================
+      <!-- =================================================
            MAIN CONSOLE
-      ==================================================== -->
+      ================================================== -->
 
       <div id="console">
 
@@ -1739,6 +1934,7 @@ textarea:focus-visible{
 
           </div>
 
+
           <div class="actions">
 
             <button
@@ -1749,6 +1945,7 @@ textarea:focus-visible{
               ⚡ ประมวลผล
             </button>
 
+
             <button
               id="copyInput"
               class="copy"
@@ -1757,6 +1954,7 @@ textarea:focus-visible{
             >
               📋 COPY
             </button>
+
 
             <button
               id="clearInput"
@@ -1767,6 +1965,7 @@ textarea:focus-visible{
             </button>
 
           </div>
+
 
           <div
             id="scanner"
@@ -1794,9 +1993,9 @@ textarea:focus-visible{
       </div>
 
 
-      <!-- ===================================================
+      <!-- =================================================
            TOAST
-      ==================================================== -->
+      ================================================== -->
 
       <div
         id="toast"
@@ -1815,6 +2014,7 @@ textarea:focus-visible{
 
 
 <script>
+
 (() => {
 
   "use strict";
@@ -1824,31 +2024,52 @@ textarea:focus-visible{
      PREMIUM BACKGROUND PARTICLES
   ========================================================= */
 
-  const canvas = document.getElementById("snow");
-  const ctx = canvas.getContext("2d");
+  const canvas =
+    document.getElementById("snow");
 
-  let width = canvas.width = window.innerWidth;
-  let height = canvas.height = window.innerHeight;
+  const ctx =
+    canvas.getContext("2d");
 
-  window.addEventListener("resize", () => {
 
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+  let width =
+    canvas.width =
+      window.innerWidth;
 
-  });
+  let height =
+    canvas.height =
+      window.innerHeight;
 
-  const particles = Array.from(
-    { length: 34 },
-    () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: .45 + Math.random() * 1.25,
-      s: .08 + Math.random() * .26,
-      a: .08 + Math.random() * .18,
-      p: Math.random() * Math.PI * 2,
-      gold: Math.random() > .28
-    })
+
+  window.addEventListener(
+    "resize",
+    () => {
+
+      width =
+        canvas.width =
+          window.innerWidth;
+
+      height =
+        canvas.height =
+          window.innerHeight;
+
+    }
   );
+
+
+  const particles =
+    Array.from(
+      { length:34 },
+      () => ({
+        x:Math.random() * width,
+        y:Math.random() * height,
+        r:.45 + Math.random() * 1.25,
+        s:.08 + Math.random() * .26,
+        a:.08 + Math.random() * .18,
+        p:Math.random() * Math.PI * 2,
+        gold:Math.random() > .28
+      })
+    );
+
 
   function drawParticles(){
 
@@ -1859,21 +2080,32 @@ textarea:focus-visible{
       height
     );
 
+
     particles.forEach(p => {
 
       p.p += .006;
 
       p.y += p.s;
-      p.x += Math.sin(p.p) * .08;
 
-      if(p.y > height + 4){
+      p.x +=
+        Math.sin(p.p) * .08;
+
+
+      if(
+        p.y >
+        height + 4
+      ){
 
         p.y = -4;
-        p.x = Math.random() * width;
+
+        p.x =
+          Math.random() * width;
 
       }
 
+
       ctx.beginPath();
+
 
       ctx.arc(
         p.x,
@@ -1883,16 +2115,24 @@ textarea:focus-visible{
         Math.PI * 2
       );
 
-      ctx.fillStyle = p.gold
-        ? `rgba(215,182,107,${p.a})`
-        : `rgba(255,255,255,${p.a * .45})`;
+
+      ctx.fillStyle =
+        p.gold
+          ? `rgba(215,182,107,${p.a})`
+          : `rgba(255,255,255,${p.a * .45})`;
+
 
       ctx.fill();
 
     });
 
-    requestAnimationFrame(drawParticles);
+
+    requestAnimationFrame(
+      drawParticles
+    );
+
   }
+
 
   drawParticles();
 
@@ -1901,17 +2141,34 @@ textarea:focus-visible{
      HELPERS
   ========================================================= */
 
-  const $ = id =>
-    document.getElementById(id);
+  const $ =
+    id =>
+      document.getElementById(id);
 
 
-  const esc = value =>
-    String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+  const esc =
+    value =>
+      String(value)
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+        .replace(
+          /'/g,
+          "&#039;"
+        );
 
 
   /* =========================================================
@@ -1920,8 +2177,8 @@ textarea:focus-visible{
 
   const app = {
 
-    lastCopyText: "",
-    toastTimer: null,
+    lastCopyText:"",
+    toastTimer:null,
 
 
     norm(value){
@@ -1943,62 +2200,120 @@ textarea:focus-visible{
         String(name || "")
           .toLowerCase();
 
-      if(/ลาว|lao/.test(n))
+
+      if(
+        /ลาว|lao/.test(n)
+      )
         return "🇱🇦";
 
-      if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))
+
+      if(
+        /ฮานอย|เวียดนาม|vietnam|viet/.test(n)
+      )
         return "🇻🇳";
 
-      if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))
+
+      if(
+        /พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n)
+      )
         return "🇲🇲";
 
-      if(/จีน|china|shanghai/.test(n))
+
+      if(
+        /จีน|china|shanghai/.test(n)
+      )
         return "🇨🇳";
 
-      if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))
+
+      if(
+        /ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n)
+      )
         return "🇭🇰";
 
-      if(/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))
+
+      if(
+        /นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n)
+      )
         return "🇯🇵";
 
-      if(/เกาหลี|korea|kospi/.test(n))
+
+      if(
+        /เกาหลี|korea|kospi/.test(n)
+      )
         return "🇰🇷";
 
-      if(/สิงคโปร์|singapore/.test(n))
+
+      if(
+        /สิงคโปร์|singapore/.test(n)
+      )
         return "🇸🇬";
 
-      if(/อินเดีย|india|sensex/.test(n))
+
+      if(
+        /อินเดีย|india|sensex/.test(n)
+      )
         return "🇮🇳";
 
-      if(/รัสเซีย|russia|moscow/.test(n))
+
+      if(
+        /รัสเซีย|russia|moscow/.test(n)
+      )
         return "🇷🇺";
 
-      if(/เยอรมัน|germany|dax/.test(n))
+
+      if(
+        /เยอรมัน|germany|dax/.test(n)
+      )
         return "🇩🇪";
 
-      if(/อังกฤษ|uk|ftse|london/.test(n))
+
+      if(
+        /อังกฤษ|uk|ftse|london/.test(n)
+      )
         return "🇬🇧";
 
-      if(/อียิปต์|egypt/.test(n))
+
+      if(
+        /อียิปต์|egypt/.test(n)
+      )
         return "🇪🇬";
 
-      if(/ไต้หวัน|taiwan|tse/.test(n))
+
+      if(
+        /ไต้หวัน|taiwan|tse/.test(n)
+      )
         return "🇹🇼";
 
-      if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))
+
+      if(
+        /สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n)
+      )
         return "🇺🇸";
 
-      if(/ฝรั่งเศส|france|cac/.test(n))
+
+      if(
+        /ฝรั่งเศส|france|cac/.test(n)
+      )
         return "🇫🇷";
 
-      if(/ออสเตรเลีย|australia|asx/.test(n))
+
+      if(
+        /ออสเตรเลีย|australia|asx/.test(n)
+      )
         return "🇦🇺";
 
-      if(/แคนาดา|canada/.test(n))
+
+      if(
+        /แคนาดา|canada/.test(n)
+      )
         return "🇨🇦";
 
-      if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n))
+
+      if(
+        /หุ้นไทย|ไทย|thai|set|หุ้น/.test(n)
+      )
         return "🇹🇭";
+
 
       return "🌐";
 
@@ -2014,17 +2329,31 @@ textarea:focus-visible{
       const value =
         String(date || "").trim();
 
+
       if(!value)
         return false;
 
-      if(/^\d{1,2}\s+\S+\s+\d{2,4}$/.test(value))
+
+      if(
+        /^\d{1,2}\s+\S+\s+\d{2,4}$/
+          .test(value)
+      )
         return true;
 
-      if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value))
+
+      if(
+        /^\d{1,2}\/\d{1,2}\/\d{2,4}$/
+          .test(value)
+      )
         return true;
 
-      if(/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(value))
+
+      if(
+        /^\d{1,2}-\d{1,2}-\d{2,4}$/
+          .test(value)
+      )
         return true;
+
 
       return false;
 
@@ -2036,14 +2365,17 @@ textarea:focus-visible{
       const value =
         String(date || "").trim();
 
+
       const thai =
         value.match(
           /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
         );
 
+
       if(thai){
 
         const months = {
+
           "ม.ค.":1,
           "ก.พ.":2,
           "มี.ค.":3,
@@ -2056,23 +2388,33 @@ textarea:focus-visible{
           "ต.ค.":10,
           "พ.ย.":11,
           "ธ.ค.":12
+
         };
+
 
         const month =
           months[thai[2]] || 0;
 
+
         let year =
           Number(thai[3]);
+
 
         if(year < 100)
           year += 2500;
 
+
         return [
+
           year,
-          String(month).padStart(2,"0"),
+
+          String(month)
+            .padStart(2,"0"),
+
           String(
             Number(thai[1])
           ).padStart(2,"0")
+
         ].join("-");
 
       }
@@ -2083,25 +2425,33 @@ textarea:focus-visible{
           /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
         );
 
+
       if(numeric){
 
         let year =
           Number(numeric[3]);
 
+
         if(year < 100)
           year += 2500;
 
+
         return [
+
           year,
+
           String(
             Number(numeric[2])
           ).padStart(2,"0"),
+
           String(
             Number(numeric[1])
           ).padStart(2,"0")
+
         ].join("-");
 
       }
+
 
       return value;
 
@@ -2111,34 +2461,49 @@ textarea:focus-visible{
     sortChronological(records){
 
       return records
-        .map((record,index) => ({
-          ...record,
-          __index:index
-        }))
-        .sort((a,b) => {
 
-          const ka =
-            this.dateKey(a.date);
+        .map(
+          (record,index) => ({
+            ...record,
+            __index:index
+          })
+        )
 
-          const kb =
-            this.dateKey(b.date);
+        .sort(
+          (a,b) => {
 
-          if(ka < kb)
-            return -1;
+            const ka =
+              this.dateKey(a.date);
 
-          if(ka > kb)
-            return 1;
+            const kb =
+              this.dateKey(b.date);
 
-          return a.__index - b.__index;
 
-        })
+            if(ka < kb)
+              return -1;
+
+
+            if(ka > kb)
+              return 1;
+
+
+            return (
+              a.__index -
+              b.__index
+            );
+
+          }
+        )
+
         .map(record => {
 
           const clean = {
             ...record
           };
 
+
           delete clean.__index;
+
 
           return clean;
 
@@ -2158,40 +2523,53 @@ textarea:focus-visible{
           .replace(/\r/g,"")
           .trim();
 
+
       if(!raw){
 
         return {
+
           records:[],
+
           errors:[
             "ยังไม่มีข้อมูลสำหรับประมวลผล"
           ]
+
         };
 
       }
+
 
       const lines =
         raw
           .split("\n")
           .map(v => v.trim());
 
+
       const records = [];
       const errors = [];
 
+
       let i = 0;
 
-      while(i < lines.length){
+
+      while(
+        i < lines.length
+      ){
 
         if(!lines[i]){
 
           i++;
+
           continue;
 
         }
+
 
         const header =
           lines[i].match(
             /^(.+?)\s*\|\s*(.+?)$/
           );
+
 
         if(!header){
 
@@ -2200,75 +2578,101 @@ textarea:focus-visible{
           );
 
           i++;
+
           continue;
 
         }
 
+
         const name =
           header[1].trim();
+
 
         const date =
           header[2].trim();
 
-        if(!this.parseDateValue(date)){
+
+        if(
+          !this.parseDateValue(
+            date
+          )
+        ){
 
           errors.push(
             `${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 25 ส.ค. 69`
           );
 
           i++;
+
           continue;
 
         }
 
+
         const n3raw =
           lines[i + 1] || "";
 
+
         const n2raw =
           lines[i + 2] || "";
+
 
         const n3 =
           /^[\d\s]+$/.test(n3raw)
             ? n3raw.replace(/\s+/g,"")
             : n3raw;
 
+
         const n2 =
           /^[\d\s]+$/.test(n2raw)
             ? n2raw.replace(/\s+/g,"")
-            : n2raw;
+            : n2;
 
-        if(!/^\d{3}$/.test(n3)){
+
+        if(
+          !/^\d{3}$/.test(n3)
+        ){
 
           errors.push(
             `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
           );
 
           i += 1;
+
           continue;
 
         }
 
-        if(!/^\d{2}$/.test(n2)){
+
+        if(
+          !/^\d{2}$/.test(n2)
+        ){
 
           errors.push(
             `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
           );
 
           i += 2;
+
           continue;
 
         }
 
+
         records.push({
+
           name,
           date,
           n3,
           n2
+
         });
+
 
         i += 3;
 
       }
+
 
       return {
         records,
@@ -2286,107 +2690,151 @@ textarea:focus-visible{
 
       const groupsMap = {};
 
-      records.forEach((record,index) => {
 
-        const key =
-          record.name.trim();
+      records.forEach(
+        (record,index) => {
 
-        if(!groupsMap[key]){
+          const key =
+            record.name.trim();
 
-          groupsMap[key] = {
-            name:key,
-            records:[],
-            duplicateCount:0,
-            conflictCount:0,
-            __order:index
-          };
+
+          if(!groupsMap[key]){
+
+            groupsMap[key] = {
+
+              name:key,
+
+              records:[],
+
+              duplicateCount:0,
+
+              conflictCount:0,
+
+              __order:index
+
+            };
+
+          }
+
+
+          groupsMap[key]
+            .records
+            .push(record);
 
         }
-
-        groupsMap[key]
-          .records
-          .push(record);
-
-      });
+      );
 
 
       const groups =
-        Object.values(groupsMap);
+        Object.values(
+          groupsMap
+        );
 
 
-      groups.forEach(group => {
+      groups.forEach(
+        group => {
 
-        const sorted =
-          this.sortChronological(
-            group.records
-          );
-
-        const byDate = new Map();
-        const clean = [];
-
-        sorted.forEach(record => {
-
-          const key =
-            this.dateKey(record.date);
-
-          if(!byDate.has(key)){
-
-            byDate.set(
-              key,
-              record
+          const sorted =
+            this.sortChronological(
+              group.records
             );
 
-            clean.push(record);
 
-            return;
+          const byDate =
+            new Map();
 
-          }
 
-          const previous =
-            byDate.get(key);
+          const clean = [];
 
-          if(
-            previous.n3 === record.n3 &&
-            previous.n2 === record.n2
-          ){
 
-            group.duplicateCount++;
+          sorted.forEach(
+            record => {
 
-            return;
+              const key =
+                this.dateKey(
+                  record.date
+                );
 
-          }
 
-          group.conflictCount++;
+              if(
+                !byDate.has(key)
+              ){
 
-          const index =
-            clean.indexOf(previous);
+                byDate.set(
+                  key,
+                  record
+                );
 
-          if(index >= 0){
+                clean.push(
+                  record
+                );
 
-            clean[index] = record;
+                return;
 
-          }
+              }
 
-          byDate.set(
-            key,
-            record
+
+              const previous =
+                byDate.get(key);
+
+
+              if(
+                previous.n3 ===
+                  record.n3 &&
+                previous.n2 ===
+                  record.n2
+              ){
+
+                group.duplicateCount++;
+
+                return;
+
+              }
+
+
+              group.conflictCount++;
+
+
+              const index =
+                clean.indexOf(
+                  previous
+                );
+
+
+              if(index >= 0){
+
+                clean[index] =
+                  record;
+
+              }
+
+
+              byDate.set(
+                key,
+                record
+              );
+
+            }
           );
 
-        });
 
-        group.records =
-          this.sortChronological(
-            clean
-          );
+          group.records =
+            this.sortChronological(
+              clean
+            );
 
-      });
+        }
+      );
 
 
       return groups
+
         .sort(
           (a,b) =>
-            a.__order - b.__order
+            a.__order -
+            b.__order
         )
+
         .map(group => {
 
           delete group.__order;
@@ -2400,7 +2848,7 @@ textarea:focus-visible{
 
     /* =======================================================
        MODEL 01
-       MAIN FORMULA
+       ORIGINAL LOGIC PRESERVED
     ======================================================= */
 
     mainModel(n3){
@@ -2411,27 +2859,46 @@ textarea:focus-visible{
           .split("")
           .map(Number);
 
-      const H = digits[0];
-      const T = digits[1];
-      const U = digits[2];
+
+      const H =
+        digits[0];
+
+
+      const T =
+        digits[1];
+
+
+      const U =
+        digits[2];
+
 
       const sum =
         H + T + U;
 
+
       const first =
         this.norm(sum);
 
+
       const second =
-        this.norm(first + 1);
+        this.norm(
+          first + 1
+        );
+
 
       return {
+
         sum,
+
         first,
+
         second,
+
         set:[
           first,
           second
         ]
+
       };
 
     },
@@ -2439,8 +2906,7 @@ textarea:focus-visible{
 
     /* =======================================================
        BACKEND SUPPORT FORMULA 1
-       Tens top + Tens bottom
-       -> units + 1
+       ORIGINAL LOGIC PRESERVED
     ======================================================= */
 
     backendFormula1(n3,n2){
@@ -2451,28 +2917,42 @@ textarea:focus-visible{
           .split("")
           .map(Number);
 
+
       const bottom =
         String(n2)
           .padStart(2,"0")
           .split("")
           .map(Number);
 
-      const T = top[1];
-      const R1 = bottom[0];
+
+      const T =
+        top[1];
+
+
+      const R1 =
+        bottom[0];
+
 
       const sum =
         T + R1;
 
+
       const q =
         this.norm(sum);
 
+
       const result =
-        this.norm(q + 1);
+        this.norm(
+          q + 1
+        );
+
 
       return {
+
         sum,
         q,
         result
+
       };
 
     },
@@ -2480,8 +2960,7 @@ textarea:focus-visible{
 
     /* =======================================================
        BACKEND SUPPORT FORMULA 2
-       Hundreds top + Tens bottom
-       -> units + 1
+       ORIGINAL LOGIC PRESERVED
     ======================================================= */
 
     backendFormula2(n3,n2){
@@ -2492,28 +2971,42 @@ textarea:focus-visible{
           .split("")
           .map(Number);
 
+
       const bottom =
         String(n2)
           .padStart(2,"0")
           .split("")
           .map(Number);
 
-      const H = top[0];
-      const R1 = bottom[0];
+
+      const H =
+        top[0];
+
+
+      const R1 =
+        bottom[0];
+
 
       const sum =
         H + R1;
 
+
       const q =
         this.norm(sum);
 
+
       const result =
-        this.norm(q + 1);
+        this.norm(
+          q + 1
+        );
+
 
       return {
+
         sum,
         q,
         result
+
       };
 
     },
@@ -2521,6 +3014,7 @@ textarea:focus-visible{
 
     /* =======================================================
        VIP CONFIRMATION
+       ORIGINAL LOGIC PRESERVED
     ======================================================= */
 
     checkVIP(
@@ -2530,15 +3024,21 @@ textarea:focus-visible{
     ){
 
       const mainSet =
-        new Set(main.set);
+        new Set(
+          main.set
+        );
+
 
       return (
+
         mainSet.has(
           backend1.result
         ) ||
+
         mainSet.has(
           backend2.result
         )
+
       );
 
     },
@@ -2546,139 +3046,210 @@ textarea:focus-visible{
 
     /* =======================================================
        PROTECTED ORIGINAL PAIR ENGINE
+       ORIGINAL LOGIC PRESERVED
     ======================================================= */
 
-    buildPairs(mainSet,anchor){
+    buildPairs(
+      mainSet,
+      anchor
+    ){
 
       const pairsMap = {};
 
-      mainSet.forEach(sourceDigit => {
 
-        let range = [];
-        let collision = false;
+      mainSet.forEach(
+        sourceDigit => {
 
-        for(
-          let offset = -2;
-          offset <= 2;
-          offset++
-        ){
+          let range = [];
 
-          if(
-            mainSet.includes(
-              this.norm(
-                anchor + offset
-              )
-            )
+          let collision =
+            false;
+
+
+          for(
+            let offset = -2;
+
+            offset <= 2;
+
+            offset++
           ){
-
-            collision = true;
-
-            break;
-
-          }
-
-        }
-
-
-        for(
-          let offset =
-            collision ? -3 : -2;
-
-          offset <=
-            (collision ? 3 : 2);
-
-          offset++
-        ){
-
-          const digit =
-            this.norm(
-              anchor + offset
-            );
-
-          if(!range.includes(digit)){
-
-            range.push(digit);
-
-          }
-
-        }
-
-
-        const pairs = [];
-
-        range.forEach(target => {
-
-          if(target === sourceDigit)
-            return;
-
-          if(mainSet.includes(target))
-            return;
-
-          const pair =
-            `${sourceDigit}${target}`;
-
-          if(pair[0] === pair[1])
-            return;
-
-          if(!pairs.includes(pair))
-            pairs.push(pair);
-
-        });
-
-
-        let next =
-          this.norm(
-            sourceDigit + 1
-          );
-
-
-        let guard = 0;
-
-        while(
-          pairs.length < 5 &&
-          guard < 20
-        ){
-
-          if(
-            next !== sourceDigit &&
-            !mainSet.includes(next)
-          ){
-
-            const pair =
-              `${sourceDigit}${next}`;
 
             if(
-              pair[0] !== pair[1] &&
-              !pairs.includes(pair)
+              mainSet.includes(
+                this.norm(
+                  anchor +
+                  offset
+                )
+              )
             ){
 
-              pairs.push(pair);
+              collision = true;
+
+              break;
 
             }
 
           }
 
-          next =
+
+          for(
+            let offset =
+              collision
+                ? -3
+                : -2;
+
+            offset <=
+              (
+                collision
+                  ? 3
+                  : 2
+              );
+
+            offset++
+          ){
+
+            const digit =
+              this.norm(
+                anchor +
+                offset
+              );
+
+
+            if(
+              !range.includes(
+                digit
+              )
+            ){
+
+              range.push(
+                digit
+              );
+
+            }
+
+          }
+
+
+          const pairs = [];
+
+
+          range.forEach(
+            target => {
+
+              if(
+                target ===
+                sourceDigit
+              )
+                return;
+
+
+              if(
+                mainSet.includes(
+                  target
+                )
+              )
+                return;
+
+
+              const pair =
+                `${sourceDigit}${target}`;
+
+
+              if(
+                pair[0] ===
+                pair[1]
+              )
+                return;
+
+
+              if(
+                !pairs.includes(
+                  pair
+                )
+              )
+                pairs.push(pair);
+
+            }
+          );
+
+
+          let next =
             this.norm(
-              next + 1
+              sourceDigit + 1
             );
 
-          guard++;
+
+          let guard = 0;
+
+
+          while(
+            pairs.length < 5 &&
+            guard < 20
+          ){
+
+            if(
+
+              next !==
+                sourceDigit &&
+
+              !mainSet.includes(
+                next
+              )
+
+            ){
+
+              const pair =
+                `${sourceDigit}${next}`;
+
+
+              if(
+
+                pair[0] !==
+                  pair[1] &&
+
+                !pairs.includes(
+                  pair
+                )
+
+              ){
+
+                pairs.push(
+                  pair
+                );
+
+              }
+
+            }
+
+
+            next =
+              this.norm(
+                next + 1
+              );
+
+
+            guard++;
+
+          }
+
+
+          pairsMap[sourceDigit] =
+            [
+              ...new Set(
+                pairs
+              )
+            ]
+
+            .filter(
+              pair =>
+                pair[0] !==
+                pair[1]
+            )
+
+            .slice(0,5);
 
         }
-
-
-        pairsMap[sourceDigit] =
-          [
-            ...new Set(pairs)
-          ]
-          .filter(
-            pair =>
-              pair[0] !== pair[1]
-          )
-          .slice(0,5);
-
-      });
+      );
 
 
       return pairsMap;
@@ -2688,6 +3259,7 @@ textarea:focus-visible{
 
     /* =======================================================
        PAIR CONSENSUS
+       ORIGINAL LOGIC PRESERVED
     ======================================================= */
 
     pairKey(pair){
@@ -2695,12 +3267,18 @@ textarea:focus-visible{
       const value =
         String(pair);
 
-      if(!/^\d{2}$/.test(value))
+
+      if(
+        !/^\d{2}$/.test(value)
+      )
         return value;
 
+
       return [
+
         value[0],
         value[1]
+
       ]
       .sort()
       .join("");
@@ -2708,23 +3286,31 @@ textarea:focus-visible{
     },
 
 
-    buildPairConsensus(pairSets){
+    buildPairConsensus(
+      pairSets
+    ){
 
       const all = [];
+
 
       pairSets.forEach(
         (set,rowIndex) => {
 
           set
             .slice(0,5)
-            .forEach(pair => {
+            .forEach(
+              pair => {
 
-              all.push({
-                pair:String(pair),
-                rowIndex
-              });
+                all.push({
 
-            });
+                  pair:String(pair),
+
+                  rowIndex
+
+                });
+
+              }
+            );
 
         }
       );
@@ -2732,82 +3318,125 @@ textarea:focus-visible{
 
       const counts = {};
 
-      all.forEach(item => {
 
-        const key =
-          this.pairKey(
-            item.pair
-          );
+      all.forEach(
+        item => {
 
-        if(!counts[key]){
+          const key =
+            this.pairKey(
+              item.pair
+            );
 
-          counts[key] = {
-            key,
-            score:0,
-            rows:new Set(),
-            pairs:new Set()
-          };
+
+          if(!counts[key]){
+
+            counts[key] = {
+
+              key,
+
+              score:0,
+
+              rows:new Set(),
+
+              pairs:new Set()
+
+            };
+
+          }
+
+
+          counts[key].score++;
+
+
+          counts[key]
+            .rows
+            .add(
+              item.rowIndex
+            );
+
+
+          counts[key]
+            .pairs
+            .add(
+              item.pair
+            );
 
         }
-
-        counts[key].score++;
-
-        counts[key]
-          .rows
-          .add(item.rowIndex);
-
-        counts[key]
-          .pairs
-          .add(item.pair);
-
-      });
+      );
 
 
       const ranked =
-        Object.values(counts)
-          .sort(
-            (a,b) =>
-              b.score - a.score ||
-              b.rows.size - a.rows.size ||
-              Number(a.key) - Number(b.key)
-          );
+        Object.values(
+          counts
+        )
+        .sort(
+          (a,b) =>
+
+            b.score -
+            a.score ||
+
+            b.rows.size -
+            a.rows.size ||
+
+            Number(a.key) -
+            Number(b.key)
+
+        );
 
 
       const colorMap = {};
 
+
       ranked
         .slice(0,6)
-        .forEach((item,index) => {
+        .forEach(
+          (item,index) => {
 
-          let color;
+            let color;
 
-          if(index < 2){
 
-            color = "gold";
+            if(index < 2){
 
-          }else if(index < 4){
+              color =
+                "gold";
 
-            color = "silver";
+            }else if(index < 4){
 
-          }else{
+              color =
+                "silver";
 
-            color = "rose";
+            }else{
+
+              color =
+                "rose";
+
+            }
+
+
+            colorMap[item.key] = {
+
+              color,
+
+              rank:
+                index + 1,
+
+              score:
+                item.score
+
+            };
 
           }
-
-          colorMap[item.key] = {
-            color,
-            rank:index + 1,
-            score:item.score
-          };
-
-        });
+        );
 
 
       return {
+
         counts,
+
         ranked,
+
         colorMap
+
       };
 
     },
@@ -2816,15 +3445,23 @@ textarea:focus-visible{
     sortPairs(pairs){
 
       return pairs
+
         .map(String)
+
         .filter(
           pair =>
+
             /^\d{2}$/.test(pair) &&
-            pair[0] !== pair[1]
+
+            pair[0] !==
+              pair[1]
+
         )
+
         .sort(
           (a,b) =>
-            Number(a) - Number(b)
+            Number(a) -
+            Number(b)
         );
 
     },
@@ -2837,17 +3474,29 @@ textarea:focus-visible{
 
       const info =
         colorMap[
-          this.pairKey(pair)
+          this.pairKey(
+            pair
+          )
         ];
+
 
       if(!info)
         return "pair";
 
-      if(info.color === "gold")
+
+      if(
+        info.color ===
+        "gold"
+      )
         return "pair pair-gold";
 
-      if(info.color === "silver")
+
+      if(
+        info.color ===
+        "silver"
+      )
         return "pair pair-silver";
+
 
       return "pair pair-rose";
 
@@ -2856,6 +3505,7 @@ textarea:focus-visible{
 
     /* =======================================================
        MAIN ENGINE
+       ORIGINAL LOGIC PRESERVED
     ======================================================= */
 
     run(n3,n2){
@@ -2866,11 +3516,16 @@ textarea:focus-visible{
           .split("")
           .map(Number);
 
+
       const H =
         topDigits[0];
 
+
       const main =
-        this.mainModel(n3);
+        this.mainModel(
+          n3
+        );
+
 
       const backend1 =
         this.backendFormula1(
@@ -2878,11 +3533,13 @@ textarea:focus-visible{
           n2
         );
 
+
       const backend2 =
         this.backendFormula2(
           n3,
           n2
         );
+
 
       const vip =
         this.checkVIP(
@@ -2900,8 +3557,11 @@ textarea:focus-visible{
       const rawAnchor =
         7 - H;
 
+
       const anchor =
-        this.norm(rawAnchor);
+        this.norm(
+          rawAnchor
+        );
 
 
       const pairsMap =
@@ -2927,17 +3587,31 @@ textarea:focus-visible{
 
 
       return {
+
         main,
+
         backend1,
+
         backend2,
+
         vip,
+
         rawAnchor,
+
         anchor,
+
         pairsMap,
+
         pairSets,
+
         consensus,
-        top1Digit:main.first,
-        top2Digit:main.second
+
+        top1Digit:
+          main.first,
+
+        top2Digit:
+          main.second
+
       };
 
     },
@@ -2952,27 +3626,39 @@ textarea:focus-visible{
       if(!record)
         return "";
 
+
       const value =
-        String(record.date || "")
-          .trim();
+        String(
+          record.date || ""
+        ).trim();
+
 
       const thai =
         value.match(
           /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
         );
 
+
       if(thai){
 
         const day =
-          Number(thai[1]);
+          Number(
+            thai[1]
+          );
+
 
         let year =
-          Number(thai[3]);
+          Number(
+            thai[3]
+          );
+
 
         if(year < 100)
           year += 2500;
 
+
         const months = [
+
           "ม.ค.",
           "ก.พ.",
           "มี.ค.",
@@ -2985,12 +3671,19 @@ textarea:focus-visible{
           "ต.ค.",
           "พ.ย.",
           "ธ.ค."
+
         ];
 
-        const monthIndex =
-          months.indexOf(thai[2]);
 
-        if(monthIndex >= 0){
+        const monthIndex =
+          months.indexOf(
+            thai[2]
+          );
+
+
+        if(
+          monthIndex >= 0
+        ){
 
           const date =
             new Date(
@@ -2999,21 +3692,33 @@ textarea:focus-visible{
               day
             );
 
+
           date.setDate(
             date.getDate() + 1
           );
 
+
           return [
-            String(date.getDate()),
-            months[date.getMonth()],
+
             String(
-              date.getFullYear() + 543
+              date.getDate()
+            ),
+
+            months[
+              date.getMonth()
+            ],
+
+            String(
+              date.getFullYear() +
+              543
             )
+
           ].join(" ");
 
         }
 
       }
+
 
       return "งวดถัดไป";
 
@@ -3022,7 +3727,7 @@ textarea:focus-visible{
 
     /* =======================================================
        CAPTURE CARD
-       Screenshot-specific premium treatment
+       SCREENSHOT-SAFE
     ======================================================= */
 
     async captureCard(
@@ -3031,7 +3736,10 @@ textarea:focus-visible{
     ){
 
       const element =
-        document.getElementById(cardId);
+        document.getElementById(
+          cardId
+        );
+
 
       if(!element)
         return;
@@ -3075,8 +3783,8 @@ textarea:focus-visible{
 
 
         /*
-          Allow browser to repaint
-          the premium capture state.
+          Wait for the browser to repaint
+          the clean capture state.
         */
 
         await new Promise(
@@ -3094,30 +3802,79 @@ textarea:focus-visible{
           await html2canvas(
             element,
             {
-              backgroundColor:"#101114",
+
+              /*
+                Stable flat background.
+                This is intentionally NOT transparent.
+              */
+
+              backgroundColor:
+                "#0e1013",
+
+
+              /*
+                Higher scale produces cleaner
+                digit edges on mobile screenshots.
+              */
 
               scale:
                 Math.min(
                   3,
                   Math.max(
                     2,
-                    window.devicePixelRatio || 2
+                    window.devicePixelRatio ||
+                    2
                   )
                 ),
 
+
               useCORS:true,
+
               allowTaint:false,
+
               logging:false,
 
               imageTimeout:10000,
 
-              removeContainer:true
+              removeContainer:true,
+
+              /*
+                Prevent animation / subpixel noise
+                from affecting capture.
+              */
+
+              onclone:
+                clonedDocument => {
+
+                  const clonedCard =
+                    clonedDocument
+                      .getElementById(
+                        cardId
+                      );
+
+
+                  if(
+                    clonedCard
+                  ){
+
+                    clonedCard.style.animation =
+                      "none";
+
+                    clonedCard.style.transition =
+                      "none";
+
+                  }
+
+                }
+
             }
           );
 
 
         const link =
-          document.createElement("a");
+          document.createElement(
+            "a"
+          );
 
 
         const safe =
@@ -3129,17 +3886,25 @@ textarea:focus-visible{
             /[^ก-๙A-Za-z0-9_-]+/g,
             "_"
           )
-          .slice(0,60);
+          .slice(
+            0,
+            60
+          );
 
 
         link.download =
-          `${safe || "lottery"}_VIP_card.png`;
+          `${
+            safe ||
+            "lottery"
+          }_VIP_card.png`;
+
 
         link.href =
           canvas.toDataURL(
             "image/png",
             1
           );
+
 
         link.click();
 
@@ -3151,7 +3916,10 @@ textarea:focus-visible{
 
       }catch(error){
 
-        console.error(error);
+        console.error(
+          error
+        );
+
 
         this.show(
           "❌ แคปภาพไม่สำเร็จ"
@@ -3169,6 +3937,7 @@ textarea:focus-visible{
           }
         );
 
+
         element.classList.remove(
           "capture-mode"
         );
@@ -3185,25 +3954,36 @@ textarea:focus-visible{
     copy(text){
 
       if(
+
         navigator.clipboard &&
+
         navigator.clipboard.writeText
+
       ){
 
         navigator.clipboard
           .writeText(text)
+
           .then(
-            () => this.show()
+            () =>
+              this.show()
           )
+
           .catch(
             () =>
-              this.fallbackCopy(text)
+              this.fallbackCopy(
+                text
+              )
           );
 
         return;
 
       }
 
-      this.fallbackCopy(text);
+
+      this.fallbackCopy(
+        text
+      );
 
     },
 
@@ -3215,25 +3995,32 @@ textarea:focus-visible{
           "textarea"
         );
 
+
       textarea.value =
         text;
+
 
       textarea.style.position =
         "fixed";
 
+
       textarea.style.opacity =
         "0";
+
 
       document.body.appendChild(
         textarea
       );
 
+
       textarea.select();
+
 
       textarea.setSelectionRange(
         0,
         textarea.value.length
       );
+
 
       try{
 
@@ -3246,6 +4033,7 @@ textarea:focus-visible{
         textarea.remove();
 
       }
+
 
       this.show();
 
@@ -3261,17 +4049,21 @@ textarea:focus-visible{
       const toast =
         $("toast");
 
+
       toast.textContent =
         message ||
         "คัดลอกแล้ว";
+
 
       toast.classList.add(
         "show"
       );
 
+
       clearTimeout(
         this.toastTimer
       );
+
 
       this.toastTimer =
         setTimeout(
@@ -3297,14 +4089,21 @@ textarea:focus-visible{
         );
 
 
-      if(!parsed.records.length){
+      if(
+        !parsed.records.length
+      ){
 
         $("result").innerHTML = `
+
           <div class="errorbox">
+
             ❌ ไม่พบข้อมูลที่ถูกต้อง
             กรุณาตรวจรูปแบบอีกครั้ง
+
           </div>
+
         `;
+
 
         return;
 
@@ -3314,12 +4113,14 @@ textarea:focus-visible{
       const scanner =
         $("scanner");
 
+
       const runButton =
         $("run");
 
 
       runButton.disabled =
         true;
+
 
       scanner.style.display =
         "block";
@@ -3354,6 +4155,7 @@ textarea:focus-visible{
 
 
         const cards = [];
+
         const copyBlocks = [];
 
 
@@ -3371,13 +4173,15 @@ textarea:focus-visible{
             group.records;
 
 
-          if(!records.length)
+          if(
+            !records.length
+          )
             continue;
 
 
           /*
             Latest chronological record
-            is used as the source for
+            is used as source for
             the next prediction card.
           */
 
@@ -3407,11 +4211,13 @@ textarea:focus-visible{
 
 
           const pair1 =
-            result.pairSets[0] || [];
+            result.pairSets[0] ||
+            [];
 
 
           const pair2 =
-            result.pairSets[1] || [];
+            result.pairSets[1] ||
+            [];
 
 
           const nextDate =
@@ -3422,72 +4228,93 @@ textarea:focus-visible{
 
           /* =================================================
              PAIR HTML
-          ================================================= */
+          ================================================== */
 
           const makePairHTML =
             pairs => {
 
               return pairs
-                .map(pair => {
+                .map(
+                  pair => {
 
-                  const info =
-                    result
-                      .consensus
-                      .colorMap[
-                        this.pairKey(pair)
-                      ];
-
-
-                  const title =
-                    info
-                      ? `Consensus อันดับ ${info.rank} • พบ ${info.score} ครั้ง`
-                      : "เลขเจาะ";
+                    const info =
+                      result
+                        .consensus
+                        .colorMap[
+                          this.pairKey(
+                            pair
+                          )
+                        ];
 
 
-                  return `
-                    <span
-                      class="${this.pairClass(
-                        pair,
-                        result.consensus.colorMap
-                      )}"
-                      title="${esc(title)}"
-                    >${esc(pair)}</span>
-                  `;
+                    const title =
+                      info
 
-                })
+                        ? `Consensus อันดับ ${info.rank} • พบ ${info.score} ครั้ง`
+
+                        : "เลขเจาะ";
+
+
+                    return `
+
+                      <span
+                        class="${this.pairClass(
+                          pair,
+                          result.consensus.colorMap
+                        )}"
+                        title="${esc(title)}"
+                      >
+                        ${esc(pair)}
+                      </span>
+
+                    `;
+
+                  }
+                )
                 .join("");
 
             };
 
 
           const pairHTML1 =
-            makePairHTML(pair1);
+            makePairHTML(
+              pair1
+            );
+
 
           const pairHTML2 =
-            makePairHTML(pair2);
+            makePairHTML(
+              pair2
+            );
 
 
           /* =================================================
-             VIP
-          ================================================= */
+             VIP BADGE
+          ================================================== */
 
           const vipHTML =
             result.vip
+
               ? `
+
                 <div
                   class="vip-label"
-                  title="Backend confirmation matched Model 01"
+                  title="VIP confirmation"
                 >
                   VIP+
                 </div>
+
               `
+
               : `
+
                 <div
                   class="vip-label empty"
                   aria-hidden="true"
                 >
                   VIP+
                 </div>
+
               `;
 
 
@@ -3496,25 +4323,30 @@ textarea:focus-visible{
 
 
           /* =================================================
-             ROW 1
+             RANK 01
           ================================================= */
 
           const row1 = `
+
             <div class="row">
 
               <span
                 class="row-label"
                 aria-hidden="true"
               >
-                01
+                RANK 01
               </span>
+
 
               <span
                 class="digit digit-gold"
-                aria-label="เลขเด่นตัวที่หนึ่ง"
+                aria-label="เลขเด่นอันดับหนึ่ง"
               >
-                ${esc(mainDigits[0])}
+                ${esc(
+                  mainDigits[0]
+                )}
               </span>
+
 
               <span
                 class="sep"
@@ -3522,35 +4354,42 @@ textarea:focus-visible{
               >
                 :
               </span>
+
 
               <div class="pairs">
                 ${pairHTML1}
               </div>
 
             </div>
+
           `;
 
 
           /* =================================================
-             ROW 2
-          ================================================= */
+             RANK 02
+          ================================================== */
 
           const row2 = `
+
             <div class="row">
 
               <span
                 class="row-label"
                 aria-hidden="true"
               >
-                02
+                RANK 02
               </span>
+
 
               <span
                 class="digit digit-gold"
-                aria-label="เลขเด่นตัวที่สอง"
+                aria-label="เลขรองอันดับสอง"
               >
-                ${esc(mainDigits[1])}
+                ${esc(
+                  mainDigits[1]
+                )}
               </span>
+
 
               <span
                 class="sep"
@@ -3559,53 +4398,73 @@ textarea:focus-visible{
                 :
               </span>
 
+
               <div class="pairs">
                 ${pairHTML2}
               </div>
 
             </div>
+
           `;
 
 
           /* =================================================
-             FOOTER
-          ================================================= */
+             PREMIUM FOOTER
+             Backend formula names are intentionally hidden.
+          ================================================== */
 
           const footer = `
+
             <div class="card-footer">
 
               <div class="footer-brand">
-                <span class="brand-star">✦</span>
-                <span>บ้านเงินกอง</span>
-                <span class="brand-star">✦</span>
+
+                <span class="brand-star">
+                  ✦
+                </span>
+
+                <span>
+                  MESTER VIP
+                </span>
+
+                <span class="brand-star">
+                  ✦
+                </span>
+
               </div>
 
+
               <div class="footer-code">
-                VIP+ / M01
+                RANK 01 • RANK 02
               </div>
 
             </div>
+
           `;
 
 
           /* =================================================
              CARD
-          ================================================= */
+          ================================================== */
 
           cards.push(`
+
             <article
               class="lottery"
               id="${cardId}"
               data-lottery-card="true"
             >
 
+
               <div class="lottery-head">
 
                 <div class="lottery-meta">
 
+
                   <div class="lottery-kicker">
-                    NEXT DRAW / ANALYSIS
+                    PREMIUM MEMBER • NEXT DRAW
                   </div>
+
 
                   <div class="lottery-name">
 
@@ -3613,18 +4472,27 @@ textarea:focus-visible{
                       class="flag"
                       aria-hidden="true"
                     >
-                      ${this.flag(group.name)}
+                      ${this.flag(
+                        group.name
+                      )}
                     </span>
+
 
                     <span>
-                      ${esc(group.name)}
+                      ${esc(
+                        group.name
+                      )}
                     </span>
 
                   </div>
 
+
                   <div class="date">
-                    ${esc(nextDate)}
+                    ${esc(
+                      nextDate
+                    )}
                   </div>
+
 
                 </div>
 
@@ -3649,6 +4517,7 @@ textarea:focus-visible{
 
                 </div>
 
+
               </div>
 
 
@@ -3663,20 +4532,30 @@ textarea:focus-visible{
 
               ${footer}
 
+
             </article>
+
           `);
 
 
           /* =================================================
              COPY BLOCK
-          ================================================= */
+          ================================================== */
 
           copyBlocks.push(
+
             [
-              `${this.flag(group.name)} ${group.name} | ${nextDate}`,
-              `${mainDigits[0]} : ${pair1.join("-")}`,
-              `${mainDigits[1]} : ${pair2.join("-")}`
+
+              `${this.flag(
+                group.name
+              )} ${group.name} | ${nextDate}`,
+
+              `RANK 01 : ${mainDigits[0]} | ${pair1.join("-")}`,
+
+              `RANK 02 : ${mainDigits[1]} | ${pair2.join("-")}`
+
             ].join("\n")
+
           );
 
         }
@@ -3686,6 +4565,7 @@ textarea:focus-visible{
           "ตรวจสอบความเรียบร้อยของผลลัพธ์..."
         );
 
+
         await yieldUI();
 
 
@@ -3693,18 +4573,22 @@ textarea:focus-visible{
           "FINALIZING PREMIUM OUTPUT..."
         );
 
+
         await yieldUI();
 
 
         scanner.style.display =
           "none";
 
+
         runButton.disabled =
           false;
 
 
         const all =
-          copyBlocks.join("\n\n");
+          copyBlocks.join(
+            "\n\n"
+          );
 
 
         this.lastCopyText =
@@ -3716,10 +4600,17 @@ textarea:focus-visible{
           <div class="summary">
 
             <span>
+
               วิเคราะห์สำเร็จ
-              <strong>${cards.length}</strong>
+
+              <strong>
+                ${cards.length}
+              </strong>
+
               ประเภท
+
             </span>
+
 
             <button
               class="copy"
@@ -3734,13 +4625,19 @@ textarea:focus-visible{
 
           ${
             parsed.errors.length
+
               ? `
+
                 <div class="errorbox">
+
                   ${parsed.errors
                     .map(esc)
                     .join("<br>")}
+
                 </div>
+
               `
+
               : ""
           }
 
@@ -3761,12 +4658,16 @@ textarea:focus-visible{
 
         $("copyTop").onclick =
           () =>
-            this.copy(all);
+            this.copy(
+              all
+            );
 
 
         $("copyBottom").onclick =
           () =>
-            this.copy(all);
+            this.copy(
+              all
+            );
 
 
         $("copyInput").disabled =
@@ -3788,46 +4689,62 @@ textarea:focus-visible{
           .querySelectorAll(
             "[data-capture-card]"
           )
-          .forEach(button => {
+          .forEach(
+            button => {
 
-            button.onclick = () =>
-              this.captureCard(
-                button.dataset
-                  .captureCard,
+              button.onclick =
+                () =>
+                  this.captureCard(
 
-                button.dataset
-                  .captureName
-              );
+                    button.dataset
+                      .captureCard,
 
-          });
+                    button.dataset
+                      .captureName
+
+                  );
+
+            }
+          );
 
 
         $("result").scrollIntoView({
+
           behavior:"smooth",
+
           block:"start"
+
         });
 
 
       }catch(error){
 
-        console.error(error);
+        console.error(
+          error
+        );
 
 
         scanner.style.display =
           "none";
+
 
         runButton.disabled =
           false;
 
 
         $("result").innerHTML = `
+
           <div class="errorbox">
+
             ❌ เกิดข้อผิดพลาดระหว่างประมวลผล:
+
             ${esc(
               error?.message ||
               error
             )}
+
           </div>
+
         `;
 
       }
@@ -3855,22 +4772,29 @@ textarea:focus-visible{
       $("bulkInput").value =
         "";
 
+
       $("result").innerHTML =
         "";
+
 
       $("scanner").style.display =
         "none";
 
+
       $("run").disabled =
         false;
+
 
       $("copyInput").disabled =
         true;
 
+
       app.lastCopyText =
         "";
 
+
       $("bulkInput").focus();
+
 
       app.show(
         "✓ ล้างข้อมูลแล้ว"
@@ -3890,9 +4814,14 @@ textarea:focus-visible{
     event => {
 
       if(
-        (event.ctrlKey ||
-         event.metaKey) &&
+
+        (
+          event.ctrlKey ||
+          event.metaKey
+        ) &&
+
         event.key === "Enter"
+
       ){
 
         event.preventDefault();
@@ -3906,6 +4835,7 @@ textarea:focus-visible{
 
 
 })();
+
 </script>
 
 </body>
