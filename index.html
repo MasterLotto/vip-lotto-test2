@@ -1,84 +1,57 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V14.1
+MESTER LOTTO VIP+ — V13.0
 ============================================================
-OBSIDIAN VIP MEMBER CARD EDITION
+AUDITED / CLEAN VERSION
 ============================================================
-AUDIT / UI IMPROVEMENTS
-- Preserved original Model 01 calculation logic.
-- Preserved Backend Support Formula 1 + 2.
-- Backend formulas only confirm VIP+ and never replace main digits.
-- Preserved protected Original Pair / เลขเจาะ engine.
-- Preserved 5 pairs per main digit / 10 pairs total.
-- Preserved no-double-digit protection.
-- Preserved no self-pairing with main digits.
-- Reworked RESULT CARD ONLY into an Obsidian VIP Member Card.
-- Removed high-frequency textures around primary digits to reduce
-  moire / checkerboard artifacts in screenshots.
-- Replaced flat black with deep obsidian / black pearl surfaces.
-- Added restrained champagne-gold framing.
-- Primary digit is now the strongest visual focal point.
-- Primary digit uses clean solid surfaces instead of noisy gradients.
-- Added RANK 01 / RANK 02 language instead of exposing M01.
-- Added PREMIUM / VIP hierarchy without exposing backend formulas.
-- Capture mode uses a clean, stable screenshot surface.
-- Capture controls remain hidden from screenshots.
-- Main calculation engine and input system remain unchanged.
+- Main Model 01 only
+- Main digits ONLY from:
+  Sum of all 3 digits on top -> units digit = first main digit
+  +1 = second main digit
+- Backend Support Formula 1:
+  Tens digit of 3-digit top + tens digit of 2-digit bottom
+  -> units digit +1
+- Backend Support Formula 2:
+  Hundreds digit of 3-digit top + tens digit of 2-digit bottom
+  -> units digit +1
+- Backend formulas NEVER replace main digits.
+- VIP+ appears only when either backend formula matches
+  either main digit.
+- Original Pair / เลขเจาะ engine retained.
+- 5 pairs per main digit = 10 pairs total.
+- No double-digit pairs.
+- Main digits / backend digits are not used to pair against
+  themselves inside the protected pair engine.
+- Login system removed completely.
+- No scoring system.
+- No historical system.
+- No backtest system.
+- No walk-forward system.
+- No Model 02 / Model 03.
+- UI kept clean and orderly.
 ============================================================
 -->
 <html lang="th">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
-<title>Mester Lotto VIP+ — Premium Multi Lottery Engine V14.1</title>
+<title>Mester Lotto VIP+ — Multi Lottery Engine V13.0</title>
 
 <style>
-
-/* =========================================================
-   CORE
-========================================================= */
-
 :root{
-  --bg:#08090b;
-  --bg-soft:#101216;
-
-  --obsidian:#0d0f12;
-  --obsidian-2:#111318;
-  --obsidian-3:#15171c;
-  --pearl:#1a1c21;
-
-  --line:rgba(224,195,126,.18);
-  --line-strong:rgba(224,195,126,.30);
-  --line-soft:rgba(255,255,255,.065);
-
-  --text:#f4f0e7;
-  --text-soft:#d4cec0;
-  --muted:#85837c;
-
-  --gold:#d8b86d;
-  --gold-light:#f0d99b;
-  --gold-soft:#c7a663;
-  --gold-deep:#80602c;
-
-  --champagne:#ead39a;
-
-  --vip:#efd58c;
-
-  --silver:#d8d3c8;
-  --rose:#c8a09a;
-
-  --shadow:
-    0 24px 75px rgba(0,0,0,.34);
-
-  --radius:22px;
+  --bg:#f8f5ef;
+  --panel:#fffdf9;
+  --line:#e8dfcf;
+  --text:#403a31;
+  --muted:#8b8173;
+  --gold:#b8944a;
+  --gold2:#806329;
+  --rose:#b98279;
+  --shadow:0 14px 40px rgba(79,58,31,.08);
 }
 
 *{
@@ -91,56 +64,12 @@ html{
 
 body{
   margin:0;
-  min-height:100vh;
-
-  color:var(--text);
-
-  font-family:
-    "Manrope",
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-
   background:
-    radial-gradient(
-      circle at 8% 5%,
-      rgba(216,184,109,.065),
-      transparent 24%
-    ),
-    radial-gradient(
-      circle at 92% 14%,
-      rgba(216,184,109,.035),
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at 50% 100%,
-      rgba(255,255,255,.018),
-      transparent 34%
-    ),
+    radial-gradient(circle at 15% 10%,rgba(195,154,67,.08),transparent 25%),
+    radial-gradient(circle at 85% 20%,rgba(185,130,121,.06),transparent 25%),
     var(--bg);
-
-  overflow-x:hidden;
-}
-
-body::before{
-  content:"";
-
-  position:fixed;
-  inset:0;
-
-  pointer-events:none;
-  z-index:0;
-
-  opacity:.18;
-
-  background:
-    radial-gradient(
-      circle at 50% 50%,
-      transparent 0 40%,
-      rgba(255,255,255,.018) 100%
-    );
+  color:var(--text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
 button,
@@ -153,45 +82,20 @@ button{
   cursor:pointer;
 }
 
-button:focus-visible,
-textarea:focus-visible{
-  outline:2px solid var(--gold);
-  outline-offset:2px;
-}
-
-
-/* =========================================================
-   BACKGROUND PARTICLES
-========================================================= */
-
 #snow{
   position:fixed;
   inset:0;
-
   width:100%;
   height:100%;
-
   pointer-events:none;
   z-index:0;
-
-  opacity:.52;
 }
-
-
-/* =========================================================
-   APP SHELL
-========================================================= */
 
 .shell{
   position:relative;
   z-index:1;
-
   min-height:100vh;
-
-  padding:
-    24px
-    14px
-    50px;
+  padding:18px 12px 40px;
 }
 
 .app{
@@ -200,2315 +104,659 @@ textarea:focus-visible{
 }
 
 .inner{
-  padding:0;
+  padding:12px;
 }
-
-
-/* =========================================================
-   TOP BRAND
-========================================================= */
 
 .top{
   display:flex;
   align-items:center;
   justify-content:space-between;
-
-  gap:16px;
-
-  margin-bottom:18px;
+  gap:12px;
+  margin-bottom:14px;
 }
 
 .brand{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:10px;
 }
 
 .logo{
-  position:relative;
-
-  width:42px;
-  height:42px;
-
+  width:37px;
+  height:37px;
+  border-radius:12px;
   display:grid;
   place-items:center;
-
-  border-radius:14px;
-
-  color:#0d0d0d;
-
-  background:
-    linear-gradient(
-      145deg,
-      #f3dda4,
-      #c79f4d 48%,
-      #80602b
-    );
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.65),
-    0 10px 30px rgba(193,151,63,.16);
-
-  font-family:"IBM Plex Mono",monospace;
-  font-size:.68rem;
+  background:linear-gradient(135deg,#d3b16d,#806329);
+  color:#fff;
   font-weight:900;
-
-  letter-spacing:-.04em;
-}
-
-.logo::after{
-  content:"";
-
-  position:absolute;
-  inset:5px;
-
-  border:
-    1px solid
-    rgba(0,0,0,.18);
-
-  border-radius:10px;
+  font-size:.72rem;
+  box-shadow:0 8px 18px rgba(128,99,41,.18);
 }
 
 .brand b{
   display:block;
-
-  color:#f2eee4;
-
-  font-size:.79rem;
-  line-height:1.1;
-  font-weight:800;
-
-  letter-spacing:.02em;
+  font-size:.78rem;
+  letter-spacing:.1px;
 }
 
 .brand small{
   display:block;
-
-  margin-top:4px;
-
-  color:#77766f;
-
-  font-size:.47rem;
-  line-height:1;
-
-  letter-spacing:.13em;
-
-  text-transform:uppercase;
+  margin-top:2px;
+  font-size:.48rem;
+  color:var(--muted);
+  font-weight:600;
 }
 
 .pill{
-  display:flex;
-  align-items:center;
-  gap:6px;
-
-  min-height:28px;
-
-  padding:0 10px;
-
-  border:
-    1px solid
-    rgba(215,182,107,.19);
-
-  border-radius:999px;
-
-  color:#c9aa68;
-
-  background:
-    rgba(215,182,107,.045);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.025);
-
-  font-size:.43rem;
+  padding:6px 9px;
+  border:1px solid var(--line);
+  border-radius:99px;
+  background:#fffaf0;
+  color:#806329;
+  font-size:.45rem;
   font-weight:800;
-
-  letter-spacing:.08em;
+  white-space:nowrap;
 }
-
-
-/* =========================================================
-   HERO
-========================================================= */
 
 .hero{
-  position:relative;
-  overflow:hidden;
-
-  margin-bottom:15px;
-
-  padding:
-    23px
-    22px
-    22px;
-
-  border:
-    1px solid
-    rgba(215,182,107,.17);
-
-  border-radius:24px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(26,28,32,.97),
-      rgba(13,14,17,.98)
-    );
-
+  padding:18px;
+  margin-bottom:14px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));
   box-shadow:var(--shadow);
-
-  isolation:isolate;
-}
-
-.hero::before{
-  content:"";
-
-  position:absolute;
-
-  width:240px;
-  height:240px;
-
-  right:-90px;
-  top:-130px;
-
-  border-radius:50%;
-
-  border:
-    1px solid
-    rgba(215,182,107,.12);
-
-  pointer-events:none;
-
-  z-index:-1;
-}
-
-.hero::after{
-  content:"✦";
-
-  position:absolute;
-
-  right:28px;
-  bottom:18px;
-
-  color:rgba(215,182,107,.14);
-
-  font-size:2rem;
-  line-height:1;
 }
 
 .hero-tag{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-
-  color:#b99855;
-
-  font-size:.42rem;
-  font-weight:800;
-
-  letter-spacing:.18em;
-}
-
-.hero-tag::before{
-  content:"";
-
-  width:22px;
-  height:1px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      var(--gold)
-    );
+  font-size:.43rem;
+  font-weight:900;
+  letter-spacing:1.2px;
+  color:var(--gold2);
 }
 
 .hero h1{
-  margin:9px 0 6px;
-
-  color:#f6f1e5;
-
-  font-size:1.58rem;
-  line-height:1.12;
-  font-weight:800;
-
-  letter-spacing:-.045em;
+  margin:7px 0 5px;
+  font-size:1.55rem;
+  line-height:1.15;
 }
 
 .hero h1 em{
   font-style:normal;
-
-  color:var(--gold-light);
-
-  text-shadow:
-    0 0 24px rgba(215,182,107,.12);
+  color:var(--gold2);
 }
 
 .hero p{
-  max-width:560px;
-
   margin:0;
-
-  color:#898780;
-
-  font-size:.53rem;
-  line-height:1.75;
+  font-size:.55rem;
+  line-height:1.65;
+  color:var(--muted);
 }
 
-
-/* =========================================================
-   PANEL
-========================================================= */
-
 .panel{
-  overflow:hidden;
-
-  border:
-    1px solid
-    rgba(255,255,255,.075);
-
-  border-radius:22px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(22,24,28,.97),
-      rgba(13,14,17,.98)
-    );
-
+  background:rgba(255,253,249,.96);
+  border:1px solid var(--line);
+  border-radius:18px;
   box-shadow:var(--shadow);
 }
 
 .bulkbox{
-  padding:17px;
+  padding:14px;
 }
 
 .bulkbox label{
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  margin-bottom:9px;
-
-  color:#c4a461;
-
-  font-size:.48rem;
-  font-weight:800;
-
-  letter-spacing:.12em;
-}
-
-.bulkbox label::before{
-  content:"";
-
-  width:3px;
-  height:12px;
-
-  border-radius:99px;
-
-  background:
-    linear-gradient(
-      180deg,
-      var(--gold-light),
-      var(--gold-deep)
-    );
+  display:block;
+  margin-bottom:7px;
+  font-size:.55rem;
+  font-weight:900;
+  color:#806329;
 }
 
 .bulk{
   display:block;
-
   width:100%;
-  min-height:235px;
-
+  min-height:260px;
   resize:vertical;
-
-  padding:
-    14px
-    15px;
-
-  border:
-    1px solid
-    rgba(255,255,255,.075);
-
-  border-radius:15px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #0d0f12,
-      #111317
-    );
-
-  color:#ddd7c9;
-
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:#fff;
+  color:var(--text);
   outline:none;
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-size:.57rem;
-  line-height:1.75;
-
-  box-shadow:
-    inset 0 1px 20px rgba(0,0,0,.12);
-}
-
-.bulk::placeholder{
-  color:#555650;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.58rem;
+  line-height:1.65;
 }
 
 .bulk:focus{
-  border-color:
-    rgba(215,182,107,.4);
-
-  box-shadow:
-    0 0 0 3px rgba(215,182,107,.055),
-    inset 0 1px 20px rgba(0,0,0,.12);
+  border-color:#c6a762;
+  box-shadow:0 0 0 3px rgba(195,154,67,.10);
 }
-
-
-/* =========================================================
-   ACTIONS
-========================================================= */
 
 .actions{
+  padding:0 14px 14px;
   display:grid;
-
-  grid-template-columns:
-    1.3fr
-    1fr
-    .85fr;
-
+  grid-template-columns:1fr 1fr 1fr;
   gap:8px;
-
-  padding:
-    0
-    17px
-    17px;
-}
-
-.run,
-.copy,
-.clear{
-  height:44px;
-
-  border-radius:13px;
-
-  font-size:.54rem;
-  font-weight:800;
-
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    border-color .18s ease;
 }
 
 .run{
-  border:
-    1px solid
-    rgba(239,213,153,.35);
-
-  color:#17130c;
-
-  background:
-    linear-gradient(
-      135deg,
-      #f1dca2 0%,
-      #d5b568 45%,
-      #a98037 100%
-    );
-
-  box-shadow:
-    0 10px 28px rgba(190,149,63,.12),
-    inset 0 1px 0 rgba(255,255,255,.65);
+  height:43px;
+  border:0;
+  border-radius:12px;
+  background:linear-gradient(135deg,#b8944a,#806329);
+  color:#fff;
+  font-size:.59rem;
+  font-weight:900;
 }
 
-.run:hover{
-  transform:translateY(-1px);
-
-  box-shadow:
-    0 14px 34px rgba(190,149,63,.18),
-    inset 0 1px 0 rgba(255,255,255,.65);
+.copy{
+  height:43px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  color:#806329;
+  font-size:.59rem;
+  font-weight:900;
 }
 
-.copy,
 .clear{
-  border:
-    1px solid
-    rgba(255,255,255,.08);
-
-  color:#bdb7aa;
-
-  background:
-    rgba(255,255,255,.035);
-}
-
-.copy:hover,
-.clear:hover{
-  transform:translateY(-1px);
-
-  border-color:
-    rgba(215,182,107,.23);
-
-  color:#e1d3b1;
+  color:#8b8173;
 }
 
 .run:disabled{
-  opacity:.45;
+  opacity:.55;
   cursor:not-allowed;
-  transform:none;
 }
-
-
-/* =========================================================
-   SCANNER
-========================================================= */
 
 .scanner{
   display:none;
-
-  padding:
-    10px
-    17px
-    12px;
-
-  border-top:
-    1px solid
-    rgba(255,255,255,.055);
-
-  color:#686963;
-
-  font-size:.47rem;
+  padding:10px 14px;
+  border-top:1px solid var(--line);
+  font-size:.52rem;
+  color:var(--muted);
 }
 
 .scanner span{
-  color:#b99b5e;
   font-weight:800;
+  color:#806329;
 }
 
-
-/* =========================================================
-   RESULTS
-========================================================= */
-
 .result{
-  margin-top:15px;
+  margin-top:14px;
 }
 
 .summary{
   display:flex;
   align-items:center;
   justify-content:space-between;
-
-  gap:10px;
-
-  padding:
-    10px
-    12px;
-
+  gap:8px;
+  padding:11px 12px;
   margin-bottom:9px;
-
-  border:
-    1px solid
-    rgba(255,255,255,.065);
-
-  border-radius:15px;
-
-  background:
-    rgba(255,255,255,.025);
-
-  color:#76756e;
-
-  font-size:.49rem;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fffdf9;
+  font-size:.54rem;
+  color:var(--muted);
 }
 
 .summary strong{
-  margin:0 4px;
-
-  color:var(--gold-light);
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-size:.68rem;
+  color:#806329;
+  font-size:.72rem;
+  margin:0 2px;
 }
-
-.summary .copy{
-  height:32px;
-  padding:0 12px;
-}
-
-
-/* =========================================================
-   OBSIDIAN VIP CARD
-========================================================= */
 
 .lottery{
-  position:relative;
   overflow:hidden;
-
-  margin-bottom:13px;
-
-  border:
-    1px solid
-    rgba(224,195,126,.24);
-
-  border-radius:23px;
-
-  background:
-    #0e1013;
-
-  box-shadow:
-    0 22px 58px rgba(0,0,0,.32),
-    0 1px 0 rgba(255,255,255,.035) inset;
-
-  isolation:isolate;
+  margin-bottom:9px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  box-shadow:var(--shadow);
 }
-
-
-/*
-  Very low-frequency luxury light.
-  No pattern / grid / texture is used.
-  This is intentionally clean for screenshot rendering.
-*/
-
-.lottery::before{
-  content:"";
-
-  position:absolute;
-  inset:0;
-
-  pointer-events:none;
-
-  background:
-    radial-gradient(
-      circle at 92% 8%,
-      rgba(224,195,126,.075),
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at 7% 92%,
-      rgba(224,195,126,.028),
-      transparent 30%
-    );
-
-  z-index:-1;
-}
-
-
-/*
-  Thin champagne inner frame.
-*/
-
-.lottery::after{
-  content:"";
-
-  position:absolute;
-
-  inset:6px;
-
-  border:
-    1px solid
-    rgba(224,195,126,.065);
-
-  border-radius:18px;
-
-  pointer-events:none;
-
-  z-index:0;
-}
-
-
-/* =========================================================
-   CARD HEADER
-========================================================= */
 
 .lottery-head{
-  position:relative;
-  z-index:1;
-
   display:flex;
+  justify-content:space-between;
   align-items:center;
-
-  min-height:78px;
-
-  padding:
-    14px
-    15px
-    14px
-    19px;
-
-  border-bottom:
-    1px solid
-    rgba(224,195,126,.10);
-
-  background:
-    rgba(255,255,255,.012);
-}
-
-.lottery-meta{
-  min-width:0;
-}
-
-.lottery-kicker{
-  margin-bottom:5px;
-
-  color:#83765e;
-
-  font-size:.38rem;
-  font-weight:800;
-
-  letter-spacing:.17em;
-
-  text-transform:uppercase;
+  gap:8px;
+  padding:10px 12px 9px 18px;
+  background:linear-gradient(135deg,#fff,#fbf7ed);
 }
 
 .lottery-name{
-  display:flex;
-  align-items:center;
-  gap:7px;
-
-  color:#f0ece3;
-
-  font-size:.70rem;
   font-weight:800;
-
-  line-height:1.25;
+  font-size:.72rem;
 }
 
 .flag{
-  flex:0 0 auto;
-
-  font-size:.81rem;
-
-  filter:
-    saturate(.78);
+  margin-right:5px;
 }
 
 .date{
-  margin-top:4px;
-
-  color:#77766f;
-
-  font-size:.44rem;
-
-  line-height:1.3;
+  font-size:.52rem;
+  color:var(--muted);
+  margin-top:2px;
 }
-
-
-/* =========================================================
-   PREMIUM VIP BADGE
-========================================================= */
 
 .vip-label{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-
-  min-width:61px;
-  height:25px;
-
+  display:block;
   margin-left:auto;
-  margin-right:9px;
-
-  padding:
-    0
-    10px;
-
-  border:
-    1px solid
-    rgba(239,213,140,.34);
-
-  border-radius:999px;
-
-  color:#f1d58e;
-
-  background:
-    #17140e;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.055),
-    0 5px 18px rgba(215,182,107,.05);
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-size:.39rem;
+  margin-right:4px;
+  color:#806329;
+  font-size:.42rem;
   font-weight:900;
-
-  letter-spacing:.11em;
+  letter-spacing:.2px;
+  white-space:nowrap;
 }
-
-.vip-label::before{
-  content:"✦";
-
-  margin-right:5px;
-
-  color:#e7c875;
-
-  font-size:.45rem;
-}
-
-.vip-label.empty{
-  visibility:hidden;
-}
-
-
-/* =========================================================
-   CARD ACTION
-========================================================= */
 
 .card-actions{
+  padding:0;
   flex:0 0 auto;
-
-  position:relative;
-  z-index:5;
 }
 
 .card-capture{
   width:auto;
-  min-width:78px;
+  min-width:72px;
   height:34px;
-
-  padding:
-    0
-    10px;
-
-  border:
-    1px solid
-    rgba(255,255,255,.085);
-
+  padding:0 10px;
+  border:1px solid var(--line);
   border-radius:10px;
-
-  color:#aaa69c;
-
-  background:
-    rgba(255,255,255,.025);
-
-  font-size:.48rem;
-  font-weight:700;
-
-  transition:.18s ease;
+  background:#fff;
+  color:#80652b;
+  font-size:.54rem;
+  font-weight:800;
 }
-
-.card-capture:hover{
-  color:#ded3b8;
-
-  border-color:
-    rgba(215,182,107,.25);
-
-  background:
-    rgba(215,182,107,.055);
-}
-
-
-/* =========================================================
-   CARD BODY
-========================================================= */
 
 .rows{
-  position:relative;
-  z-index:1;
-
-  padding:
-    10px
-    11px
-    7px;
+  padding:4px 7px 2px;
 }
 
 .row{
   display:flex;
   align-items:center;
-
-  min-height:60px;
-
-  padding:
-    8px
-    9px;
-
-  border-bottom:
-    1px solid
-    rgba(255,255,255,.045);
+  justify-content:flex-start;
+  gap:6px;
+  padding:5px 7px 5px 7px;
+  border-bottom:1px solid #f0eadf;
 }
 
 .row:last-child{
   border-bottom:0;
 }
 
-
-/* =========================================================
-   RANK LABEL
-========================================================= */
-
 .row-label{
-  width:45px;
-
-  color:#756f63;
-
-  font-size:.39rem;
-  font-weight:800;
-
-  letter-spacing:.08em;
-
-  text-transform:uppercase;
+  font-size:.55rem;
+  color:var(--muted);
 }
 
+.row-value{
+  font-family:"IBM Plex Mono",monospace;
+  font-weight:800;
+  font-size:.9rem;
+}
 
-/* =========================================================
-   PRIMARY DIGIT
-   CLEAN / LOW FREQUENCY / SCREENSHOT SAFE
-========================================================= */
+.row-value.top{
+  color:#9c782e;
+}
 
 .digit{
-  position:relative;
-
-  width:44px;
-  height:44px;
-
   display:grid;
   place-items:center;
-
-  border-radius:13px;
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-size:1rem;
+  width:31px;
+  height:31px;
+  border-radius:10px;
+  font-family:"IBM Plex Mono",monospace;
   font-weight:900;
-
-  isolation:isolate;
+  font-size:.92rem;
 }
-
-
-/*
-  Inner frame only.
-  No repeated patterns.
-  No fine grid.
-*/
-
-.digit::after{
-  content:"";
-
-  position:absolute;
-
-  inset:4px;
-
-  border-radius:9px;
-
-  border:
-    1px solid
-    rgba(255,255,255,.09);
-
-  pointer-events:none;
-
-  z-index:-1;
-}
-
-
-/*
-  GOLD / PRIMARY
-*/
 
 .digit-gold{
-  color:#f2d98e;
-
-  border:
-    1px solid
-    rgba(232,201,126,.48);
-
-  background:
-    #17140d;
-
-  box-shadow:
-    0 9px 25px rgba(0,0,0,.26),
-    inset 0 1px 0 rgba(255,255,255,.07);
+  background:#fbf1d9;
+  border:1px solid #e4ca8f;
+  color:#806329;
 }
-
-
-/*
-  SECONDARY / SILVER-CHAMPAGNE
-*/
 
 .digit-silver{
-  color:#e0dbd0;
-
-  border:
-    1px solid
-    rgba(220,215,204,.20);
-
-  background:
-    #15171b;
-
-  box-shadow:
-    0 9px 25px rgba(0,0,0,.22),
-    inset 0 1px 0 rgba(255,255,255,.055);
+  background:#f5f1eb;
+  border:1px solid #ddd5c9;
+  color:#625a50;
 }
-
-
-/* =========================================================
-   SEPARATOR
-========================================================= */
 
 .sep{
-  width:16px;
-
-  text-align:center;
-
-  color:#655f55;
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-size:.61rem;
-  font-weight:700;
+  font-family:"IBM Plex Mono",monospace;
+  font-weight:800;
+  color:#b3a694;
 }
-
-
-/* =========================================================
-   PAIRS
-========================================================= */
 
 .pairs{
   display:flex;
-  flex:1;
-
   flex-wrap:wrap;
-
-  align-items:center;
-
-  gap:5px;
-
-  min-width:0;
-
-  margin-left:5px;
+  justify-content:flex-start;
+  gap:4px;
+  margin-left:4px;
 }
 
 .pair{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-
-  min-width:36px;
-  height:27px;
-
-  padding:
-    0
-    6px;
-
-  border:
-    1px solid
-    rgba(255,255,255,.075);
-
-  border-radius:8px;
-
-  background:
-    rgba(255,255,255,.025);
-
-  color:#aaa69c;
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-size:.49rem;
+  min-width:32px;
+  height:24px;
+  padding:0 5px;
+  border-radius:7px;
+  border:1px solid #e7dfd3;
+  background:#fff;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.51rem;
   font-weight:800;
-
-  letter-spacing:.02em;
+  color:#645b50;
 }
 
-
-/*
-  Pair hierarchy.
-  Kept restrained so primary digit remains the hero.
-*/
-
 .pair-gold{
-  border-color:
-    rgba(215,182,107,.30);
-
-  background:
-    #17140e;
-
-  color:#e3c778;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.035);
+  border-color:#d9bd79;
+  background:#fff8e7;
+  color:#806329;
 }
 
 .pair-silver{
-  border-color:
-    rgba(220,216,207,.13);
-
-  background:
-    #15171a;
-
-  color:#cbc5b9;
+  border-color:#d7d0c6;
+  background:#f8f5ef;
+  color:#665e54;
 }
 
 .pair-rose{
-  border-color:
-    rgba(201,149,142,.18);
-
-  background:
-    #171315;
-
-  color:#c9a09a;
+  border-color:#e5c7c1;
+  background:#fff5f3;
+  color:#95675f;
 }
 
-
-/* =========================================================
-   CARD FOOTER
-========================================================= */
-
-.card-footer{
-  position:relative;
-  z-index:1;
-
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-
-  min-height:40px;
-
-  padding:
-    0
-    17px;
-
-  border-top:
-    1px solid
-    rgba(224,195,126,.08);
-
-  color:#625f58;
-
-  font-size:.37rem;
-  font-weight:800;
-
-  letter-spacing:.10em;
+.footer{
+  padding:5px 10px;
+  border-top:1px solid var(--line);
+  font-size:.5rem;
+  color:var(--muted);
 }
-
-.footer-brand{
-  display:flex;
-  align-items:center;
-  gap:6px;
-
-  color:#a58b57;
-}
-
-.brand-star{
-  color:#c9a75d;
-
-  font-size:.50rem;
-}
-
-.footer-code{
-  color:#777064;
-
-  font-family:
-    "IBM Plex Mono",
-    monospace;
-
-  font-size:.35rem;
-
-  letter-spacing:.12em;
-}
-
-
-/*
-  IMPORTANT:
-  Backend / Model implementation is intentionally NOT shown
-  on the visible VIP card.
-*/
-
-.footer-code::after{
-  content:"";
-}
-
-
-/* =========================================================
-   COPY ALL
-========================================================= */
 
 .copyall{
   width:100%;
-  height:45px;
-
-  border:
-    1px solid
-    rgba(215,182,107,.27);
-
-  border-radius:13px;
-
-  color:#1b170f;
-
-  background:
-    linear-gradient(
-      135deg,
-      #efd797,
-      #cda95a
-    );
-
-  box-shadow:
-    0 12px 30px rgba(183,139,53,.10),
-    inset 0 1px 0 rgba(255,255,255,.6);
-
-  font-size:.54rem;
-  font-weight:900;
+  height:43px;
+  border:0;
+  border-radius:12px;
+  color:#fff;
+  background:linear-gradient(135deg,#b8944a,#806329);
+  font-weight:800;
 }
 
-.copyall:hover{
-  box-shadow:
-    0 15px 38px rgba(183,139,53,.17),
-    inset 0 1px 0 rgba(255,255,255,.65);
+.brand-footer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:7px;
+  padding-top:9px;
+  padding-bottom:6px;
+  color:#80652b;
+  font-size:.44rem;
+  font-weight:800;
+  letter-spacing:.2px;
 }
 
-
-/* =========================================================
-   ERROR
-========================================================= */
-
-.errorbox{
-  margin-bottom:10px;
-
-  padding:
-    12px
-    14px;
-
-  border:
-    1px solid
-    rgba(210,105,105,.22);
-
-  border-radius:14px;
-
-  color:#d7a2a2;
-
-  background:
-    rgba(170,65,65,.055);
-
-  font-size:.52rem;
-  line-height:1.75;
+.brand-star{
+  color:#c39a43;
+  font-size:.58rem;
 }
-
-
-/* =========================================================
-   TOAST
-========================================================= */
 
 .toast{
   position:fixed;
-
   left:50%;
   bottom:22px;
-
-  z-index:99;
-
-  transform:
-    translate(-50%,20px);
-
+  z-index:9;
+  transform:translate(-50%,20px);
   opacity:0;
-
-  padding:
-    10px
-    16px;
-
-  border:
-    1px solid
-    rgba(215,182,107,.25);
-
-  border-radius:999px;
-
-  color:#ead8a7;
-
-  background:
-    rgba(20,21,24,.96);
-
-  box-shadow:
-    0 15px 40px rgba(0,0,0,.28);
-
-  font-size:.51rem;
-  font-weight:800;
-
-  transition:
-    opacity .2s ease,
-    transform .2s ease;
-
+  padding:9px 15px;
+  border-radius:99px;
+  color:#fff;
+  background:#806329;
+  font-size:.55rem;
+  font-weight:700;
+  transition:.2s;
   pointer-events:none;
 }
 
 .toast.show{
   opacity:1;
-
-  transform:
-    translate(-50%,0);
+  transform:translate(-50%,0);
 }
 
-
-/* =========================================================
-   CAPTURE MODE
-   SCREENSHOT-SAFE PRESENTATION
-========================================================= */
-
-.capture-mode{
-  width:100% !important;
-
-  border-color:
-    rgba(232,201,126,.38) !important;
-
-  background:
-    #0e1013 !important;
-
-  box-shadow:
-    0 26px 72px rgba(0,0,0,.42),
-    0 0 0 1px rgba(255,255,255,.018) inset !important;
+.errorbox{
+  padding:12px;
+  border-radius:14px;
+  border:1px solid #f0c9cd;
+  background:#fff0f1;
+  color:#a83d46;
+  font-size:.6rem;
+  line-height:1.7;
 }
 
-
-/*
-  Remove all potentially noisy decorative layers
-  from the capture itself.
-*/
-
-.capture-mode::before{
-  background:
-    radial-gradient(
-      circle at 92% 8%,
-      rgba(224,195,126,.065),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 7% 92%,
-      rgba(224,195,126,.022),
-      transparent 30%
-    );
-}
-
-.capture-mode::after{
-  border-color:
-    rgba(224,195,126,.075);
-}
-
-
-/*
-  Capture header
-*/
-
-.capture-mode .lottery-head{
-  min-height:84px;
-
-  padding:
-    16px
-    16px
-    16px
-    20px;
-}
-
-.capture-mode .lottery-name{
-  font-size:.77rem;
-}
-
-.capture-mode .date{
-  font-size:.47rem;
-}
-
-
-/*
-  Capture body
-*/
-
-.capture-mode .rows{
-  padding:
-    13px
-    13px
-    8px;
-}
-
-.capture-mode .row{
-  min-height:65px;
-
-  padding:
-    9px
-    10px;
-}
-
-.capture-mode .digit{
-  width:45px;
-  height:45px;
-
-  font-size:1.02rem;
-}
-
-.capture-mode .pair{
-  min-width:39px;
-  height:29px;
-
-  font-size:.51rem;
-}
-
-.capture-mode .card-footer{
-  min-height:42px;
-}
-
-
-/*
-  During capture the digit is intentionally flat and clean.
-  This is the key anti-moire treatment.
-*/
-
-.capture-mode .digit-gold,
-.capture-mode .digit-silver{
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.065) !important;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media(max-width:620px){
-
-  .shell{
-    padding:
-      18px
-      10px
-      42px;
-  }
-
-  .hero{
-    padding:
-      20px
-      18px;
-  }
-
-  .hero h1{
-    font-size:1.42rem;
-  }
-
-  .lottery-head{
-    padding-left:14px;
-  }
-
-  .vip-label{
-    min-width:54px;
-
-    margin-right:6px;
-  }
-
-  .card-capture{
-    min-width:70px;
-
-    padding:
-      0
-      8px;
-  }
-
-}
-
-
-@media(max-width:480px){
-
-  .top{
-    margin-bottom:14px;
-  }
-
-  .pill{
-    display:none;
-  }
-
-  .actions{
-    grid-template-columns:
-      1.2fr
-      1fr
-      .8fr;
-  }
-
+@media(max-width:390px){
   .bulk{
-    min-height:220px;
-  }
-
-  .lottery-head{
-    min-height:70px;
-
-    padding:
-      11px
-      8px
-      11px
-      13px;
-  }
-
-  .lottery-kicker{
-    display:none;
-  }
-
-  .lottery-name{
-    font-size:.63rem;
-  }
-
-  .date{
-    font-size:.41rem;
-  }
-
-  .vip-label{
-    min-width:49px;
-    height:22px;
-
-    padding:
-      0
-      6px;
-
-    font-size:.35rem;
-  }
-
-  .vip-label::before{
-    margin-right:3px;
-    font-size:.38rem;
-  }
-
-  .card-capture{
-    min-width:67px;
-    height:31px;
-
-    font-size:.43rem;
-  }
-
-  .rows{
-    padding:
-      7px
-      6px
-      4px;
-  }
-
-  .row{
-    min-height:52px;
-
-    padding:
-      6px
-      5px;
-  }
-
-  .row-label{
-    width:39px;
-
-    font-size:.36rem;
-  }
-
-  .digit{
-    width:36px;
-    height:36px;
-
-    border-radius:10px;
-
-    font-size:.89rem;
-  }
-
-  .digit::after{
-    inset:3px;
-    border-radius:7px;
-  }
-
-  .sep{
-    width:11px;
-
-    font-size:.58rem;
+    min-height:250px;
   }
 
   .pairs{
-    gap:3px;
-
-    margin-left:2px;
-  }
-
-  .pair{
-    min-width:32px;
-    height:24px;
-
-    padding:
-      0
-      5px;
-
-    border-radius:7px;
-
-    font-size:.45rem;
-  }
-
-  .card-footer{
-    padding:
-      0
-      12px;
-  }
-
-}
-
-
-@media(max-width:380px){
-
-  .brand b{
-    font-size:.71rem;
-  }
-
-  .brand small{
-    font-size:.41rem;
-  }
-
-  .hero h1{
-    font-size:1.3rem;
-  }
-
-  .hero p{
-    font-size:.48rem;
-  }
-
-  .actions{
-    gap:5px;
-  }
-
-  .run,
-  .copy,
-  .clear{
-    font-size:.47rem;
-  }
-
-  .lottery-name{
-    max-width:115px;
-
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-
-  .vip-label{
-    min-width:44px;
-
-    margin-left:auto;
-    margin-right:4px;
-  }
-
-  .card-capture{
-    min-width:62px;
-
-    padding:
-      0
-      6px;
-  }
-
-  .row-label{
-    width:35px;
-  }
-
-  .digit{
-    width:34px;
-    height:34px;
+    gap:2px;
   }
 
   .pair{
     min-width:30px;
+    height:23px;
+    font-size:.50rem;
+    padding:0 4px;
   }
 
+  .row{
+    min-height:39px;
+    padding:3px 4px 3px 7px;
+    gap:3px;
+  }
+
+  .digit{
+    font-size:.92rem;
+  }
 }
 
-
-/* =========================================================
-   PRINT
-========================================================= */
-
-@media print{
-
-  body{
-    background:#fff;
-  }
-
-  #snow,
-  .top,
-  .hero,
-  #console > .panel,
-  .summary,
-  .copyall,
-  .toast{
-    display:none !important;
-  }
-
-  .shell{
+@media(max-width:420px){
+  .lottery{
     padding:0;
   }
 
-  .lottery{
-    break-inside:avoid;
+  .lottery-head{
+    padding-left:18px;
+    padding-right:1px;
   }
 
-}
+  .vip-label{
+    font-size:.39rem;
+    padding:3px 2px;
+  }
 
+  .pair{
+    min-width:31px;
+  }
+}
 </style>
 </head>
-
 
 <body>
 
 <canvas id="snow"></canvas>
 
 <div class="shell">
-
   <div class="app">
-
     <div class="inner">
 
-
-      <!-- =================================================
-           TOP BRAND
-      ================================================== -->
-
       <div class="top">
-
         <div class="brand">
-
-          <div class="logo">
-            AI
-          </div>
-
+          <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-
-            <small>
-              Premium Multi Lottery Engine
-            </small>
+            <small>Multi Lottery Engine</small>
           </div>
-
         </div>
 
-
-        <div class="pill">
-          <span>●</span>
-          ENGINE READY
-        </div>
-
+        <div class="pill">● ENGINE READY</div>
       </div>
 
-
-      <!-- =================================================
-           HERO
-      ================================================== -->
-
       <section class="hero">
-
-        <span class="hero-tag">
-          QUANT ANALYSIS ENGINE
-        </span>
-
-        <h1>
-          Multi-Lottery
-          <em>VIP+</em>
-        </h1>
-
-        <p>
-          ประมวลผลหลายหวยจากข้อความชุดเดียว
-          • ใช้สูตรหลักเพียงสูตรเดียว
-          • ออกแบบผลลัพธ์สำหรับการอ่านและแคปภาพแบบพรีเมียม
-        </p>
-
+        <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
+        <h1>Multi-Lottery <em>VIP+</em></h1>
+        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรหลักเพียงสูตรเดียว</p>
       </section>
-
-
-      <!-- =================================================
-           MAIN CONSOLE
-      ================================================== -->
 
       <div id="console">
 
         <section class="panel">
 
           <div class="bulkbox">
-
-            <label>
-              LOTTERY INPUT
-            </label>
+            <label>📥 LOTTERY INPUT</label>
 
             <textarea
               id="bulkInput"
               class="bulk"
-              spellcheck="false"
-              aria-label="Lottery input"
               placeholder="ฮานอย HD | 26 ส.ค. 69&#10;067&#10;36&#10;&#10;ฮานอย VIP | 26 ส.ค. 69&#10;123&#10;45"
             ></textarea>
-
           </div>
-
 
           <div class="actions">
-
-            <button
-              id="run"
-              class="run"
-              type="button"
-            >
-              ⚡ ประมวลผล
-            </button>
-
-
-            <button
-              id="copyInput"
-              class="copy"
-              type="button"
-              disabled
-            >
-              📋 COPY
-            </button>
-
-
-            <button
-              id="clearInput"
-              class="copy clear"
-              type="button"
-            >
-              ล้างข้อมูล
-            </button>
-
+            <button id="run" class="run">⚡ ประมวลผล</button>
+            <button id="copyInput" class="copy" disabled>📋 COPY</button>
+            <button id="clearInput" class="copy clear">ล้างข้อมูล</button>
           </div>
 
-
-          <div
-            id="scanner"
-            class="scanner"
-            aria-live="polite"
-          >
-            สถานะ:
-            <span id="scanText">
-              กำลังเตรียมระบบ...
-            </span>
+          <div id="scanner" class="scanner">
+            สถานะ: <span id="scanText">กำลังเตรียมระบบ...</span>
           </div>
 
         </section>
 
-
-        <!-- =================================================
-             RESULT
-        ================================================== -->
-
-        <div
-          id="result"
-          class="result"
-        ></div>
+        <div id="result" class="result"></div>
 
       </div>
 
-
-      <!-- =================================================
-           TOAST
-      ================================================== -->
-
-      <div
-        id="toast"
-        class="toast"
-        role="status"
-        aria-live="polite"
-      >
-        คัดลอกแล้ว
-      </div>
+      <div id="toast" class="toast">คัดลอกแล้ว</div>
 
     </div>
-
   </div>
-
 </div>
 
-
 <script>
-
 (() => {
 
-  "use strict";
-
-
   /* =========================================================
-     PREMIUM BACKGROUND PARTICLES
+     SNOW / BACKGROUND
   ========================================================= */
 
-  const canvas =
-    document.getElementById("snow");
+  const canvas = document.getElementById('snow');
+  const ctx = canvas.getContext('2d');
 
-  const ctx =
-    canvas.getContext("2d");
+  let width = canvas.width = innerWidth;
+  let height = canvas.height = innerHeight;
 
+  addEventListener('resize', () => {
+    width = canvas.width = innerWidth;
+    height = canvas.height = innerHeight;
+  });
 
-  let width =
-    canvas.width =
-      window.innerWidth;
+  const particles = Array.from({length:42}, () => ({
+    x:Math.random()*width,
+    y:Math.random()*height,
+    r:.7+Math.random()*1.8,
+    s:.15+Math.random()*.45,
+    a:.18+Math.random()*.35,
+    p:Math.random()*6.28,
+    tone:Math.random()>.72 ? 'rose' : 'gold'
+  }));
 
-  let height =
-    canvas.height =
-      window.innerHeight;
-
-
-  window.addEventListener(
-    "resize",
-    () => {
-
-      width =
-        canvas.width =
-          window.innerWidth;
-
-      height =
-        canvas.height =
-          window.innerHeight;
-
-    }
-  );
-
-
-  const particles =
-    Array.from(
-      { length:34 },
-      () => ({
-        x:Math.random() * width,
-        y:Math.random() * height,
-        r:.45 + Math.random() * 1.25,
-        s:.08 + Math.random() * .26,
-        a:.08 + Math.random() * .18,
-        p:Math.random() * Math.PI * 2,
-        gold:Math.random() > .28
-      })
-    );
-
-
-  function drawParticles(){
-
-    ctx.clearRect(
-      0,
-      0,
-      width,
-      height
-    );
-
+  (function drawSnow(){
+    ctx.clearRect(0,0,width,height);
 
     particles.forEach(p => {
-
-      p.p += .006;
-
+      p.p += .01;
       p.y += p.s;
+      p.x += Math.sin(p.p)*.25;
 
-      p.x +=
-        Math.sin(p.p) * .08;
-
-
-      if(
-        p.y >
-        height + 4
-      ){
-
-        p.y = -4;
-
-        p.x =
-          Math.random() * width;
-
+      if(p.y > height+5){
+        p.y = -5;
+        p.x = Math.random()*width;
       }
 
-
       ctx.beginPath();
-
-
-      ctx.arc(
-        p.x,
-        p.y,
-        p.r,
-        0,
-        Math.PI * 2
-      );
-
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
 
       ctx.fillStyle =
-        p.gold
-          ? `rgba(215,182,107,${p.a})`
-          : `rgba(255,255,255,${p.a * .45})`;
-
+        p.tone === 'rose'
+          ? `rgba(185,130,121,${p.a*.55})`
+          : `rgba(195,154,67,${p.a})`;
 
       ctx.fill();
-
     });
 
-
-    requestAnimationFrame(
-      drawParticles
-    );
-
-  }
-
-
-  drawParticles();
+    requestAnimationFrame(drawSnow);
+  })();
 
 
   /* =========================================================
      HELPERS
   ========================================================= */
 
-  const $ =
-    id =>
-      document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
-
-  const esc =
-    value =>
-      String(value)
-        .replace(
-          /&/g,
-          "&amp;"
-        )
-        .replace(
-          /</g,
-          "&lt;"
-        )
-        .replace(
-          />/g,
-          "&gt;"
-        )
-        .replace(
-          /"/g,
-          "&quot;"
-        )
-        .replace(
-          /'/g,
-          "&#039;"
-        );
+  const esc = value =>
+    String(value)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
 
 
   /* =========================================================
-     APPLICATION
+     MAIN APPLICATION
   ========================================================= */
 
   const app = {
 
-    lastCopyText:"",
+    lastCopyText:'',
     toastTimer:null,
 
-
     norm(value){
-
-      return (
-        (value % 10) + 10
-      ) % 10;
-
+      return (value % 10 + 10) % 10;
     },
-
-
-    /* =======================================================
-       FLAG
-    ======================================================= */
 
     flag(name){
-
-      const n =
-        String(name || "")
-          .toLowerCase();
-
-
-      if(
-        /ลาว|lao/.test(n)
-      )
-        return "🇱🇦";
-
-
-      if(
-        /ฮานอย|เวียดนาม|vietnam|viet/.test(n)
-      )
-        return "🇻🇳";
-
-
-      if(
-        /พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n)
-      )
-        return "🇲🇲";
-
-
-      if(
-        /จีน|china|shanghai/.test(n)
-      )
-        return "🇨🇳";
-
-
-      if(
-        /ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n)
-      )
-        return "🇭🇰";
-
-
-      if(
-        /นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n)
-      )
-        return "🇯🇵";
-
-
-      if(
-        /เกาหลี|korea|kospi/.test(n)
-      )
-        return "🇰🇷";
-
-
-      if(
-        /สิงคโปร์|singapore/.test(n)
-      )
-        return "🇸🇬";
-
-
-      if(
-        /อินเดีย|india|sensex/.test(n)
-      )
-        return "🇮🇳";
-
-
-      if(
-        /รัสเซีย|russia|moscow/.test(n)
-      )
-        return "🇷🇺";
-
-
-      if(
-        /เยอรมัน|germany|dax/.test(n)
-      )
-        return "🇩🇪";
-
-
-      if(
-        /อังกฤษ|uk|ftse|london/.test(n)
-      )
-        return "🇬🇧";
-
-
-      if(
-        /อียิปต์|egypt/.test(n)
-      )
-        return "🇪🇬";
-
-
-      if(
-        /ไต้หวัน|taiwan|tse/.test(n)
-      )
-        return "🇹🇼";
-
-
-      if(
-        /สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n)
-      )
-        return "🇺🇸";
-
-
-      if(
-        /ฝรั่งเศส|france|cac/.test(n)
-      )
-        return "🇫🇷";
-
-
-      if(
-        /ออสเตรเลีย|australia|asx/.test(n)
-      )
-        return "🇦🇺";
-
-
-      if(
-        /แคนาดา|canada/.test(n)
-      )
-        return "🇨🇦";
-
-
-      if(
-        /หุ้นไทย|ไทย|thai|set|หุ้น/.test(n)
-      )
-        return "🇹🇭";
-
-
-      return "🌐";
-
-    },
-
-
-    /* =======================================================
-       DATE PARSER
-    ======================================================= */
-
-    parseDateValue(date){
-
-      const value =
-        String(date || "").trim();
-
-
-      if(!value)
-        return false;
-
-
-      if(
-        /^\d{1,2}\s+\S+\s+\d{2,4}$/
-          .test(value)
-      )
-        return true;
-
-
-      if(
-        /^\d{1,2}\/\d{1,2}\/\d{2,4}$/
-          .test(value)
-      )
-        return true;
-
-
-      if(
-        /^\d{1,2}-\d{1,2}-\d{2,4}$/
-          .test(value)
-      )
-        return true;
-
-
-      return false;
-
-    },
-
-
-    dateKey(date){
-
-      const value =
-        String(date || "").trim();
-
-
-      const thai =
-        value.match(
-          /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
-        );
-
-
-      if(thai){
-
-        const months = {
-
-          "ม.ค.":1,
-          "ก.พ.":2,
-          "มี.ค.":3,
-          "เม.ย.":4,
-          "พ.ค.":5,
-          "มิ.ย.":6,
-          "ก.ค.":7,
-          "ส.ค.":8,
-          "ก.ย.":9,
-          "ต.ค.":10,
-          "พ.ย.":11,
-          "ธ.ค.":12
-
-        };
-
-
-        const month =
-          months[thai[2]] || 0;
-
-
-        let year =
-          Number(thai[3]);
-
-
-        if(year < 100)
-          year += 2500;
-
-
-        return [
-
-          year,
-
-          String(month)
-            .padStart(2,"0"),
-
-          String(
-            Number(thai[1])
-          ).padStart(2,"0")
-
-        ].join("-");
-
-      }
-
-
-      const numeric =
-        value.match(
-          /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
-        );
-
-
-      if(numeric){
-
-        let year =
-          Number(numeric[3]);
-
-
-        if(year < 100)
-          year += 2500;
-
-
-        return [
-
-          year,
-
-          String(
-            Number(numeric[2])
-          ).padStart(2,"0"),
-
-          String(
-            Number(numeric[1])
-          ).padStart(2,"0")
-
-        ].join("-");
-
-      }
-
-
-      return value;
-
-    },
-
-
-    sortChronological(records){
-
-      return records
-
-        .map(
-          (record,index) => ({
-            ...record,
-            __index:index
-          })
-        )
-
-        .sort(
-          (a,b) => {
-
-            const ka =
-              this.dateKey(a.date);
-
-            const kb =
-              this.dateKey(b.date);
-
-
-            if(ka < kb)
-              return -1;
-
-
-            if(ka > kb)
-              return 1;
-
-
-            return (
-              a.__index -
-              b.__index
-            );
-
-          }
-        )
-
-        .map(record => {
-
-          const clean = {
-            ...record
-          };
-
-
-          delete clean.__index;
-
-
-          return clean;
-
-        });
-
+      const n = String(name).toLowerCase();
+
+      if(/ลาว|lao/.test(n)) return '🇱🇦';
+      if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n)) return '🇻🇳';
+      if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n)) return '🇲🇲';
+      if(/จีน|china|shanghai/.test(n)) return '🇨🇳';
+      if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n)) return '🇭🇰';
+      if(/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n)) return '🇯🇵';
+      if(/เกาหลี|korea|kospi/.test(n)) return '🇰🇷';
+      if(/สิงคโปร์|singapore/.test(n)) return '🇸🇬';
+      if(/อินเดีย|india|sensex/.test(n)) return '🇮🇳';
+      if(/รัสเซีย|russia|moscow/.test(n)) return '🇷🇺';
+      if(/เยอรมัน|germany|dax/.test(n)) return '🇩🇪';
+      if(/อังกฤษ|uk|ftse|london/.test(n)) return '🇬🇧';
+      if(/อียิปต์|egypt/.test(n)) return '🇪🇬';
+      if(/ไต้หวัน|taiwan|tse/.test(n)) return '🇹🇼';
+      if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n)) return '🇺🇸';
+      if(/ฝรั่งเศส|france|cac/.test(n)) return '🇫🇷';
+      if(/ออสเตรเลีย|australia|asx/.test(n)) return '🇦🇺';
+      if(/แคนาดา|canada/.test(n)) return '🇨🇦';
+      if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n)) return '🇹🇭';
+
+      return '🌐';
     },
 
 
@@ -2518,1028 +766,665 @@ textarea:focus-visible{
 
     parse(text){
 
-      const raw =
-        String(text || "")
-          .replace(/\r/g,"")
-          .trim();
-
+      const raw = String(text || '')
+        .replace(/\r/g,'')
+        .trim();
 
       if(!raw){
-
         return {
-
           records:[],
-
-          errors:[
-            "ยังไม่มีข้อมูลสำหรับประมวลผล"
-          ]
-
+          errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
         };
-
       }
 
-
-      const lines =
-        raw
-          .split("\n")
-          .map(v => v.trim());
-
+      const lines = raw
+        .split('\n')
+        .map(v => v.trim());
 
       const records = [];
       const errors = [];
 
-
       let i = 0;
 
-
-      while(
-        i < lines.length
-      ){
+      while(i < lines.length){
 
         if(!lines[i]){
-
           i++;
-
           continue;
-
         }
 
-
-        const header =
-          lines[i].match(
-            /^(.+?)\s*\|\s*(.+?)$/
-          );
-
+        const header = lines[i].match(/^(.+?)\s*\|\s*(.+?)$/);
 
         if(!header){
-
           errors.push(
-            `บรรทัดที่ ${i + 1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
+            `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
           );
 
           i++;
-
           continue;
-
         }
 
+        const name = header[1].trim();
+        const date = header[2].trim();
 
-        const name =
-          header[1].trim();
-
-
-        const date =
-          header[2].trim();
-
-
-        if(
-          !this.parseDateValue(
-            date
-          )
-        ){
-
+        if(!this.parseDateValue(date)){
           errors.push(
             `${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 25 ส.ค. 69`
           );
 
           i++;
-
           continue;
-
         }
 
-
-        const n3raw =
-          lines[i + 1] || "";
-
-
-        const n2raw =
-          lines[i + 2] || "";
-
+        const n3raw = lines[i+1] || '';
+        const n2raw = lines[i+2] || '';
 
         const n3 =
           /^[\d\s]+$/.test(n3raw)
-            ? n3raw.replace(/\s+/g,"")
+            ? n3raw.replace(/\s+/g,'')
             : n3raw;
-
 
         const n2 =
           /^[\d\s]+$/.test(n2raw)
-            ? n2raw.replace(/\s+/g,"")
-            : n2;
+            ? n2raw.replace(/\s+/g,'')
+            : n2raw;
 
-
-        if(
-          !/^\d{3}$/.test(n3)
-        ){
-
+        if(!/^\d{3}$/.test(n3)){
           errors.push(
             `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
           );
 
           i += 1;
-
           continue;
-
         }
 
-
-        if(
-          !/^\d{2}$/.test(n2)
-        ){
-
+        if(!/^\d{2}$/.test(n2)){
           errors.push(
             `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
           );
 
           i += 2;
-
           continue;
-
         }
 
-
         records.push({
-
           name,
           date,
           n3,
           n2
-
         });
 
-
         i += 3;
-
       }
-
 
       return {
         records,
         errors
       };
-
     },
 
 
-    /* =======================================================
-       GROUP LOTTERIES
-    ======================================================= */
+    parseDateValue(date){
+
+      const value = String(date || '').trim();
+
+      if(!value) return false;
+
+      if(/^\d{1,2}\s+\S+\s+\d{2,4}$/.test(value))
+        return true;
+
+      if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value))
+        return true;
+
+      if(/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(value))
+        return true;
+
+      return false;
+    },
+
+
+    dateKey(date){
+
+      const value = String(date || '').trim();
+
+      const thai = value.match(
+        /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
+      );
+
+      if(thai){
+
+        const months = {
+          'ม.ค.':1,
+          'ก.พ.':2,
+          'มี.ค.':3,
+          'เม.ย.':4,
+          'พ.ค.':5,
+          'มิ.ย.':6,
+          'ก.ค.':7,
+          'ส.ค.':8,
+          'ก.ย.':9,
+          'ต.ค.':10,
+          'พ.ย.':11,
+          'ธ.ค.':12
+        };
+
+        const month = months[thai[2]] || 0;
+
+        let year = Number(thai[3]);
+
+        if(year < 100){
+          year += 2500;
+        }
+
+        return [
+          year,
+          String(month).padStart(2,'0'),
+          String(Number(thai[1])).padStart(2,'0')
+        ].join('-');
+      }
+
+      const numeric = value.match(
+        /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
+      );
+
+      if(numeric){
+
+        let year = Number(numeric[3]);
+
+        if(year < 100){
+          year += 2500;
+        }
+
+        return [
+          year,
+          String(Number(numeric[2])).padStart(2,'0'),
+          String(Number(numeric[1])).padStart(2,'0')
+        ].join('-');
+      }
+
+      return value;
+    },
+
+
+    sortChronological(records){
+
+      return records
+        .map((record,index) => ({
+          ...record,
+          __index:index
+        }))
+        .sort((a,b) => {
+
+          const ka = this.dateKey(a.date);
+          const kb = this.dateKey(b.date);
+
+          if(ka < kb) return -1;
+          if(ka > kb) return 1;
+
+          return a.__index - b.__index;
+        })
+        .map(record => {
+
+          const clean = {...record};
+
+          delete clean.__index;
+
+          return clean;
+        });
+    },
+
 
     groupByLottery(records){
 
       const groupsMap = {};
 
+      records.forEach((record,index) => {
 
-      records.forEach(
-        (record,index) => {
+        const key = record.name.trim();
 
-          const key =
-            record.name.trim();
+        if(!groupsMap[key]){
+          groupsMap[key] = {
+            name:key,
+            records:[],
+            duplicateCount:0,
+            conflictCount:0,
+            __order:index
+          };
+        }
 
+        groupsMap[key].records.push(record);
+      });
 
-          if(!groupsMap[key]){
+      const groups = Object.values(groupsMap);
 
-            groupsMap[key] = {
+      groups.forEach(group => {
 
-              name:key,
+        const sorted = this.sortChronological(group.records);
 
-              records:[],
+        const byDate = new Map();
+        const clean = [];
 
-              duplicateCount:0,
+        sorted.forEach(record => {
 
-              conflictCount:0,
+          const key = this.dateKey(record.date);
 
-              __order:index
+          if(!byDate.has(key)){
 
-            };
+            byDate.set(key,record);
+            clean.push(record);
 
+            return;
           }
 
+          const previous = byDate.get(key);
 
-          groupsMap[key]
-            .records
-            .push(record);
+          if(
+            previous.n3 === record.n3 &&
+            previous.n2 === record.n2
+          ){
+            group.duplicateCount++;
+            return;
+          }
 
-        }
-      );
+          group.conflictCount++;
 
+          const index = clean.indexOf(previous);
 
-      const groups =
-        Object.values(
-          groupsMap
-        );
+          if(index >= 0){
+            clean[index] = record;
+          }
 
+          byDate.set(key,record);
+        });
 
-      groups.forEach(
-        group => {
-
-          const sorted =
-            this.sortChronological(
-              group.records
-            );
-
-
-          const byDate =
-            new Map();
-
-
-          const clean = [];
-
-
-          sorted.forEach(
-            record => {
-
-              const key =
-                this.dateKey(
-                  record.date
-                );
-
-
-              if(
-                !byDate.has(key)
-              ){
-
-                byDate.set(
-                  key,
-                  record
-                );
-
-                clean.push(
-                  record
-                );
-
-                return;
-
-              }
-
-
-              const previous =
-                byDate.get(key);
-
-
-              if(
-                previous.n3 ===
-                  record.n3 &&
-                previous.n2 ===
-                  record.n2
-              ){
-
-                group.duplicateCount++;
-
-                return;
-
-              }
-
-
-              group.conflictCount++;
-
-
-              const index =
-                clean.indexOf(
-                  previous
-                );
-
-
-              if(index >= 0){
-
-                clean[index] =
-                  record;
-
-              }
-
-
-              byDate.set(
-                key,
-                record
-              );
-
-            }
-          );
-
-
-          group.records =
-            this.sortChronological(
-              clean
-            );
-
-        }
-      );
-
+        group.records = this.sortChronological(clean);
+      });
 
       return groups
-
-        .sort(
-          (a,b) =>
-            a.__order -
-            b.__order
-        )
-
+        .sort((a,b) => a.__order - b.__order)
         .map(group => {
 
           delete group.__order;
 
           return group;
-
         });
-
     },
 
 
     /* =======================================================
        MODEL 01
-       ORIGINAL LOGIC PRESERVED
+       ONLY MAIN FORMULA
     ======================================================= */
 
     mainModel(n3){
 
-      const digits =
-        String(n3)
-          .padStart(3,"0")
-          .split("")
-          .map(Number);
+      const digits = String(n3)
+        .padStart(3,'0')
+        .split('')
+        .map(Number);
 
+      const H = digits[0];
+      const T = digits[1];
+      const U = digits[2];
 
-      const H =
-        digits[0];
+      const sum = H + T + U;
 
-
-      const T =
-        digits[1];
-
-
-      const U =
-        digits[2];
-
-
-      const sum =
-        H + T + U;
-
-
-      const first =
-        this.norm(sum);
-
-
-      const second =
-        this.norm(
-          first + 1
-        );
-
+      const first = this.norm(sum);
+      const second = this.norm(first + 1);
 
       return {
-
         sum,
-
         first,
-
         second,
-
-        set:[
-          first,
-          second
-        ]
-
+        set:[first,second]
       };
-
     },
 
 
     /* =======================================================
        BACKEND SUPPORT FORMULA 1
-       ORIGINAL LOGIC PRESERVED
+
+       (Tens top + Tens bottom)
+       -> units + 1
     ======================================================= */
 
     backendFormula1(n3,n2){
 
-      const top =
-        String(n3)
-          .padStart(3,"0")
-          .split("")
-          .map(Number);
+      const top = String(n3)
+        .padStart(3,'0')
+        .split('')
+        .map(Number);
 
+      const bottom = String(n2)
+        .padStart(2,'0')
+        .split('')
+        .map(Number);
 
-      const bottom =
-        String(n2)
-          .padStart(2,"0")
-          .split("")
-          .map(Number);
+      const T = top[1];
+      const R1 = bottom[0];
 
-
-      const T =
-        top[1];
-
-
-      const R1 =
-        bottom[0];
-
-
-      const sum =
-        T + R1;
-
-
-      const q =
-        this.norm(sum);
-
-
-      const result =
-        this.norm(
-          q + 1
-        );
-
+      const sum = T + R1;
+      const q = this.norm(sum);
+      const result = this.norm(q + 1);
 
       return {
-
         sum,
         q,
         result
-
       };
-
     },
 
 
     /* =======================================================
        BACKEND SUPPORT FORMULA 2
-       ORIGINAL LOGIC PRESERVED
+
+       (Hundreds top + Tens bottom)
+       -> units + 1
     ======================================================= */
 
     backendFormula2(n3,n2){
 
-      const top =
-        String(n3)
-          .padStart(3,"0")
-          .split("")
-          .map(Number);
+      const top = String(n3)
+        .padStart(3,'0')
+        .split('')
+        .map(Number);
 
+      const bottom = String(n2)
+        .padStart(2,'0')
+        .split('')
+        .map(Number);
 
-      const bottom =
-        String(n2)
-          .padStart(2,"0")
-          .split("")
-          .map(Number);
+      const H = top[0];
+      const R1 = bottom[0];
 
-
-      const H =
-        top[0];
-
-
-      const R1 =
-        bottom[0];
-
-
-      const sum =
-        H + R1;
-
-
-      const q =
-        this.norm(sum);
-
-
-      const result =
-        this.norm(
-          q + 1
-        );
-
+      const sum = H + R1;
+      const q = this.norm(sum);
+      const result = this.norm(q + 1);
 
       return {
-
         sum,
         q,
         result
-
       };
-
     },
 
 
     /* =======================================================
-       VIP CONFIRMATION
-       ORIGINAL LOGIC PRESERVED
+       VIP+ CONFIRMATION
+
+       Backend formulas may only confirm.
+       They NEVER replace Model 01.
     ======================================================= */
 
-    checkVIP(
-      main,
-      backend1,
-      backend2
-    ){
+    checkVIP(main,backend1,backend2){
 
-      const mainSet =
-        new Set(
-          main.set
-        );
-
+      const mainSet = new Set(main.set);
 
       return (
-
-        mainSet.has(
-          backend1.result
-        ) ||
-
-        mainSet.has(
-          backend2.result
-        )
-
+        mainSet.has(backend1.result) ||
+        mainSet.has(backend2.result)
       );
-
     },
 
 
     /* =======================================================
-       PROTECTED ORIGINAL PAIR ENGINE
-       ORIGINAL LOGIC PRESERVED
+       PROTECTED ORIGINAL PAIR / เลขเจาะ ENGINE
+
+       Base:
+       7 - hundreds top
+
+       Normal:
+       ±2
+
+       Collision with main digit:
+       ±3
+
+       No main digits inside the pair range.
+       No double pairs.
     ======================================================= */
 
-    buildPairs(
-      mainSet,
-      anchor
-    ){
+    buildPairs(mainSet,anchor){
 
       const pairsMap = {};
 
+      mainSet.forEach(sourceDigit => {
 
-      mainSet.forEach(
-        sourceDigit => {
+        let range = [];
+        let collision = false;
 
-          let range = [];
+        for(let offset = -2; offset <= 2; offset++){
 
-          let collision =
-            false;
-
-
-          for(
-            let offset = -2;
-
-            offset <= 2;
-
-            offset++
-          ){
-
-            if(
-              mainSet.includes(
-                this.norm(
-                  anchor +
-                  offset
-                )
-              )
-            ){
-
-              collision = true;
-
-              break;
-
-            }
-
-          }
-
-
-          for(
-            let offset =
-              collision
-                ? -3
-                : -2;
-
-            offset <=
-              (
-                collision
-                  ? 3
-                  : 2
-              );
-
-            offset++
-          ){
-
-            const digit =
-              this.norm(
-                anchor +
-                offset
-              );
-
-
-            if(
-              !range.includes(
-                digit
-              )
-            ){
-
-              range.push(
-                digit
-              );
-
-            }
-
-          }
-
-
-          const pairs = [];
-
-
-          range.forEach(
-            target => {
-
-              if(
-                target ===
-                sourceDigit
-              )
-                return;
-
-
-              if(
-                mainSet.includes(
-                  target
-                )
-              )
-                return;
-
-
-              const pair =
-                `${sourceDigit}${target}`;
-
-
-              if(
-                pair[0] ===
-                pair[1]
-              )
-                return;
-
-
-              if(
-                !pairs.includes(
-                  pair
-                )
-              )
-                pairs.push(pair);
-
-            }
-          );
-
-
-          let next =
-            this.norm(
-              sourceDigit + 1
-            );
-
-
-          let guard = 0;
-
-
-          while(
-            pairs.length < 5 &&
-            guard < 20
-          ){
-
-            if(
-
-              next !==
-                sourceDigit &&
-
-              !mainSet.includes(
-                next
-              )
-
-            ){
-
-              const pair =
-                `${sourceDigit}${next}`;
-
-
-              if(
-
-                pair[0] !==
-                  pair[1] &&
-
-                !pairs.includes(
-                  pair
-                )
-
-              ){
-
-                pairs.push(
-                  pair
-                );
-
-              }
-
-            }
-
-
-            next =
-              this.norm(
-                next + 1
-              );
-
-
-            guard++;
-
-          }
-
-
-          pairsMap[sourceDigit] =
-            [
-              ...new Set(
-                pairs
-              )
-            ]
-
-            .filter(
-              pair =>
-                pair[0] !==
-                pair[1]
+          if(
+            mainSet.includes(
+              this.norm(anchor + offset)
             )
-
-            .slice(0,5);
-
+          ){
+            collision = true;
+            break;
+          }
         }
-      );
 
+        for(
+          let offset = collision ? -3 : -2;
+          offset <= (collision ? 3 : 2);
+          offset++
+        ){
+
+          const digit = this.norm(anchor + offset);
+
+          if(!range.includes(digit)){
+            range.push(digit);
+          }
+        }
+
+        const pairs = [];
+
+        range.forEach(target => {
+
+          if(target === sourceDigit){
+            return;
+          }
+
+          if(mainSet.includes(target)){
+            return;
+          }
+
+          const pair = `${sourceDigit}${target}`;
+
+          if(
+            pair[0] === pair[1]
+          ){
+            return;
+          }
+
+          if(!pairs.includes(pair)){
+            pairs.push(pair);
+          }
+        });
+
+        let next = this.norm(sourceDigit + 1);
+
+        while(pairs.length < 5){
+
+          if(
+            next !== sourceDigit &&
+            !mainSet.includes(next)
+          ){
+
+            const pair = `${sourceDigit}${next}`;
+
+            if(
+              pair[0] !== pair[1] &&
+              !pairs.includes(pair)
+            ){
+              pairs.push(pair);
+            }
+          }
+
+          next = this.norm(next + 1);
+        }
+
+        pairsMap[sourceDigit] =
+          [...new Set(pairs)]
+            .filter(pair => pair[0] !== pair[1])
+            .slice(0,5);
+      });
 
       return pairsMap;
-
     },
 
 
     /* =======================================================
-       PAIR CONSENSUS
-       ORIGINAL LOGIC PRESERVED
+       PAIR COLOR / CONSENSUS
+       Kept clean and lightweight.
     ======================================================= */
 
     pairKey(pair){
 
-      const value =
-        String(pair);
+      const value = String(pair);
 
-
-      if(
-        !/^\d{2}$/.test(value)
-      )
+      if(!/^\d{2}$/.test(value)){
         return value;
-
+      }
 
       return [
-
         value[0],
         value[1]
-
-      ]
-      .sort()
-      .join("");
-
+      ].sort().join('');
     },
 
 
-    buildPairConsensus(
-      pairSets
-    ){
+    buildPairConsensus(pairSets){
 
       const all = [];
 
+      pairSets.forEach((set,rowIndex) => {
 
-      pairSets.forEach(
-        (set,rowIndex) => {
+        set.slice(0,5).forEach(pair => {
 
-          set
-            .slice(0,5)
-            .forEach(
-              pair => {
-
-                all.push({
-
-                  pair:String(pair),
-
-                  rowIndex
-
-                });
-
-              }
-            );
-
-        }
-      );
-
+          all.push({
+            pair:String(pair),
+            rowIndex
+          });
+        });
+      });
 
       const counts = {};
 
+      all.forEach(item => {
 
-      all.forEach(
-        item => {
+        const key = this.pairKey(item.pair);
 
-          const key =
-            this.pairKey(
-              item.pair
-            );
+        if(!counts[key]){
 
-
-          if(!counts[key]){
-
-            counts[key] = {
-
-              key,
-
-              score:0,
-
-              rows:new Set(),
-
-              pairs:new Set()
-
-            };
-
-          }
-
-
-          counts[key].score++;
-
-
-          counts[key]
-            .rows
-            .add(
-              item.rowIndex
-            );
-
-
-          counts[key]
-            .pairs
-            .add(
-              item.pair
-            );
-
+          counts[key] = {
+            key,
+            score:0,
+            rows:new Set(),
+            pairs:new Set()
+          };
         }
-      );
 
+        counts[key].score++;
+        counts[key].rows.add(item.rowIndex);
+        counts[key].pairs.add(item.pair);
+      });
 
       const ranked =
-        Object.values(
-          counts
-        )
-        .sort(
-          (a,b) =>
-
-            b.score -
-            a.score ||
-
-            b.rows.size -
-            a.rows.size ||
-
-            Number(a.key) -
-            Number(b.key)
-
-        );
-
+        Object.values(counts)
+          .sort(
+            (a,b) =>
+              b.score - a.score ||
+              b.rows.size - a.rows.size ||
+              Number(a.key) - Number(b.key)
+          );
 
       const colorMap = {};
 
+      ranked.slice(0,6).forEach((item,index) => {
 
-      ranked
-        .slice(0,6)
-        .forEach(
-          (item,index) => {
+        let color;
 
-            let color;
+        if(index < 2){
+          color = 'gold';
+        }else if(index < 4){
+          color = 'silver';
+        }else{
+          color = 'rose';
+        }
 
-
-            if(index < 2){
-
-              color =
-                "gold";
-
-            }else if(index < 4){
-
-              color =
-                "silver";
-
-            }else{
-
-              color =
-                "rose";
-
-            }
-
-
-            colorMap[item.key] = {
-
-              color,
-
-              rank:
-                index + 1,
-
-              score:
-                item.score
-
-            };
-
-          }
-        );
-
+        colorMap[item.key] = {
+          color,
+          rank:index + 1,
+          score:item.score
+        };
+      });
 
       return {
-
         counts,
-
         ranked,
-
         colorMap
-
       };
-
     },
 
 
     sortPairs(pairs){
 
       return pairs
-
         .map(String)
-
-        .filter(
-          pair =>
-
-            /^\d{2}$/.test(pair) &&
-
-            pair[0] !==
-              pair[1]
-
+        .filter(pair =>
+          /^\d{2}$/.test(pair) &&
+          pair[0] !== pair[1]
         )
-
-        .sort(
-          (a,b) =>
-            Number(a) -
-            Number(b)
-        );
-
+        .sort((a,b) => Number(a) - Number(b));
     },
 
 
-    pairClass(
-      pair,
-      colorMap
-    ){
+    pairClass(pair,colorMap){
 
       const info =
-        colorMap[
-          this.pairKey(
-            pair
-          )
-        ];
+        colorMap[this.pairKey(pair)];
 
+      if(!info){
+        return 'pair';
+      }
 
-      if(!info)
-        return "pair";
+      if(info.color === 'gold'){
+        return 'pair pair-gold';
+      }
 
+      if(info.color === 'silver'){
+        return 'pair pair-silver';
+      }
 
-      if(
-        info.color ===
-        "gold"
-      )
-        return "pair pair-gold";
-
-
-      if(
-        info.color ===
-        "silver"
-      )
-        return "pair pair-silver";
-
-
-      return "pair pair-rose";
-
+      return 'pair pair-rose';
     },
 
 
     /* =======================================================
        MAIN ENGINE
-       ORIGINAL LOGIC PRESERVED
+
+       One main formula.
+       Two backend confirmation formulas.
+       Original pair engine.
     ======================================================= */
 
     run(n3,n2){
 
-      const topDigits =
-        String(n3)
-          .padStart(3,"0")
-          .split("")
-          .map(Number);
+      const topDigits = String(n3)
+        .padStart(3,'0')
+        .split('')
+        .map(Number);
 
+      const H = topDigits[0];
 
-      const H =
-        topDigits[0];
-
-
-      const main =
-        this.mainModel(
-          n3
-        );
-
+      const main = this.mainModel(n3);
 
       const backend1 =
-        this.backendFormula1(
-          n3,
-          n2
-        );
-
+        this.backendFormula1(n3,n2);
 
       const backend2 =
-        this.backendFormula2(
-          n3,
-          n2
-        );
-
+        this.backendFormula2(n3,n2);
 
       const vip =
         this.checkVIP(
@@ -3548,21 +1433,13 @@ textarea:focus-visible{
           backend2
         );
 
-
       /*
-        Protected original anchor:
+        Original protected anchor:
         7 - hundreds top
       */
 
-      const rawAnchor =
-        7 - H;
-
-
-      const anchor =
-        this.norm(
-          rawAnchor
-        );
-
+      const rawAnchor = 7 - H;
+      const anchor = this.norm(rawAnchor);
 
       const pairsMap =
         this.buildPairs(
@@ -3570,380 +1447,112 @@ textarea:focus-visible{
           anchor
         );
 
-
-      const pairSets =
-        main.set.map(
-          digit =>
-            this.sortPairs(
-              pairsMap[digit] || []
-            ).slice(0,5)
-        );
-
+      const pairSets = main.set.map(
+        digit =>
+          this.sortPairs(
+            pairsMap[digit] || []
+          ).slice(0,5)
+      );
 
       const consensus =
-        this.buildPairConsensus(
-          pairSets
-        );
-
+        this.buildPairConsensus(pairSets);
 
       return {
-
         main,
-
         backend1,
-
         backend2,
-
         vip,
-
         rawAnchor,
-
         anchor,
-
         pairsMap,
-
         pairSets,
-
         consensus,
-
-        top1Digit:
-          main.first,
-
-        top2Digit:
-          main.second
-
+        top1Digit:main.first,
+        top2Digit:main.second
       };
-
     },
 
 
     /* =======================================================
-       NEXT DATE
+       CAPTURE
     ======================================================= */
 
-    nextDateLabel(record){
-
-      if(!record)
-        return "";
-
-
-      const value =
-        String(
-          record.date || ""
-        ).trim();
-
-
-      const thai =
-        value.match(
-          /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
-        );
-
-
-      if(thai){
-
-        const day =
-          Number(
-            thai[1]
-          );
-
-
-        let year =
-          Number(
-            thai[3]
-          );
-
-
-        if(year < 100)
-          year += 2500;
-
-
-        const months = [
-
-          "ม.ค.",
-          "ก.พ.",
-          "มี.ค.",
-          "เม.ย.",
-          "พ.ค.",
-          "มิ.ย.",
-          "ก.ค.",
-          "ส.ค.",
-          "ก.ย.",
-          "ต.ค.",
-          "พ.ย.",
-          "ธ.ค."
-
-        ];
-
-
-        const monthIndex =
-          months.indexOf(
-            thai[2]
-          );
-
-
-        if(
-          monthIndex >= 0
-        ){
-
-          const date =
-            new Date(
-              year - 543,
-              monthIndex,
-              day
-            );
-
-
-          date.setDate(
-            date.getDate() + 1
-          );
-
-
-          return [
-
-            String(
-              date.getDate()
-            ),
-
-            months[
-              date.getMonth()
-            ],
-
-            String(
-              date.getFullYear() +
-              543
-            )
-
-          ].join(" ");
-
-        }
-
-      }
-
-
-      return "งวดถัดไป";
-
-    },
-
-
-    /* =======================================================
-       CAPTURE CARD
-       SCREENSHOT-SAFE
-    ======================================================= */
-
-    async captureCard(
-      cardId,
-      name
-    ){
+    async captureCard(cardId,name){
 
       const element =
-        document.getElementById(
-          cardId
-        );
+        document.getElementById(cardId);
 
-
-      if(!element)
+      if(!element){
         return;
-
+      }
 
       const controls =
-        [
-          ...element.querySelectorAll(
-            "[data-no-capture]"
-          )
-        ];
-
+        [...element.querySelectorAll('[data-no-capture]')];
 
       try{
 
-        if(
-          typeof html2canvas ===
-          "undefined"
-        ){
-
+        if(typeof html2canvas === 'undefined'){
           throw new Error(
-            "ไม่พบระบบแคปภาพ"
+            'ไม่พบระบบแคปภาพ กรุณาเปิดอินเทอร์เน็ตแล้วลองใหม่'
           );
-
         }
 
-
         controls.forEach(
-          el => {
-
-            el.style.visibility =
-              "hidden";
-
-          }
+          element =>
+            element.style.visibility = 'hidden'
         );
-
-
-        element.classList.add(
-          "capture-mode"
-        );
-
-
-        /*
-          Wait for the browser to repaint
-          the clean capture state.
-        */
-
-        await new Promise(
-          resolve =>
-            requestAnimationFrame(
-              () =>
-                requestAnimationFrame(
-                  resolve
-                )
-            )
-        );
-
 
         const canvas =
           await html2canvas(
             element,
             {
-
-              /*
-                Stable flat background.
-                This is intentionally NOT transparent.
-              */
-
-              backgroundColor:
-                "#0e1013",
-
-
-              /*
-                Higher scale produces cleaner
-                digit edges on mobile screenshots.
-              */
-
-              scale:
-                Math.min(
-                  3,
-                  Math.max(
-                    2,
-                    window.devicePixelRatio ||
-                    2
-                  )
-                ),
-
-
+              backgroundColor:'#ffffff',
+              scale:Math.min(
+                3,
+                Math.max(
+                  2,
+                  window.devicePixelRatio || 2
+                )
+              ),
               useCORS:true,
-
-              allowTaint:false,
-
-              logging:false,
-
-              imageTimeout:10000,
-
-              removeContainer:true,
-
-              /*
-                Prevent animation / subpixel noise
-                from affecting capture.
-              */
-
-              onclone:
-                clonedDocument => {
-
-                  const clonedCard =
-                    clonedDocument
-                      .getElementById(
-                        cardId
-                      );
-
-
-                  if(
-                    clonedCard
-                  ){
-
-                    clonedCard.style.animation =
-                      "none";
-
-                    clonedCard.style.transition =
-                      "none";
-
-                  }
-
-                }
-
+              logging:false
             }
           );
 
-
         const link =
-          document.createElement(
-            "a"
-          );
-
+          document.createElement('a');
 
         const safe =
-          String(
-            name ||
-            "lottery"
-          )
-          .replace(
-            /[^ก-๙A-Za-z0-9_-]+/g,
-            "_"
-          )
-          .slice(
-            0,
-            60
-          );
-
+          String(name || 'lottery')
+            .replace(
+              /[^ก-๙A-Za-z0-9_-]+/g,
+              '_'
+            )
+            .slice(0,60);
 
         link.download =
-          `${
-            safe ||
-            "lottery"
-          }_VIP_card.png`;
-
+          `${safe || 'lottery'}_card.png`;
 
         link.href =
-          canvas.toDataURL(
-            "image/png",
-            1
-          );
-
+          canvas.toDataURL('image/png');
 
         link.click();
 
-
-        this.show(
-          "✦ แคปการ์ด VIP+ แล้ว"
-        );
-
+        this.show('✓ แคปการ์ดแล้ว');
 
       }catch(error){
 
-        console.error(
-          error
-        );
+        console.error(error);
 
-
-        this.show(
-          "❌ แคปภาพไม่สำเร็จ"
-        );
-
+        this.show('❌ แคปภาพไม่สำเร็จ');
 
       }finally{
 
         controls.forEach(
-          el => {
-
-            el.style.visibility =
-              "";
-
-          }
+          element =>
+            element.style.visibility = ''
         );
-
-
-        element.classList.remove(
-          "capture-mode"
-        );
-
       }
-
     },
 
 
@@ -3954,126 +1563,129 @@ textarea:focus-visible{
     copy(text){
 
       if(
-
         navigator.clipboard &&
-
         navigator.clipboard.writeText
-
       ){
 
         navigator.clipboard
           .writeText(text)
-
-          .then(
-            () =>
-              this.show()
-          )
-
-          .catch(
-            () =>
-              this.fallbackCopy(
-                text
-              )
-          );
+          .then(() => this.show())
+          .catch(() => this.fallbackCopy(text));
 
         return;
-
       }
 
-
-      this.fallbackCopy(
-        text
-      );
-
+      this.fallbackCopy(text);
     },
 
 
     fallbackCopy(text){
 
       const textarea =
-        document.createElement(
-          "textarea"
-        );
+        document.createElement('textarea');
 
+      textarea.value = text;
 
-      textarea.value =
-        text;
-
-
-      textarea.style.position =
-        "fixed";
-
-
-      textarea.style.opacity =
-        "0";
-
-
-      document.body.appendChild(
-        textarea
-      );
-
+      document.body.appendChild(textarea);
 
       textarea.select();
 
+      document.execCommand('copy');
 
-      textarea.setSelectionRange(
-        0,
-        textarea.value.length
-      );
-
-
-      try{
-
-        document.execCommand(
-          "copy"
-        );
-
-      }finally{
-
-        textarea.remove();
-
-      }
-
+      textarea.remove();
 
       this.show();
+    },
 
+
+    show(message){
+
+      const toast = $('toast');
+
+      if(message){
+        toast.textContent = message;
+      }
+
+      toast.classList.add('show');
+
+      clearTimeout(this.toastTimer);
+
+      this.toastTimer =
+        setTimeout(
+          () => toast.classList.remove('show'),
+          1500
+        );
     },
 
 
     /* =======================================================
-       TOAST
+       NEXT DATE
     ======================================================= */
 
-    show(message){
+    nextDateLabel(record){
 
-      const toast =
-        $("toast");
+      if(!record){
+        return '';
+      }
 
+      const value =
+        String(record.date || '').trim();
 
-      toast.textContent =
-        message ||
-        "คัดลอกแล้ว";
-
-
-      toast.classList.add(
-        "show"
-      );
-
-
-      clearTimeout(
-        this.toastTimer
-      );
-
-
-      this.toastTimer =
-        setTimeout(
-          () =>
-            toast.classList.remove(
-              "show"
-            ),
-          1600
+      const thai =
+        value.match(
+          /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
         );
 
+      if(thai){
+
+        const day = Number(thai[1]);
+
+        let year = Number(thai[3]);
+
+        if(year < 100){
+          year += 2500;
+        }
+
+        const months = [
+          'ม.ค.',
+          'ก.พ.',
+          'มี.ค.',
+          'เม.ย.',
+          'พ.ค.',
+          'มิ.ย.',
+          'ก.ค.',
+          'ส.ค.',
+          'ก.ย.',
+          'ต.ค.',
+          'พ.ย.',
+          'ธ.ค.'
+        ];
+
+        const monthIndex =
+          months.indexOf(thai[2]);
+
+        if(monthIndex >= 0){
+
+          const date =
+            new Date(
+              year - 543,
+              monthIndex,
+              day
+            );
+
+          date.setDate(
+            date.getDate() + 1
+          );
+
+          return [
+            String(date.getDate()),
+            months[date.getMonth()],
+            String(date.getFullYear() + 543)
+          ].join(' ');
+        }
+      }
+
+      return 'งวดถัดไป';
     },
 
 
@@ -4085,66 +1697,33 @@ textarea:focus-visible{
 
       const parsed =
         this.parse(
-          $("bulkInput").value
+          $('bulkInput').value
         );
 
+      if(!parsed.records.length){
 
-      if(
-        !parsed.records.length
-      ){
-
-        $("result").innerHTML = `
-
-          <div class="errorbox">
-
-            ❌ ไม่พบข้อมูลที่ถูกต้อง
-            กรุณาตรวจรูปแบบอีกครั้ง
-
-          </div>
-
-        `;
-
+        $('result').innerHTML =
+          '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
 
         return;
-
       }
 
+      const scanner = $('scanner');
+      const runButton = $('run');
 
-      const scanner =
-        $("scanner");
+      runButton.disabled = true;
 
+      scanner.style.display = 'block';
 
-      const runButton =
-        $("run");
+      const scan = message => {
+        $('scanText').textContent = message;
+      };
 
-
-      runButton.disabled =
-        true;
-
-
-      scanner.style.display =
-        "block";
-
-
-      const scan =
-        message => {
-
-          $("scanText")
-            .textContent =
-            message;
-
-        };
-
-
-      const yieldUI =
-        () =>
-          new Promise(
-            resolve =>
-              requestAnimationFrame(
-                resolve
-              )
-          );
-
+      const yieldUI = () =>
+        new Promise(
+          resolve =>
+            requestAnimationFrame(resolve)
+        );
 
       try{
 
@@ -4153,51 +1732,30 @@ textarea:focus-visible{
             parsed.records
           );
 
-
         const cards = [];
-
         const copyBlocks = [];
-
 
         let groupIndex = 0;
 
-
-        for(
-          const group of groups
-        ){
+        for(const group of groups){
 
           groupIndex++;
-
 
           const records =
             group.records;
 
-
-          if(
-            !records.length
-          )
+          if(!records.length){
             continue;
-
-
-          /*
-            Latest chronological record
-            is used as source for
-            the next prediction card.
-          */
+          }
 
           const latest =
-            records[
-              records.length - 1
-            ];
-
+            records[records.length - 1];
 
           scan(
             `ประมวลผล ${group.name} • ${groupIndex}/${groups.length}`
           );
 
-
           await yieldUI();
-
 
           const result =
             this.run(
@@ -4205,552 +1763,269 @@ textarea:focus-visible{
               latest.n2
             );
 
-
           const mainDigits =
             result.main.set;
 
-
           const pair1 =
-            result.pairSets[0] ||
-            [];
-
+            result.pairSets[0] || [];
 
           const pair2 =
-            result.pairSets[1] ||
-            [];
-
+            result.pairSets[1] || [];
 
           const nextDate =
-            this.nextDateLabel(
-              latest
-            );
-
-
-          /* =================================================
-             PAIR HTML
-          ================================================== */
-
-          const makePairHTML =
-            pairs => {
-
-              return pairs
-                .map(
-                  pair => {
-
-                    const info =
-                      result
-                        .consensus
-                        .colorMap[
-                          this.pairKey(
-                            pair
-                          )
-                        ];
-
-
-                    const title =
-                      info
-
-                        ? `Consensus อันดับ ${info.rank} • พบ ${info.score} ครั้ง`
-
-                        : "เลขเจาะ";
-
-
-                    return `
-
-                      <span
-                        class="${this.pairClass(
-                          pair,
-                          result.consensus.colorMap
-                        )}"
-                        title="${esc(title)}"
-                      >
-                        ${esc(pair)}
-                      </span>
-
-                    `;
-
-                  }
-                )
-                .join("");
-
-            };
-
+            this.nextDateLabel(latest);
 
           const pairHTML1 =
-            makePairHTML(
-              pair1
-            );
+            pair1
+              .map(pair => {
 
+                const info =
+                  result.consensus
+                    .colorMap[
+                      this.pairKey(pair)
+                    ];
+
+                const title =
+                  info
+                    ? `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
+                    : 'เลขเจาะ';
+
+                return `
+                  <span
+                    class="${this.pairClass(pair,result.consensus.colorMap)}"
+                    title="${esc(title)}"
+                  >${esc(pair)}</span>
+                `;
+              })
+              .join('');
 
           const pairHTML2 =
-            makePairHTML(
-              pair2
-            );
+            pair2
+              .map(pair => {
 
+                const info =
+                  result.consensus
+                    .colorMap[
+                      this.pairKey(pair)
+                    ];
 
-          /* =================================================
-             VIP BADGE
-          ================================================== */
+                const title =
+                  info
+                    ? `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
+                    : 'เลขเจาะ';
+
+                return `
+                  <span
+                    class="${this.pairClass(pair,result.consensus.colorMap)}"
+                    title="${esc(title)}"
+                  >${esc(pair)}</span>
+                `;
+              })
+              .join('');
 
           const vipHTML =
             result.vip
-
-              ? `
-
-                <div
-                  class="vip-label"
-                  title="VIP confirmation"
-                >
-                  VIP+
-                </div>
-
-              `
-
-              : `
-
-                <div
-                  class="vip-label empty"
-                  aria-hidden="true"
-                >
-                  VIP+
-                </div>
-
-              `;
-
+              ? '<div class="vip-label">VIP+</div>'
+              : '<div class="vip-label"></div>';
 
           const cardId =
             `lottery-card-${groupIndex}`;
 
-
-          /* =================================================
-             RANK 01
-          ================================================= */
-
           const row1 = `
-
             <div class="row">
-
-              <span
-                class="row-label"
-                aria-hidden="true"
-              >
-                RANK 01
-              </span>
-
-
               <span
                 class="digit digit-gold"
-                aria-label="เลขเด่นอันดับหนึ่ง"
-              >
-                ${esc(
-                  mainDigits[0]
-                )}
-              </span>
+                aria-label="เลขเด่นตัวที่หนึ่ง"
+              >${esc(mainDigits[0])}</span>
 
-
-              <span
-                class="sep"
-                aria-hidden="true"
-              >
-                :
-              </span>
-
+              <span class="sep">:</span>
 
               <div class="pairs">
                 ${pairHTML1}
               </div>
-
             </div>
-
           `;
 
-
-          /* =================================================
-             RANK 02
-          ================================================== */
-
           const row2 = `
-
             <div class="row">
-
-              <span
-                class="row-label"
-                aria-hidden="true"
-              >
-                RANK 02
-              </span>
-
-
               <span
                 class="digit digit-gold"
-                aria-label="เลขรองอันดับสอง"
-              >
-                ${esc(
-                  mainDigits[1]
-                )}
-              </span>
+                aria-label="เลขเด่นตัวที่สอง"
+              >${esc(mainDigits[1])}</span>
 
-
-              <span
-                class="sep"
-                aria-hidden="true"
-              >
-                :
-              </span>
-
+              <span class="sep">:</span>
 
               <div class="pairs">
                 ${pairHTML2}
               </div>
-
             </div>
-
           `;
-
-
-          /* =================================================
-             PREMIUM FOOTER
-             Backend formula names are intentionally hidden.
-          ================================================== */
 
           const footer = `
-
-            <div class="card-footer">
-
-              <div class="footer-brand">
-
-                <span class="brand-star">
-                  ✦
-                </span>
-
-                <span>
-                  MESTER VIP
-                </span>
-
-                <span class="brand-star">
-                  ✦
-                </span>
-
-              </div>
-
-
-              <div class="footer-code">
-                RANK 01 • RANK 02
-              </div>
-
+            <div class="brand-footer">
+              <span class="brand-star">✦</span>
+              <span>บ้านเงินกอง</span>
+              <span class="brand-star">✦</span>
             </div>
-
           `;
 
-
-          /* =================================================
-             CARD
-          ================================================== */
-
           cards.push(`
-
             <article
               class="lottery"
               id="${cardId}"
               data-lottery-card="true"
             >
 
-
               <div class="lottery-head">
 
-                <div class="lottery-meta">
-
-
-                  <div class="lottery-kicker">
-                    PREMIUM MEMBER • NEXT DRAW
-                  </div>
-
-
+                <div>
                   <div class="lottery-name">
-
-                    <span
-                      class="flag"
-                      aria-hidden="true"
-                    >
-                      ${this.flag(
-                        group.name
-                      )}
-                    </span>
-
-
-                    <span>
-                      ${esc(
-                        group.name
-                      )}
-                    </span>
-
+                    <span class="flag">${this.flag(group.name)}</span>
+                    <span>${esc(group.name)}</span>
                   </div>
-
 
                   <div class="date">
-                    ${esc(
-                      nextDate
-                    )}
+                    ${esc(nextDate)}
                   </div>
-
-
                 </div>
 
-
                 ${vipHTML}
-
 
                 <div
                   class="card-actions"
                   data-no-capture="true"
                 >
-
                   <button
                     class="card-capture"
-                    type="button"
                     data-capture-card="${cardId}"
                     data-capture-name="${esc(group.name)}"
-                    aria-label="แคปการ์ด ${esc(group.name)}"
                   >
                     📷 แคปการ์ด
                   </button>
-
                 </div>
 
-
               </div>
-
 
               <div class="rows">
-
                 ${row1}
-
                 ${row2}
-
               </div>
-
 
               ${footer}
 
-
             </article>
-
           `);
 
-
-          /* =================================================
-             COPY BLOCK
-          ================================================== */
-
           copyBlocks.push(
-
             [
-
-              `${this.flag(
-                group.name
-              )} ${group.name} | ${nextDate}`,
-
-              `RANK 01 : ${mainDigits[0]} | ${pair1.join("-")}`,
-
-              `RANK 02 : ${mainDigits[1]} | ${pair2.join("-")}`
-
-            ].join("\n")
-
+              `${this.flag(group.name)} ${group.name} | ${nextDate}`,
+              `${mainDigits[0]} : ${pair1.join('-')}`,
+              `${mainDigits[1]} : ${pair2.join('-')}`
+            ].join('\n')
           );
-
         }
 
-
-        scan(
-          "ตรวจสอบความเรียบร้อยของผลลัพธ์..."
-        );
-
+        scan('ตรวจสอบความเรียบร้อยของผลลัพธ์...');
 
         await yieldUI();
 
-
-        scan(
-          "FINALIZING PREMIUM OUTPUT..."
-        );
-
+        scan('FINALIZING...');
 
         await yieldUI();
 
+        scanner.style.display = 'none';
 
-        scanner.style.display =
-          "none";
-
-
-        runButton.disabled =
-          false;
-
+        runButton.disabled = false;
 
         const all =
-          copyBlocks.join(
-            "\n\n"
-          );
+          copyBlocks.join('\n\n');
 
+        this.lastCopyText = all;
 
-        this.lastCopyText =
-          all;
-
-
-        $("result").innerHTML = `
-
+        $('result').innerHTML = `
           <div class="summary">
 
             <span>
-
-              วิเคราะห์สำเร็จ
-
-              <strong>
-                ${cards.length}
-              </strong>
-
+              ประมวลผลสำเร็จ
+              <strong>${cards.length}</strong>
               ประเภท
-
             </span>
-
 
             <button
               class="copy"
               id="copyTop"
-              type="button"
             >
               📋 COPY ALL
             </button>
 
           </div>
 
-
           ${
             parsed.errors.length
-
               ? `
-
                 <div class="errorbox">
-
-                  ${parsed.errors
-                    .map(esc)
-                    .join("<br>")}
-
+                  ${parsed.errors.map(esc).join('<br>')}
                 </div>
-
               `
-
-              : ""
+              : ''
           }
 
-
-          ${cards.join("")}
-
+          ${cards.join('')}
 
           <button
             class="copyall"
             id="copyBottom"
-            type="button"
           >
-            ✦ คัดลอกหวยทั้งหมด
+            📋 คัดลอกหวยทั้งหมด
           </button>
-
         `;
 
+        $('copyTop').onclick =
+          () => this.copy(all);
 
-        $("copyTop").onclick =
-          () =>
-            this.copy(
-              all
-            );
+        $('copyBottom').onclick =
+          () => this.copy(all);
 
-
-        $("copyBottom").onclick =
-          () =>
-            this.copy(
-              all
-            );
-
-
-        $("copyInput").disabled =
+        $('copyInput').disabled =
           !all;
 
+        $('copyInput').onclick =
+          () => this.copy(this.lastCopyText);
 
-        $("copyInput").onclick =
-          () =>
-            this.copy(
-              this.lastCopyText
-            );
-
-
-        /*
-          Capture button events
-        */
-
-        $("result")
+        $('result')
           .querySelectorAll(
-            "[data-capture-card]"
+            '[data-capture-card]'
           )
-          .forEach(
-            button => {
+          .forEach(button => {
 
-              button.onclick =
-                () =>
-                  this.captureCard(
+            button.onclick = () =>
+              this.captureCard(
+                button.dataset.captureCard,
+                button.dataset.captureName
+              );
+          });
 
-                    button.dataset
-                      .captureCard,
-
-                    button.dataset
-                      .captureName
-
-                  );
-
-            }
-          );
-
-
-        $("result").scrollIntoView({
-
-          behavior:"smooth",
-
-          block:"start"
-
+        $('result').scrollIntoView({
+          behavior:'smooth',
+          block:'start'
         });
-
 
       }catch(error){
 
-        console.error(
-          error
-        );
+        console.error(error);
 
+        scanner.style.display = 'none';
 
-        scanner.style.display =
-          "none";
+        runButton.disabled = false;
 
-
-        runButton.disabled =
-          false;
-
-
-        $("result").innerHTML = `
-
+        $('result').innerHTML = `
           <div class="errorbox">
-
             ❌ เกิดข้อผิดพลาดระหว่างประมวลผล:
-
-            ${esc(
-              error?.message ||
-              error
-            )}
-
+            ${esc(error?.message || error)}
           </div>
-
         `;
-
       }
-
     }
-
   };
 
 
@@ -4758,85 +2033,32 @@ textarea:focus-visible{
      EVENTS
   ========================================================= */
 
-  $("run").addEventListener(
-    "click",
-    () =>
-      app.calculate()
-  );
+  $('run').onclick =
+    () => app.calculate();
 
 
-  $("clearInput").addEventListener(
-    "click",
-    () => {
+  $('clearInput').onclick = () => {
 
-      $("bulkInput").value =
-        "";
+    $('bulkInput').value = '';
 
+    $('result').innerHTML = '';
 
-      $("result").innerHTML =
-        "";
+    $('scanner').style.display = 'none';
 
+    $('run').disabled = false;
 
-      $("scanner").style.display =
-        "none";
+    $('copyInput').disabled = true;
 
+    app.lastCopyText = '';
 
-      $("run").disabled =
-        false;
+    $('bulkInput').focus();
 
-
-      $("copyInput").disabled =
-        true;
-
-
-      app.lastCopyText =
-        "";
-
-
-      $("bulkInput").focus();
-
-
-      app.show(
-        "✓ ล้างข้อมูลแล้ว"
-      );
-
-    }
-  );
-
-
-  /*
-    Keyboard shortcut:
-    Ctrl/Cmd + Enter = Calculate
-  */
-
-  $("bulkInput").addEventListener(
-    "keydown",
-    event => {
-
-      if(
-
-        (
-          event.ctrlKey ||
-          event.metaKey
-        ) &&
-
-        event.key === "Enter"
-
-      ){
-
-        event.preventDefault();
-
-        app.calculate();
-
-      }
-
-    }
-  );
+    app.show('✓ ล้างข้อมูลแล้ว');
+  };
 
 
 })();
-
 </script>
 
 </body>
-  </html>
+</html>
