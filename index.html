@@ -3,28 +3,34 @@ const sumTop=H+T_top+U_top;
 const sumBot=T_bot+U_bot;
 const totalSum=sumTop+sumBot;
 const getUnitDirect=v=>{const str=String(v),first=parseInt(str.slice(-1),10);return[first,(first+1)%10]};
+
+// กำหนดเงื่อนไข 3 โมเดล และสร้างเลขเจาะ/แกนหลักแยกอิสระครบถ้วนทั้ง 3 โมเดล
 const rawM1=(T_top+T_bot)%10;
 const rawM2=(sumTop)%10;
 const rawM3=(sumBot)%10;
+
 const f1Set=getUnitDirect(rawM1);
 const f2Set=getUnitDirect(rawM2);
 const f3Set=getUnitDirect(rawM3);
-const d1=f1Set[0],d2_dig=f1Set[1];
-const generatedPairs1=[],generatedPairs2=[];
-const pMap1={},pMap2={};
+
+const d1=f1Set[0],d2_dig=f2Set[0],d3_dig=f3Set[0];
+
+const generatedPairs1=[],generatedPairs2=[],generatedPairs3=[];
 for(let i=0;i<5;i++)generatedPairs1.push(`${d1}${(d1+i+1)%10}`);
 for(let i=0;i<5;i++)generatedPairs2.push(`${d2_dig}${(d2_dig+i+1)%10}`);
-pMap1[d1]=generatedPairs1;
-pMap2[d2_dig]=generatedPairs2;
+for(let i=0;i<5;i++)generatedPairs3.push(`${d3_dig}${(d3_dig+i+1)%10}`);
+
 const winSet=[...new Set([...f1Set,...f2Set,...f3Set])].slice(0,6);
 while(winSet.length<6){const nextD=(winSet[winSet.length-1]+1)%10;if(!winSet.includes(nextD))winSet.push(nextD)}
 winSet.sort((a,b)=>a-b);
-const matrixArr3d=[`${d1}${d2_dig}${H}`,`${T_bot}${U_bot}${d1}`,`${U_top}${T_top}${d2_dig}`];
+
+const matrixArr3d=[`${d1}${d2_dig}${H}`,`${T_bot}${U_bot}${d1}`,`${U_top}${T_top}${d3_dig}`];
 const evenCountTotal=winSet.filter(d=>d%2===0).length,evenPct=Number((evenCountTotal/winSet.length*100).toFixed(1)),oddPct=Number((100-evenPct).toFixed(1));
 const distributionHTML=Array.from({length:10},(_,digit)=>{let h=40;if(winSet.includes(digit))h=85;let barColor='#0A6647';if(digit%2!==0)barColor='#9E6C02';return`<div class="overview-bar" style="--bar-height:${h}%; --bar-color:${barColor};" data-copy="${digit}"><span class="overview-digit">${digit}</span></div>`});
 const indWinSetHTML=winSet.map((digit,index)=>`<div class="ind-win-item" data-copy="${digit}"><strong>${digit}</strong><span>POS ${index+1}</span></div>`).join("");
 const pairHTML1=generatedPairs1.map((p,idx)=>`<div class="number-chip top" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${95.0-idx*0.5}%</small></div>`).join("");
 const pairHTML2=generatedPairs2.map((p,idx)=>`<div class="number-chip" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${92.0-idx*0.5}%</small></div>`).join("");
+const pairHTML3=generatedPairs3.map((p,idx)=>`<div class="number-chip gold" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${90.0-idx*0.5}%</small></div>`).join("");
 const threeHTML=matrixArr3d.map((p,idx)=>`<div class="number-chip gold" data-copy="${this._esc(p)}"><strong>${this._esc(p)}</strong><small>${90.0-idx*0.5}%</small></div>`).join("");
 const rankHTML=winSet.slice(0,5).map((digit,index)=>{const pct=96.0-(index*1.5);return`<div class="rank-row" data-copy="${digit}">
         <div class="rank-no">#${String(index+1).padStart(2,"0")}</div>
@@ -32,9 +38,11 @@ const rankHTML=winSet.slice(0,5).map((digit,index)=>{const pct=96.0-(index*1.5);
         <div class="rank-bar-wrap"><div class="rank-bar-fill" style="width: ${pct}%;"></div></div>
         <div class="rank-percent">${pct.toFixed(1)}%</div>
       </div>`}).join("");
-let allFormulasHTML=`<div class="formula-card"><div class="formula-head"><div class="formula-name">Model 01 (หลักสิบบัน + หลักสิบล่าง) <span class="compact-badge">สูตรแนะนำ</span></div><div class="formula-badge">AI Score 98.5%</div></div><div class="formula-sub">เลขเด่น: <strong>${f1Set.join(" - ")}</strong></div><div class="formula-pairs">${generatedPairs1.map(p=>`<div class="formula-pair" data-copy="${p}"><strong>${p}</strong><small>95%</small></div>`).join("")}</div></div>`+
-`<div class="formula-card"><div class="formula-head"><div class="formula-name">Model 02</div><div class="formula-badge">AI Score 94.0%</div></div><div class="formula-sub">เลขเด่น: <strong>${f2Set.join(" - ")}</strong></div><div class="formula-pairs">${f2Set.map(d=>`<div class="formula-pair" data-copy="${d}${d}"><strong>${d}${d}</strong><small>92%</small></div>`).join("")}</div></div>`+
-`<div class="formula-card"><div class="formula-head"><div class="formula-name">Model 03</div><div class="formula-badge">AI Score 92.0%</div></div><div class="formula-sub">เลขเด่น: <strong>${f3Set.join(" - ")}</strong></div><div class="formula-pairs">${f3Set.map(d=>`<div class="formula-pair" data-copy="${d}${d}"><strong>${d}${d}</strong><small>90%</small></div>`).join("")}</div></div>`;
+
+let allFormulasHTML=`<div class="formula-card"><div class="formula-head"><div class="formula-name">Model 01 <span class="compact-badge">ชุดที่ 1</span></div><div class="formula-badge">AI Score 98.5%</div></div><div class="formula-pairs">${generatedPairs1.map(p=>`<div class="formula-pair" data-copy="${p}"><strong>${p}</strong><small>95%</small></div>`).join("")}</div></div>`+
+`<div class="formula-card"><div class="formula-head"><div class="formula-name">Model 02 <span class="compact-badge">ชุดที่ 2</span></div><div class="formula-badge">AI Score 94.0%</div></div><div class="formula-pairs">${generatedPairs2.map(p=>`<div class="formula-pair" data-copy="${p}"><strong>${p}</strong><small>92%</small></div>`).join("")}</div></div>`+
+`<div class="formula-card"><div class="formula-head"><div class="formula-name">Model 03 <span class="compact-badge">ชุดที่ 3</span></div><div class="formula-badge">AI Score 92.0%</div></div><div class="formula-pairs">${generatedPairs3.map(p=>`<div class="formula-pair" data-copy="${p}"><strong>${p}</strong><small>90%</small></div>`).join("")}</div></div>`;
+
 const html=`<div class="result-shell">
       <div class="result-head">
         <div><div class="result-kicker">ANALYSIS COMPLETE</div><div class="result-title">Quant Intelligence Result</div></div>
@@ -80,14 +88,18 @@ const html=`<div class="result-shell">
       <div class="section-marker">NUMBER MATRIX</div>
       <section class="matrix-grid">
         <div class="matrix-card">
-          <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span>ชุดเจาะ ${d1}</div><div class="matrix-score">95.0%</div></div>
+          <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span>ชุดเจาะ Model 1</div><div class="matrix-score">95.0%</div></div>
           <div class="number-row">${pairHTML1}</div>
         </div>
         <div class="matrix-card">
-          <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span>ชุดเจาะ ${d2_dig}</div><div class="matrix-score">92.0%</div></div>
+          <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span>ชุดเจาะ Model 2</div><div class="matrix-score">92.0%</div></div>
           <div class="number-row">${pairHTML2}</div>
         </div>
-        <div class="matrix-card full">
+        <div class="matrix-card">
+          <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span>ชุดเจาะ Model 3</div><div class="matrix-score">90.0%</div></div>
+          <div class="number-row">${pairHTML3}</div>
+        </div>
+        <div class="matrix-card">
           <div class="matrix-card-head"><div class="matrix-title"><span class="matrix-dot"></span> ชุด 3 ตัว</div><div class="matrix-score">90.0%</div></div>
           <div class="number-row">${threeHTML}</div>
         </div>
