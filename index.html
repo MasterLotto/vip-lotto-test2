@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V14.0
+MESTER LOTTO VIP+ — V15.0
 ============================================================
-AUDITED / CLEAN VERSION (UPDATED FORMULA SWAP)
+AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP)
 ============================================================
-- Main Model 01 (Formula C & Formula D):
-  Formula C (First Main Digit): Units top - Tens top + Units bottom + 4 -> units digit
-  Formula D (Second Main Digit): 1 - Hundreds top - Tens top - Units bottom -> units digit
+- Main Model 01 (Super Hybrid Formula):
+  Tens top + Units bottom + 2 -> units digit (First Main Digit), + 2 (Second Main Digit)
 - Backend Support Formulas (Former Main Models):
   - Backend 1: Tens digit of 3-digit top + Tens digit of 2-digit bottom -> units digit, +1
   - Backend 2: Sum of all 3 digits on top -> units digit + 1
@@ -33,7 +32,7 @@ AUDITED / CLEAN VERSION (UPDATED FORMULA SWAP)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Multi Lottery Engine V14.0</title>
+<title>Mester Lotto VIP+ — Multi Lottery Engine V15.0</title>
 
 <style>
 :root{
@@ -604,7 +603,7 @@ button{
       <section class="hero">
         <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
         <h1>Multi-Lottery <em>VIP+</em></h1>
-        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตร C และ สูตร D ใหม่ล่าสุด</p>
+        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตร Super Hybrid ล่าสุด</p>
       </section>
 
       <div id="console">
@@ -1046,11 +1045,9 @@ button{
 
 
     /* =======================================================
-       MAIN MODEL 01 (FORMULA C & FORMULA D)
-       - Formula C (First Main Digit):
-         Units top - Tens top + Units bottom + 4 -> units digit
-       - Formula D (Second Main Digit):
-         1 - Hundreds top - Tens top - Units bottom -> units digit
+       MAIN MODEL 01 (SUPER HYBRID FORMULA)
+       - Tens top + Units bottom + 2 -> units digit (First Main Digit)
+       - First Main Digit + 2 -> units digit (Second Main Digit)
     ======================================================= */
 
     mainModel(n3, n2){
@@ -1065,22 +1062,16 @@ button{
         .split('')
         .map(Number);
 
-      const H = top[0];
       const T = top[1];
-      const U = top[2];
       const R2 = bottom[1];
 
-      // Formula C: Units top - Tens top + Units bottom + 4
-      const sumC = U - T + R2 + 4;
-      const first = this.norm(sumC);
-
-      // Formula D: 1 - Hundreds top - Tens top - Units bottom
-      const sumD = 1 - H - T - R2;
-      const second = this.norm(sumD);
+      // Super Hybrid Formula
+      const sum = T + R2 + 2;
+      const first = this.norm(sum);
+      const second = this.norm(first + 2);
 
       return {
-        sumC,
-        sumD,
+        sum,
         first,
         second,
         set:[first,second]
@@ -1438,7 +1429,7 @@ button{
     /* =======================================================
        MAIN ENGINE
 
-       New Main Formula C & D.
+       Super Hybrid Main Formula.
        Backend confirmation formulas.
        Original pair engine.
     ======================================================= */
