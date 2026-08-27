@@ -2,18 +2,16 @@
 <!--
 MESTER LOTTO VIP+ — V13.0
 ============================================================
-AUDITED / CLEAN VERSION
+AUDITED / CLEAN VERSION (UPDATED FORMULA SWAP)
 ============================================================
-- Main Model 01 only
-- Main digits ONLY from:
-  Sum of all 3 digits on top -> units digit = first main digit
-  +1 = second main digit
-- Backend Support Formula 1:
-  Tens digit of 3-digit top + tens digit of 2-digit bottom
-  -> units digit +1
-- Backend Support Formula 2:
-  Hundreds digit of 3-digit top + tens digit of 2-digit bottom
-  -> units digit +1
+- Main Model 01 (Rank 1 Formula):
+  Tens digit of 3-digit top + Tens digit of 2-digit bottom
+  -> units digit = first main digit, +1 = second main digit
+- Backend Support Formula 1 (Formula 2):
+  Sum of all 3 digits on top -> units digit + 1
+- Backend Support Formula 2 (Formula 3):
+  Hundreds digit of 3-digit top + Tens digit of 2-digit bottom
+  -> units digit + 1
 - Backend formulas NEVER replace main digits.
 - VIP+ appears only when either backend formula matches
   either main digit.
@@ -27,7 +25,6 @@ AUDITED / CLEAN VERSION
 - No historical system.
 - No backtest system.
 - No walk-forward system.
-- No Model 02 / Model 03.
 - UI kept clean and orderly.
 ============================================================
 -->
@@ -1052,43 +1049,12 @@ button{
 
 
     /* =======================================================
-       MODEL 01
-       ONLY MAIN FORMULA
+       MODEL 01 (MAIN FORMULA - RANK 1)
+       Tens digit of 3-digit top + Tens digit of 2-digit bottom
+       -> units digit = first main digit, +1 = second main digit
     ======================================================= */
 
-    mainModel(n3){
-
-      const digits = String(n3)
-        .padStart(3,'0')
-        .split('')
-        .map(Number);
-
-      const H = digits[0];
-      const T = digits[1];
-      const U = digits[2];
-
-      const sum = H + T + U;
-
-      const first = this.norm(sum);
-      const second = this.norm(first + 1);
-
-      return {
-        sum,
-        first,
-        second,
-        set:[first,second]
-      };
-    },
-
-
-    /* =======================================================
-       BACKEND SUPPORT FORMULA 1
-
-       (Tens top + Tens bottom)
-       -> units + 1
-    ======================================================= */
-
-    backendFormula1(n3,n2){
+    mainModel(n3, n2){
 
       const top = String(n3)
         .padStart(3,'0')
@@ -1104,6 +1070,36 @@ button{
       const R1 = bottom[0];
 
       const sum = T + R1;
+
+      const first = this.norm(sum);
+      const second = this.norm(first + 1);
+
+      return {
+        sum,
+        first,
+        second,
+        set:[first,second]
+      };
+    },
+
+
+    /* =======================================================
+       BACKEND SUPPORT FORMULA 1 (FORMULA 2)
+       Sum of all 3 digits on top -> units digit + 1
+    ======================================================= */
+
+    backendFormula1(n3, n2){
+
+      const digits = String(n3)
+        .padStart(3,'0')
+        .split('')
+        .map(Number);
+
+      const H = digits[0];
+      const T = digits[1];
+      const U = digits[2];
+
+      const sum = H + T + U;
       const q = this.norm(sum);
       const result = this.norm(q + 1);
 
@@ -1116,13 +1112,12 @@ button{
 
 
     /* =======================================================
-       BACKEND SUPPORT FORMULA 2
-
-       (Hundreds top + Tens bottom)
-       -> units + 1
+       BACKEND SUPPORT FORMULA 2 (FORMULA 3)
+       Hundreds digit of 3-digit top + Tens digit of 2-digit bottom
+       -> units digit + 1
     ======================================================= */
 
-    backendFormula2(n3,n2){
+    backendFormula2(n3, n2){
 
       const top = String(n3)
         .padStart(3,'0')
@@ -1418,13 +1413,13 @@ button{
 
       const H = topDigits[0];
 
-      const main = this.mainModel(n3);
+      const main = this.mainModel(n3, n2);
 
       const backend1 =
-        this.backendFormula1(n3,n2);
+        this.backendFormula1(n3, n2);
 
       const backend2 =
-        this.backendFormula2(n3,n2);
+        this.backendFormula2(n3, n2);
 
       const vip =
         this.checkVIP(
