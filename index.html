@@ -1,48 +1,69 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ V12.2
+MESTER LOTTO VIP+ V12.3
 ============================================================
-UPGRADE SCOPE
+UPGRADE FROM V12.2
 ============================================================
-PROTECTED / UNCHANGED:
-- 2 Main Models: Model 01, Model 02
-- Original formula engine
-- Protected pair / "เลขเจาะ" generation logic
-- Existing UI / layout / cards / capture system
-- User-facing model names remain Model 01 / 02
-- No formula names are exposed in the result UI
 
+MAIN MODEL STRUCTURE
+- เหลือ Main Model 01 และ Main Model 02 เท่านั้น
+- Model 01 = สูตรที่ 1
+  หลักสิบบน + หลักสิบล่าง
+  → ใช้เลขหลักหน่วยเป็นเด่นตัวแรก
+  → +1 แต้มเป็นเด่นตัวที่สอง
 
-UPGRADED DECISION LAYER:
-1. Two-model consensus priority
-2. Current-input support scoring
-3. Conflict-aware selection
-4. Support influence is bounded
-5. Candidate-only ranking from the selected 2-model candidate pool
-6. Near-tie resolver
-7. Continuous confidence indicator
+- Model 02 = สูตรที่ 5
+  ฐาน 10 คงที่ - หลักหน่วยล่าง
+  → ใช้เลขหลักหน่วยเป็นเด่นตัวแรก
+  → +1 แต้มเป็นเด่นตัวที่สอง
 
+DECISION UPGRADE
+- ไม่เลือก Top 2 อีกต่อไป
+- ใช้ระบบ Tournament 2 ชั้น
 
-IMPORTANT:
-- The engine is stateless by design.
-- Only the supplied current 3-digit upper + 2-digit lower input is used.
-- No historical statistics or walk-forward database is used.
-- The selector never creates a digit outside the protected 2-model candidate pool.
-- Confidence is a decision-quality indicator, not a guarantee.
+  รอบที่ 1
+  Model 01:
+    Digit A1 vs Digit A2
+    → ผู้ชนะ Model 01
+
+  Model 02:
+    Digit B1 vs Digit B2
+    → ผู้ชนะ Model 02
+
+  รอบ Final:
+    Winner Model 01 vs Winner Model 02
+    → เลือกเลขเด่น TOP 1 เพียงตัวเดียว
+
+- คะแนนหลังบ้านจากสูตรที่เหลือยังใช้เป็น Support Evidence
+- สูตรเลขเจาะ / Pair Engine ไม่ถูกแก้ logic
+- หลังเลือก TOP 1 แล้วจึงนำ TOP 1 เข้าเลขเจาะเดิม
+- ไม่สร้างเลขใหม่จากระบบเลือกโมเดล
+
+UI
+- คงโครงสร้าง สี ปุ่ม และสไตล์เดิม
+- เหลือเลขเด่นเพียง 1 แถว
+- ขยับหัวการ์ดเข้ามาให้แนวซ้ายสัมพันธ์กับเลขเด่น
+- ลดช่องว่างแนวตั้งด้านล่าง
+- คง "✦ บ้านเงินกอง ✦"
+- คงปุ่มแคปการ์ด
 ============================================================
 -->
 <html lang="th">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Multi Lottery Engine V12.2</title>
 
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<title>Mester Lotto VIP+ — Multi Lottery Engine V12.3</title>
 
 <style>
+
 :root{
 --bg:#f8f5ef;
 --panel:#fffdf9;
@@ -55,16 +76,13 @@ IMPORTANT:
 --shadow:0 14px 40px rgba(79,58,31,.08);
 }
 
-
 *{
 box-sizing:border-box;
 }
 
-
 html{
 scroll-behavior:smooth;
 }
-
 
 body{
 margin:0;
@@ -76,18 +94,15 @@ color:var(--text);
 font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
-
 button,
 input,
 textarea{
 font:inherit;
 }
 
-
 button{
 cursor:pointer;
 }
-
 
 #snow{
 position:fixed;
@@ -98,7 +113,6 @@ pointer-events:none;
 z-index:0;
 }
 
-
 .shell{
 position:relative;
 z-index:1;
@@ -106,17 +120,14 @@ min-height:100vh;
 padding:18px 12px 40px;
 }
 
-
 .app{
 width:min(760px,100%);
 margin:0 auto;
 }
 
-
 .inner{
 padding:12px;
 }
-
 
 .top{
 display:flex;
@@ -126,13 +137,11 @@ gap:12px;
 margin-bottom:14px;
 }
 
-
 .brand{
 display:flex;
 align-items:center;
 gap:10px;
 }
-
 
 .logo{
 width:37px;
@@ -147,13 +156,11 @@ font-size:.72rem;
 box-shadow:0 8px 18px rgba(128,99,41,.18);
 }
 
-
 .brand b{
 display:block;
 font-size:.78rem;
 letter-spacing:.1px;
 }
-
 
 .brand small{
 display:block;
@@ -162,7 +169,6 @@ font-size:.48rem;
 color:var(--muted);
 font-weight:600;
 }
-
 
 .pill{
 padding:6px 9px;
@@ -175,7 +181,6 @@ font-weight:800;
 white-space:nowrap;
 }
 
-
 .hero{
 padding:18px;
 margin-bottom:14px;
@@ -186,7 +191,6 @@ linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));
 box-shadow:var(--shadow);
 }
 
-
 .hero-tag{
 font-size:.43rem;
 font-weight:900;
@@ -194,19 +198,16 @@ letter-spacing:1.2px;
 color:var(--gold2);
 }
 
-
 .hero h1{
 margin:7px 0 5px;
 font-size:1.55rem;
 line-height:1.15;
 }
 
-
 .hero h1 em{
 font-style:normal;
 color:var(--gold2);
 }
-
 
 .hero p{
 margin:0;
@@ -215,7 +216,6 @@ line-height:1.65;
 color:var(--muted);
 }
 
-
 .panel{
 background:rgba(255,253,249,.96);
 border:1px solid var(--line);
@@ -223,21 +223,17 @@ border-radius:18px;
 box-shadow:var(--shadow);
 }
 
-
 .login{
 display:none;
 }
-
 
 .login.active{
 display:block;
 }
 
-
 .login .panel{
 padding:16px;
 }
-
 
 .label{
 display:block;
@@ -246,7 +242,6 @@ font-size:.54rem;
 font-weight:900;
 color:#806329;
 }
-
 
 .password{
 width:100%;
@@ -260,12 +255,10 @@ color:var(--text);
 font-size:.62rem;
 }
 
-
 .password:focus{
 border-color:#c6a762;
 box-shadow:0 0 0 3px rgba(195,154,67,.10);
 }
-
 
 .btn{
 width:100%;
@@ -279,7 +272,6 @@ font-weight:900;
 font-size:.59rem;
 }
 
-
 .err{
 display:none;
 margin-top:9px;
@@ -292,21 +284,17 @@ font-size:.53rem;
 line-height:1.6;
 }
 
-
 .console{
 display:none;
 }
-
 
 .console.active{
 display:block;
 }
 
-
 .bulkbox{
 padding:14px;
 }
-
 
 .bulkbox label{
 display:block;
@@ -315,7 +303,6 @@ font-size:.55rem;
 font-weight:900;
 color:#806329;
 }
-
 
 .bulk{
 display:block;
@@ -333,12 +320,10 @@ font-size:.58rem;
 line-height:1.65;
 }
 
-
 .bulk:focus{
 border-color:#c6a762;
 box-shadow:0 0 0 3px rgba(195,154,67,.10);
 }
-
 
 .actions{
 padding:0 14px 14px;
@@ -346,7 +331,6 @@ display:grid;
 grid-template-columns:1fr 1fr 1fr;
 gap:8px;
 }
-
 
 .run{
 height:43px;
@@ -358,7 +342,6 @@ font-size:.59rem;
 font-weight:900;
 }
 
-
 .copy{
 height:43px;
 border:1px solid var(--line);
@@ -369,17 +352,14 @@ font-size:.59rem;
 font-weight:900;
 }
 
-
 .clear{
 color:#8b8173;
 }
-
 
 .run:disabled{
 opacity:.55;
 cursor:not-allowed;
 }
-
 
 .scanner{
 display:none;
@@ -389,17 +369,14 @@ font-size:.52rem;
 color:var(--muted);
 }
 
-
 .scanner span{
 font-weight:800;
 color:#806329;
 }
 
-
 .result{
 margin-top:14px;
 }
-
 
 .summary{
 display:flex;
@@ -415,13 +392,11 @@ font-size:.54rem;
 color:var(--muted);
 }
 
-
 .summary strong{
 color:#806329;
 font-size:.72rem;
 margin:0 2px;
 }
-
 
 .lottery{
 overflow:hidden;
@@ -432,27 +407,29 @@ background:#fff;
 box-shadow:var(--shadow);
 }
 
-
 .lottery-head{
 display:flex;
 justify-content:space-between;
 align-items:center;
 gap:8px;
-padding:11px 12px 11px 19px;
+
+/*
+ปรับแนวซ้ายให้สัมพันธ์กับขอบซ้ายของเลขเด่น
+จากเดิม 19px → 14px
+*/
+padding:10px 12px 9px 14px;
+
 background:linear-gradient(135deg,#fff,#fbf7ed);
 }
-
 
 .lottery-name{
 font-weight:800;
 font-size:.72rem;
 }
 
-
 .flag{
 margin-right:5px;
 }
-
 
 .date{
 font-size:.52rem;
@@ -460,37 +437,39 @@ color:var(--muted);
 margin-top:2px;
 }
 
-
 .vip-label{
 display:none;
 }
 
-
 .rows{
-padding:5px 7px;
+/*
+ลด padding แนวตั้งเพื่อไม่ให้การ์ดโล่ง
+*/
+padding:4px 7px 2px;
 }
-
 
 .row{
 display:flex;
 align-items:center;
 justify-content:flex-start;
 gap:6px;
-padding:6px 7px;
+
+/*
+เหลือเพียงหนึ่งแถว จึงลดพื้นที่แนวตั้ง
+*/
+padding:5px 7px 5px 7px;
+
 border-bottom:1px solid #f0eadf;
 }
-
 
 .row:last-child{
 border-bottom:0;
 }
 
-
 .row-label{
 font-size:.55rem;
 color:var(--muted);
 }
-
 
 .row-value{
 font-family:"IBM Plex Mono",monospace;
@@ -498,11 +477,9 @@ font-weight:800;
 font-size:.9rem;
 }
 
-
 .row-value.top{
 color:#9c782e;
 }
-
 
 .digit{
 display:grid;
@@ -515,13 +492,11 @@ font-weight:900;
 font-size:.92rem;
 }
 
-
 .digit-gold{
 background:#fbf1d9;
 border:1px solid #e4ca8f;
 color:#806329;
 }
-
 
 .digit-silver{
 background:#f5f1eb;
@@ -529,13 +504,11 @@ border:1px solid #ddd5c9;
 color:#625a50;
 }
 
-
 .sep{
 font-family:"IBM Plex Mono",monospace;
 font-weight:800;
 color:#b3a694;
 }
-
 
 .pairs{
 display:flex;
@@ -544,7 +517,6 @@ justify-content:flex-start;
 gap:4px;
 margin-left:4px;
 }
-
 
 .pair{
 display:inline-flex;
@@ -562,13 +534,11 @@ font-weight:800;
 color:#645b50;
 }
 
-
 .pair-gold{
 border-color:#d9bd79;
 background:#fff8e7;
 color:#806329;
 }
-
 
 .pair-silver{
 border-color:#d7d0c6;
@@ -576,18 +546,18 @@ background:#f8f5ef;
 color:#665e54;
 }
 
-
 .pair-rose{
 border-color:#e5c7c1;
 background:#fff5f3;
 color:#95675f;
 }
 
-
 .card-actions{
-padding:0 9px 7px;
+/*
+บีบพื้นที่ปุ่มแคปเข้าหาผลลัพธ์
+*/
+padding:2px 9px 4px;
 }
-
 
 .card-capture{
 width:100%;
@@ -600,14 +570,12 @@ font-size:.54rem;
 font-weight:800;
 }
 
-
 .footer{
-padding:7px 10px;
+padding:5px 10px;
 border-top:1px solid var(--line);
 font-size:.5rem;
 color:var(--muted);
 }
-
 
 .copyall{
 width:100%;
@@ -618,7 +586,6 @@ color:#fff;
 background:linear-gradient(135deg,#b8944a,#806329);
 font-weight:800;
 }
-
 
 .logout{
 margin-top:9px;
@@ -632,26 +599,28 @@ font-size:.57rem;
 font-weight:700;
 }
 
-
 .brand-footer{
 display:flex;
 justify-content:center;
 align-items:center;
 gap:7px;
-padding-top:6px;
-padding-bottom:9px;
+
+/*
+บีบ footer ขึ้น ไม่ปล่อยพื้นที่ว่างเกินจำเป็น
+*/
+padding-top:4px;
+padding-bottom:6px;
+
 color:#80652b;
 font-size:.44rem;
 font-weight:800;
 letter-spacing:.2px;
 }
 
-
 .brand-star{
 color:#c39a43;
 font-size:.58rem;
 }
-
 
 .toast{
 position:fixed;
@@ -670,12 +639,10 @@ transition:.2s;
 pointer-events:none;
 }
 
-
 .toast.show{
 opacity:1;
 transform:translate(-50%,0);
 }
-
 
 .errorbox{
 padding:12px;
@@ -687,17 +654,15 @@ font-size:.6rem;
 line-height:1.7;
 }
 
-
 @media(max-width:390px){
+
 .bulk{
 min-height:250px;
 }
 
-
 .pairs{
 gap:2px;
 }
-
 
 .pair{
 min-width:30px;
@@ -706,86 +671,109 @@ font-size:.50rem;
 padding:0 4px;
 }
 
-
 .row{
 min-height:39px;
 padding:3px 4px 3px 7px;
 gap:3px;
 }
 
-
 .digit{
 font-size:.92rem;
 }
+
 }
 
-
 @media(max-width:420px){
+
 .lottery{
 padding:0;
 }
 
-
 .lottery-head{
-padding-left:11px;
+padding-left:14px;
 padding-right:1px;
 }
-
 
 .vip-label{
 font-size:.39rem;
 padding:3px 6px;
 }
 
-
 .pair{
 min-width:31px;
 }
+
 }
+
 </style>
 </head>
 
 
 <body>
 
-
 <canvas id="snow"></canvas>
 
-
 <div class="shell">
+
 <div class="app">
+
 <div class="inner">
 
 
 <div class="top">
+
 <div class="brand">
-<div class="logo">AI</div>
+
+<div class="logo">
+AI
+</div>
+
 <div>
-<b>Mester Lotto VIP+</b>
-<small>Multi Lottery Engine</small>
+
+<b>
+Mester Lotto VIP+
+</b>
+
+<small>
+Multi Lottery Engine
+</small>
+
 </div>
+
 </div>
 
 
-<div class="pill">● ENGINE READY</div>
+<div class="pill">
+● ENGINE READY
+</div>
+
 </div>
 
 
 <section class="hero">
-<span class="hero-tag">QUANT ANALYSIS ENGINE</span>
-<h1>Multi-Lottery <em>VIP+</em></h1>
-<p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้ 2 AI Models หลัก</p>
+
+<span class="hero-tag">
+QUANT ANALYSIS ENGINE
+</span>
+
+<h1>
+Multi-Lottery <em>VIP+</em>
+</h1>
+
+<p>
+ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้ 2 AI Models หลัก
+</p>
+
 </section>
 
 
 <div id="login" class="login active">
-<section class="panel">
 
+<section class="panel">
 
 <label class="label">
 🔐 SYSTEM ACCESS KEY
 </label>
-
 
 <input
 id="password"
@@ -795,34 +783,28 @@ autocomplete="current-password"
 placeholder="••• System Access Key •••"
 >
 
-
 <button id="loginBtn" class="btn">
 เข้าสู่ระบบ / CONNECT ENGINE
 </button>
-
 
 <div id="loginErr" class="err">
 ❌ รหัสผ่านไม่ถูกต้อง / ACCESS DENIED
 </div>
 
-
 </section>
+
 </div>
 
 
 <div id="console" class="console">
 
-
 <section class="panel">
 
-
 <div class="bulkbox">
-
 
 <label for="bulkInput">
 📥 วางข้อมูลหวย / LOTTERY INPUT
 </label>
-
 
 <textarea
 id="bulkInput"
@@ -833,47 +815,45 @@ placeholder="ลาวพัฒนา | 24 ส.ค. 69
 45"
 ></textarea>
 
-
 </div>
 
 
 <div class="actions">
 
-
 <button id="run" class="run">
 ⚡ ประมวลผล / RUN ENGINE
 </button>
-
 
 <button id="copyInput" class="copy" disabled>
 📋 COPY INPUT
 </button>
 
-
 <button id="clearInput" class="copy clear">
 🧹 ล้างข้อมูล
 </button>
-
 
 </div>
 
 
 <div id="scanner" class="scanner">
-<span id="scanText">กำลังประมวลผล...</span>
-</div>
 
+<span id="scanText">
+กำลังประมวลผล...
+</span>
+
+</div>
 
 </section>
 
 
 <div id="result" class="result"></div>
 
+</div>
 
 </div>
 
+</div>
 
-</div>
-</div>
 </div>
 
 
@@ -883,24 +863,28 @@ placeholder="ลาวพัฒนา | 24 ส.ค. 69
 
 
 <script>
-(()=>{
-const c=document.getElementById('snow');
-const x=c.getContext('2d');
 
+(()=>{
+
+const c=document.getElementById('snow');
+
+const x=c.getContext('2d');
 
 let w=c.width=innerWidth;
 let h=c.height=innerHeight;
 
-
 addEventListener('resize',()=>{
+
 w=c.width=innerWidth;
 h=c.height=innerHeight;
+
 });
 
 
 const particles=Array.from(
 {length:42},
 ()=>({
+
 x:Math.random()*w,
 y:Math.random()*h,
 r:.7+Math.random()*1.8,
@@ -908,28 +892,32 @@ s:.15+Math.random()*.45,
 a:.18+Math.random()*.35,
 p:Math.random()*6.28,
 tone:Math.random()>.72?'rose':'gold'
+
 })
 );
 
 
 (function draw(){
+
 x.clearRect(0,0,w,h);
 
-
 particles.forEach(q=>{
+
 q.p+=.01;
+
 q.y+=q.s;
+
 q.x+=Math.sin(q.p)*.25;
 
-
 if(q.y>h+5){
+
 q.y=-5;
+
 q.x=Math.random()*w;
+
 }
 
-
 x.beginPath();
-
 
 x.arc(
 q.x,
@@ -939,18 +927,17 @@ q.r,
 Math.PI*2
 );
 
-
 x.fillStyle=
 q.tone==='rose'
 ?`rgba(185,130,121,${q.a*.55})`
 :`rgba(195,154,67,${q.a})`;
 
-
 x.fill();
+
 });
 
-
 requestAnimationFrame(draw);
+
 })();
 
 
@@ -966,57 +953,60 @@ const esc=s=>String(s)
 
 
 const sec={
+
 tokens:[
 '4d617374657241646d696e32303236',
 '54396b4c326d5037',
 '5a71345738785431'
 ],
 
-
 dec(h){
+
 let s='';
 
-
 for(let i=0;i<h.length;i+=2){
+
 s+=String.fromCharCode(
 parseInt(h.slice(i,i+2),16)
 );
+
 }
 
-
 return s;
+
 },
 
-
 ok(v){
+
 return this.tokens.some(
 t=>v===this.dec(t)
 );
+
 }
+
 };
 
 
 const app={
 
-
 cache:[],
-
 
 lastCopyText:'',
 
-
 toastTimer:null,
-
 
 audio(){},
 
 
 norm(x){
+
 return(x%10+10)%10;
+
 },
 
 
 clamp(v,lo=0,hi=1){
+
 return Math.max(
 lo,
 Math.min(
@@ -1024,26 +1014,27 @@ hi,
 Number(v)||0
 )
 );
+
 },
 
 
 normalizeScores(map){
-const vals=Object.values(map);
 
+const vals=Object.values(map);
 
 const max=Math.max(
 ...vals,
 0
 );
 
-
 if(max<=0){
+
 return Object.fromEntries(
 Object.keys(map)
 .map(k=>[k,0])
 );
-}
 
+}
 
 return Object.fromEntries(
 Object.entries(map)
@@ -1054,149 +1045,130 @@ this.clamp(v/max)
 ]
 )
 );
+
 },
 
 
 sourceBreadthScore(v){
+
 return this.clamp(
 1-
 Math.exp(
 -Math.max(0,v)/1.6
 )
 );
+
 },
 
 
 consensusTier(count,total){
+
 const n=Math.max(
 1,
 total||1
 );
 
-
 if(count>=n)
 return 1;
-
 
 if(count===2 && n===3)
 return .78;
 
-
 if(count>=2)
 return .68;
-
 
 if(count===1)
 return .30;
 
-
 return 0;
+
 },
 
 
 flag(n){
 
-
 n=String(n).toLowerCase();
-
 
 if(/ลาว|lao/.test(n))
 return'🇱🇦';
 
-
 if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))
 return'🇻🇳';
-
 
 if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))
 return'🇲🇲';
 
-
 if(/จีน|china|shanghai/.test(n))
 return'🇨🇳';
-
 
 if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))
 return'🇭🇰';
 
-
 if(/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))
 return'🇯🇵';
-
 
 if(/เกาหลี|korea|kospi/.test(n))
 return'🇰🇷';
 
-
 if(/สิงคโปร์|singapore/.test(n))
 return'🇸🇬';
-
 
 if(/อินเดีย|india|sensex/.test(n))
 return'🇮🇳';
 
-
 if(/รัสเซีย|russia|moscow/.test(n))
 return'🇷🇺';
-
 
 if(/เยอรมัน|germany|dax/.test(n))
 return'🇩🇪';
 
-
 if(/อังกฤษ|uk|ftse|london/.test(n))
 return'🇬🇧';
-
 
 if(/อียิปต์|egypt/.test(n))
 return'🇪🇬';
 
-
 if(/ไต้หวัน|taiwan|tse/.test(n))
 return'🇹🇼';
-
 
 if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))
 return'🇺🇸';
 
-
 if(/ฝรั่งเศส|france|cac/.test(n))
 return'🇫🇷';
-
 
 if(/ออสเตรเลีย|australia|asx/.test(n))
 return'🇦🇺';
 
-
 if(/แคนาดา|canada/.test(n))
 return'🇨🇦';
-
 
 if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n))
 return'🇹🇭';
 
-
 return'🌐';
+
 },
 
 
 parse(text){
 
-
 const z=String(text||'')
 .replace(/\r/g,'')
 .trim();
 
-
 if(!z){
 
-
 return{
+
 records:[],
+
 errors:[
 'ยังไม่มีข้อมูลสำหรับประมวลผล'
 ]
+
 };
+
 }
 
 
@@ -1204,166 +1176,153 @@ const lines=z
 .split('\n')
 .map(v=>v.trim());
 
-
 const records=[];
 const errors=[];
 
-
 let i=0;
-
 
 while(i<lines.length){
 
-
 if(!lines[i]){
-i++;
-continue;
-}
 
+i++;
+
+continue;
+
+}
 
 const m=lines[i]
 .match(
 /^(.+?)\s*\|\s*(.+?)$/
 );
 
-
 if(!m){
-
 
 errors.push(
 `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
 );
 
-
 i++;
+
 continue;
+
 }
 
-
 const name=m[1].trim();
+
 const date=m[2].trim();
 
-
 if(!this.parseDateValue(date)){
-
 
 errors.push(
 `${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 25 ส.ค. 69`
 );
 
-
 i+=1;
+
 continue;
+
 }
 
-
 const n3raw=lines[i+1]||'';
-const n2raw=lines[i+2]||'';
 
+const n2raw=lines[i+2]||'';
 
 const n3=/^[\d\s]+$/.test(n3raw)
 ?n3raw.replace(/\s+/g,'')
 :n3raw;
 
-
 const n2=/^[\d\s]+$/.test(n2raw)
 ?n2raw.replace(/\s+/g,'')
 :n2raw;
 
-
 if(!/^\d{3}$/.test(n3)){
-
 
 errors.push(
 `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
 );
 
-
 i+=1;
+
 continue;
+
 }
 
-
 if(!/^\d{2}$/.test(n2)){
-
 
 errors.push(
 `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
 );
 
-
 i+=2;
+
 continue;
+
 }
 
-
 records.push({
+
 name,
 date,
 n3,
 n2
+
 });
 
-
 i+=3;
+
 }
 
-
 return{
+
 records,
 errors
+
 };
+
 },
 
 
 parseDateValue(date){
 
-
 const s=String(date||'').trim();
-
 
 if(!s)
 return false;
-
 
 if(
 /^\d{1,2}\s+\S+\s+\d{2,4}$/.test(s)
 )
 return true;
 
-
 if(
 /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s)
 )
 return true;
-
 
 if(
 /^\d{1,2}-\d{1,2}-\d{2,4}$/.test(s)
 )
 return true;
 
-
 return false;
+
 },
 
 
 dateKey(date){
 
-
 const s=String(date||'')
 .trim();
-
 
 const m=s.match(
 /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
 );
 
-
 if(m){
 
-
 const months={
+
 'ม.ค.':1,
 'ก.พ.':2,
 'มี.ค.':3,
@@ -1376,195 +1335,176 @@ const months={
 'ต.ค.':10,
 'พ.ย.':11,
 'ธ.ค.':12
-};
 
+};
 
 const month=months[m[2]]||0;
 
-
 let year=Number(m[3]);
-
 
 if(year<100)
 year+=2500;
-
 
 return[
 year,
 String(month).padStart(2,'0'),
 String(Number(m[1])).padStart(2,'0')
 ].join('-');
-}
 
+}
 
 const m2=s.match(
 /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
 );
 
-
 if(m2){
-
 
 let year=Number(m2[3]);
 
-
 if(year<100)
 year+=2500;
-
 
 return[
 year,
 String(Number(m2[2])).padStart(2,'0'),
 String(Number(m2[1])).padStart(2,'0')
 ].join('-');
+
 }
 
-
 return s;
+
 },
 
 
 sortChronological(records){
 
-
 return records
 .map((r,index)=>({
+
 ...r,
 __index:index
+
 }))
 .sort((a,b)=>{
 
-
 const ka=this.dateKey(a.date);
-const kb=this.dateKey(b.date);
 
+const kb=this.dateKey(b.date);
 
 if(ka<kb)
 return-1;
 
-
 if(ka>kb)
 return 1;
 
-
 return a.__index-b.__index;
+
 })
 .map(r=>{
 
-
 const z={...r};
-
 
 delete z.__index;
 
-
 return z;
+
 });
+
 },
 
 
 groupByLottery(records){
 
-
 const groupsMap={};
-
 
 records.forEach((r,index)=>{
 
-
 const key=r.name.trim();
-
 
 if(!groupsMap[key]){
 
-
 groupsMap[key]={
+
 name:key,
 records:[],
 duplicateCount:0,
 conflictCount:0,
 __order:index
+
 };
+
 }
 
-
 groupsMap[key].records.push(r);
-});
 
+});
 
 const groups=Object.values(groupsMap);
 
-
 groups.forEach(g=>{
 
-
 const sorted=this.sortChronological(g.records);
-const byDate=new Map();
-const clean=[];
 
+const byDate=new Map();
+
+const clean=[];
 
 sorted.forEach(r=>{
 
-
 const key=this.dateKey(r.date);
 
-
 if(!byDate.has(key)){
-
 
 byDate.set(
 key,
 r
 );
 
-
 clean.push(r);
 
-
 return;
+
 }
 
-
 const previous=byDate.get(key);
-
 
 if(
 previous.n3===r.n3 &&
 previous.n2===r.n2
 ){
 
-
 g.duplicateCount++;
 
-
 return;
-}
 
+}
 
 g.conflictCount++;
 
-
 const idx=clean.indexOf(previous);
-
 
 if(idx>=0)
 clean[idx]=r;
 
-
 byDate.set(key,r);
-});
 
+});
 
 g.records=this.sortChronological(clean);
-});
 
+});
 
 return groups
 .sort((a,b)=>a.__order-b.__order)
 .map(g=>{
+
 delete g.__order;
+
 return g;
+
 });
+
 },
 
 
@@ -1578,9 +1518,7 @@ H,T,U,R1,R2,
 sumT,sumB,total
 ){
 
-
 const raw=[
-
 
 H+T,
 H+U,
@@ -1593,20 +1531,17 @@ U+R1,
 U+R2,
 R1+R2,
 
-
 sumT+R1,
 sumT+R2,
 sumT+H,
 sumT+T,
 sumT+U,
 
-
 10-H,
 10-T,
 10-U,
 10-R1,
 10-R2,
-
 
 H+T+R1,
 H+U+R2,
@@ -1615,37 +1550,29 @@ T+U+R2,
 H+R1+R2,
 T+R1+R2,
 
-
 sumT-R1,
 sumT-R2,
 sumT+sumB,
 sumT-sumB,
 
-
 H+T-R2,
 T+U-R1,
 H+U-R1,
 
-
 20-(T+R1),
 20-(U+R2),
-
 
 H+T+U-R1,
 H+T+U-R2,
 
-
 10+T-R2,
 10+U-R1,
 
-
 sumT+10-R2,
-
 
 H+R2-T,
 T+R2-H,
 U+R1-H,
-
 
 sumB+H-T,
 sumB+H-U,
@@ -1656,26 +1583,21 @@ T+sumB-U,
 U+sumB-H,
 U+sumB-T,
 
-
 30-(H+T+R1),
 30-(H+U+R2),
 30-(T+U+R1),
 30-(H+R1+R2),
 
-
 H+T+R1-R2,
 H+U+R2-R1,
 T+U+R1-H,
 
-
 sumT+R1-R2,
 sumT+R2-R1,
-
 
 H+T+sumB,
 H+U+sumB,
 T+U+sumB,
-
 
 H+R1+sumT,
 H+R2+sumT,
@@ -1684,7 +1606,6 @@ T+R2+sumT,
 U+R1+sumT,
 U+R2+sumT,
 R1+R2+sumT,
-
 
 10+H+T,
 10+H+U,
@@ -1697,14 +1618,12 @@ R1+R2+sumT,
 10+U+R1,
 10+U+R2,
 
-
 H-T+R2,
 H-U+R1,
 T-U+R2,
 R1-R2+H,
 R1-R2+T,
 R1-R2+U,
-
 
 20-H-T,
 20-H-U,
@@ -1717,13 +1636,12 @@ R1-R2+U,
 20-U-R1,
 20-U-R2,
 
-
 total,
 2*total,
 total+H,
 total+R1
-];
 
+];
 
 const counts=
 Object.fromEntries(
@@ -1733,24 +1651,26 @@ Array.from(
 )
 );
 
-
 const signals=
 raw.map((value,index)=>({
+
 id:index+1,
 value:this.norm(value),
 raw:value
-}));
 
+}));
 
 raw.forEach(v=>{
 counts[this.norm(v)]++;
 });
 
-
 return{
+
 counts,
 signals
+
 };
+
 },
 
 
@@ -1758,67 +1678,67 @@ signals
 ==========================================================
 2 MAIN MODELS
 ==========================================================
-MAIN MODEL 01 = สูตรที่ 1
-หลักสิบบน + หลักสิบล่าง
-
-MAIN MODEL 02 = สูตรที่ 5
-ฐาน 10 คงที่ - หลักหน่วยล่าง
-
-The original formula engine remains intact.
-Only these two formulas are active as main models.
-All remaining formulas continue to act as current-input
-support evidence in the decision layer.
-==========================================================
 */
 buildModels(
 H,T,U,R1,R2,
 sumT
 ){
 
-
 const unit=v=>{
 
-
 const q=Math.abs(v)%10;
-
 
 return[
 q,
 (q+1)%10
 ];
+
 };
 
 
-const raw=[
+/*
+FORMULA 1
+หลักสิบบน + หลักสิบล่าง
+*/
+const model01Base=
+this.norm(T+R1);
 
 
-(T+R1)%10,
-sumT%10,
-(H+R1)%10,
-(U+R2)%10,
-(10-R2)%10
-];
+/*
+FORMULA 5
+ฐาน 10 คงที่ - หลักหน่วยล่าง
+*/
+const model02Base=
+this.norm(10-R2);
 
 
 return[
 
-
 {
+
 id:1,
+
 name:'AI โมเดล 01',
-set:unit(raw[0])
+
+formulaId:1,
+
+set:unit(model01Base)
+
 },
 
-
 {
+
 id:2,
+
 name:'AI โมเดล 02',
-set:unit(raw[4])
+
+formulaId:5,
+
+set:unit(model02Base)
+
 }
 
-
 ];
-
 
 },
 
@@ -1833,16 +1753,12 @@ models,
 anchor
 ){
 
-
 models.forEach(m=>{
-
 
 let range=[];
 let collision=false;
 
-
 for(let o=-2;o<=2;o++){
-
 
 if(
 m.set.includes(
@@ -1850,12 +1766,13 @@ this.norm(anchor+o)
 )
 ){
 
-
 collision=true;
+
 break;
-}
+
 }
 
+}
 
 for(
 let o=collision?-3:-2;
@@ -1863,18 +1780,15 @@ o<=(collision?3:2);
 o++
 ){
 
-
 range.push(
 this.norm(anchor+o)
 );
-}
 
+}
 
 m.pairsMap={};
 
-
 m.set.forEach(src=>{
-
 
 let pairs=range
 .filter(
@@ -1886,12 +1800,9 @@ p!==src &&
 p=>`${src}${p}`
 );
 
-
 let next=(src+1)%10;
 
-
 while(pairs.length<5){
-
 
 if(
 next!==src &&
@@ -1901,16 +1812,15 @@ next!==src &&
 )
 ){
 
-
 pairs.push(
 `${src}${next}`
 );
-}
 
+}
 
 next=(next+1)%10;
-}
 
+}
 
 m.pairsMap[src]=[
 ...new Set(pairs)
@@ -1920,21 +1830,16 @@ p=>p[0]!==p[1]
 )
 .slice(0,5);
 
-
 });
 
-
 });
-
 
 },
 
 
 /*
 ==========================================================
-STATELESS DIGIT / DECISION SCORE ENGINE
-==========================================================
-Current-input only. No historical statistics.
+CURRENT INPUT SUPPORT SCORE
 ==========================================================
 */
 scoreDigits(
@@ -1944,91 +1849,64 @@ H,T,U,R1,R2,
 sumT,sumB,total
 ){
 
-
 const score=Object.fromEntries(
-Array.from({length:10},(_,d)=>[d,{
-
+Array.from(
+{length:10},
+(_,d)=>[d,{
 
 digit:d,
 
-
 modelScore:0,
-
 
 formula100Score:0,
 
-
 radarScore:0,
-
 
 backendScore:0,
 
-
 winSetScore:0,
-
 
 selectorBonus:0,
 
-
 selectorScore:0,
-
 
 historicalScore:0,
 
-
 recentFormScore:0,
-
 
 stabilityScore:0,
 
-
 hotStreakBonus:1,
-
 
 confidence:0,
 
-
 redundancyPenalty:1,
-
 
 modelConsensusCount:0,
 
-
 supportSignals:0,
-
 
 conflictSignals:0,
 
-
 reliabilityScore:0,
-
 
 evidenceScore:0,
 
-
 uncertainty:0,
-
 
 selectionPenalty:1,
 
-
 selectionScore:0,
-
 
 totalScore:0,
 
-
 qualityGate:1,
-
 
 modelId:null,
 
-
 modelSupportScore:0,
 
-
 modelPriority:1,
-
 
 selectedModel:false
 
@@ -2036,20 +1914,14 @@ selectedModel:false
 );
 
 
-/*
-Primary model evidence: two active main models only.
-*/
 for(let d=0;d<=9;d++){
-
 
 const count=
 models.filter(
 m=>m.set.includes(d)
 ).length;
 
-
 score[d].modelConsensusCount=count;
-
 
 score[d].modelScore=
 this.consensusTier(
@@ -2057,24 +1929,18 @@ count,
 models.length
 );
 
-
 const owner=models.find(
 m=>m.set.includes(d)
 );
 
-
-score[d].modelId=owner?.id??null;
-
+score[d].modelId=
+owner?.id??null;
 
 }
 
 
-/*
-Current-input formula support only.
-No historical formula weights.
-*/
-const formulaCounts=F.counts||{};
-
+const formulaCounts=
+F.counts||{};
 
 const maxFormula=
 Math.max(
@@ -2082,9 +1948,7 @@ Math.max(
 0
 );
 
-
 for(let d=0;d<=9;d++){
-
 
 score[d].formula100Score=
 maxFormula>0
@@ -2093,17 +1957,12 @@ maxFormula>0
 )
 :0;
 
-
 }
 
 
-/*
-Auxiliary current-input support.
-*/
 const x=(R1+R2)%10;
 const y=sumT%10;
 const z=total%10;
-
 
 const r1=[
 this.norm(x-1),
@@ -2111,13 +1970,11 @@ x,
 this.norm(x+1)
 ];
 
-
 const r2=[
 this.norm(y-1),
 y,
 this.norm(y+1)
 ];
-
 
 const r3=[
 this.norm(z-1),
@@ -2125,60 +1982,41 @@ z,
 this.norm(z+1)
 ];
 
-
 for(let d=0;d<=9;d++){
 
-
 let h=0;
-
 
 if(r1.includes(d))
 h++;
 
-
 if(r2.includes(d))
 h++;
-
 
 if(r3.includes(d))
 h++;
 
-
 score[d].radarScore=h/3;
-
 
 }
 
 
 const back=[
 
-
 (2*H+R1)%10,
-
-
 (T+R2)%10,
-
-
 sumT%10,
-
-
 Math.abs(T-U)%10,
-
-
 total%10
-
 
 ];
 
 
 for(let d=0;d<=9;d++){
 
-
 score[d].backendScore=
 back.includes(d)
 ?1
 :0;
-
 
 score[d].winSetScore=
 (
@@ -2188,92 +2026,73 @@ d===this.norm(z+5)
 ?1
 :0;
 
-
 }
 
 
-/*
-Current-input evidence model.
-Historical fields remain neutral because this version has
-no historical statistics by design.
-*/
 for(let d=0;d<=9;d++){
-
 
 const v=score[d];
 
-
 const consensus=
 this.consensusTier(
- v.modelConsensusCount,
- models.length
+v.modelConsensusCount,
+models.length
 );
 
-
 const supportValues=[
-
 
 v.formula100Score,
 v.radarScore,
 v.backendScore,
 v.winSetScore
 
-
 ];
-
 
 v.supportSignals=
 supportValues.filter(
 x=>x>=.60
 ).length;
 
-
 v.conflictSignals=
 supportValues.filter(
 x=>x<=.25
 ).length;
-
 
 const supportBreadth=
 this.sourceBreadthScore(
 v.supportSignals
 );
 
-
 const supportStrength=(
-
 
 .45*v.formula100Score+
 .25*v.radarScore+
 .20*v.backendScore+
 .10*v.winSetScore
 
-
 );
-
 
 v.reliabilityScore=
 this.clamp(
 
-
 .65*consensus+
 .35*supportBreadth
 
-
 );
-
 
 v.evidenceScore=
 this.clamp(
 
-
 .70*supportStrength+
 .30*consensus
-
 
 );
 
 
+/*
+ไม่มี historical database ใน engine นี้
+จึงไม่สร้างข้อมูลย้อนหลังปลอม
+*/
 v.historicalScore=.5;
 v.recentFormScore=.5;
 v.stabilityScore=.5;
@@ -2282,13 +2101,9 @@ v.hotStreakBonus=1;
 
 
 /*
-Base decision score for the stateless selector.
-Primary model consensus remains important;
-remaining formula/radar/backend/WinSet layers support the
-current-input decision.
+คะแนนพื้นฐานของเลข
 */
 v.totalScore=
-
 
 .55*consensus+
 .20*v.formula100Score+
@@ -2299,29 +2114,19 @@ v.totalScore=
 
 v.selectorBonus=
 
-
 .045*consensus+
 .030*supportBreadth+
 .025*Math.max(
 0,
- v.evidenceScore-.5
+v.evidenceScore-.5
 );
 
 
-/*
-The legacy one/three-model gate is converted to a two-model
-primary gate. Full agreement remains strongest; a single-model
-candidate remains eligible but must earn support from the
-backend evidence.
-*/
 const primaryGate=
-
 
 v.modelConsensusCount===2
 ?1.00
 :
-
-
 v.modelConsensusCount===1
 ?.62
 :.20;
@@ -2329,24 +2134,20 @@ v.modelConsensusCount===1
 
 const conflictPenalty=
 
-
 1-
 Math.min(
 .18,
 Math.max(
 0,
- v.conflictSignals-1
+v.conflictSignals-1
 )*.06
-)
-;
+);
 
 
 const weakSupportPenalty=
 
-
 v.modelConsensusCount===1 &&
 v.supportSignals===0
-
 
 ?.82
 :1;
@@ -2359,311 +2160,283 @@ weakSupportPenalty;
 
 v.totalScore*=primaryGate;
 
-
 v.totalScore+=
 Math.min(
 .06,
- v.selectorBonus
+v.selectorBonus
 );
-
 
 v.totalScore*=v.selectionPenalty;
 
-
 if(v.modelConsensusCount>0){
-
 
 v.totalScore*=1.05;
 
-
 }
-
 
 v.selectorScore=v.totalScore;
+
 v.selectionScore=v.selectorScore;
 
-
 }
-
-
-/*
-==========================================================
-MODEL-LEVEL DECISION
-==========================================================
-Each main model owns exactly the two digits generated by its
-protected main formula. The remaining current-input support
-layers are aggregated back to model level so the selector can
-choose a model before choosing its two digits.
-
-The pair / เลขเจาะ engine is not involved here and remains
-unchanged below this decision layer.
-==========================================================
-*/
-const modelAssessments=models.map(m=>{
-
-
-const digits=[...m.set];
-
-
-const avgSupportStrength=
- digits.length
- ?digits.reduce((sum,d)=>{
-   const v=score[d];
-   const strength=
-   .45*v.formula100Score+
-   .25*v.radarScore+
-   .20*v.backendScore+
-   .10*v.winSetScore;
-   return sum+strength;
- },0)/digits.length
- :0;
-
-
-const avgBreadth=
- digits.length
- ?digits.reduce((sum,d)=>
-   sum+this.sourceBreadthScore(score[d].supportSignals),0
- )/digits.length
- :0;
-
-
-const avgConflict=
- digits.length
- ?digits.reduce((sum,d)=>
-   sum+(score[d].conflictSignals/4),0
- )/digits.length
- :0;
-
-
-const supportScore=this.clamp(
-.65*avgSupportStrength+
-.25*avgBreadth+
-.10*(1-avgConflict)
-);
 
 
 return{
- id:m.id,
- name:m.name,
- digits,
- supportScore
-};
-});
-
-
-const sortedModels=[...modelAssessments].sort(
-(a,b)=>
- b.supportScore-a.supportScore||
-a.id-b.id
-);
-
-
-const bestModel=sortedModels[0];
-const secondModel=sortedModels[1];
-const modelGap=bestModel && secondModel
-?bestModel.supportScore-secondModel.supportScore
-:0;
-
-
-/*
-Bounded model priority: the stronger model gets a modest advantage,
-never an uncontrolled multiplier. If the two models tie, both remain
-neutral and Model 01 wins only by deterministic id order.
-*/
-const avgModelSupport=modelAssessments.length
-?modelAssessments.reduce((sum,m)=>sum+m.supportScore,0)/modelAssessments.length
-:0;
-
-
-modelAssessments.forEach(m=>{
-
-
-const relative=avgModelSupport>0
-?m.supportScore/avgModelSupport
-:1;
-
-
-m.priority=this.clamp(
-relative,
-.94,
-1.06
-);
-
-
-m.selected=m.id===bestModel?.id;
-
-
-m.modelGap=modelGap;
-});
-
-
-const selectedModelId=bestModel?.id??null;
-
-
-for(const m of modelAssessments){
-
-
-m.digits.forEach(d=>{
-score[d].modelSupportScore=m.supportScore;
-score[d].modelPriority=m.priority;
-score[d].selectedModel=m.id===selectedModelId;
-});
-
-
-}
-
-
-/*
-Only the selected main model is allowed to supply the two primary
-selected digits. This makes the decision explicitly model-first,
-then digit-second, instead of mixing two models into one Top-2 pool.
-*/
-let ranked=
-Object.values(score)
-.filter(v=>
-selectedModelId!==null &&
-score[v.digit].modelId===selectedModelId
-)
-.map(v=>{
-
-
-v.totalScore*=v.modelPriority;
-v.selectorScore=v.totalScore;
-v.selectionScore=v.selectorScore;
-
-
-return v;
-})
-.sort(
-(a,b)=>
-b.selectorScore-a.selectorScore||
-b.formula100Score-a.formula100Score||
-b.supportSignals-a.supportSignals||
-b.backendScore-a.backendScore||
-a.digit-b.digit
-);
-
-
-/*
-The selected model owns exactly two main digits, so both are retained.
-The individual digit score still determines their internal order.
-*/
-ranked=ranked.slice(0,2);
-
-
-/*
-Confidence is a decision-quality indicator from current-input
-agreement and the model-level decision only.
-*/
-ranked.forEach((v,i)=>{
-
-
-const next=ranked[i+1];
-
-
-const margin=next
-?Math.max(
-0,
-v.selectorScore-next.selectorScore
-)
-:v.selectorScore;
-
-
-const consensus=this.consensusTier(
-v.modelConsensusCount,
-models.length
-);
-
-
-const breadth=this.sourceBreadthScore(
-v.supportSignals
-);
-
-
-const marginScore=Math.min(
-1,
-margin/.10
-);
-
-
-const modelScore=v.modelSupportScore||0;
-
-
-const modelConfidence=
-this.clamp(
-.75*modelScore+
-.25*Math.min(
-1,
-Math.max(0,
-modelScore-(
-modelAssessments.find(m=>m.id!==selectedModelId)?.supportScore||0
-)
-)/.10
-)
-);
-
-
-v.qualityGate=
-this.clamp(
-.45*(.85+.15*consensus)+
-.25*(.85+.15*breadth)+
-.30*(.85+.15*modelConfidence)
-);
-
-
-v.confidence=
-this.clamp(
-.24+
-.28*consensus+
-.16*breadth+
-.10*marginScore+
-.12*modelConfidence+
-.06*v.backendScore-
-.08*(v.conflictSignals/4)
-);
-
-
-});
-
-
-return{
-
 
 score,
 
-
 allowed:new Set(
 models.flatMap(m=>m.set)
-),
-
-
-modelAssessments,
-
-
-selectedModelId,
-
-
-selectedModel:bestModel||null,
-
-
-modelGap,
-
-
-top:ranked,
-
-
-ranked
-
+)
 
 };
-
 
 },
 
 
 /*
 ==========================================================
-PROTECTED PAIR SELECTION
+TOURNAMENT ENGINE
+==========================================================
+
+ROUND 1
+- Model 01: digit 1 vs digit 2
+- Model 02: digit 1 vs digit 2
+
+ROUND 2 / FINAL
+- Winner Model 01 vs Winner Model 02
+
+The final winner is TOP 1 only.
+==========================================================
+*/
+tournament(
+models,
+score
+){
+
+const compareDigits=(a,b)=>{
+
+if(!a)
+return b;
+
+if(!b)
+return a;
+
+
+/*
+1. selectorScore
+2. support evidence
+3. backend support
+4. formula support
+5. deterministic digit order
+*/
+
+if(
+Math.abs(
+a.selectorScore-b.selectorScore
+)>0.000001
+){
+
+return a.selectorScore>b.selectorScore
+?a
+:b;
+
+}
+
+if(
+Math.abs(
+a.evidenceScore-b.evidenceScore
+)>0.000001
+){
+
+return a.evidenceScore>b.evidenceScore
+?a
+:b;
+
+}
+
+if(
+a.backendScore!==b.backendScore
+){
+
+return a.backendScore>b.backendScore
+?a
+:b;
+
+}
+
+if(
+a.formula100Score!==b.formula100Score
+){
+
+return a.formula100Score>b.formula100Score
+?a
+:b;
+
+}
+
+return a.digit<=b.digit
+?a
+:b;
+
+};
+
+
+const modelRounds=
+models.map(model=>{
+
+const first=score[model.set[0]];
+const second=score[model.set[1]];
+
+const winner=
+compareDigits(
+first,
+second
+);
+
+return{
+
+modelId:model.id,
+
+modelName:model.name,
+
+candidates:[
+first,
+second
+],
+
+winner,
+
+margin:
+Math.abs(
+first.selectorScore-
+second.selectorScore
+)
+
+};
+
+});
+
+
+const winner01=
+modelRounds.find(
+x=>x.modelId===1
+)?.winner||null;
+
+const winner02=
+modelRounds.find(
+x=>x.modelId===2
+)?.winner||null;
+
+
+/*
+FINAL:
+ผู้ชนะของแต่ละ Main Model มาแข่งกัน
+*/
+const finalWinner=
+compareDigits(
+winner01,
+winner02
+);
+
+
+const finalLoser=
+finalWinner===winner01
+?winner02
+:winner01;
+
+
+const finalMargin=
+finalWinner&&finalLoser
+?
+Math.abs(
+finalWinner.selectorScore-
+finalLoser.selectorScore
+)
+:0;
+
+
+/*
+Model winner
+*/
+const winningModelId=
+finalWinner?.modelId??null;
+
+
+/*
+Confidence:
+- คะแนนตัวชนะ
+- margin รอบ Final
+- support evidence
+- model support
+*/
+if(finalWinner){
+
+const finalMarginScore=
+this.clamp(
+finalMargin/.10
+);
+
+const supportBreadth=
+this.sourceBreadthScore(
+finalWinner.supportSignals
+);
+
+const baseConfidence=
+
+.38*this.clamp(
+finalWinner.selectorScore
+)+
+
+.22*finalMarginScore+
+
+.22*this.clamp(
+finalWinner.evidenceScore
+)+
+
+.18*supportBreadth;
+
+finalWinner.confidence=
+this.clamp(
+.35+
+.65*baseConfidence
+);
+
+finalWinner.finalMargin=
+finalMargin;
+
+finalWinner.finalOpponent=
+finalLoser?.digit??null;
+
+finalWinner.finalWinner=true;
+
+}
+
+
+return{
+
+modelRounds,
+
+winner01,
+
+winner02,
+
+finalWinner,
+
+finalLoser,
+
+finalMargin,
+
+winningModelId
+
+};
+
+},
+
+
+/*
+==========================================================
+PROTECTED PAIR CANDIDATES
 ==========================================================
 */
 collectPairCandidates(
@@ -2672,9 +2445,7 @@ models,
 score
 ){
 
-
 const candidates=[];
-
 
 models
 .filter(
@@ -2682,13 +2453,11 @@ m=>m.set.includes(digit)
 )
 .forEach(m=>{
 
-
 const sourceStrength=
 Math.max(
 0,
 Math.min(
 1,
-
 
 .70*
 (
@@ -2696,16 +2465,13 @@ Math.min(
 1.30
 )+
 
-
 .30*
 (
 score[digit]?.reliabilityScore??.5
 )
 
-
 )
 );
-
 
 const digitStrength=
 score[digit]
@@ -2714,7 +2480,6 @@ score[digit].selectorScore
 :
 0;
 
-
 const modelConsensus=
 score[digit]
 ?
@@ -2722,54 +2487,40 @@ score[digit].modelScore
 :
 0;
 
-
 (
 m.pairsMap[digit]||[]
 )
 .forEach(pair=>{
 
-
 const key=
 this.pairKey(pair);
 
-
 const pairScore=
-
 
 .55*sourceStrength+
 
-
 .30*digitStrength+
-
 
 .15*modelConsensus;
 
-
 candidates.push({
-
 
 pair:String(pair),
 
-
 key,
-
 
 pairScore,
 
-
 modelId:m.id
 
+});
 
 });
 
-
 });
-
-
-});
-
 
 return candidates;
+
 },
 
 
@@ -2779,7 +2530,6 @@ models,
 score
 ){
 
-
 const candidates=
 this.collectPairCandidates(
 digit,
@@ -2787,12 +2537,9 @@ models,
 score
 );
 
-
 const bestByKey={};
 
-
 candidates.forEach(c=>{
-
 
 if(
 !bestByKey[c.key] ||
@@ -2800,15 +2547,11 @@ c.pairScore>
 bestByKey[c.key].pairScore
 ){
 
-
 bestByKey[c.key]=c;
-
 
 }
 
-
 });
-
 
 return Object.values(
 bestByKey
@@ -2817,6 +2560,7 @@ bestByKey
 (a,b)=>
 b.pairScore-
 a.pairScore||
+
 Number(a.key)-
 Number(b.key)
 )
@@ -2825,19 +2569,15 @@ Number(b.key)
 v=>v.pair
 );
 
-
 },
 
 
 pairKey(pair){
 
-
 const p=String(pair);
-
 
 if(!/^\d{2}$/.test(p))
 return p;
-
 
 return[
 p[0],
@@ -2846,90 +2586,66 @@ p[1]
 .sort()
 .join('');
 
-
 },
 
 
 buildConsensus(pairSets){
 
-
 const all=[];
-
 
 pairSets.forEach(
 (set,rowIndex)=>{
 
-
 set.slice(0,5)
 .forEach(pair=>{
 
-
 all.push({
-
 
 pair:String(pair),
 
-
 rowIndex
 
-
 });
 
-
 });
-
 
 });
 
 
 const counts={};
 
-
 all.forEach(item=>{
-
 
 const key=
 this.pairKey(
 item.pair
 );
 
-
 if(!counts[key]){
-
 
 counts[key]={
 
-
 key,
-
 
 score:0,
 
-
 rows:new Set(),
-
 
 pairs:new Set()
 
-
 };
-
 
 }
 
-
 counts[key].score++;
-
 
 counts[key].rows.add(
 item.rowIndex
 );
 
-
 counts[key].pairs.add(
 item.pair
 );
-
 
 });
 
@@ -2943,10 +2659,8 @@ counts
 b.score-
 a.score||
 
-
 b.rows.size-
 a.rows.size||
-
 
 Number(a.key)-
 Number(b.key)
@@ -2955,64 +2669,49 @@ Number(b.key)
 
 const colorMap={};
 
-
 ranked
 .slice(0,6)
 .forEach(
 (item,index)=>{
-let color;
 
+let color;
 
 if(index<2)
 color='gold';
 
-
 else if(index<4)
 color='silver';
-
 
 else
 color='rose';
 
-
 colorMap[item.key]={
-
 
 color,
 
-
 rank:index+1,
-
 
 score:item.score
 
-
 };
-
 
 });
 
 
 return{
 
-
 counts,
-
 
 ranked,
 
-
 colorMap
 
-
 };
-
 
 },
 
 
 sortPairs(pairs){
-
 
 return pairs
 .map(String)
@@ -3022,7 +2721,6 @@ Number(a)-
 Number(b)
 );
 
-
 },
 
 
@@ -3031,33 +2729,26 @@ pair,
 colorMap
 ){
 
-
 const info=
 colorMap[
 this.pairKey(pair)
 ];
 
-
 if(!info)
 return'pair';
-
 
 if(info.color==='gold')
 return'pair pair-gold';
 
-
 if(info.color==='silver')
 return'pair pair-silver';
 
-
 return'pair pair-rose';
-
 
 },
 
 
 formatPct(v){
-
 
 return`${Math.round(
 Math.max(
@@ -3069,29 +2760,23 @@ v
 )*1000
 )/10}%`;
 
-
 },
 
 
 formatDate(date){
 
-
 const s=
 String(date||'')
 .trim();
-
 
 if(
 /\d+\s+\S+\s+\d+/.test(s)
 ){
 
-
 const p=
 s.split(/\s+/);
 
-
 if(p.length>=3){
-
 
 return[
 p[0],
@@ -3099,14 +2784,12 @@ p[1],
 p.slice(2).join(' ')
 ].join(' · ');
 
-
 }
 
-
 }
-
 
 return s;
+
 },
 
 
@@ -3120,38 +2803,34 @@ n3,
 n2
 ){
 
-
 const d3=
 n3.split('').map(Number);
 
-
 const d2=
 n2.split('').map(Number);
-
 
 const[
 H,T,U
 ]=d3;
 
-
 const[
 R1,R2
 ]=d2;
 
-
 const sumT=
 H+T+U;
 
-
 const sumB=
 R1+R2;
-
 
 const total=
 sumT+
 sumB;
 
 
+/*
+Original formula engine remains available as backend support.
+*/
 const F=
 this.formulas(
 H,T,U,
@@ -3162,6 +2841,9 @@ total
 );
 
 
+/*
+Only two Main Models.
+*/
 const models=
 this.buildModels(
 H,T,U,
@@ -3170,11 +2852,13 @@ sumT
 );
 
 
+/*
+Protected pair generation remains separate.
+*/
 const anchor=
 this.norm(
 7-H
 );
-
 
 this.buildPairs(
 models,
@@ -3182,6 +2866,9 @@ anchor
 );
 
 
+/*
+Current-input support scoring.
+*/
 const scored=
 this.scoreDigits(
 models,
@@ -3194,76 +2881,119 @@ total
 );
 
 
-const top=
-scored.top;
+/*
+Tournament:
+A1 vs A2
+B1 vs B2
+Winner A vs Winner B
+*/
+const tournament=
+this.tournament(
+models,
+scored.score
+);
 
 
-const pairSets=
-top.map(
-t=>
+/*
+Only ONE digit survives.
+*/
+const finalWinner=
+tournament.finalWinner;
+
+const top1Digits=
+finalWinner
+?
+[finalWinner.digit]
+:
+[];
+
+
+/*
+Only the selected TOP 1 goes into protected pair engine.
+*/
+const pairSet=
+finalWinner
+?
 this.bestPairsForDigit(
-t.digit,
+finalWinner.digit,
 models,
 scored.score
 )
-);
+:[ ];
 
 
 const consensus=
 this.buildConsensus(
-pairSets
+[pairSet]
 );
 
 
 return{
 
+top1Digit:
+finalWinner
+?
+finalWinner.digit
+:null,
 
 top2Digits:
-top.map(
-v=>v.digit
-),
+top1Digits,
 
-
-pairSets:
-pairSets.map(
-v=>v.slice(0,5)
-),
-
+pairSets:[
+pairSet
+],
 
 modelScores:
 scored.score,
 
-
 modelCount:2,
-
 
 models,
 
+tournament,
+
+selectedModelId:
+tournament.winningModelId,
+
+selectedModel:
+models.find(
+m=>m.id===
+tournament.winningModelId
+)||null,
+
+confidence:
+finalWinner
+?
+finalWinner.confidence
+:0,
+
+finalMargin:
+tournament.finalMargin,
 
 consensus
 
-
 };
-
 
 },
 
 
+/*
+==========================================================
+CAPTURE
+==========================================================
+*/
 async captureCard(
 cardId,
 name
 ){
-
 
 const el=
 document.getElementById(
 cardId
 );
 
-
 if(!el)
 return;
-
 
 const controls=[
 ...el.querySelectorAll(
@@ -3271,9 +3001,7 @@ const controls=[
 )
 ];
 
-
 try{
-
 
 if(
 typeof html2canvas==='undefined'
@@ -3282,18 +3010,17 @@ throw new Error(
 'ไม่พบระบบแคปภาพ กรุณาเปิดอินเทอร์เน็ตแล้วลองใหม่'
 );
 
-
 controls.forEach(
 x=>
 x.style.visibility='hidden'
 );
-
 
 const canvas=
 await html2canvas(
 el,
 {
 backgroundColor:'#ffffff',
+
 scale:
 Math.min(
 3,
@@ -3302,15 +3029,16 @@ Math.max(
 window.devicePixelRatio||2
 )
 ),
+
 useCORS:true,
+
 logging:false
+
 }
 );
 
-
 const link=
 document.createElement('a');
-
 
 const safe=
 String(
@@ -3325,53 +3053,41 @@ name||'lottery'
 60
 );
 
-
 link.download=
 `${safe||'lottery'}_card.png`;
-
 
 link.href=
 canvas.toDataURL(
 'image/png'
 );
 
-
 link.click();
-
 
 this.show(
 '✓ แคปการ์ดแล้ว'
 );
 
-
 }catch(err){
 
-
 console.error(err);
-
 
 this.show(
 '❌ แคปภาพไม่สำเร็จ'
 );
 
-
 }finally{
-
 
 controls.forEach(
 x=>
 x.style.visibility=''
 );
 
-
 }
-
 
 },
 
 
 copy(text){
-
 
 navigator.clipboard
 ?.writeText(text)
@@ -3380,64 +3096,49 @@ navigator.clipboard
 )
 .catch(()=>{
 
-
 const t=
 document.createElement(
 'textarea'
 );
 
-
 t.value=text;
-
 
 document.body.appendChild(t);
 
-
 t.select();
-
 
 document.execCommand(
 'copy'
 );
 
-
 t.remove();
-
 
 this.show();
 
-
 });
-
 
 },
 
 
 show(message){
 
-
 const t=
 $('toast');
-
 
 if(message)
 t.textContent=message;
 
-
 t.classList.add('show');
-
 
 clearTimeout(
 this.toastTimer
 );
-
 
 this.toastTimer=
 setTimeout(
 ()=>t.classList.remove('show'),
 1500
 );
-
 
 },
 
@@ -3446,59 +3147,36 @@ setTimeout(
 ==========================================================
 CALCULATE
 ==========================================================
-Current-input / stateless mode.
-
-
-1. Parse current input
-2. แยกประเภทหวย
-3. สำหรับแต่ละประเภท ใช้ข้อมูลปัจจุบันเท่านั้น
-4. 2 Main Models
-5. Candidate Pool
-6. Decision Layer จัดอันดับ Top 2
-7. Protected pair / เลขเจาะ ทำงานต่อจาก Top 2
-8. แสดงผลโดยไม่เปิดเผยสูตร
-==========================================================
 */
 async calculate(){
-
 
 const parsed=
 this.parse(
 $('bulkInput').value
 );
 
-
 if(!parsed.records.length){
-
 
 $('result').innerHTML=
 '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
 
-
 return;
 
-
 }
-
 
 const scanner=
 $('scanner');
 
-
 const btn=
 $('run');
 
-
 btn.disabled=true;
 
-
 scanner.style.display='block';
-
 
 const scan=
 msg=>
 $('scanText').textContent=msg;
-
 
 const yieldUI=
 ()=>new Promise(
@@ -3508,75 +3186,54 @@ resolve
 )
 );
 
-
 try{
-
 
 scan(
 'อ่านข้อมูล 3 ตัวบน + 2 ตัวล่าง...'
 );
 
-
 await yieldUI();
 
-
 this.cache=[];
-
 
 const groups=
 this.groupByLottery(
 parsed.records
 );
 
-
 const cards=[];
 const outputData=[];
 const copyBlocks=[];
 
-
 let groupIndex=0;
-
 
 for(
 const group of groups
 ){
 
-
 groupIndex++;
-
 
 const records=
 group.records;
-
 
 if(!records.length)
 continue;
 
 
 /*
-Stateless mode:
-
-
-Each supplied record is treated as the current input only.
-
-
-If more than one record is pasted for the same lottery,
-only the latest chronological record is processed.
-No historical statistics are retained or used.
+ใช้รายการล่าสุดของหวยนั้นเป็น Current Input
+ไม่มีการสร้าง historical statistics
 */
 const latest=
 records[
 records.length-1
 ];
 
-
 scan(
 `ประมวลผล ${group.name} • ${groupIndex}/${groups.length}`
 );
 
-
 await yieldUI();
-
 
 const a=
 this.run(
@@ -3584,16 +3241,12 @@ latest.n3,
 latest.n2
 );
 
-
 this.cache.push({
-
 
 group:
 group.name,
 
-
 result:a
-
 
 });
 
@@ -3602,12 +3255,9 @@ result:a
 ======================================================
 CANDIDATE POOL GUARD
 ======================================================
-Top 2 must come from the selected 2-model main-model decision.
-======================================================
 */
 const allowed=
 new Set();
-
 
 a.models.forEach(
 m=>
@@ -3616,27 +3266,17 @@ d=>allowed.add(d)
 )
 );
 
-
 const valid=
-a.top2Digits.length===2&&
-a.top2Digits.every(
-d=>allowed.has(d)
-)&&
-new Set(
-a.top2Digits
-).size===2;
-
+a.top1Digit!==null &&
+allowed.has(a.top1Digit);
 
 if(!valid){
 
-
 parsed.errors.push(
-`${group.name} | ${latest.date}: ไม่สามารถคัดเลข 2 ตัวจาก Candidate Pool ของ 2 Main Models ได้`
+`${group.name} | ${latest.date}: ไม่สามารถคัดเลข TOP 1 จาก Candidate Pool ของ 2 Main Models ได้`
 );
 
-
 continue;
-
 
 }
 
@@ -3645,39 +3285,28 @@ continue;
 ======================================================
 DISPLAY
 ======================================================
-Only Model 01 / 02 exist internally as main models.
-No formula names are exposed to the user.
-======================================================
 */
 
-
-const rows=
-a.top2Digits
-.map(
-(d,k)=>{
-
+const digit=
+a.top1Digit;
 
 const sourcePairs=
-(a.pairSets[k]||[])
+(a.pairSets[0]||[])
 .slice(0,5);
-
 
 const sorted=
 this.sortPairs(
 sourcePairs
 );
 
-
 const pairHTML=
 sorted
 .map(pair=>{
-
 
 const info=
 a.consensus.colorMap[
 this.pairKey(pair)
 ];
-
 
 const title=
 info
@@ -3685,7 +3314,6 @@ info
 `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
 :
 'เลขเจาะจาก 2 Main Models';
-
 
 return`
 <span
@@ -3699,63 +3327,55 @@ ${esc(pair)}
 </span>
 `;
 
-
 })
 .join('');
 
 
-const digitClass=
-k===0
-?
-'digit digit-gold'
-:
-'digit digit-silver';
+/*
+เลขเด่นเหลือเพียงตัวเดียว
+*/
+const row=`
 
-
-return`
 <div class="row">
-<span
-class="${digitClass}"
-aria-label="เลขเด่นอันดับ ${k+1}"
->
-${esc(d)}
-</span>
 
+<span
+class="digit digit-gold"
+aria-label="เลขเด่น"
+>
+${esc(digit)}
+</span>
 
 <span class="sep">
 :
 </span>
 
-
 <div class="pairs">
 ${pairHTML}
 </div>
 
-
 </div>
+
 `;
 
 
-})
-.join('');
-
-
 const footer=`
+
 <div class="brand-footer">
+
 <span class="brand-star">
 ✦
 </span>
-
 
 <span>
 บ้านเงินกอง
 </span>
 
-
 <span class="brand-star">
 ✦
 </span>
+
 </div>
+
 `;
 
 
@@ -3771,52 +3391,41 @@ const cardId=
 
 cards.push(`
 
-
 <article
 class="lottery"
 id="${cardId}"
 data-lottery-card="true"
 >
 
-
 <div class="lottery-head">
-
 
 <div>
 
-
 <div class="lottery-name">
-
 
 <span class="flag">
 ${this.flag(group.name)}
 </span>
 
-
 <span>
 ${esc(group.name)}
 </span>
 
-
 </div>
-
 
 <div class="date">
 ${esc(nextDate)}
 </div>
 
-
 </div>
 
-
 <div class="vip-label"></div>
-
 
 </div>
 
 
 <div class="rows">
-${rows}
+${row}
 </div>
 
 
@@ -3824,7 +3433,6 @@ ${rows}
 class="card-actions"
 data-no-capture="true"
 >
-
 
 <button
 class="card-capture"
@@ -3834,55 +3442,36 @@ data-capture-name="${esc(group.name)}"
 📷 แคปการ์ด
 </button>
 
-
 </div>
 
 
 ${footer}
 
-
 </article>
-
 
 `);
 
 
 copyBlocks.push([
 
-
 `${this.flag(group.name)} ${group.name} | ${nextDate}`,
 
-
-...a.top2Digits.map(
-(d,k)=>
-`${d} : ${
-this.sortPairs(
-(a.pairSets[k]||[])
-.slice(0,5)
-).join('-')}`
-)
-
+`${digit} : ${sorted.join('-')}`
 
 ].join('\n'));
 
 
 outputData.push({
 
-
 group,
-
 
 latest,
 
-
 a,
-
 
 nextDate
 
-
 });
-
 
 }
 
@@ -3891,20 +3480,15 @@ scan(
 'ตรวจสอบความสอดคล้องของผลลัพธ์...'
 );
 
-
 await yieldUI();
-
 
 scan(
 'FINALIZING...'
 );
 
-
 await yieldUI();
 
-
 scanner.style.display='none';
-
 
 btn.disabled=false;
 
@@ -3914,25 +3498,25 @@ copyBlocks.join(
 '\n\n'
 );
 
-
 this.lastCopyText=
 all;
 
 
 $('result').innerHTML=`
 
-
 <div class="summary">
 
-
 <span>
+
 ประมวลผลสำเร็จ
+
 <strong>
 ${outputData.length}
 </strong>
-ประเภท
-</span>
 
+ประเภท
+
+</span>
 
 <button
 class="copy"
@@ -3940,7 +3524,6 @@ id="copyTop"
 >
 📋 COPY ALL
 </button>
-
 
 </div>
 
@@ -3970,13 +3553,11 @@ id="copyBottom"
 📋 คัดลอกหวยทั้งหมด
 </button>
 
-
 `;
 
 
 $('copyTop').onclick=
 ()=>this.copy(all);
-
 
 $('copyBottom').onclick=
 ()=>this.copy(all);
@@ -3984,7 +3565,6 @@ $('copyBottom').onclick=
 
 $('copyInput').disabled=
 !all;
-
 
 $('copyInput').onclick=
 ()=>this.copy(
@@ -3998,71 +3578,57 @@ $('result')
 )
 .forEach(btn=>{
 
-
 btn.onclick=
 ()=>this.captureCard(
 btn.dataset.captureCard,
 btn.dataset.captureName
 );
 
-
 });
 
 
 $('result').scrollIntoView({
 
-
 behavior:'smooth',
 
-
 block:'start'
-
 
 });
 
 
 }catch(err){
 
-
 scanner.style.display='none';
-
 
 btn.disabled=false;
 
-
 $('result').innerHTML=
 `
-<div class="errorbox">
 
+<div class="errorbox">
 
 ❌ เกิดข้อผิดพลาดระหว่างประมวลผล:
 
-
 ${esc(err?.message||err)}
 
-
 </div>
+
 `;
 
-
 }
-
 
 },
 
 
 nextDateLabel(records){
 
-
 if(!records.length)
 return'';
-
 
 const latest=
 records[
 records.length-1
 ];
-
 
 const s=
 String(
@@ -4070,29 +3636,24 @@ latest.date||''
 )
 .trim();
 
-
 const m=
 s.match(
 /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
 );
 
-
 if(m){
-
 
 const day=
 Number(m[1]);
 
-
 let year=
 Number(m[3]);
-
 
 if(year<100)
 year+=2500;
 
-
 const months=[
+
 'ม.ค.',
 'ก.พ.',
 'มี.ค.',
@@ -4105,15 +3666,13 @@ const months=[
 'ต.ค.',
 'พ.ย.',
 'ธ.ค.'
-];
 
+];
 
 const monthIndex=
 months.indexOf(m[2]);
 
-
 if(monthIndex>=0){
-
 
 let d=
 new Date(
@@ -4122,69 +3681,57 @@ monthIndex,
 day
 );
 
-
 d.setDate(
 d.getDate()+1
 );
 
-
 return[
+
 String(d.getDate()),
+
 months[d.getMonth()],
+
 String(d.getFullYear()+543)
+
 ].join(' ');
 
-
 }
 
-
 }
-
 
 return'งวดถัดไป';
 
-
 }
-
 
 };
 
 
 function login(){
 
-
 const value=
 $('password').value;
-
 
 if(
 sec.ok(value)
 ){
 
-
 $('login').classList.remove(
 'active'
 );
-
 
 $('console').classList.add(
 'active'
 );
 
-
 $('loginErr').style.display=
 'none';
 
-
 }else{
-
 
 $('loginErr').style.display=
 'block';
 
-
 }
-
 
 }
 
@@ -4197,10 +3744,8 @@ $('password').addEventListener(
 'keydown',
 e=>{
 
-
 if(e.key==='Enter')
 login();
-
 
 });
 
@@ -4212,42 +3757,32 @@ $('run').onclick=
 $('clearInput').onclick=
 ()=>{
 
-
 $('bulkInput').value='';
-
 
 $('result').innerHTML='';
 
-
 $('scanner').style.display='none';
-
 
 $('run').disabled=false;
 
-
 $('copyInput').disabled=true;
-
 
 app.lastCopyText='';
 
-
 app.cache=[];
 
-
 $('bulkInput').focus();
-
 
 app.show(
 '✓ ล้างข้อมูลแล้ว'
 );
 
-
 };
 
 
 })();
+
 </script>
 
-
 </body>
-   </html>
+ </html>
