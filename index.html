@@ -1,38 +1,4344 @@
 <!DOCTYPE html><!--MESTER LOTTO VIP+ V12.7
 ============================================================
-UPGRADE FROM V12.6 — WALK-FORWARD STABILITY ENGINE
+UPGRADE FROM V12.6 — ELITE TOP-1 SELECTION / SMALL-SAMPLE HARDENING
 ============================================================
 IMPORTANT:
 - UI / layout / capture / buttons remain unchanged.
-- PROTECTED เลขเจาะ / Pair Engine remains unchanged.
-- Model 01 and Model 02 formulas remain unchanged.
-- Model 03 formula concept remains unchanged.
-- Added walk-forward calibration without future-data leakage.
-- History is capped at the latest 10 chronological draws.
-- Adaptive model weighting for small samples.
-- Stronger disagreement / conflict control.
-- Sample-size reliability gate.
-- Stability gate to reduce overfit from tiny samples.
-- TOP 1 remains ONE digit only.
-- Auto-login remains enabled after authorization.
-============================================================--><html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script><title>Mester Lotto VIP+ — Multi Lottery Engine V12.7</title><style>:root{--bg:#f8f5ef;--panel:#fffdf9;--line:#e8dfcf;--text:#403a31;--muted:#8b8173;--gold:#b8944a;--gold2:#806329;--rose:#b98279;--shadow:0 14px 40px rgba(79,58,31,.08);}*{box-sizing:border-box;}html{scroll-behavior:smooth;}body{margin:0;background:radial-gradient(circle at 15% 10%,rgba(195,154,67,.08),transparent 25%),radial-gradient(circle at 85% 20%,rgba(185,130,121,.06),transparent 25%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}button,input,textarea{font:inherit;}button{cursor:pointer;}#snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}.shell{position:relative;z-index:1;min-height:100vh;padding:18px 12px 40px;}.app{width:min(760px,100%);margin:0 auto;}.inner{padding:12px;}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}.brand{display:flex;align-items:center;gap:10px;}.logo{width:37px;height:37px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#d3b16d,#806329);color:#fff;font-weight:900;font-size:.72rem;box-shadow:0 8px 18px rgba(128,99,41,.18);}.brand b{display:block;font-size:.78rem;letter-spacing:.1px;}.brand small{display:block;margin-top:2px;font-size:.48rem;color:var(--muted);font-weight:600;}.pill{padding:6px 9px;border:1px solid var(--line);border-radius:99px;background:#fffaf0;color:#806329;font-size:.45rem;font-weight:800;white-space:nowrap;}.hero{padding:18px;margin-bottom:14px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));box-shadow:var(--shadow);}.hero-tag{font-size:.43rem;font-weight:900;letter-spacing:1.2px;color:var(--gold2);}.hero h1{margin:7px 0 5px;font-size:1.55rem;line-height:1.15;}.hero h1 em{font-style:normal;color:var(--gold2);}.hero p{margin:0;font-size:.55rem;line-height:1.65;color:var(--muted);}.panel{background:rgba(255,253,249,.96);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);}.login{display:none;}.login.active{display:block;}.login .panel{padding:16px;}.label{display:block;margin-bottom:8px;font-size:.54rem;font-weight:900;color:#806329;}.password{width:100%;height:43px;padding:0 13px;border:1px solid var(--line);border-radius:12px;outline:none;background:#fff;color:var(--text);font-size:.62rem;}.password:focus{border-color:#c6a762;box-shadow:0 0 0 3px rgba(195,154,67,.10);}.btn{width:100%;height:43px;margin-top:9px;border:0;border-radius:12px;background:linear-gradient(135deg,#b8944a,#806329);color:#fff;font-weight:900;font-size:.59rem;}.err{display:none;margin-top:9px;padding:9px 11px;border-radius:11px;background:#fff0f1;border:1px solid #f0c9cd;color:#a83d46;font-size:.53rem;line-height:1.6;}.console{display:none;}.console.active{display:block;}.bulkbox{padding:14px;}.bulkbox label{display:block;margin-bottom:7px;font-size:.55rem;font-weight:900;color:#806329;}.bulk{display:block;width:100%;min-height:260px;resize:vertical;padding:12px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--text);outline:none;font-family:"IBM Plex Mono",monospace;font-size:.58rem;line-height:1.65;}.bulk:focus{border-color:#c6a762;box-shadow:0 0 0 3px rgba(195,154,67,.10);}.actions{padding:0 14px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}.run{height:43px;border:0;border-radius:12px;background:linear-gradient(135deg,#b8944a,#806329);color:#fff;font-size:.59rem;font-weight:900;}.copy{height:43px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#806329;font-size:.59rem;font-weight:900;}.clear{color:#8b8173;}.run:disabled{opacity:.55;cursor:not-allowed;}.scanner{display:none;padding:10px 14px;border-top:1px solid var(--line);font-size:.52rem;color:var(--muted);}.scanner span{font-weight:800;color:#806329;}.result{margin-top:14px;}.summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;margin-bottom:9px;border:1px solid var(--line);border-radius:14px;background:#fffdf9;font-size:.54rem;color:var(--muted);}.summary strong{color:#806329;font-size:.72rem;margin:0 2px;}.lottery{overflow:hidden;margin-bottom:9px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow);}.lottery-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px 9px 18px;background:linear-gradient(135deg,#fff,#fbf7ed);}.lottery-name{font-weight:800;font-size:.72rem;}.flag{margin-right:5px;}.date{font-size:.52rem;color:var(--muted);margin-top:2px;}.vip-label{display:none;}.rows{padding:4px 7px 2px;}.row{display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:5px 7px 5px 7px;border-bottom:1px solid #f0eadf;}.row:last-child{border-bottom:0;}.row-label{font-size:.55rem;color:var(--muted);}.row-value{font-family:"IBM Plex Mono",monospace;font-weight:800;font-size:.9rem;}.row-value.top{color:#9c782e;}.digit{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;font-family:"IBM Plex Mono",monospace;font-weight:900;font-size:.92rem;}.digit-gold{background:#fbf1d9;border:1px solid #e4ca8f;color:#806329;}.digit-silver{background:#f5f1eb;border:1px solid #ddd5c9;color:#625a50;}.sep{font-family:"IBM Plex Mono",monospace;font-weight:800;color:#b3a694;}.pairs{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px;margin-left:4px;}.pair{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:24px;padding:0 5px;border-radius:7px;border:1px solid #e7dfd3;background:#fff;font-family:"IBM Plex Mono",monospace;font-size:.51rem;font-weight:800;color:#645b50;}.pair-gold{border-color:#d9bd79;background:#fff8e7;color:#806329;}.pair-silver{border-color:#d7d0c6;background:#f8f5ef;color:#665e54;}.pair-rose{border-color:#e5c7c1;background:#fff5f3;color:#95675f;}.card-actions{padding:0;flex:0 0 auto;}.card-capture{width:auto;min-width:72px;height:34px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#80652b;font-size:.54rem;font-weight:800;}.footer{padding:5px 10px;border-top:1px solid var(--line);font-size:.5rem;color:var(--muted);}.copyall{width:100%;height:43px;border:0;border-radius:12px;color:#fff;background:linear-gradient(135deg,#b8944a,#806329);font-weight:800;}.logout{margin-top:9px;width:100%;height:41px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--muted);font-size:.57rem;font-weight:700;}.brand-footer{display:flex;justify-content:center;align-items:center;gap:7px;padding-top:9px;padding-bottom:6px;color:#80652b;font-size:.44rem;font-weight:800;letter-spacing:.2px;}.brand-star{color:#c39a43;font-size:.58rem;}.toast{position:fixed;left:50%;bottom:22px;z-index:9;transform:translate(-50%,20px);opacity:0;padding:9px 15px;border-radius:99px;color:#fff;background:#806329;font-size:.55rem;font-weight:700;transition:.2s;pointer-events:none;}.toast.show{opacity:1;transform:translate(-50%,0);}.errorbox{padding:12px;border-radius:14px;border:1px solid #f0c9cd;background:#fff0f1;color:#a83d46;font-size:.6rem;line-height:1.7;}@media(max-width:390px){.bulk{min-height:250px;}.pairs{gap:2px;}.pair{min-width:30px;height:23px;font-size:.50rem;padding:0 4px;}.row{min-height:39px;padding:3px 4px 3px 7px;gap:3px;}.digit{font-size:.92rem;}}@media(max-width:420px){.lottery{padding:0;}.lottery-head{padding-left:18px;padding-right:1px;}.vip-label{font-size:.39rem;padding:3px 6px;}.pair{min-width:31px;}}</style></head><body><canvas id="snow"></canvas><div class="shell"><div class="app"><div class="inner"><div class="top"><div class="brand"><div class="logo">AI</div><div><b>Mester Lotto VIP+</b><small>Multi Lottery Engine V12.7</small></div></div><div class="pill">● ENGINE ELITE</div></div><section class="hero"><span class="hero-tag">QUANT ANALYSIS ENGINE V12.7</span><h1>Multi-Lottery <em>VIP+</em></h1><p>ประมวลผลหลายหวยจากข้อความชุดเดียว • Walk-Forward Calibration • กรองสัญญาณรบกวน & ถ่วงน้ำหนักขั้นสูง</p></section><div id="login" class="login active"><section class="panel"><label class="label">🔐 SYSTEM ACCESS KEY</label><input id="password" class="password" type="password" autocomplete="current-password" placeholder="••• System Key •••"><button id="loginBtn" class="btn">เข้าสู่ระบบ</button><div id="loginErr" class="err">❌ รหัสผ่านไม่ถูกต้อง</div></section></div><div id="console" class="console"><section class="panel"><div class="bulkbox"><label>📥 LOTTERY INPUT</label><textarea id="bulkInput" class="bulk" placeholder="ฮานอย HD | 26 ส.ค. 69&#10;067&#10;36&#10;&#10;ฮานอย VIP | 26 ส.ค. 69&#10;123&#10;45"></textarea></div><div class="actions"><button id="run" class="run">⚡ ประมวลผล</button><button id="copyInput" class="copy" disabled>📋 COPY</button><button id="clearInput" class="copy clear">ล้างข้อมูล</button></div><div id="scanner" class="scanner">สถานะ: <span id="scanText">กำลังเตรียมระบบ...</span></div></section><div id="result" class="result"></div></div><div id="toast" class="toast">คัดลอกแล้ว</div></div></div></div><script>(()=>{const c=document.getElementById('snow');const x=c.getContext('2d');let w=c.width=innerWidth;let h=c.height=innerHeight;addEventListener('resize',()=>{w=c.width=innerWidth;h=c.height=innerHeight;});const particles=Array.from({length:42},()=>({x:Math.random()*w,y:Math.random()*h,r:.7+Math.random()*1.8,s:.15+Math.random()*.45,a:.18+Math.random()*.35,p:Math.random()*6.28,tone:Math.random()>.72?'rose':'gold'}));(function draw(){x.clearRect(0,0,w,h);particles.forEach(q=>{q.p+=.01;q.y+=q.s;q.x+=Math.sin(q.p)*.25;if(q.y>h+5){q.y=-5;q.x=Math.random()*w;}x.beginPath();x.arc(q.x,q.y,q.r,0,Math.PI*2);x.fillStyle=q.tone==='rose'?`rgba(185,130,121,${q.a*.55})`:`rgba(195,154,67,${q.a})`;x.fill();});requestAnimationFrame(draw);})();const $=id=>document.getElementById(id);const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');const sec={tokens:['4d617374657241646d696e32303236','54396b4c326d5037','5a71345738785431'],dec(h){let s='';for(let i=0;i<h.length;i+=2)s+=String.fromCharCode(parseInt(h.slice(i,i+2),16));return s;},ok(v){return this.tokens.some(t=>v===this.dec(t));}};const app={cache:[],lastCopyText:'',toastTimer:null,audio(){},norm(x){return(x%10+10)%10;},clamp(v,lo=0,hi=1){return Math.max(lo,Math.min(hi,Number(v)||0));},normalizeScores(map){const vals=Object.values(map);const max=Math.max(...vals,0);if(max<=0)return Object.fromEntries(Object.keys(map).map(k=>[k,0]));return Object.fromEntries(Object.entries(map).map(([k,v])=>[k,this.clamp(v/max)]));},sourceBreadthScore(v){return this.clamp(1-Math.exp(-Math.max(0,v)/1.6));},consensusTier(count,total){const n=Math.max(1,total||1);if(count>=n)return 1;if(count===2&&n===3)return .78;if(count>=2)return .68;if(count===1)return .30;return 0;},flag(n){n=String(n).toLowerCase();if(/ลาว|lao/.test(n))return'🇱🇦';if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))return'🇻🇳';if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))return'🇲🇲';if(/จีน|china|shanghai/.test(n))return'🇨🇳';if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))return'🇭🇰';if(/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))return'🇯🇵';if(/เกาหลี|korea|kospi/.test(n))return'🇰🇷';if(/สิงคโปร์|singapore/.test(n))return'🇸🇬';if(/อินเดีย|india|sensex/.test(n))return'🇮🇳';if(/รัสเซีย|russia|moscow/.test(n))return'🇷🇺';if(/เยอรมัน|germany|dax/.test(n))return'🇩🇪';if(/อังกฤษ|uk|ftse|london/.test(n))return'🇬🇧';if(/อียิปต์|egypt/.test(n))return'🇪🇬';if(/ไต้หวัน|taiwan|tse/.test(n))return'🇹🇼';if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))return'🇺🇸';if(/ฝรั่งเศส|france|cac/.test(n))return'🇫🇷';if(/ออสเตรเลีย|australia|asx/.test(n))return'🇦🇺';if(/แคนาดา|canada/.test(n))return'🇨🇦';if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n))return'🇹🇭';return'🌐';},parse(text){const z=String(text||'').replace(/\r/g,'').trim();if(!z)return{records:[],errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']};const lines=z.split('\n').map(v=>v.trim());const records=[];const errors=[];let i=0;while(i<lines.length){if(!lines[i]){i++;continue;}const m=lines[i].match(/^(.+?)\s*\|\s*(.+?)$/);if(!m){errors.push(`บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`);i++;continue;}const name=m[1].trim(),date=m[2].trim();if(!this.parseDateValue(date)){errors.push(`${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 25 ส.ค. 69`);i++;continue;}const n3raw=lines[i+1]||'',n2raw=lines[i+2]||'',n3=/^[\\d\\s]+$/.test(n3raw)?n3raw.replace(/\\s+/g,''):n3raw,n2=/^[\\d\\s]+$/.test(n2raw)?n2raw.replace(/\\s+/g,''):n2raw;if(!/^\\d{3}$/.test(n3)){errors.push(`${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`);i++;continue;}if(!/^\\d{2}$/.test(n2)){errors.push(`${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`);i+=2;continue;}records.push({name,date,n3,n2});i+=3;}return{records,errors};},parseDateValue(date){const s=String(date||'').trim();return/^\\d{1,2}\\s+\\S+\\s+\\d{2,4}$/.test(s)||/^\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}$/.test(s)||/^\\d{1,2}-\\d{1,2}-\\d{2,4}$/.test(s);},dateKey(date){const s=String(date||'').trim();const m=s.match(/^(\\d{1,2})\\s+(\\S+)\\s+(\\d{2,4})$/);if(m){const months={'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};const month=months[m[2]]||0;let year=Number(m[3]);if(year<100)year+=2500;return[year,String(month).padStart(2,'0'),String(Number(m[1])).padStart(2,'0')].join('-');}const m2=s.match(/^(\\d{1,2})[\\/-](\\d{1,2})[\\/-](\\d{2,4})$/);if(m2){let year=Number(m2[3]);if(year<100)year+=2500;return[year,String(Number(m2[2])).padStart(2,'0'),String(Number(m2[1])).padStart(2,'0')].join('-');}return s;},sortChronological(records){return records.map((r,index)=>({...r,__index:index})).sort((a,b)=>{const ka=this.dateKey(a.date),kb=this.dateKey(b.date);if(ka<kb)return-1;if(ka>kb)return 1;return a.__index-b.__index;}).map(r=>{const z={...r};delete z.__index;return z;});},groupByLottery(records){const groupsMap={};records.forEach((r,index)=>{const key=r.name.trim();if(!groupsMap[key])groupsMap[key]={name:key,records:[],duplicateCount:0,conflictCount:0,__order:index};groupsMap[key].records.push(r);});const groups=Object.values(groupsMap);groups.forEach(g=>{const sorted=this.sortChronological(g.records),byDate=new Map(),clean=[];sorted.forEach(r=>{const key=this.dateKey(r.date);if(!byDate.has(key)){byDate.set(key,r);clean.push(r);return;}const previous=byDate.get(key);if(previous.n3===r.n3&&previous.n2===r.n2){g.duplicateCount++;return;}g.conflictCount++;const idx=clean.indexOf(previous);if(idx>=0)clean[idx]=r;byDate.set(key,r);});g.records=this.sortChronological(clean);});return groups.sort((a,b)=>a.__order-b.__order).map(g=>{delete g.__order;return g;});},/*==========================================================
+- Protected เลขเจาะ / Pair Engine remains unchanged.
+- Model 01 formula remains unchanged.
+- Model 02 formula remains unchanged.
+- Model 03 Similarity Noise Filter remains at >= 0.60.
+- Historical engine is capped at the latest 10 chronological draws.
+- Added walk-forward validation hardening.
+- Added global historical digit evidence.
+- Added model agreement / disagreement analysis.
+- Added small-sample shrinkage.
+- Added conflict penalty.
+- Added evidence quality gate.
+- Added anti-overfit weighting for Formula-100.
+- Final output remains ONE TOP 1 digit.
+============================================================-->
+
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<title>Mester Lotto VIP+ — Multi Lottery Engine V12.7</title>
+
+<style>
+:root{
+--bg:#f8f5ef;
+--panel:#fffdf9;
+--line:#e8dfcf;
+--text:#403a31;
+--muted:#8b8173;
+--gold:#b8944a;
+--gold2:#806329;
+--rose:#b98279;
+--shadow:0 14px 40px rgba(79,58,31,.08);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+margin:0;
+background:
+radial-gradient(circle at 15% 10%,rgba(195,154,67,.08),transparent 25%),
+radial-gradient(circle at 85% 20%,rgba(185,130,121,.06),transparent 25%),
+var(--bg);
+color:var(--text);
+font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+button,input,textarea{font:inherit;}
+button{cursor:pointer;}
+#snow{
+position:fixed;
+inset:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:0;
+}
+.shell{
+position:relative;
+z-index:1;
+min-height:100vh;
+padding:18px 12px 40px;
+}
+.app{
+width:min(760px,100%);
+margin:0 auto;
+}
+.inner{padding:12px;}
+.top{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin-bottom:14px;
+}
+.brand{
+display:flex;
+align-items:center;
+gap:10px;
+}
+.logo{
+width:37px;
+height:37px;
+border-radius:12px;
+display:grid;
+place-items:center;
+background:linear-gradient(135deg,#d3b16d,#806329);
+color:#fff;
+font-weight:900;
+font-size:.72rem;
+box-shadow:0 8px 18px rgba(128,99,41,.18);
+}
+.brand b{
+display:block;
+font-size:.78rem;
+letter-spacing:.1px;
+}
+.brand small{
+display:block;
+margin-top:2px;
+font-size:.48rem;
+color:var(--muted);
+font-weight:600;
+}
+.pill{
+padding:6px 9px;
+border:1px solid var(--line);
+border-radius:99px;
+background:#fffaf0;
+color:#806329;
+font-size:.45rem;
+font-weight:800;
+white-space:nowrap;
+}
+.hero{
+padding:18px;
+margin-bottom:14px;
+border:1px solid var(--line);
+border-radius:18px;
+background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));
+box-shadow:var(--shadow);
+}
+.hero-tag{
+font-size:.43rem;
+font-weight:900;
+letter-spacing:1.2px;
+color:var(--gold2);
+}
+.hero h1{
+margin:7px 0 5px;
+font-size:1.55rem;
+line-height:1.15;
+}
+.hero h1 em{
+font-style:normal;
+color:var(--gold2);
+}
+.hero p{
+margin:0;
+font-size:.55rem;
+line-height:1.65;
+color:var(--muted);
+}
+.panel{
+background:rgba(255,253,249,.96);
+border:1px solid var(--line);
+border-radius:18px;
+box-shadow:var(--shadow);
+}
+.login{display:none;}
+.login.active{display:block;}
+.login .panel{padding:16px;}
+.label{
+display:block;
+margin-bottom:8px;
+font-size:.54rem;
+font-weight:900;
+color:#806329;
+}
+.password{
+width:100%;
+height:43px;
+padding:0 13px;
+border:1px solid var(--line);
+border-radius:12px;
+outline:none;
+background:#fff;
+color:var(--text);
+font-size:.62rem;
+}
+.password:focus{
+border-color:#c6a762;
+box-shadow:0 0 0 3px rgba(195,154,67,.10);
+}
+.btn{
+width:100%;
+height:43px;
+margin-top:9px;
+border:0;
+border-radius:12px;
+background:linear-gradient(135deg,#b8944a,#806329);
+color:#fff;
+font-weight:900;
+font-size:.59rem;
+}
+.err{
+display:none;
+margin-top:9px;
+padding:9px 11px;
+border-radius:11px;
+background:#fff0f1;
+border:1px solid #f0c9cd;
+color:#a83d46;
+font-size:.53rem;
+line-height:1.6;
+}
+.console{display:none;}
+.console.active{display:block;}
+.bulkbox{padding:14px;}
+.bulkbox label{
+display:block;
+margin-bottom:7px;
+font-size:.55rem;
+font-weight:900;
+color:#806329;
+}
+.bulk{
+display:block;
+width:100%;
+min-height:260px;
+resize:vertical;
+padding:12px;
+border:1px solid var(--line);
+border-radius:13px;
+background:#fff;
+color:var(--text);
+outline:none;
+font-family:"IBM Plex Mono",monospace;
+font-size:.58rem;
+line-height:1.65;
+}
+.bulk:focus{
+border-color:#c6a762;
+box-shadow:0 0 0 3px rgba(195,154,67,.10);
+}
+.actions{
+padding:0 14px 14px;
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:8px;
+}
+.run{
+height:43px;
+border:0;
+border-radius:12px;
+background:linear-gradient(135deg,#b8944a,#806329);
+color:#fff;
+font-size:.59rem;
+font-weight:900;
+}
+.copy{
+height:43px;
+border:1px solid var(--line);
+border-radius:12px;
+background:#fff;
+color:#806329;
+font-size:.59rem;
+font-weight:900;
+}
+.clear{color:#8b8173;}
+.run:disabled{
+opacity:.55;
+cursor:not-allowed;
+}
+.scanner{
+display:none;
+padding:10px 14px;
+border-top:1px solid var(--line);
+font-size:.52rem;
+color:var(--muted);
+}
+.scanner span{
+font-weight:800;
+color:#806329;
+}
+.result{margin-top:14px;}
+.summary{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+padding:11px 12px;
+margin-bottom:9px;
+border:1px solid var(--line);
+border-radius:14px;
+background:#fffdf9;
+font-size:.54rem;
+color:var(--muted);
+}
+.summary strong{
+color:#806329;
+font-size:.72rem;
+margin:0 2px;
+}
+.lottery{
+overflow:hidden;
+margin-bottom:9px;
+border:1px solid var(--line);
+border-radius:16px;
+background:#fff;
+box-shadow:var(--shadow);
+}
+.lottery-head{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+padding:10px 12px 9px 18px;
+background:linear-gradient(135deg,#fff,#fbf7ed);
+}
+.lottery-name{
+font-weight:800;
+font-size:.72rem;
+}
+.flag{margin-right:5px;}
+.date{
+font-size:.52rem;
+color:var(--muted);
+margin-top:2px;
+}
+.vip-label{display:none;}
+.rows{padding:4px 7px 2px;}
+.row{
+display:flex;
+align-items:center;
+justify-content:flex-start;
+gap:6px;
+padding:5px 7px;
+border-bottom:1px solid #f0eadf;
+}
+.row:last-child{border-bottom:0;}
+.row-label{
+font-size:.55rem;
+color:var(--muted);
+}
+.row-value{
+font-family:"IBM Plex Mono",monospace;
+font-weight:800;
+font-size:.9rem;
+}
+.row-value.top{color:#9c782e;}
+.digit{
+display:grid;
+place-items:center;
+width:31px;
+height:31px;
+border-radius:10px;
+font-family:"IBM Plex Mono",monospace;
+font-weight:900;
+font-size:.92rem;
+}
+.digit-gold{
+background:#fbf1d9;
+border:1px solid #e4ca8f;
+color:#806329;
+}
+.digit-silver{
+background:#f5f1eb;
+border:1px solid #ddd5c9;
+color:#625a50;
+}
+.sep{
+font-family:"IBM Plex Mono",monospace;
+font-weight:800;
+color:#b3a694;
+}
+.pairs{
+display:flex;
+flex-wrap:wrap;
+justify-content:flex-start;
+gap:4px;
+margin-left:4px;
+}
+.pair{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+min-width:32px;
+height:24px;
+padding:0 5px;
+border-radius:7px;
+border:1px solid #e7dfd3;
+background:#fff;
+font-family:"IBM Plex Mono",monospace;
+font-size:.51rem;
+font-weight:800;
+color:#645b50;
+}
+.pair-gold{
+border-color:#d9bd79;
+background:#fff8e7;
+color:#806329;
+}
+.pair-silver{
+border-color:#d7d0c6;
+background:#f8f5ef;
+color:#665e54;
+}
+.pair-rose{
+border-color:#e5c7c1;
+background:#fff5f3;
+color:#95675f;
+}
+.card-actions{
+padding:0;
+flex:0 0 auto;
+}
+.card-capture{
+width:auto;
+min-width:72px;
+height:34px;
+padding:0 10px;
+border:1px solid var(--line);
+border-radius:10px;
+background:#fff;
+color:#80652b;
+font-size:.54rem;
+font-weight:800;
+}
+.footer{
+padding:5px 10px;
+border-top:1px solid var(--line);
+font-size:.5rem;
+color:var(--muted);
+}
+.copyall{
+width:100%;
+height:43px;
+border:0;
+border-radius:12px;
+color:#fff;
+background:linear-gradient(135deg,#b8944a,#806329);
+font-weight:800;
+}
+.logout{
+margin-top:9px;
+width:100%;
+height:41px;
+border:1px solid var(--line);
+border-radius:12px;
+background:#fff;
+color:var(--muted);
+font-size:.57rem;
+font-weight:700;
+}
+.brand-footer{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:7px;
+padding-top:9px;
+padding-bottom:6px;
+color:#80652b;
+font-size:.44rem;
+font-weight:800;
+letter-spacing:.2px;
+}
+.brand-star{
+color:#c39a43;
+font-size:.58rem;
+}
+.toast{
+position:fixed;
+left:50%;
+bottom:22px;
+z-index:9;
+transform:translate(-50%,20px);
+opacity:0;
+padding:9px 15px;
+border-radius:99px;
+color:#fff;
+background:#806329;
+font-size:.55rem;
+font-weight:700;
+transition:.2s;
+pointer-events:none;
+}
+.toast.show{
+opacity:1;
+transform:translate(-50%,0);
+}
+.errorbox{
+padding:12px;
+border-radius:14px;
+border:1px solid #f0c9cd;
+background:#fff0f1;
+color:#a83d46;
+font-size:.6rem;
+line-height:1.7;
+}
+@media(max-width:390px){
+.bulk{min-height:250px;}
+.pairs{gap:2px;}
+.pair{
+min-width:30px;
+height:23px;
+font-size:.50rem;
+padding:0 4px;
+}
+.row{
+min-height:39px;
+padding:3px 4px 3px 7px;
+gap:3px;
+}
+.digit{font-size:.92rem;}
+}
+@media(max-width:420px){
+.lottery{padding:0;}
+.lottery-head{
+padding-left:18px;
+padding-right:1px;
+}
+.vip-label{
+font-size:.39rem;
+padding:3px 6px;
+}
+.pair{
+min-width:31px;
+}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="snow"></canvas>
+
+<div class="shell">
+<div class="app">
+<div class="inner">
+
+<div class="top">
+<div class="brand">
+<div class="logo">AI</div>
+<div>
+<b>Mester Lotto VIP+</b>
+<small>Multi Lottery Engine V12.7</small>
+</div>
+</div>
+<div class="pill">● ENGINE ELITE</div>
+</div>
+
+<section class="hero">
+<span class="hero-tag">QUANT ANALYSIS ENGINE V12.7</span>
+<h1>Multi-Lottery <em>VIP+</em></h1>
+<p>ประมวลผลหลายหวยจากข้อความชุดเดียว • กรองสัญญาณรบกวน • ตรวจสอบย้อนหลัง • ถ่วงน้ำหนักตามหลักฐาน</p>
+</section>
+
+<div id="login" class="login active">
+<section class="panel">
+<label class="label">🔐 SYSTEM ACCESS KEY</label>
+<input id="password"
+class="password"
+type="password"
+autocomplete="current-password"
+placeholder="••• System Key •••">
+
+<button id="loginBtn" class="btn">เข้าสู่ระบบ</button>
+
+<div id="loginErr" class="err">
+❌ รหัสผ่านไม่ถูกต้อง
+</div>
+</section>
+</div>
+
+<div id="console" class="console">
+
+<section class="panel">
+
+<div class="bulkbox">
+
+<label>📥 LOTTERY INPUT</label>
+
+<textarea id="bulkInput"
+class="bulk"
+placeholder="ฮานอย HD | 26 ส.ค. 69&#10;067&#10;36&#10;&#10;ฮานอย VIP | 26 ส.ค. 69&#10;123&#10;45"></textarea>
+
+</div>
+
+<div class="actions">
+<button id="run" class="run">⚡ ประมวลผล</button>
+<button id="copyInput" class="copy" disabled>📋 COPY</button>
+<button id="clearInput" class="copy clear">ล้างข้อมูล</button>
+</div>
+
+<div id="scanner" class="scanner">
+สถานะ:
+<span id="scanText">กำลังเตรียมระบบ...</span>
+</div>
+
+</section>
+
+<div id="result" class="result"></div>
+
+</div>
+
+<div id="toast" class="toast">คัดลอกแล้ว</div>
+
+</div>
+</div>
+</div>
+
+<script>
+(()=>{
+
+const c=document.getElementById('snow');
+const x=c.getContext('2d');
+
+let w=c.width=innerWidth;
+let h=c.height=innerHeight;
+
+addEventListener('resize',()=>{
+w=c.width=innerWidth;
+h=c.height=innerHeight;
+});
+
+const particles=Array.from({length:42},()=>({
+x:Math.random()*w,
+y:Math.random()*h,
+r:.7+Math.random()*1.8,
+s:.15+Math.random()*.45,
+a:.18+Math.random()*.35,
+p:Math.random()*6.28,
+tone:Math.random()>.72?'rose':'gold'
+}));
+
+(function draw(){
+x.clearRect(0,0,w,h);
+
+particles.forEach(q=>{
+q.p+=.01;
+q.y+=q.s;
+q.x+=Math.sin(q.p)*.25;
+
+if(q.y>h+5){
+q.y=-5;
+q.x=Math.random()*w;
+}
+
+x.beginPath();
+x.arc(q.x,q.y,q.r,0,Math.PI*2);
+
+x.fillStyle=q.tone==='rose'
+?`rgba(185,130,121,${q.a*.55})`
+:`rgba(195,154,67,${q.a})`;
+
+x.fill();
+});
+
+requestAnimationFrame(draw);
+})();
+
+const $=id=>document.getElementById(id);
+
+const esc=s=>String(s)
+.replace(/&/g,'&amp;')
+.replace(/</g,'&lt;')
+.replace(/>/g,'&gt;')
+.replace(/"/g,'&quot;')
+.replace(/'/g,'&#039;');
+
+const sec={
+tokens:[
+'4d617374657241646d696e32303236',
+'54396b4c326d5037',
+'5a71345738785431'
+],
+
+dec(h){
+let s='';
+for(let i=0;i<h.length;i+=2){
+s+=String.fromCharCode(parseInt(h.slice(i,i+2),16));
+}
+return s;
+},
+
+ok(v){
+return this.tokens.some(t=>v===this.dec(t));
+}
+};
+
+const app={
+
+cache:[],
+lastCopyText:'',
+toastTimer:null,
+
+audio(){},
+
+norm(x){
+return(x%10+10)%10;
+},
+
+clamp(v,lo=0,hi=1){
+return Math.max(lo,Math.min(hi,Number(v)||0));
+},
+
+/*==========================================================
+SMALL SAMPLE CONTROL
+==========================================================*/
+
+historyLimit:10,
+
+effectiveSampleWeight(samples,target=10){
+const n=Math.max(0,Number(samples)||0);
+return this.clamp(n/target);
+},
+
+sampleConfidence(samples){
+const n=Math.max(0,Number(samples)||0);
+
+if(n<=0)return 0;
+if(n===1)return .16;
+if(n===2)return .25;
+if(n===3)return .34;
+if(n===4)return .43;
+if(n===5)return .51;
+if(n===6)return .59;
+if(n===7)return .67;
+if(n===8)return .75;
+if(n===9)return .83;
+return 1;
+},
+
+normalizeScores(map){
+const vals=Object.values(map);
+const max=Math.max(...vals,0);
+
+if(max<=0)
+return Object.fromEntries(
+Object.keys(map).map(k=>[k,0])
+);
+
+return Object.fromEntries(
+Object.entries(map).map(([k,v])=>[
+k,
+this.clamp(v/max)
+])
+);
+},
+
+sourceBreadthScore(v){
+return this.clamp(
+1-Math.exp(-Math.max(0,v)/1.6)
+);
+},
+
+consensusTier(count,total){
+const n=Math.max(1,total||1);
+
+if(count>=n)return 1;
+if(count===2&&n===3)return .82;
+if(count>=2)return .70;
+if(count===1)return .24;
+
+return 0;
+},
+
+flag(n){
+n=String(n).toLowerCase();
+
+if(/ลาว|lao/.test(n))return'🇱🇦';
+if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))return'🇻🇳';
+if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))return'🇲🇲';
+if(/จีน|china|shanghai/.test(n))return'🇨🇳';
+if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))return'🇭🇰';
+if(/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))return'🇯🇵';
+if(/เกาหลี|korea|kospi/.test(n))return'🇰🇷';
+if(/สิงคโปร์|singapore/.test(n))return'🇸🇬';
+if(/อินเดีย|india|sensex/.test(n))return'🇮🇳';
+if(/รัสเซีย|russia|moscow/.test(n))return'🇷🇺';
+if(/เยอรมัน|germany|dax/.test(n))return'🇩🇪';
+if(/อังกฤษ|uk|ftse|london/.test(n))return'🇬🇧';
+if(/อียิปต์|egypt/.test(n))return'🇪🇬';
+if(/ไต้หวัน|taiwan|tse/.test(n))return'🇹🇼';
+if(/สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))return'🇺🇸';
+if(/ฝรั่งเศส|france|cac/.test(n))return'🇫🇷';
+if(/ออสเตรเลีย|australia|asx/.test(n))return'🇦🇺';
+if(/แคนาดา|canada/.test(n))return'🇨🇦';
+if(/หุ้นไทย|ไทย|thai|set|หุ้น/.test(n))return'🇹🇭';
+
+return'🌐';
+},
+
+parse(text){
+
+const z=String(text||'')
+.replace(/\r/g,'')
+.trim();
+
+if(!z)
+return{
+records:[],
+errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
+};
+
+const lines=z.split('\n').map(v=>v.trim());
+const records=[];
+const errors=[];
+
+let i=0;
+
+while(i<lines.length){
+
+if(!lines[i]){
+i++;
+continue;
+}
+
+const m=lines[i].match(/^(.+?)\s*\|\s*(.+?)$/);
+
+if(!m){
+errors.push(
+`บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
+);
+i++;
+continue;
+}
+
+const name=m[1].trim();
+const date=m[2].trim();
+
+if(!this.parseDateValue(date)){
+errors.push(
+`${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 25 ส.ค. 69`
+);
+i++;
+continue;
+}
+
+const n3raw=lines[i+1]||'';
+const n2raw=lines[i+2]||'';
+
+const n3=/^[\d\s]+$/.test(n3raw)
+?n3raw.replace(/\s+/g,'')
+:n3raw;
+
+const n2=/^[\d\s]+$/.test(n2raw)
+?n2raw.replace(/\s+/g,'')
+:n2raw;
+
+if(!/^\d{3}$/.test(n3)){
+errors.push(
+`${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
+);
+i++;
+continue;
+}
+
+if(!/^\d{2}$/.test(n2)){
+errors.push(
+`${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
+);
+i+=2;
+continue;
+}
+
+records.push({
+name,
+date,
+n3,
+n2
+});
+
+i+=3;
+}
+
+return{records,errors};
+},
+
+parseDateValue(date){
+
+const s=String(date||'').trim();
+
+if(!s)return false;
+
+if(/^\d{1,2}\s+\S+\s+\d{2,4}$/.test(s))
+return true;
+
+if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s))
+return true;
+
+if(/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(s))
+return true;
+
+return false;
+},
+
+dateKey(date){
+
+const s=String(date||'').trim();
+
+const m=s.match(
+(/^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/)
+);
+
+if(m){
+
+const months={
+'ม.ค.':1,
+'ก.พ.':2,
+'มี.ค.':3,
+'เม.ย.':4,
+'พ.ค.':5,
+'มิ.ย.':6,
+'ก.ค.':7,
+'ส.ค.':8,
+'ก.ย.':9,
+'ต.ค.':10,
+'พ.ย.':11,
+'ธ.ค.':12
+};
+
+const month=months[m[2]]||0;
+
+let year=Number(m[3]);
+
+if(year<100)
+year+=2500;
+
+return[
+year,
+String(month).padStart(2,'0'),
+String(Number(m[1])).padStart(2,'0')
+].join('-');
+}
+
+const m2=s.match(
+(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/)
+);
+
+if(m2){
+
+let year=Number(m2[3]);
+
+if(year<100)
+year+=2500;
+
+return[
+year,
+String(Number(m2[2])).padStart(2,'0'),
+String(Number(m2[1])).padStart(2,'0')
+].join('-');
+}
+
+return s;
+},
+
+sortChronological(records){
+
+return records
+.map((r,index)=>({
+...r,
+__index:index
+}))
+.sort((a,b)=>{
+
+const ka=this.dateKey(a.date);
+const kb=this.dateKey(b.date);
+
+if(ka<kb)return-1;
+if(ka>kb)return 1;
+
+return a.__index-b.__index;
+
+})
+.map(r=>{
+
+const z={...r};
+delete z.__index;
+
+return z;
+});
+},
+
+/*==========================================================
+IMPORTANT:
+Only the latest 10 chronological draws are used.
+This prevents old data from overpowering current regime.
+==========================================================*/
+
+limitHistory(records){
+
+const ordered=this.sortChronological(records||[]);
+
+if(ordered.length<=this.historyLimit)
+return ordered;
+
+return ordered.slice(-this.historyLimit);
+},
+
+groupByLottery(records){
+
+const groupsMap={};
+
+records.forEach((r,index)=>{
+
+const key=r.name.trim();
+
+if(!groupsMap[key]){
+groupsMap[key]={
+name:key,
+records:[],
+duplicateCount:0,
+conflictCount:0,
+__order:index
+};
+}
+
+groupsMap[key].records.push(r);
+
+});
+
+const groups=Object.values(groupsMap);
+
+groups.forEach(g=>{
+
+const sorted=this.sortChronological(g.records);
+
+const byDate=new Map();
+const clean=[];
+
+sorted.forEach(r=>{
+
+const key=this.dateKey(r.date);
+
+if(!byDate.has(key)){
+byDate.set(key,r);
+clean.push(r);
+return;
+}
+
+const previous=byDate.get(key);
+
+if(
+previous.n3===r.n3 &&
+previous.n2===r.n2
+){
+g.duplicateCount++;
+return;
+}
+
+g.conflictCount++;
+
+const idx=clean.indexOf(previous);
+
+if(idx>=0)
+clean[idx]=r;
+
+byDate.set(key,r);
+
+});
+
+g.records=this.limitHistory(clean);
+
+});
+
+return groups
+.sort((a,b)=>a.__order-b.__order)
+.map(g=>{
+delete g.__order;
+return g;
+});
+},
+
+/*==========================================================
 PROTECTED ORIGINAL FORMULA ENGINE
-==========================================================*/formulas(H,T,U,R1,R2,sumT,sumB,total){const raw=[H+T,H+U,T+U,H+R1,H+R2,T+R1,T+R2,U+R1,U+R2,R1+R2,sumT+R1,sumT+R2,sumT+H,sumT+T,sumT+U,10-H,10-T,10-U,10-R1,10-R2,H+T+R1,H+U+R2,T+U+R1,T+U+R2,H+R1+R2,T+R1+R2,sumT-R1,sumT-R2,sumT+sumB,sumT-sumB,H+T-R2,T+U-R1,H+U-R1,20-(T+R1),20-(U+R2),H+T+U-R1,H+T+U-R2,10+T-R2,10+U-R1,sumT+10-R2,H+R2-T,T+R2-H,U+R1-H,sumB+H-T,sumB+H-U,H+sumB-T,H+sumB-U,T+sumB-H,T+sumB-U,U+sumB-H,U+sumB-T,30-(H+T+R1),30-(H+U+R2),30-(T+U+R1),30-(H+R1+R2),H+T+R1-R2,H+U+R2-R1,T+U+R1-H,sumT+R1-R2,sumT+R2-R1,H+T+sumB,H+U+sumB,T+U+sumB,H+R1+sumT,H+R2+sumT,T+R1+sumT,T+R2+sumT,U+R1+sumT,U+R2+sumT,R1+R2+sumT,10+H+T,10+H+U,10+T+U,10+R1+R2,10+H+R1,10+H+R2,10+T+R1,10+T+R2,10+U+R1,10+U+R2,H-T+R2,H-U+R1,T-U+R2,R1-R2+H,R1-R2+T,R1-R2+U,20-H-T,20-H-U,20-T-U,20-R1-R2,20-H-R1,20-H-R2,20-T-R1,20-T-R2,20-U-R1,20-U-R2,total,2*total,total+H,total+R1];const counts=Object.fromEntries(Array.from({length:10},(_,d)=>[d,0]));const signals=raw.map((value,index)=>({id:index+1,value:this.norm(value),raw:value}));raw.forEach(v=>{counts[this.norm(v)]++;});return{counts,signals};},/*==========================================================
+==========================================================*/
+
+formulas(H,T,U,R1,R2,sumT,sumB,total){
+
+const raw=[
+H+T,
+H+U,
+T+U,
+H+R1,
+H+R2,
+T+R1,
+T+R2,
+U+R1,
+U+R2,
+R1+R2,
+
+sumT+R1,
+sumT+R2,
+sumT+H,
+sumT+T,
+sumT+U,
+
+10-H,
+10-T,
+10-U,
+10-R1,
+10-R2,
+
+H+T+R1,
+H+U+R2,
+T+U+R1,
+T+U+R2,
+
+H+R1+R2,
+T+R1+R2,
+
+sumT-R1,
+sumT-R2,
+sumT+sumB,
+sumT-sumB,
+
+H+T-R2,
+T+U-R1,
+H+U-R1,
+
+20-(T+R1),
+20-(U+R2),
+
+H+T+U-R1,
+H+T+U-R2,
+
+10+T-R2,
+10+U-R1,
+
+sumT+10-R2,
+
+H+R2-T,
+T+R2-H,
+U+R1-H,
+
+sumB+H-T,
+sumB+H-U,
+
+H+sumB-T,
+H+sumB-U,
+
+T+sumB-H,
+T+sumB-U,
+
+U+sumB-H,
+U+sumB-T,
+
+30-(H+T+R1),
+30-(H+U+R2),
+30-(T+U+R1),
+30-(H+R1+R2),
+
+H+T+R1-R2,
+H+U+R2-R1,
+T+U+R1-H,
+
+sumT+R1-R2,
+sumT+R2-R1,
+
+H+T+sumB,
+H+U+sumB,
+T+U+sumB,
+
+H+R1+sumT,
+H+R2+sumT,
+T+R1+sumT,
+T+R2+sumT,
+U+R1+sumT,
+U+R2+sumT,
+R1+R2+sumT,
+
+10+H+T,
+10+H+U,
+10+T+U,
+10+R1+R2,
+10+H+R1,
+10+H+R2,
+10+T+R1,
+10+T+R2,
+10+U+R1,
+10+U+R2,
+
+H-T+R2,
+H-U+R1,
+T-U+R2,
+
+R1-R2+H,
+R1-R2+T,
+R1-R2+U,
+
+20-H-T,
+20-H-U,
+20-T-U,
+20-R1-R2,
+20-H-R1,
+20-H-R2,
+20-T-R1,
+20-T-R2,
+20-U-R1,
+20-U-R2,
+
+total,
+2*total,
+total+H,
+total+R1
+];
+
+const counts=Object.fromEntries(
+Array.from({length:10},(_,d)=>[d,0])
+);
+
+const signals=raw.map((value,index)=>({
+id:index+1,
+value:this.norm(value),
+raw:value
+}));
+
+raw.forEach(v=>{
+counts[this.norm(v)]++;
+});
+
+return{counts,signals};
+},
+
+/*==========================================================
 3 MAIN MODELS
-==========================================================*/buildModels(H,T,U,R1,R2,sumT,history=null){const unit=v=>{const q=Math.abs(v)%10;return[q,(q+1)%10];};const model01Base=this.norm(T+R1),model02Base=this.norm(10-R2),m03=(history&&history.m03&&Array.isArray(history.m03.currentSet))?history.m03.currentSet.slice(0,2):[];return[{id:1,name:'AI โมเดล 01',formulaId:1,set:unit(model01Base),base:model01Base,variant:'q/q+1'},{id:2,name:'AI โมเดล 02',formulaId:5,set:unit(model02Base),base:model02Base,variant:'q/q+1'},{id:3,name:'AI โมเดล 03',formulaId:0,set:m03.length===2?m03:[this.norm(model01Base),this.norm(model02Base)],base:m03[0]??null,variant:'historical-top2',experimental:!m03.length}];},/*==========================================================
-PROTECTED PAIR / เลขเจาะ ENGINE — UNCHANGED
-==========================================================*/buildPairs(models,anchor){models.forEach(m=>{let range=[],collision=false;for(let o=-2;o<=2;o++){if(m.set.includes(this.norm(anchor+o))){collision=true;break;}}for(let o=collision?-3:-2;o<=(collision?3:2);o++)range.push(this.norm(anchor+o));m.pairsMap={};m.set.forEach(src=>{let pairs=range.filter(p=>p!==src&&!m.set.includes(p)).map(p=>`${src}${p}`);let next=(src+1)%10;while(pairs.length<5){if(next!==src&&!m.set.includes(next)&&!pairs.includes(`${src}${next}`))pairs.push(`${src}${next}`);next=(next+1)%10;}m.pairsMap[src]=[...new Set(pairs)].filter(p=>p[0]!==p[1]).slice(0,5);});});},/*==========================================================
-HISTORICAL ENGINE — WALK-FORWARD / MAX 10 DRAWS
-==========================================================*/actualDigits(record){return new Set((String(record.n3)+String(record.n2)).split('').map(Number));},sampleReliability(samples){const n=Math.max(0,Number(samples)||0);return this.clamp(1-Math.exp(-n/4));},recentBlend(long,recent,samples){const rel=this.sampleReliability(samples);return this.clamp((1-rel)*.5+rel*(.55*long+.45*recent));},buildHistory(records){const modelPerf=Object.fromEntries(Array.from({length:3},(_,i)=>[i+1,{long:.5,recent:.5,stability:.5,samples:0,hits:0,recentHits:0,recentWeight:0,recentSamples:0,baseHits:0,plusHits:0,misses:0,baseRate:.5,plusRate:.5,variance:0,coverage:0}]));const formulaPerf=Object.fromEntries(Array.from({length:100},(_,i)=>[i+1,{long:.5,recent:.5,samples:0,hits:0,recentHits:0,recentWeight:0,recentSamples:0}]));const digitPerf=Object.fromEntries(Array.from({length:10},(_,d)=>[d,{long:.5,recent:.5,stability:.5,samples:0,hits:0,recentHits:0,recentWeight:0,recentSamples:0,streak:0,maxStreak:0}]));const ordered=this.sortChronological(records||[]).slice(-10);const transitions=[];const usable=Math.max(0,ordered.length-1);const recentWindow=Math.min(5,usable);if(!usable)return{modelPerf,formulaPerf,digitPerf,transitions,usable:0,recentWindow:0,dataReliability:0,walkForward:{samples:0,modelHits:{1:0,2:0,3:0},modelCoverage:{1:0,2:0,3:0},ensembleHits:0,ensembleSamples:0,stability:0},m03:{currentSet:[],scores:{},samples:0,patternSamples:0,baseHits:0,plusHits:0,misses:0,long:.5,recent:.5,stability:.5}};for(let i=1;i<ordered.length;i++){const source=ordered[i-1],target=ordered[i],d3=source.n3.split('').map(Number),d2=source.n2.split('').map(Number),H=d3[0],T=d3[1],U=d3[2],R1=d2[0],R2=d2[1],sumT=H+T+U,F=this.formulas(H,T,U,R1,R2,sumT,R1+R2,sumT+R1+R2),models=this.buildModels(H,T,U,R1,R2,sumT,null),actual=this.actualDigits(target),recent=i>ordered.length-1-recentWindow,recencyWeight=Math.pow(.90,ordered.length-1-i);models.slice(0,2).forEach(m=>{const unique=[...new Set(m.set)],hit=unique.filter(d=>actual.has(d)).length/Math.max(1,unique.length),mp=modelPerf[m.id],base=m.base,plus=(base+1)%10;mp.hits+=hit;mp.samples++;mp.baseHits+=actual.has(base)?1:0;mp.plusHits+=actual.has(plus)?1:0;if(hit===0)mp.misses++;if(recent){mp.recentHits+=hit*recencyWeight;mp.recentWeight+=recencyWeight;mp.recentSamples++;}});F.signals.forEach(sig=>{const fp=formulaPerf[sig.id],hit=actual.has(sig.value)?1:0;fp.hits+=hit;fp.samples++;if(recent){fp.recentHits+=hit*recencyWeight;fp.recentWeight+=recencyWeight;fp.recentSamples++;}});const candidateDigits=new Set(models.slice(0,2).flatMap(m=>m.set));candidateDigits.forEach(d=>{const dp=digitPerf[d],hit=actual.has(d)?1:0;dp.hits+=hit;dp.samples++;if(recent){dp.recentHits+=hit*recencyWeight;dp.recentWeight+=recencyWeight;dp.recentSamples++;}});transitions.push({index:i,sourceDate:source.date,targetDate:target.date,source,target,models:models.slice(0,2),formulaSignals:F.signals,actual:[...actual]});}Object.values(modelPerf).forEach(mp=>{mp.long=mp.samples?mp.hits/mp.samples:.5;mp.recent=mp.recentWeight?mp.recentHits/mp.recentWeight:mp.long;mp.stability=1-Math.min(1,Math.abs(mp.long-mp.recent)*2);mp.baseRate=mp.samples?mp.baseHits/mp.samples:.5;mp.plusRate=mp.samples?mp.plusHits/mp.samples:.5;mp.coverage=mp.samples?1-mp.misses/mp.samples:0;});Object.values(formulaPerf).forEach(fp=>{fp.long=fp.samples?fp.hits/fp.samples:.5;fp.recent=fp.recentWeight?fp.recentHits/fp.recentWeight:fp.long;});for(let d=0;d<=9;d++){const dp=digitPerf[d];if(!dp.samples)continue;dp.long=dp.hits/dp.samples;dp.recent=dp.recentWeight?dp.recentHits/dp.recentWeight:dp.long;dp.stability=1-Math.min(1,Math.abs(dp.long-dp.recent)*2);let streak=0;for(let j=transitions.length-1;j>=0;j--){const tr=transitions[j];if(!tr.models.some(m=>m.set.includes(d)))continue;if(tr.actual.includes(d)){streak++;dp.maxStreak=Math.max(dp.maxStreak,streak);}else break;}dp.streak=streak;}const m03Perf={samples:0,patternSamples:0,baseHits:0,plusHits:0,misses:0,long:.5,recent:.5,stability:.5};for(let i=2;i<ordered.length;i++){const source=ordered[i-1],train=ordered.slice(0,i),pred=this.m03Predict(source,train),actual=this.actualDigits(ordered[i]);if(!pred.set.length)continue;const hit=pred.set.filter(d=>actual.has(d)).length/Math.max(1,pred.set.length);m03Perf.samples++;m03Perf.patternSamples+=pred.matches||0;m03Perf.baseHits+=pred.set[0]!==undefined&&actual.has(pred.set[0])?1:0;m03Perf.plusHits+=pred.set[1]!==undefined&&actual.has(pred.set[1])?1:0;if(hit===0)m03Perf.misses++;}m03Perf.long=m03Perf.samples?(m03Perf.baseHits+m03Perf.plusHits)/(m03Perf.samples*2):.5;m03Perf.recent=m03Perf.long;m03Perf.stability=m03Perf.samples>=3?1-Math.min(1,Math.abs(m03Perf.long-.5)*1.5):.35;const modelHits={1:0,2:0,3:0},modelCoverage={1:0,2:0,3:0};transitions.forEach(tr=>{tr.models.forEach(m=>{modelCoverage[m.id]++;if(m.set.some(d=>tr.actual.includes(d)))modelHits[m.id]++;});});const current=this.m03Predict(ordered[ordered.length-1],ordered.slice(0,-1));const ensembleHits=transitions.filter(tr=>{const union=new Set(tr.models.flatMap(m=>m.set));return[...union].some(d=>tr.actual.includes(d));}).length;return{modelPerf,formulaPerf,digitPerf,transitions,usable,recentWindow,dataReliability:this.sampleReliability(usable),walkForward:{samples:transitions.length,modelHits,modelCoverage,ensembleHits,ensembleSamples:transitions.length,stability:transitions.length?ensembleHits/transitions.length:.5},m03:{...m03Perf,currentSet:current.set.slice(0,2),scores:current.scores||{},samples:m03Perf.samples,patternSamples:current.matches||0,baseHits:m03Perf.baseHits,plusHits:m03Perf.plusHits,misses:m03Perf.misses,long:m03Perf.long,recent:m03Perf.recent,stability:m03Perf.stability}};},featureVector(record){const d3=String(record.n3).padStart(3,'0').split('').map(Number),d2=String(record.n2).padStart(2,'0').split('').map(Number),H=d3[0],T=d3[1],U=d3[2],R1=d2[0],R2=d2[1],sumT=(H+T+U)%10,sumB=(R1+R2)%10;return[H,T,U,R1,R2,sumT,sumB,(sumT+sumB)%10];},featureSimilarity(a,b){const A=this.featureVector(a),B=this.featureVector(b),weights=[.12,.15,.12,.12,.15,.12,.10,.12];let s=0,w=0;for(let i=0;i<A.length;i++){const dist=Math.min(Math.abs(A[i]-B[i]),10-Math.abs(A[i]-B[i]));const part=dist===0?1:dist===1?.55:dist===2?.20:0;s+=weights[i]*part;w+=weights[i];}return this.clamp(s/w);},m03Predict(source,records){const ordered=this.sortChronological(records||[]).slice(-10),candidates=[],global=Array.from({length:10},()=>0);let totalTargets=0;for(let i=1;i<ordered.length;i++){const pastSource=ordered[i-1],target=ordered[i],sim=this.featureSimilarity(source,pastSource);if(sim<0.60)continue;const age=ordered.length-1-i,recency=Math.pow(.985,Math.max(0,age)),weight=Math.pow(.55+.45*sim,2)*recency,actual=this.actualDigits(target);actual.forEach(d=>{global[d]+=weight;});totalTargets+=weight;candidates.push({index:i,similarity:sim,weight,targetDate:target.date,actual:[...actual]});}if(!candidates.length)return{set:[],scores:{},matches:0};const scores=Array.from({length:10},(_,d)=>global[d]/Math.max(totalTargets,1)),ranked=scores.map((score,d)=>({d,score})).sort((a,b)=>b.score-a.score||a.d-b.d),set=ranked.slice(0,2).map(x=>x.d);return{set,scores:Object.fromEntries(ranked.map(x=>[x.d,x.score])),matches:candidates.length,details:candidates.slice(-20)};},posterior(rate,samples,prior=.5,priorN=6){const n=Math.max(0,Number(samples)||0);return(rate*n+prior*priorN)/(n+priorN);},modelWeight(m,history){const hp=history&&history.modelPerf&&history.modelPerf[m.id];if(!hp)return 1;const long=this.posterior(hp.long,hp.samples,.5,8),recent=this.posterior(hp.recent,hp.recentSamples||Math.min(hp.samples,5),.5,5),base=this.posterior(hp.baseRate,hp.samples,.5,6),plus=this.posterior(hp.plusRate,hp.samples,.5,6),variant=Math.max(base,plus),stability=hp.stability??.5,coverage=hp.coverage??.5,blended=.32*long+.22*recent+.14*stability+.16*variant+.16*coverage,raw=.76+.48*this.clamp(blended),wf=history.walkForward?.modelCoverage?.[m.id]?(history.walkForward.modelHits[m.id]/history.walkForward.modelCoverage[m.id]):.5,smallSampleGate=.75+.25*this.sampleReliability(hp.samples);return raw*(.86+.28*this.clamp(wf))*smallSampleGate;},formulaWeight(id,history){const fp=history&&history.formulaPerf&&history.formulaPerf[id];if(!fp)return 1;const long=this.posterior(fp.long,fp.samples,.5,8),recent=this.posterior(fp.recent,fp.recentSamples||Math.min(fp.samples,5),.5,4),blended=.55*long+.35*recent+.10;return .85+.30*this.clamp(blended);},m03Weight(history){const p=history&&history.m03;if(!p||!p.samples)return 1;const long=this.posterior(p.long,p.samples,.5,8),recent=this.posterior(p.recent,p.samples,.5,5),variant=this.posterior(Math.max(p.baseHits,p.plusHits)/Math.max(1,p.samples),p.samples,.5,5),coverage=p.samples?1-p.misses/p.samples:.5,blended=.38*long+.22*recent+.12*(p.stability??.5)+.14*variant+.14*coverage,smallSampleGate=.72+.28*this.sampleReliability(p.samples);return(.76+.48*this.clamp(blended))*smallSampleGate;},/*==========================================================
-CURRENT INPUT SUPPORT SCORE + HISTORICAL ADJUSTMENT
-==========================================================*/scoreDigits(models,F,H,T,U,R1,R2,sumT,sumB,total,history){const score=Object.fromEntries(Array.from({length:10},(_,d)=>[d,{digit:d,modelScore:0,formula100Score:0,radarScore:0,backendScore:0,winSetScore:0,selectorBonus:0,selectorScore:0,historicalScore:.5,recentFormScore:.5,stabilityScore:.5,hotStreakBonus:1,confidence:0,redundancyPenalty:1,modelConsensusCount:0,supportSignals:0,conflictSignals:0,reliabilityScore:.5,evidenceScore:.5,uncertainty:1,selectionPenalty:1,selectionScore:0,totalScore:0,qualityGate:1,modelId:null,modelSupportScore:0,modelPriority:1,selectedModel:false,m03Score:0}]));const allowed=new Set(),modelWeights={};let totalModelWeight=0;models.forEach(m=>{const mw=m.id===3?this.m03Weight(history):this.modelWeight(m,history);modelWeights[m.id]=mw;m.historyWeight=mw;totalModelWeight+=mw;m.set.forEach(d=>{if(Number.isInteger(d))allowed.add(d);});});for(let d=0;d<=9;d++){const supporters=models.filter(m=>m.set.includes(d));score[d].modelConsensusCount=supporters.length;score[d].modelScore=totalModelWeight?supporters.reduce((sum,m)=>sum+modelWeights[m.id],0)/totalModelWeight:0;score[d].modelSupportScore=score[d].modelScore;score[d].modelId=supporters[0]?.id??null;score[d].m03Score=history?.m03?.scores?.[d]??0;}const weightedFormulaCounts=Object.fromEntries(Array.from({length:10},(_,d)=>[d,0]));F.signals.forEach(sig=>{weightedFormulaCounts[sig.value]+=this.formulaWeight(sig.id,history);});const maxF=Math.max(...Object.values(weightedFormulaCounts),1);for(let d=0;d<=9;d++)score[d].formula100Score=this.clamp(weightedFormulaCounts[d]/maxF);const x=(R1+R2)%10,y=sumT%10,z=total%10,r1=[this.norm(x-1),x,this.norm(x+1)],r2=[this.norm(y-1),y,this.norm(y+1)],r3=[this.norm(z-1),z,this.norm(z+1)];for(let d=0;d<=9;d++){let h=0;if(r1.includes(d))h++;if(r2.includes(d))h++;if(r3.includes(d))h++;score[d].radarScore=h/3;}const back=[(2*H+R1)%10,(T+R2)%10,sumT%10,Math.abs(T-U)%10,total%10];for(let d=0;d<=9;d++){score[d].backendScore=back.includes(d)?1:0;score[d].winSetScore=(d===z||d===this.norm(z+5))?1:0;const dp=history&&history.digitPerf&&history.digitPerf[d];if(dp&&dp.samples){const longPost=this.posterior(dp.long,dp.samples,.5,6),recentPost=this.posterior(dp.recent,dp.recentSamples||Math.min(dp.samples,5),.5,4);score[d].historicalScore=longPost;score[d].recentFormScore=recentPost;score[d].stabilityScore=dp.stability??.5;score[d].evidenceScore=this.clamp(.55*longPost+.30*recentPost+.15*(dp.stability??.5));score[d].uncertainty=1/Math.sqrt(dp.samples+1);const streak=Math.max(0,dp.streak||0);score[d].hotStreakBonus=1+Math.min(.035,Math.max(0,streak-1)*.008);}}const dataReliability=history?.dataReliability??0;for(let d=0;d<=9;d++){const v=score[d],consensus=v.modelScore,supportValues=[v.formula100Score,v.radarScore,v.backendScore,v.winSetScore],m03Evidence=v.m03Score;v.supportSignals=supportValues.filter(q=>q>=.60).length;v.conflictSignals=supportValues.filter(q=>q<=.25).length;const sortedSupport=[...supportValues].sort((a,b)=>b-a),supportStrength=this.clamp(.40*sortedSupport[0]+.24*sortedSupport[1]+.14*sortedSupport[2]+.08*sortedSupport[3]),supportBreadth=this.sourceBreadthScore(v.supportSignals),hist=v.evidenceScore,m03Boost=this.clamp(m03Evidence*1.8),consensusTier=this.consensusTier(v.modelConsensusCount,models.length),disagreementPenalty=v.modelConsensusCount===1?.94:v.modelConsensusCount===0?.80:1;v.reliabilityScore=this.clamp(.38*consensus+.22*hist+.10*supportBreadth+.10*supportStrength+.10*m03Boost+.10*consensusTier);v.totalScore=this.clamp(.38*consensus+.14*v.formula100Score+.05*v.radarScore+.05*v.backendScore+.02*v.winSetScore+.12*v.historicalScore+.08*v.recentFormScore+.03*v.stabilityScore+.02*supportBreadth+.11*m03Boost);if(history&&history.usable>0){const evidenceGate=.88+.12*this.clamp(v.evidenceScore);const sampleGate=.90+.10*dataReliability;v.totalScore*=evidenceGate*sampleGate;}v.totalScore*=v.hotStreakBonus;v.totalScore*=disagreementPenalty;if(allowed.has(v.digit))v.totalScore*=1.08;const poolStrength=v.modelConsensusCount/Math.max(1,models.length),supportBreadthRatio=v.supportSignals/4;v.selectorBonus=allowed.has(v.digit)?(.035*poolStrength+.025*supportBreadthRatio+.030*Math.max(0,v.reliabilityScore-.5)+.030*m03Boost):0;const deadCandidate=allowed.has(v.digit)&&v.modelConsensusCount<=1&&v.reliabilityScore<.32&&v.evidenceScore<.40&&v.supportSignals===0&&m03Boost<.15,deadPenalty=deadCandidate?.78:1,conflictPenalty=1-Math.min(.24,Math.max(0,v.conflictSignals)*.065);v.selectionPenalty=deadPenalty*conflictPenalty;v.totalScore*=v.selectionPenalty;v.totalScore+=Math.min(.07,v.selectorBonus);v.selectorScore=v.totalScore;v.selectionScore=v.selectorScore;v.uncertainty*=1-.35*dataReliability;}return{score,allowed};},/*==========================================================
-TOURNAMENT ENGINE
-==========================================================*/tournament(models,score){const compareDigits=(a,b)=>{if(!a)return b;if(!b)return a;if(Math.abs(a.selectorScore-b.selectorScore)>.000001)return a.selectorScore>b.selectorScore?a:b;if(Math.abs(a.evidenceScore-b.evidenceScore)>.000001)return a.evidenceScore>b.evidenceScore?a:b;if(a.modelConsensusCount!==b.modelConsensusCount)return a.modelConsensusCount>b.modelConsensusCount?a:b;if(a.modelSupportScore!==b.modelSupportScore)return a.modelSupportScore>b.modelSupportScore?a:b;if(a.reliabilityScore!==b.reliabilityScore)return a.reliabilityScore>b.reliabilityScore?a:b;if(a.backendScore!==b.backendScore)return a.backendScore>b.backendScore?a:b;if(a.formula100Score!==b.formula100Score)return a.formula100Score>b.formula100Score?a:b;return a.digit<=b.digit?a:b;};const modelRounds=models.map(model=>{const first=score[model.set[0]],second=score[model.set[1]],winner=compareDigits(first,second);return{modelId:model.id,modelName:model.name,candidates:[first,second],winner,margin:Math.abs((first?.selectorScore||0)-(second?.selectorScore||0)),base:model.base,variant:model.variant};});let finalWinner=null;const finalists=modelRounds.filter(x=>x.winner).map(x=>x.winner);finalists.forEach(x=>{finalWinner=compareDigits(finalWinner,x);});const losers=finalists.filter(x=>x!==finalWinner).sort((a,b)=>(b?.selectorScore||0)-(a?.selectorScore||0)),finalLoser=losers[0]||null,finalMargin=finalWinner&&finalLoser?Math.abs(finalWinner.selectorScore-finalLoser.selectorScore):0,winningModelId=finalWinner?.modelId??null;if(finalWinner){const finalMarginScore=this.clamp(finalMargin/.10),supportBreadth=this.sourceBreadthScore(finalWinner.supportSignals),baseConfidence=.34*this.clamp(finalWinner.selectorScore)+.20*finalMarginScore+.20*this.clamp(finalWinner.evidenceScore)+.14*supportBreadth+.12*this.clamp(finalWinner.m03Score*1.8),dataReliability=finalWinner?this.clamp((finalWinner.uncertainty?1-finalWinner.uncertainty:0)):0;finalWinner.confidence=this.clamp(.35+.65*baseConfidence);finalWinner.finalMargin=finalMargin;finalWinner.finalOpponent=finalLoser?.digit??null;finalWinner.finalWinner=true;}return{modelRounds,winner01:modelRounds.find(x=>x.modelId===1)?.winner||null,winner02:modelRounds.find(x=>x.modelId===2)?.winner||null,winner03:modelRounds.find(x=>x.modelId===3)?.winner||null,finalWinner,finalLoser,finalMargin,winningModelId};},/*==========================================================
-PROTECTED PAIR CANDIDATES — UNCHANGED
-==========================================================*/collectPairCandidates(digit,models,score){const candidates=[];models.filter(m=>m.set.includes(digit)).forEach(m=>{const sourceStrength=Math.max(0,Math.min(1,.70*((m.historyWeight||1)/1.30)+.30*(score[digit]?.reliabilityScore??.5))),digitStrength=score[digit]?score[digit].selectorScore:0,modelConsensus=score[digit]?score[digit].modelScore:0;(m.pairsMap[digit]||[]).forEach(pair=>{const key=this.pairKey(pair),pairScore=.55*sourceStrength+.30*digitStrength+.15*modelConsensus;candidates.push({pair:String(pair),key,pairScore,modelId:m.id});});});return candidates;},bestPairsForDigit(digit,models,score){const candidates=this.collectPairCandidates(digit,models,score),bestByKey={};candidates.forEach(c=>{if(!bestByKey[c.key]||c.pairScore>bestByKey[c.key].pairScore)bestByKey[c.key]=c;});return Object.values(bestByKey).sort((a,b)=>b.pairScore-a.pairScore||Number(a.key)-Number(b.key)).slice(0,5).map(v=>v.pair);},pairKey(pair){const p=String(pair);if(!/^\\d{2}$/.test(p))return p;return[p[0],p[1]].sort().join('');},buildConsensus(pairSets){const all=[];pairSets.forEach((set,rowIndex)=>{set.slice(0,6).forEach(pair=>all.push({pair:String(pair),rowIndex}));});const counts={};all.forEach(item=>{const key=this.pairKey(item.pair);if(!counts[key])counts[key]={key,score:0,rows:new Set(),pairs:new Set()};counts[key].score++;counts[key].rows.add(item.rowIndex);counts[key].pairs.add(item.pair);});const ranked=Object.values(counts).sort((a,b)=>b.score-a.score||b.rows.size-a.rows.size||Number(a.key)-Number(b.key)),colorMap={};ranked.slice(0,6).forEach((item,index)=>{let color;if(index<2)color='gold';else if(index<4)color='silver';else color='rose';colorMap[item.key]={color,rank:index+1,score:item.score};});return{counts,ranked,colorMap};},sortPairs(pairs){return pairs.map(String).sort((a,b)=>Number(a)-Number(b));},pairClass(pair,colorMap){const info=colorMap[this.pairKey(pair)];if(!info)return'pair';if(info.color==='gold')return'pair pair-gold';if(info.color==='silver')return'pair pair-silver';return'pair pair-rose';},formatPct(v){return`${Math.round(Math.max(0,Math.min(1,v))*1000)/10}%`;},formatDate(date){const s=String(date||'').trim();if(/\\d+\\s+\\S+\\s+\\d+/.test(s)){const p=s.split(/\\s+/);if(p.length>=3)return[p[0],p[1],p.slice(2).join(' ')].join(' · ');}return s;},/*==========================================================
+==========================================================*/
+
+buildModels(H,T,U,R1,R2,sumT,history=null){
+
+const unit=v=>{
+const q=Math.abs(v)%10;
+return[q,(q+1)%10];
+};
+
+const model01Base=this.norm(T+R1);
+const model02Base=this.norm(10-R2);
+
+const m03=
+(history&&history.m03&&Array.isArray(history.m03.currentSet))
+?history.m03.currentSet.slice(0,2)
+:[];
+
+return[
+
+{
+id:1,
+name:'AI โมเดล 01',
+formulaId:1,
+set:unit(model01Base),
+base:model01Base,
+variant:'q/q+1'
+},
+
+{
+id:2,
+name:'AI โมเดล 02',
+formulaId:5,
+set:unit(model02Base),
+base:model02Base,
+variant:'q/q+1'
+},
+
+{
+id:3,
+name:'AI โมเดล 03',
+formulaId:0,
+set:m03.length===2
+?m03
+:[this.norm(model01Base),this.norm(model02Base)],
+base:m03[0]??null,
+variant:'historical-top2',
+experimental:!m03.length
+}
+
+];
+
+},
+
+/*==========================================================
+PROTECTED PAIR / เลขเจาะ ENGINE
+==========================================================*/
+
+buildPairs(models,anchor){
+
+models.forEach(m=>{
+
+let range=[];
+let collision=false;
+
+for(let o=-2;o<=2;o++){
+
+if(
+m.set.includes(this.norm(anchor+o))
+){
+collision=true;
+break;
+}
+
+}
+
+for(
+let o=collision?-3:-2;
+o<=(collision?3:2);
+o++
+){
+range.push(this.norm(anchor+o));
+}
+
+m.pairsMap={};
+
+m.set.forEach(src=>{
+
+let pairs=range
+.filter(p=>p!==src&&!m.set.includes(p))
+.map(p=>`${src}${p}`);
+
+let next=(src+1)%10;
+
+while(pairs.length<5){
+
+if(
+next!==src &&
+!m.set.includes(next) &&
+!pairs.includes(`${src}${next}`)
+){
+pairs.push(`${src}${next}`);
+}
+
+next=(next+1)%10;
+}
+
+m.pairsMap[src]=[
+...new Set(pairs)
+]
+.filter(p=>p[0]!==p[1])
+.slice(0,5);
+
+});
+
+});
+
+},
+
+/*==========================================================
+HISTORICAL ENGINE — V12.7
+==========================================================*/
+
+actualDigits(record){
+
+return new Set(
+(String(record.n3)+String(record.n2))
+.split('')
+.map(Number)
+);
+
+},
+
+buildHistory(records){
+
+/*
+IMPORTANT:
+Use maximum 10 latest chronological draws.
+*/
+
+const ordered=this.limitHistory(records||[]);
+
+const modelPerf=Object.fromEntries(
+Array.from({length:3},(_,i)=>[
+i+1,
+{
+long:.5,
+recent:.5,
+stability:.5,
+samples:0,
+hits:0,
+recentHits:0,
+recentWeight:0,
+recentSamples:0,
+baseHits:0,
+plusHits:0,
+misses:0,
+baseRate:.5,
+plusRate:.5
+}
+])
+);
+
+const formulaPerf=Object.fromEntries(
+Array.from({length:100},(_,i)=>[
+i+1,
+{
+long:.5,
+recent:.5,
+samples:0,
+hits:0,
+recentHits:0,
+recentWeight:0,
+recentSamples:0
+}
+])
+);
+
+const digitPerf=Object.fromEntries(
+Array.from({length:10},(_,d)=>[
+d,
+{
+long:.5,
+recent:.5,
+stability:.5,
+samples:0,
+hits:0,
+recentHits:0,
+recentWeight:0,
+recentSamples:0,
+streak:0,
+maxStreak:0
+}
+])
+);
+
+/*
+Global occurrence evidence.
+This is deliberately separate from candidate-conditioned evidence.
+It prevents selection bias from making a digit look stronger merely
+because a model repeatedly selected it.
+*/
+
+const globalDigitPerf=Object.fromEntries(
+Array.from({length:10},(_,d)=>[
+d,
+{
+hits:0,
+samples:0,
+recentHits:0,
+recentWeight:0,
+recentSamples:0,
+long:.5,
+recent:.5
+}
+])
+);
+
+const transitions=[];
+
+const usable=Math.max(0,ordered.length-1);
+
+const recentWindow=Math.min(
+5,
+usable
+);
+
+if(!usable){
+
+return{
+modelPerf,
+formulaPerf,
+digitPerf,
+globalDigitPerf,
+transitions,
+usable:0,
+recentWindow:0,
+
+m03:{
+currentSet:[],
+scores:{},
+samples:0,
+patternSamples:0,
+baseHits:0,
+plusHits:0,
+misses:0,
+long:.5,
+recent:.5,
+stability:.5
+}
+};
+
+}
+
+for(let i=1;i<ordered.length;i++){
+
+const source=ordered[i-1];
+const target=ordered[i];
+
+const d3=source.n3.split('').map(Number);
+const d2=source.n2.split('').map(Number);
+
+const H=d3[0];
+const T=d3[1];
+const U=d3[2];
+const R1=d2[0];
+const R2=d2[1];
+
+const sumT=H+T+U;
+
+const F=this.formulas(
+H,T,U,R1,R2,
+sumT,
+R1+R2,
+sumT+R1+R2
+);
+
+const models=this.buildModels(
+H,T,U,R1,R2,
+sumT,
+null
+);
+
+const actual=this.actualDigits(target);
+
+const recent=
+i>ordered.length-1-recentWindow;
+
+const recencyWeight=
+Math.pow(
+.90,
+ordered.length-1-i
+);
+
+/*----------------------------------------
+MODEL PERFORMANCE
+----------------------------------------*/
+
+models.slice(0,2).forEach(m=>{
+
+const unique=[...new Set(m.set)];
+
+const hit=
+unique.filter(d=>actual.has(d)).length/
+Math.max(1,unique.length);
+
+const mp=modelPerf[m.id];
+
+const base=m.base;
+const plus=(base+1)%10;
+
+mp.hits+=hit;
+mp.samples++;
+
+mp.baseHits+=actual.has(base)?1:0;
+mp.plusHits+=actual.has(plus)?1:0;
+
+if(hit===0)
+mp.misses++;
+
+if(recent){
+
+mp.recentHits+=hit*recencyWeight;
+mp.recentWeight+=recencyWeight;
+mp.recentSamples++;
+
+}
+
+});
+
+/*----------------------------------------
+FORMULA PERFORMANCE
+----------------------------------------*/
+
+F.signals.forEach(sig=>{
+
+const fp=formulaPerf[sig.id];
+
+const hit=actual.has(sig.value)?1:0;
+
+fp.hits+=hit;
+fp.samples++;
+
+if(recent){
+
+fp.recentHits+=hit*recencyWeight;
+fp.recentWeight+=recencyWeight;
+fp.recentSamples++;
+
+}
+
+});
+
+/*----------------------------------------
+CANDIDATE-CONDITIONED DIGIT PERFORMANCE
+----------------------------------------*/
+
+const candidateDigits=
+new Set(
+models
+.slice(0,2)
+.flatMap(m=>m.set)
+);
+
+candidateDigits.forEach(d=>{
+
+const dp=digitPerf[d];
+
+const hit=actual.has(d)?1:0;
+
+dp.hits+=hit;
+dp.samples++;
+
+if(recent){
+
+dp.recentHits+=hit*recencyWeight;
+dp.recentWeight+=recencyWeight;
+dp.recentSamples++;
+
+}
+
+});
+
+/*----------------------------------------
+GLOBAL ACTUAL DIGIT PERFORMANCE
+----------------------------------------*/
+
+actual.forEach(d=>{
+
+const gp=globalDigitPerf[d];
+
+gp.hits++;
+gp.samples++;
+
+if(recent){
+
+gp.recentHits+=recencyWeight;
+gp.recentWeight+=recencyWeight;
+gp.recentSamples++;
+
+}
+
+});
+
+transitions.push({
+index:i,
+sourceDate:source.date,
+targetDate:target.date,
+source,
+target,
+models:models.slice(0,2),
+formulaSignals:F.signals,
+actual:[...actual]
+});
+
+}
+
+/*==========================================================
+MODEL FINAL STATS
+==========================================================*/
+
+Object.values(modelPerf).forEach(mp=>{
+
+mp.long=
+mp.samples
+?mp.hits/mp.samples
+:.5;
+
+mp.recent=
+mp.recentWeight
+?mp.recentHits/mp.recentWeight
+:mp.long;
+
+mp.stability=
+1-
+Math.min(
+1,
+Math.abs(mp.long-mp.recent)*2
+);
+
+mp.baseRate=
+mp.samples
+?mp.baseHits/mp.samples
+:.5;
+
+mp.plusRate=
+mp.samples
+?mp.plusHits/mp.samples
+:.5;
+
+});
+
+/*==========================================================
+FORMULA FINAL STATS
+==========================================================*/
+
+Object.values(formulaPerf).forEach(fp=>{
+
+fp.long=
+fp.samples
+?fp.hits/fp.samples
+:.5;
+
+fp.recent=
+fp.recentWeight
+?fp.recentHits/fp.recentWeight
+:fp.long;
+
+});
+
+/*==========================================================
+CANDIDATE DIGIT STATS
+==========================================================*/
+
+for(let d=0;d<=9;d++){
+
+const dp=digitPerf[d];
+
+if(!dp.samples)
+continue;
+
+dp.long=
+dp.hits/dp.samples;
+
+dp.recent=
+dp.recentWeight
+?dp.recentHits/dp.recentWeight
+:dp.long;
+
+dp.stability=
+1-
+Math.min(
+1,
+Math.abs(dp.long-dp.recent)*2
+);
+
+let streak=0;
+
+for(
+let j=transitions.length-1;
+j>=0;
+j--
+){
+
+const tr=transitions[j];
+
+if(
+!tr.models.some(
+m=>m.set.includes(d)
+)
+)
+continue;
+
+if(tr.actual.includes(d)){
+
+streak++;
+
+dp.maxStreak=
+Math.max(
+dp.maxStreak,
+streak
+);
+
+}else{
+
+break;
+
+}
+
+}
+
+dp.streak=streak;
+
+}
+
+/*==========================================================
+GLOBAL DIGIT STATS
+==========================================================*/
+
+for(let d=0;d<=9;d++){
+
+const gp=globalDigitPerf[d];
+
+if(!gp.samples)
+continue;
+
+gp.long=
+gp.hits/gp.samples;
+
+gp.recent=
+gp.recentWeight
+?gp.recentHits/gp.recentWeight
+:gp.long;
+
+}
+
+/*==========================================================
+MODEL 03 WALK-FORWARD VALIDATION
+==========================================================*/
+
+const m03Perf={
+samples:0,
+patternSamples:0,
+baseHits:0,
+plusHits:0,
+misses:0,
+long:.5,
+recent:.5,
+stability:.5
+};
+
+for(
+let i=2;
+i<ordered.length;
+i++
+){
+
+const source=ordered[i-1];
+
+const train=ordered.slice(0,i);
+
+const pred=this.m03Predict(
+source,
+train
+);
+
+const actual=this.actualDigits(
+ordered[i]
+);
+
+if(!pred.set.length)
+continue;
+
+const hit=
+pred.set.filter(
+d=>actual.has(d)
+).length/
+Math.max(1,pred.set.length);
+
+m03Perf.samples++;
+m03Perf.patternSamples+=pred.matches||0;
+
+m03Perf.baseHits+=
+pred.set[0]!==undefined &&
+actual.has(pred.set[0])
+?1:0;
+
+m03Perf.plusHits+=
+pred.set[1]!==undefined &&
+actual.has(pred.set[1])
+?1:0;
+
+if(hit===0)
+m03Perf.misses++;
+
+}
+
+m03Perf.long=
+m03Perf.samples
+?
+(
+m03Perf.baseHits+
+m03Perf.plusHits
+)/
+(m03Perf.samples*2)
+:.5;
+
+m03Perf.recent=m03Perf.long;
+
+m03Perf.stability=.5;
+
+const current=this.m03Predict(
+ordered[ordered.length-1],
+ordered.slice(0,-1)
+);
+
+return{
+
+modelPerf,
+formulaPerf,
+digitPerf,
+globalDigitPerf,
+transitions,
+usable,
+recentWindow,
+
+m03:{
+...m03Perf,
+currentSet:current.set.slice(0,2),
+scores:current.scores||{},
+samples:m03Perf.samples,
+patternSamples:current.matches||0,
+baseHits:m03Perf.baseHits,
+plusHits:m03Perf.plusHits,
+misses:m03Perf.misses,
+long:m03Perf.long,
+recent:m03Perf.recent,
+stability:m03Perf.stability
+}
+
+};
+
+},
+
+featureVector(record){
+
+const d3=
+String(record.n3)
+.padStart(3,'0')
+.split('')
+.map(Number);
+
+const d2=
+String(record.n2)
+.padStart(2,'0')
+.split('')
+.map(Number);
+
+const H=d3[0];
+const T=d3[1];
+const U=d3[2];
+const R1=d2[0];
+const R2=d2[1];
+
+const sumT=(H+T+U)%10;
+const sumB=(R1+R2)%10;
+
+return[
+H,T,U,R1,R2,
+sumT,sumB,
+(sumT+sumB)%10
+];
+
+},
+
+featureSimilarity(a,b){
+
+const A=this.featureVector(a);
+const B=this.featureVector(b);
+
+const weights=[
+.12,.15,.12,.12,
+.15,.12,.10,.12
+];
+
+let s=0;
+let w=0;
+
+for(let i=0;i<A.length;i++){
+
+const dist=
+Math.min(
+Math.abs(A[i]-B[i]),
+10-Math.abs(A[i]-B[i])
+);
+
+const part=
+dist===0
+?1
+:dist===1
+?.55
+:dist===2
+?.20
+:0;
+
+s+=weights[i]*part;
+w+=weights[i];
+
+}
+
+return this.clamp(s/w);
+},
+
+m03Predict(source,records){
+
+const ordered=this.limitHistory(records||[]);
+
+const candidates=[];
+const global=Array.from(
+{length:10},
+()=>0
+);
+
+let totalTargets=0;
+
+for(
+let i=1;
+i<ordered.length;
+i++
+){
+
+const pastSource=ordered[i-1];
+const target=ordered[i];
+
+const sim=
+this.featureSimilarity(
+source,
+pastSource
+);
+
+if(sim<0.60)
+continue;
+
+const age=
+ordered.length-1-i;
+
+const recency=
+Math.pow(
+.985,
+Math.max(0,age)
+);
+
+const weight=
+Math.pow(
+.55+.45*sim,
+2
+)*recency;
+
+const actual=
+this.actualDigits(target);
+
+actual.forEach(d=>{
+global[d]+=weight;
+});
+
+totalTargets+=weight;
+
+candidates.push({
+index:i,
+similarity:sim,
+weight,
+targetDate:target.date,
+actual:[...actual]
+});
+
+}
+
+if(!candidates.length){
+
+return{
+set:[],
+scores:{},
+matches:0
+};
+
+}
+
+const scores=
+Array.from(
+{length:10},
+(_,d)=>
+global[d]/
+Math.max(totalTargets,1)
+);
+
+const ranked=
+scores
+.map((score,d)=>({
+d,
+score
+}))
+.sort(
+(a,b)=>
+b.score-a.score||
+a.d-b.d
+);
+
+const set=
+ranked
+.slice(0,2)
+.map(x=>x.d);
+
+return{
+set,
+scores:Object.fromEntries(
+ranked.map(x=>[x.d,x.score])
+),
+matches:candidates.length,
+details:candidates.slice(-20)
+};
+
+},
+
+posterior(
+rate,
+samples,
+prior=.5,
+priorN=6
+){
+
+const n=
+Math.max(
+0,
+Number(samples)||0
+);
+
+return(
+rate*n+
+prior*priorN
+)/
+(n+priorN);
+
+},
+
+/*==========================================================
+MODEL WEIGHT — SMALL SAMPLE HARDENED
+==========================================================*/
+
+modelWeight(m,history){
+
+const hp=
+history&&
+history.modelPerf&&
+history.modelPerf[m.id];
+
+if(!hp)
+return 1;
+
+const long=
+this.posterior(
+hp.long,
+hp.samples,
+.5,
+8
+);
+
+const recent=
+this.posterior(
+hp.recent,
+hp.recentSamples||
+Math.min(hp.samples,5),
+.5,
+5
+);
+
+const base=
+this.posterior(
+hp.baseRate,
+hp.samples,
+.5,
+6
+);
+
+const plus=
+this.posterior(
+hp.plusRate,
+hp.samples,
+.5,
+6
+);
+
+const variant=
+Math.max(base,plus);
+
+const blended=
+.40*long+
+.25*recent+
+.15*(hp.stability??.5)+
+.20*variant;
+
+const confidence=
+this.sampleConfidence(
+hp.samples
+);
+
+const raw=
+.78+
+.44*this.clamp(blended);
+
+return 1+
+(raw-1)*(.55+.45*confidence);
+
+},
+
+/*==========================================================
+FORMULA WEIGHT
+Strong shrinkage because Formula-100 has only a few
+historical observations when history is limited to 10 draws.
+==========================================================*/
+
+formulaWeight(id,history){
+
+const fp=
+history&&
+history.formulaPerf&&
+history.formulaPerf[id];
+
+if(!fp)
+return 1;
+
+const long=
+this.posterior(
+fp.long,
+fp.samples,
+.5,
+12
+);
+
+const recent=
+this.posterior(
+fp.recent,
+fp.recentSamples||
+Math.min(fp.samples,5),
+.5,
+8
+);
+
+const blended=
+.55*long+
+.35*recent+
+.10;
+
+const confidence=
+this.sampleConfidence(
+Math.min(fp.samples,10)
+);
+
+const raw=
+.85+
+.30*this.clamp(blended);
+
+return 1+
+(raw-1)*(.45+.55*confidence);
+
+},
+
+m03Weight(history){
+
+const p=
+history&&history.m03;
+
+if(!p||!p.samples)
+return 1;
+
+const long=
+this.posterior(
+p.long,
+p.samples,
+.5,
+8
+);
+
+const recent=
+this.posterior(
+p.recent,
+p.samples,
+.5,
+5
+);
+
+const variant=
+this.posterior(
+Math.max(
+p.baseHits,
+p.plusHits
+)/
+Math.max(1,p.samples),
+p.samples,
+.5,
+6
+);
+
+const blended=
+.45*long+
+.25*recent+
+.15*(p.stability??.5)+
+.15*variant;
+
+const confidence=
+this.sampleConfidence(
+p.samples
+);
+
+const raw=
+.78+
+.44*this.clamp(blended);
+
+return 1+
+(raw-1)*(.55+.45*confidence);
+
+},
+
+/*==========================================================
+CURRENT INPUT SUPPORT SCORE
+V12.7 ELITE SELECTION
+==========================================================*/
+
+scoreDigits(
+models,
+F,
+H,T,U,R1,R2,
+sumT,sumB,total,
+history
+){
+
+const score=
+Object.fromEntries(
+Array.from(
+{length:10},
+(_,d)=>[
+d,
+{
+digit:d,
+
+modelScore:0,
+formula100Score:0,
+radarScore:0,
+backendScore:0,
+winSetScore:0,
+
+selectorBonus:0,
+selectorScore:0,
+
+historicalScore:.5,
+recentFormScore:.5,
+globalHistoricalScore:.5,
+stabilityScore:.5,
+
+hotStreakBonus:1,
+
+confidence:0,
+
+redundancyPenalty:1,
+modelConflictPenalty:1,
+
+modelConsensusCount:0,
+modelAgreementScore:0,
+
+supportSignals:0,
+conflictSignals:0,
+
+reliabilityScore:.5,
+evidenceScore:.5,
+
+uncertainty:1,
+selectionPenalty:1,
+selectionScore:0,
+totalScore:0,
+
+qualityGate:1,
+
+modelId:null,
+modelSupportScore:0,
+modelPriority:1,
+selectedModel:false,
+
+m03Score:0,
+sampleConfidence:0
+}
+]
+)
+);
+
+const allowed=new Set();
+const modelWeights={};
+
+let totalModelWeight=0;
+
+models.forEach(m=>{
+
+const mw=
+m.id===3
+?this.m03Weight(history)
+:this.modelWeight(m,history);
+
+modelWeights[m.id]=mw;
+
+m.historyWeight=mw;
+
+totalModelWeight+=mw;
+
+m.set.forEach(d=>{
+if(Number.isInteger(d))
+allowed.add(d);
+});
+
+});
+
+/*==========================================================
+MODEL CONSENSUS
+==========================================================*/
+
+for(let d=0;d<=9;d++){
+
+const supporters=
+models.filter(
+m=>m.set.includes(d)
+);
+
+score[d].modelConsensusCount=
+supporters.length;
+
+score[d].modelScore=
+totalModelWeight
+?
+supporters.reduce(
+(sum,m)=>
+sum+modelWeights[m.id],
+0
+)/
+totalModelWeight
+:0;
+
+score[d].modelSupportScore=
+score[d].modelScore;
+
+score[d].modelId=
+supporters[0]?.id??null;
+
+score[d].m03Score=
+history?.m03?.scores?.[d]??0;
+
+score[d].modelAgreementScore=
+this.consensusTier(
+supporters.length,
+models.length
+);
+
+}
+
+/*==========================================================
+FORMULA 100
+==========================================================*/
+
+const weightedFormulaCounts=
+Object.fromEntries(
+Array.from(
+{length:10},
+(_,d)=>[d,0]
+)
+);
+
+F.signals.forEach(sig=>{
+
+weightedFormulaCounts[sig.value]+=
+this.formulaWeight(
+sig.id,
+history
+);
+
+});
+
+const maxF=
+Math.max(
+...Object.values(weightedFormulaCounts),
+1
+);
+
+for(let d=0;d<=9;d++){
+
+score[d].formula100Score=
+this.clamp(
+weightedFormulaCounts[d]/maxF
+);
+
+}
+
+/*==========================================================
+RADAR
+==========================================================*/
+
+const x=(R1+R2)%10;
+const y=sumT%10;
+const z=total%10;
+
+const r1=[
+this.norm(x-1),
+x,
+this.norm(x+1)
+];
+
+const r2=[
+this.norm(y-1),
+y,
+this.norm(y+1)
+];
+
+const r3=[
+this.norm(z-1),
+z,
+this.norm(z+1)
+];
+
+for(let d=0;d<=9;d++){
+
+let h=0;
+
+if(r1.includes(d))h++;
+if(r2.includes(d))h++;
+if(r3.includes(d))h++;
+
+score[d].radarScore=h/3;
+
+}
+
+/*==========================================================
+BACKEND
+==========================================================*/
+
+const back=[
+(2*H+R1)%10,
+(T+R2)%10,
+sumT%10,
+Math.abs(T-U)%10,
+total%10
+];
+
+for(let d=0;d<=9;d++){
+
+score[d].backendScore=
+back.includes(d)?1:0;
+
+score[d].winSetScore=
+(d===z||
+d===this.norm(z+5))
+?1:0;
+
+/*----------------------------------------
+CANDIDATE-CONDITIONED HISTORY
+----------------------------------------*/
+
+const dp=
+history&&
+history.digitPerf&&
+history.digitPerf[d];
+
+if(dp&&dp.samples){
+
+const longPost=
+this.posterior(
+dp.long,
+dp.samples,
+.5,
+6
+);
+
+const recentPost=
+this.posterior(
+dp.recent,
+dp.recentSamples||
+Math.min(dp.samples,5),
+.5,
+5
+);
+
+score[d].historicalScore=
+longPost;
+
+score[d].recentFormScore=
+recentPost;
+
+score[d].stabilityScore=
+dp.stability??.5;
+
+/*----------------------------------------
+GLOBAL HISTORY
+----------------------------------------*/
+
+const gp=
+history&&
+history.globalDigitPerf&&
+history.globalDigitPerf[d];
+
+if(gp&&gp.samples){
+
+const globalLong=
+this.posterior(
+gp.long,
+gp.samples,
+.5,
+10
+);
+
+const globalRecent=
+this.posterior(
+gp.recent,
+gp.recentSamples||
+Math.min(gp.samples,5),
+.5,
+6
+);
+
+score[d].globalHistoricalScore=
+this.clamp(
+.65*globalLong+
+.35*globalRecent
+);
+
+}
+
+/*----------------------------------------
+EVIDENCE
+----------------------------------------*/
+
+score[d].evidenceScore=
+this.clamp(
+.45*longPost+
+.25*recentPost+
+.20*score[d].globalHistoricalScore+
+.10*(dp.stability??.5)
+);
+
+score[d].uncertainty=
+1/
+Math.sqrt(
+dp.samples+1
+);
+
+const streak=
+Math.max(
+0,
+dp.streak||0
+);
+
+score[d].hotStreakBonus=
+1+
+Math.min(
+.035,
+Math.max(
+0,
+streak-1
+)*.008
+);
+
+score[d].sampleConfidence=
+this.sampleConfidence(
+dp.samples
+);
+
+}else{
+
+/*
+If digit has never been candidate-conditioned,
+do NOT pretend it has strong historical evidence.
+*/
+
+const gp=
+history&&
+history.globalDigitPerf&&
+history.globalDigitPerf[d];
+
+if(gp&&gp.samples){
+
+const globalLong=
+this.posterior(
+gp.long,
+gp.samples,
+.5,
+10
+);
+
+const globalRecent=
+this.posterior(
+gp.recent,
+gp.recentSamples||
+Math.min(gp.samples,5),
+.5,
+6
+);
+
+score[d].globalHistoricalScore=
+this.clamp(
+.65*globalLong+
+.35*globalRecent
+);
+
+score[d].evidenceScore=
+this.clamp(
+.70*.5+
+.30*score[d].globalHistoricalScore
+);
+
+}
+
+}
+
+}
+
+/*==========================================================
+FINAL COMPOSITE
+==========================================================*/
+
+for(let d=0;d<=9;d++){
+
+const v=score[d];
+
+const consensus=
+v.modelScore;
+
+const supportValues=[
+v.formula100Score,
+v.radarScore,
+v.backendScore,
+v.winSetScore
+];
+
+v.supportSignals=
+supportValues.filter(
+x=>x>=.60
+).length;
+
+v.conflictSignals=
+supportValues.filter(
+x=>x<=.25
+).length;
+
+const sortedSupport=
+[...supportValues]
+.sort((a,b)=>b-a);
+
+const supportStrength=
+this.clamp(
+.40*sortedSupport[0]+
+.24*sortedSupport[1]+
+.14*sortedSupport[2]+
+.08*sortedSupport[3]
+);
+
+const supportBreadth=
+this.sourceBreadthScore(
+v.supportSignals
+);
+
+const hist=
+v.evidenceScore;
+
+const m03Boost=
+this.clamp(
+v.m03Score*1.8
+);
+
+/*----------------------------------------
+MODEL AGREEMENT
+----------------------------------------*/
+
+const agreement=
+v.modelAgreementScore;
+
+/*----------------------------------------
+MODEL CONFLICT
+----------------------------------------*/
+
+const modelConflict=
+v.modelConsensusCount===1
+?
+.10
+:
+v.modelConsensusCount===2
+?
+.035
+:
+0;
+
+v.modelConflictPenalty=
+1-modelConflict;
+
+/*----------------------------------------
+RELIABILITY
+----------------------------------------*/
+
+v.reliabilityScore=
+this.clamp(
+
+.32*consensus+
+.23*hist+
+.12*agreement+
+.08*supportBreadth+
+.08*supportStrength+
+.17*m03Boost
+
+);
+
+/*----------------------------------------
+V12.7 TOTAL SCORE
+----------------------------------------
+
+Weight philosophy:
+
+32% Model Consensus
+13% Historical Evidence
+08% Recent Form
+07% Model Agreement
+10% M03 Historical Similarity
+10% Formula-100
+05% Radar
+04% Backend
+01% WinSet
+
+Remaining weight is distributed through
+support breadth / reliability gates.
+----------------------------------------*/
+
+v.totalScore=
+this.clamp(
+
+.32*consensus+
+.10*v.formula100Score+
+.05*v.radarScore+
+.04*v.backendScore+
+.01*v.winSetScore+
+
+.13*v.historicalScore+
+.08*v.recentFormScore+
+
+.07*agreement+
+.02*v.stabilityScore+
+
+.03*supportBreadth+
+.10*m03Boost+
+
+.05*v.globalHistoricalScore
+
+);
+
+/*----------------------------------------
+HISTORICAL QUALITY GATE
+----------------------------------------*/
+
+if(history&&history.usable>0){
+
+const histQuality=
+this.sampleConfidence(
+history.usable
+);
+
+v.totalScore*=
+.92+
+.08*this.clamp(
+v.evidenceScore
+);
+
+v.totalScore*=
+.94+
+.06*histQuality;
+
+}
+
+/*----------------------------------------
+ANTI-OVERFIT GATE
+----------------------------------------*/
+
+if(history&&history.usable<4){
+
+/*
+When there are only 1-3 transitions,
+historical evidence cannot safely dominate.
+*/
+
+v.totalScore=
+.65*v.totalScore+
+.35*consensus;
+
+}
+
+/*----------------------------------------
+CONFLICT PENALTY
+----------------------------------------*/
+
+const externalConflict=
+Math.min(
+.18,
+Math.max(
+0,
+v.conflictSignals
+)*.045
+);
+
+const finalConflictPenalty=
+v.modelConflictPenalty*
+(1-externalConflict);
+
+v.selectionPenalty=
+finalConflictPenalty;
+
+v.totalScore*=
+v.selectionPenalty;
+
+/*----------------------------------------
+CANDIDATE POOL BONUS
+----------------------------------------*/
+
+if(allowed.has(v.digit)){
+
+const poolStrength=
+v.modelConsensusCount/
+Math.max(
+1,
+models.length
+);
+
+const supportBreadthRatio=
+v.supportSignals/4;
+
+v.selectorBonus=
+.025*poolStrength+
+.018*supportBreadthRatio+
+.022*Math.max(
+0,
+v.reliabilityScore-.5
+)+
+.025*m03Boost+
+.030*agreement;
+
+}else{
+
+v.selectorBonus=0;
+
+}
+
+/*----------------------------------------
+DEAD CANDIDATE PROTECTION
+----------------------------------------*/
+
+const deadCandidate=
+allowed.has(v.digit)&&
+v.modelConsensusCount<=1&&
+v.reliabilityScore<.32&&
+v.evidenceScore<.40&&
+v.supportSignals===0&&
+m03Boost<.15;
+
+if(deadCandidate){
+
+v.qualityGate=.80;
+v.totalScore*=.80;
+
+}else{
+
+v.qualityGate=1;
+
+}
+
+/*----------------------------------------
+FINAL HOT STREAK
+----------------------------------------*/
+
+v.totalScore*=
+v.hotStreakBonus;
+
+/*----------------------------------------
+SMALL SAMPLE PROTECTION
+----------------------------------------
+
+Do not allow weak historical evidence
+to create an artificial winner.
+----------------------------------------*/
+
+if(
+history&&
+history.usable>0&&
+v.modelConsensusCount===1&&
+v.sampleConfidence<
+.60
+){
+
+v.totalScore=
+.90*v.totalScore+
+.10*v.modelScore;
+
+}
+
+/*----------------------------------------
+FINAL SELECTOR SCORE
+----------------------------------------*/
+
+v.totalScore+=
+Math.min(
+.06,
+v.selectorBonus
+);
+
+v.selectorScore=
+this.clamp(
+v.totalScore
+);
+
+v.selectionScore=
+v.selectorScore;
+
+}
+
+return{
+score,
+allowed
+};
+
+},
+
+/*==========================================================
+TOURNAMENT ENGINE — V12.7
+==========================================================*/
+
+tournament(models,score){
+
+const compareDigits=(a,b)=>{
+
+if(!a)return b;
+if(!b)return a;
+
+if(
+Math.abs(
+a.selectorScore-
+b.selectorScore
+)>.000001
+){
+return
+a.selectorScore>b.selectorScore
+?a:b;
+}
+
+/* 1. Historical evidence */
+
+if(
+Math.abs(
+a.evidenceScore-
+b.evidenceScore
+)>.000001
+){
+return
+a.evidenceScore>b.evidenceScore
+?a:b;
+}
+
+/* 2. Model agreement */
+
+if(
+a.modelAgreementScore!==
+b.modelAgreementScore
+){
+return
+a.modelAgreementScore>
+b.modelAgreementScore
+?a:b;
+}
+
+/* 3. Model consensus */
+
+if(
+a.modelSupportScore!==
+b.modelSupportScore
+){
+return
+a.modelSupportScore>
+b.modelSupportScore
+?a:b;
+}
+
+/* 4. Recent form */
+
+if(
+a.recentFormScore!==
+b.recentFormScore
+){
+return
+a.recentFormScore>
+b.recentFormScore
+?a:b;
+}
+
+/* 5. Backend */
+
+if(
+a.backendScore!==
+b.backendScore
+){
+return
+a.backendScore>
+b.backendScore
+?a:b;
+}
+
+/* 6. Formula */
+
+if(
+a.formula100Score!==
+b.formula100Score
+){
+return
+a.formula100Score>
+b.formula100Score
+?a:b;
+}
+
+/* deterministic final tie */
+
+return
+a.digit<=b.digit
+?a:b;
+
+};
+
+const modelRounds=
+models.map(model=>{
+
+const first=
+score[model.set[0]];
+
+const second=
+score[model.set[1]];
+
+const winner=
+compareDigits(
+first,
+second
+);
+
+return{
+modelId:model.id,
+modelName:model.name,
+candidates:[
+first,
+second
+],
+winner,
+margin:
+Math.abs(
+(first?.selectorScore||0)-
+(second?.selectorScore||0)
+),
+base:model.base,
+variant:model.variant
+};
+
+});
+
+let finalWinner=null;
+
+const finalists=
+modelRounds
+.filter(x=>x.winner)
+.map(x=>x.winner);
+
+finalists.forEach(x=>{
+
+finalWinner=
+compareDigits(
+finalWinner,
+x
+);
+
+});
+
+const losers=
+finalists
+.filter(x=>x!==finalWinner)
+.sort(
+(a,b)=>
+(b?.selectorScore||0)-
+(a?.selectorScore||0)
+);
+
+const finalLoser=
+losers[0]||null;
+
+const finalMargin=
+finalWinner&&finalLoser
+?
+Math.abs(
+finalWinner.selectorScore-
+finalLoser.selectorScore
+)
+:0;
+
+const winningModelId=
+finalWinner?.modelId??null;
+
+/*==========================================================
+FINAL CONFIDENCE
+==========================================================*/
+
+if(finalWinner){
+
+const finalMarginScore=
+this.clamp(
+finalMargin/.10
+);
+
+const supportBreadth=
+this.sourceBreadthScore(
+finalWinner.supportSignals
+);
+
+const agreement=
+finalWinner.modelAgreementScore;
+
+const baseConfidence=
+.28*this.clamp(
+finalWinner.selectorScore
+)+
+
+.18*finalMarginScore+
+
+.20*this.clamp(
+finalWinner.evidenceScore
+)+
+
+.15*supportBreadth+
+
+.12*this.clamp(
+finalWinner.m03Score*1.8
+)+
+
+.07*agreement;
+
+finalWinner.confidence=
+this.clamp(
+.30+
+.70*baseConfidence
+);
+
+finalWinner.finalMargin=
+finalMargin;
+
+finalWinner.finalOpponent=
+finalLoser?.digit??null;
+
+finalWinner.finalWinner=true;
+
+}
+
+return{
+
+modelRounds,
+
+winner01:
+modelRounds.find(
+x=>x.modelId===1
+)?.winner||null,
+
+winner02:
+modelRounds.find(
+x=>x.modelId===2
+)?.winner||null,
+
+winner03:
+modelRounds.find(
+x=>x.modelId===3
+)?.winner||null,
+
+finalWinner,
+finalLoser,
+finalMargin,
+winningModelId
+
+};
+
+},
+
+/*==========================================================
+PROTECTED PAIR CANDIDATES
+==========================================================*/
+
+collectPairCandidates(digit,models,score){
+
+const candidates=[];
+
+models
+.filter(m=>m.set.includes(digit))
+.forEach(m=>{
+
+const sourceStrength=
+Math.max(
+0,
+Math.min(
+1,
+.70*
+(
+(m.historyWeight||1)/1.30
+)+
+.30*
+(
+score[digit]?.reliabilityScore??.5
+)
+)
+);
+
+const digitStrength=
+score[digit]
+?score[digit].selectorScore
+:0;
+
+const modelConsensus=
+score[digit]
+?score[digit].modelScore
+:0;
+
+(m.pairsMap[digit]||[])
+.forEach(pair=>{
+
+const key=this.pairKey(pair);
+
+const pairScore=
+.55*sourceStrength+
+.30*digitStrength+
+.15*modelConsensus;
+
+candidates.push({
+pair:String(pair),
+key,
+pairScore,
+modelId:m.id
+});
+
+});
+
+});
+
+return candidates;
+
+},
+
+bestPairsForDigit(digit,models,score){
+
+const candidates=
+this.collectPairCandidates(
+digit,
+models,
+score
+);
+
+const bestByKey={};
+
+candidates.forEach(c=>{
+
+if(
+!bestByKey[c.key]||
+c.pairScore>
+bestByKey[c.key].pairScore
+){
+bestByKey[c.key]=c;
+}
+
+});
+
+return Object.values(bestByKey)
+.sort(
+(a,b)=>
+b.pairScore-a.pairScore||
+Number(a.key)-Number(b.key)
+)
+.slice(0,5)
+.map(v=>v.pair);
+
+},
+
+pairKey(pair){
+
+const p=String(pair);
+
+if(!/^\d{2}$/.test(p))
+return p;
+
+return[
+p[0],
+p[1]
+]
+.sort()
+.join('');
+},
+
+buildConsensus(pairSets){
+
+const all=[];
+
+pairSets.forEach((set,rowIndex)=>{
+
+set.slice(0,6).forEach(pair=>{
+
+all.push({
+pair:String(pair),
+rowIndex
+});
+
+});
+
+});
+
+const counts={};
+
+all.forEach(item=>{
+
+const key=this.pairKey(item.pair);
+
+if(!counts[key]){
+
+counts[key]={
+key,
+score:0,
+rows:new Set(),
+pairs:new Set()
+};
+
+}
+
+counts[key].score++;
+
+counts[key].rows.add(
+item.rowIndex
+);
+
+counts[key].pairs.add(
+item.pair
+);
+
+});
+
+const ranked=
+Object.values(counts)
+.sort(
+(a,b)=>
+b.score-a.score||
+b.rows.size-a.rows.size||
+Number(a.key)-Number(b.key)
+);
+
+const colorMap={};
+
+ranked
+.slice(0,6)
+.forEach((item,index)=>{
+
+let color;
+
+if(index<2)
+color='gold';
+else if(index<4)
+color='silver';
+else
+color='rose';
+
+colorMap[item.key]={
+color,
+rank:index+1,
+score:item.score
+};
+
+});
+
+return{
+counts,
+ranked,
+colorMap
+};
+
+},
+
+sortPairs(pairs){
+
+return pairs
+.map(String)
+.sort(
+(a,b)=>Number(a)-Number(b)
+);
+
+},
+
+pairClass(pair,colorMap){
+
+const info=
+colorMap[
+this.pairKey(pair)
+];
+
+if(!info)
+return'pair';
+
+if(info.color==='gold')
+return'pair pair-gold';
+
+if(info.color==='silver')
+return'pair pair-silver';
+
+return'pair pair-rose';
+
+},
+
+formatPct(v){
+
+return`${Math.round(
+Math.max(0,Math.min(1,v))*1000
+)/10}%`;
+
+},
+
+formatDate(date){
+
+const s=String(date||'').trim();
+
+if(/\d+\s+\S+\s+\d+/.test(s)){
+
+const p=s.split(/\s+/);
+
+if(p.length>=3)
+return[
+p[0],
+p[1],
+p.slice(2).join(' ')
+].join(' · ');
+
+}
+
+return s;
+
+},
+
+/*==========================================================
 MAIN ENGINE
-==========================================================*/run(n3,n2,history=null){const d3=n3.split('').map(Number),d2=n2.split('').map(Number);const[H,T,U]=d3,[R1,R2]=d2,sumT=H+T+U,sumB=R1+R2,total=sumT+sumB,F=this.formulas(H,T,U,R1,R2,sumT,sumB,total),models=this.buildModels(H,T,U,R1,R2,sumT,history),anchor=this.norm(7-H);this.buildPairs(models,anchor);const scored=this.scoreDigits(models,F,H,T,U,R1,R2,sumT,sumB,total,history),tournament=this.tournament(models,scored.score),finalWinner=tournament.finalWinner,top1Digits=finalWinner?[finalWinner.digit]:[];let pairSet=finalWinner?this.bestPairsForDigit(finalWinner.digit,models,scored.score):[];if(finalWinner&&tournament.finalLoser&&Number.isInteger(finalWinner.digit)&&Number.isInteger(tournament.finalLoser.digit)){const extraPair=`${finalWinner.digit}${tournament.finalLoser.digit}`;if(/^\\d{2}$/.test(extraPair)&&!pairSet.includes(extraPair))pairSet=[...pairSet,extraPair];}const consensus=this.buildConsensus([pairSet]);return{top1Digit:finalWinner?finalWinner.digit:null,top2Digits:top1Digits,pairSets:[pairSet],modelScores:scored.score,modelCount:3,models,tournament,selectedModelId:tournament.winningModelId,selectedModel:models.find(m=>m.id===tournament.winningModelId)||null,confidence:finalWinner?finalWinner.confidence:0,finalMargin:tournament.finalMargin,consensus,diagnostics:{historyDraws:history?.usable||0,dataReliability:history?.dataReliability||0,walkForward:history?.walkForward||null}};},/*==========================================================
+==========================================================*/
+
+run(n3,n2,history=null){
+
+const d3=n3.split('').map(Number);
+const d2=n2.split('').map(Number);
+
+const[H,T,U]=d3;
+const[R1,R2]=d2;
+
+const sumT=H+T+U;
+const sumB=R1+R2;
+const total=sumT+sumB;
+
+const F=this.formulas(
+H,T,U,
+R1,R2,
+sumT,
+sumB,
+total
+);
+
+const models=this.buildModels(
+H,T,U,
+R1,R2,
+sumT,
+history
+);
+
+const anchor=
+this.norm(7-H);
+
+/*
+IMPORTANT:
+Protected Pair Engine is called exactly as before.
+*/
+
+this.buildPairs(
+models,
+anchor
+);
+
+const scored=
+this.scoreDigits(
+models,
+F,
+H,T,U,
+R1,R2,
+sumT,sumB,total,
+history
+);
+
+const tournament=
+this.tournament(
+models,
+scored.score
+);
+
+const finalWinner=
+tournament.finalWinner;
+
+const top1Digits=
+finalWinner
+?[finalWinner.digit]
+:[];
+
+/*----------------------------------------
+Protected pair output
+----------------------------------------*/
+
+let pairSet=
+finalWinner
+?
+this.bestPairsForDigit(
+finalWinner.digit,
+models,
+scored.score
+)
+:[];
+
+if(
+finalWinner&&
+tournament.finalLoser&&
+Number.isInteger(finalWinner.digit)&&
+Number.isInteger(tournament.finalLoser.digit)
+){
+
+const extraPair=
+`${finalWinner.digit}${tournament.finalLoser.digit}`;
+
+if(
+/^\d{2}$/.test(extraPair)&&
+!pairSet.includes(extraPair)
+){
+pairSet=[
+...pairSet,
+extraPair
+];
+}
+
+}
+
+const consensus=
+this.buildConsensus([
+pairSet
+]);
+
+return{
+
+top1Digit:
+finalWinner
+?finalWinner.digit
+:null,
+
+top2Digits:
+top1Digits,
+
+pairSets:[
+pairSet
+],
+
+modelScores:
+scored.score,
+
+modelCount:3,
+
+models,
+
+tournament,
+
+selectedModelId:
+tournament.winningModelId,
+
+selectedModel:
+models.find(
+m=>m.id===
+tournament.winningModelId
+)||null,
+
+confidence:
+finalWinner
+?finalWinner.confidence
+:0,
+
+finalMargin:
+tournament.finalMargin,
+
+consensus
+
+};
+
+},
+
+/*==========================================================
 CAPTURE
-==========================================================*/async captureCard(cardId,name){const el=document.getElementById(cardId);if(!el)return;const controls=[...el.querySelectorAll('[data-no-capture]')];try{if(typeof html2canvas==='undefined')throw new Error('ไม่พบระบบแคปภาพ กรุณาเปิดอินเทอร์เน็ตแล้วลองใหม่');controls.forEach(q=>q.style.visibility='hidden');const canvas=await html2canvas(el,{backgroundColor:'#ffffff',scale:Math.min(3,Math.max(2,window.devicePixelRatio||2)),useCORS:true,logging:false});const link=document.createElement('a'),safe=String(name||'lottery').replace(/[^ก-๙A-Za-z0-9_-]+/g,'_').slice(0,60);link.download=`${safe||'lottery'}_card.png`;link.href=canvas.toDataURL('image/png');link.click();this.show('✓ แคปการ์ดแล้ว');}catch(err){console.error(err);this.show('❌ แคปภาพไม่สำเร็จ');}finally{controls.forEach(q=>q.style.visibility='');}},copy(text){navigator.clipboard?.writeText(text).then(()=>this.show()).catch(()=>{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();this.show();});},show(message){const t=$('toast');if(message)t.textContent=message;t.classList.add('show');clearTimeout(this.toastTimer);this.toastTimer=setTimeout(()=>t.classList.remove('show'),1500);},/*==========================================================
+==========================================================*/
+
+async captureCard(cardId,name){
+
+const el=
+document.getElementById(cardId);
+
+if(!el)return;
+
+const controls=[
+...el.querySelectorAll(
+'[data-no-capture]'
+)
+];
+
+try{
+
+if(typeof html2canvas==='undefined')
+throw new Error(
+'ไม่พบระบบแคปภาพ กรุณาเปิดอินเทอร์เน็ตแล้วลองใหม่'
+);
+
+controls.forEach(
+x=>x.style.visibility='hidden'
+);
+
+const canvas=
+await html2canvas(
+el,
+{
+backgroundColor:'#ffffff',
+scale:Math.min(
+3,
+Math.max(
+2,
+window.devicePixelRatio||2
+)
+),
+useCORS:true,
+logging:false
+}
+);
+
+const link=document.createElement('a');
+
+const safe=
+String(name||'lottery')
+.replace(
+/[^ก-๙A-Za-z0-9_-]+/g,
+'_'
+)
+.slice(0,60);
+
+link.download=
+`${safe||'lottery'}_card.png`;
+
+link.href=
+canvas.toDataURL('image/png');
+
+link.click();
+
+this.show(
+'✓ แคปการ์ดแล้ว'
+);
+
+}catch(err){
+
+console.error(err);
+
+this.show(
+'❌ แคปภาพไม่สำเร็จ'
+);
+
+}finally{
+
+controls.forEach(
+x=>x.style.visibility=''
+);
+
+}
+
+},
+
+copy(text){
+
+navigator.clipboard
+?.writeText(text)
+.then(()=>this.show())
+.catch(()=>{
+
+const t=
+document.createElement('textarea');
+
+t.value=text;
+
+document.body.appendChild(t);
+
+t.select();
+
+document.execCommand('copy');
+
+t.remove();
+
+this.show();
+
+});
+
+},
+
+show(message){
+
+const t=$('toast');
+
+if(message)
+t.textContent=message;
+
+t.classList.add('show');
+
+clearTimeout(
+this.toastTimer
+);
+
+this.toastTimer=
+setTimeout(
+()=>t.classList.remove('show'),
+1500
+);
+
+},
+
+/*==========================================================
 CALCULATE
-==========================================================*/async calculate(){const parsed=this.parse($('bulkInput').value);if(!parsed.records.length){$('result').innerHTML='<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';return;}const scanner=$('scanner'),btn=$('run');btn.disabled=true;scanner.style.display='block';const scan=msg=>$('scanText').textContent=msg,yieldUI=()=>new Promise(resolve=>requestAnimationFrame(resolve));try{scan('อ่านข้อมูล 3 ตัวบน + 2 ตัวล่าง...');await yieldUI();this.cache=[];const groups=this.groupByLottery(parsed.records),cards=[],outputData=[],copyBlocks=[];let groupIndex=0;for(const group of groups){groupIndex++;const records=group.records;if(!records.length)continue;const latest=records[records.length-1],history=this.buildHistory(records);scan(`WALK-FORWARD ${group.name} • ${history.usable} งวด • ${groupIndex}/${groups.length}`);await yieldUI();const a=this.run(latest.n3,latest.n2,history);this.cache.push({group:group.name,result:a,history});const allowed=new Set();a.models.forEach(m=>m.set.forEach(d=>allowed.add(d)));const valid=a.top1Digit!==null&&allowed.has(a.top1Digit);if(!valid){parsed.errors.push(`${group.name} | ${latest.date}: ไม่สามารถคัดเลข TOP 1 จาก Candidate Pool ของ 3 Main Models ได้`);continue;}const digit=a.top1Digit,sourcePairs=a.pairSets[0]||[],sorted=this.sortPairs(sourcePairs),pairHTML=sorted.map(pair=>{const info=a.consensus.colorMap[this.pairKey(pair)],title=info?`อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`:'เลขเจาะจาก 3 Main Models';return`<span class="${this.pairClass(pair,a.consensus.colorMap)}" title="${esc(title)}">${esc(pair)}</span>`;}).join(''),row=`<div class="row"><span class="digit digit-gold" aria-label="เลขเด่น">${esc(digit)}</span><span class="sep">:</span><div class="pairs">${pairHTML}</div></div>`,footer=`<div class="brand-footer"><span class="brand-star">✦</span><span>บ้านเงินกอง</span><span class="brand-star">✦</span></div>`,nextDate=this.nextDateLabel([latest]),cardId=`lottery-card-${groupIndex}`;cards.push(`<article class="lottery" id="${cardId}" data-lottery-card="true"><div class="lottery-head"><div><div class="lottery-name"><span class="flag">${this.flag(group.name)}</span><span>${esc(group.name)}</span></div><div class="date">${esc(nextDate)}</div></div><div class="vip-label"></div><div class="card-actions" data-no-capture="true"><button class="card-capture" data-capture-card="${cardId}" data-capture-name="${esc(group.name)}">📷 แคปการ์ด</button></div></div><div class="rows">${row}</div>${footer}</article>`);copyBlocks.push([`${this.flag(group.name)} ${group.name} | ${nextDate}`,`${digit} : ${sorted.join('-')}`].join('\n'));outputData.push({group,latest,a,nextDate});}scan('ตรวจสอบ WALK-FORWARD / MODEL CONSENSUS...');await yieldUI();scan('FINALIZING...');await yieldUI();scanner.style.display='none';btn.disabled=false;const all=copyBlocks.join('\n\n');this.lastCopyText=all;$('result').innerHTML=`<div class="summary"><span>ประมวลผลสำเร็จ<strong>${outputData.length}</strong>ประเภท</span><button class="copy" id="copyTop">📋 COPY ALL</button></div>${parsed.errors.length?`<div class="errorbox">${parsed.errors.map(esc).join('<br>')}</div>`:''}${cards.join('')}<button class="copyall" id="copyBottom">📋 คัดลอกหวยทั้งหมด</button>`;$('copyTop').onclick=()=>this.copy(all);$('copyBottom').onclick=()=>this.copy(all);$('copyInput').disabled=!all;$('copyInput').onclick=()=>this.copy(this.lastCopyText);$('result').querySelectorAll('[data-capture-card]').forEach(btn=>{btn.onclick=()=>this.captureCard(btn.dataset.captureCard,btn.dataset.captureName);});$('result').scrollIntoView({behavior:'smooth',block:'start'});}catch(err){scanner.style.display='none';btn.disabled=false;$('result').innerHTML=`<div class="errorbox">❌ เกิดข้อผิดพลาดระหว่างประมวลผล:${esc(err?.message||err)}</div>`;}},nextDateLabel(records){if(!records.length)return'';const latest=records[records.length-1],s=String(latest.date||'').trim(),m=s.match(/^(\\d{1,2})\\s+(\\S+)\\s+(\\d{2,4})$/);if(m){const day=Number(m[1]);let year=Number(m[3]);if(year<100)year+=2500;const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'],monthIndex=months.indexOf(m[2]);if(monthIndex>=0){let d=new Date(year-543,monthIndex,day);d.setDate(d.getDate()+1);return[String(d.getDate()),months[d.getMonth()],String(d.getFullYear()+543)].join(' ');}}return'งวดถัดไป';}};function enterConsole(){sessionStorage.setItem('mester_auth_ok','1');localStorage.setItem('mester_auto_login','1');$('login').classList.remove('active');$('console').classList.add('active');$('loginErr').style.display='none';}function login(){const value=$('password').value;if(sec.ok(value))enterConsole();else $('loginErr').style.display='block';}function initAuth(){/* AUTO LOGIN: once authorized, never ask for the key again */if(sessionStorage.getItem('mester_auth_ok')==='1'||localStorage.getItem('mester_auto_login')==='1')enterConsole();}$('loginBtn').onclick=login;$('password').addEventListener('keydown',e=>{if(e.key==='Enter')login();});initAuth();$('run').onclick=()=>app.calculate();$('clearInput').onclick=()=>{$('bulkInput').value='';$('result').innerHTML='';$('scanner').style.display='none';$('run').disabled=false;$('copyInput').disabled=true;app.lastCopyText='';app.cache=[];$('bulkInput').focus();app.show('✓ ล้างข้อมูลแล้ว');};})();</script></body></html>
+==========================================================*/
+
+async calculate(){
+
+const parsed=
+this.parse(
+$('bulkInput').value
+);
+
+if(!parsed.records.length){
+
+$('result').innerHTML=
+'<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
+
+return;
+
+}
+
+const scanner=$('scanner');
+const btn=$('run');
+
+btn.disabled=true;
+
+scanner.style.display='block';
+
+const scan=
+msg=>$('scanText').textContent=msg;
+
+const yieldUI=
+()=>new Promise(
+resolve=>requestAnimationFrame(resolve)
+);
+
+try{
+
+scan(
+'อ่านข้อมูล 3 ตัวบน + 2 ตัวล่าง...'
+);
+
+await yieldUI();
+
+this.cache=[];
+
+const groups=
+this.groupByLottery(
+parsed.records
+);
+
+const cards=[];
+const outputData=[];
+const copyBlocks=[];
+
+let groupIndex=0;
+
+for(const group of groups){
+
+groupIndex++;
+
+const records=group.records;
+
+if(!records.length)
+continue;
+
+const latest=
+records[records.length-1];
+
+const history=
+this.buildHistory(
+records
+);
+
+scan(
+`ประมวลผล ${group.name} • ${groupIndex}/${groups.length}`
+);
+
+await yieldUI();
+
+const a=
+this.run(
+latest.n3,
+latest.n2,
+history
+);
+
+this.cache.push({
+group:group.name,
+result:a,
+history
+});
+
+/*----------------------------------------
+Candidate validation
+----------------------------------------*/
+
+const allowed=new Set();
+
+a.models.forEach(m=>
+m.set.forEach(d=>
+allowed.add(d)
+);
+
+const valid=
+a.top1Digit!==null&&
+allowed.has(a.top1Digit);
+
+if(!valid){
+
+parsed.errors.push(
+`${group.name} | ${latest.date}: ไม่สามารถคัดเลข TOP 1 จาก Candidate Pool ของ 3 Main Models ได้`
+);
+
+continue;
+
+}
+
+const digit=
+a.top1Digit;
+
+const sourcePairs=
+a.pairSets[0]||[];
+
+const sorted=
+this.sortPairs(sourcePairs);
+
+const pairHTML=
+sorted
+.map(pair=>{
+
+const info=
+a.consensus.colorMap[
+this.pairKey(pair)
+];
+
+const title=
+info
+?
+`อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
+:
+'เลขเจาะจาก 3 Main Models';
+
+return`
+<span
+class="${this.pairClass(pair,a.consensus.colorMap)}"
+title="${esc(title)}"
+>
+${esc(pair)}
+</span>
+`;
+
+})
+.join('');
+
+const row=`
+<div class="row">
+<span
+class="digit digit-gold"
+aria-label="เลขเด่น"
+>
+${esc(digit)}
+</span>
+
+<span class="sep">:</span>
+
+<div class="pairs">
+${pairHTML}
+</div>
+</div>
+`;
+
+const footer=`
+<div class="brand-footer">
+<span class="brand-star">✦</span>
+<span>บ้านเงินกอง</span>
+<span class="brand-star">✦</span>
+</div>
+`;
+
+const nextDate=
+this.nextDateLabel(
+[latest]
+);
+
+const cardId=
+`lottery-card-${groupIndex}`;
+
+cards.push(`
+
+<article
+class="lottery"
+id="${cardId}"
+data-lottery-card="true"
+>
+
+<div class="lottery-head">
+
+<div>
+
+<div class="lottery-name">
+<span class="flag">
+${this.flag(group.name)}
+</span>
+
+<span>
+${esc(group.name)}
+</span>
+</div>
+
+<div class="date">
+${esc(nextDate)}
+</div>
+
+</div>
+
+<div class="vip-label"></div>
+
+<div
+class="card-actions"
+data-no-capture="true"
+>
+
+<button
+class="card-capture"
+data-capture-card="${cardId}"
+data-capture-name="${esc(group.name)}"
+>
+📷 แคปการ์ด
+</button>
+
+</div>
+
+</div>
+
+<div class="rows">
+${row}
+</div>
+
+${footer}
+
+</article>
+
+`);
+
+copyBlocks.push([
+`${this.flag(group.name)} ${group.name} | ${nextDate}`,
+`${digit} : ${sorted.join('-')}`
+].join('\n'));
+
+outputData.push({
+group,
+latest,
+a,
+nextDate
+});
+
+}
+
+scan(
+'ตรวจสอบความสอดคล้องของผลลัพธ์...'
+);
+
+await yieldUI();
+
+scan(
+'ตรวจสอบ Historical Evidence...'
+);
+
+await yieldUI();
+
+scan(
+'ตรวจสอบ Model Consensus...'
+);
+
+await yieldUI();
+
+scan(
+'FINALIZING...'
+);
+
+await yieldUI();
+
+scanner.style.display='none';
+
+btn.disabled=false;
+
+const all=
+copyBlocks.join('\n\n');
+
+this.lastCopyText=all;
+
+$('result').innerHTML=`
+
+<div class="summary">
+
+<span>
+ประมวลผลสำเร็จ
+<strong>
+${outputData.length}
+</strong>
+ประเภท
+</span>
+
+<button
+class="copy"
+id="copyTop"
+>
+📋 COPY ALL
+</button>
+
+</div>
+
+${
+parsed.errors.length
+?
+`<div class="errorbox">
+${parsed.errors.map(esc).join('<br>')}
+</div>`
+:''
+}
+
+${cards.join('')}
+
+<button
+class="copyall"
+id="copyBottom"
+>
+📋 คัดลอกหวยทั้งหมด
+</button>
+
+`;
+
+$('copyTop').onclick=
+()=>this.copy(all);
+
+$('copyBottom').onclick=
+()=>this.copy(all);
+
+$('copyInput').disabled=!all;
+
+$('copyInput').onclick=
+()=>this.copy(
+this.lastCopyText
+);
+
+$('result')
+.querySelectorAll(
+'[data-capture-card]'
+)
+.forEach(btn=>{
+
+btn.onclick=
+()=>this.captureCard(
+btn.dataset.captureCard,
+btn.dataset.captureName
+);
+
+});
+
+$('result').scrollIntoView({
+behavior:'smooth',
+block:'start'
+});
+
+}catch(err){
+
+scanner.style.display='none';
+
+btn.disabled=false;
+
+$('result').innerHTML=
+`
+<div class="errorbox">
+❌ เกิดข้อผิดพลาดระหว่างประมวลผล:
+${esc(err?.message||err)}
+</div>
+`;
+
+}
+
+},
+
+nextDateLabel(records){
+
+if(!records.length)
+return'';
+
+const latest=
+records[records.length-1];
+
+const s=
+String(latest.date||'').trim();
+
+const m=
+s.match(
+(/^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/)
+);
+
+if(m){
+
+const day=
+Number(m[1]);
+
+let year=
+Number(m[3]);
+
+if(year<100)
+year+=2500;
+
+const months=[
+'ม.ค.',
+'ก.พ.',
+'มี.ค.',
+'เม.ย.',
+'พ.ค.',
+'มิ.ย.',
+'ก.ค.',
+'ส.ค.',
+'ก.ย.',
+'ต.ค.',
+'พ.ย.',
+'ธ.ค.'
+];
+
+const monthIndex=
+months.indexOf(m[2]);
+
+if(monthIndex>=0){
+
+let d=
+new Date(
+year-543,
+monthIndex,
+day
+);
+
+d.setDate(
+d.getDate()+1
+);
+
+return[
+String(d.getDate()),
+months[d.getMonth()],
+String(d.getFullYear()+543)
+].join(' ');
+
+}
+
+}
+
+return'งวดถัดไป';
+
+}
+
+};
+
+/*==========================================================
+AUTH
+==========================================================*/
+
+function enterConsole(){
+
+sessionStorage.setItem(
+'mester_auth_ok',
+'1'
+);
+
+localStorage.setItem(
+'mester_auto_login',
+'1'
+);
+
+$('login')
+.classList.remove('active');
+
+$('console')
+.classList.add('active');
+
+$('loginErr').style.display='none';
+
+}
+
+function login(){
+
+const value=
+$('password').value;
+
+if(sec.ok(value))
+enterConsole();
+else
+$('loginErr').style.display='block';
+
+}
+
+function initAuth(){
+
+if(
+sessionStorage.getItem(
+'mester_auth_ok'
+)==='1'||
+localStorage.getItem(
+'mester_auto_login'
+)==='1'
+)
+enterConsole();
+
+}
+
+$('loginBtn').onclick=login;
+
+$('password').addEventListener(
+'keydown',
+e=>{
+if(e.key==='Enter')
+login();
+}
+);
+
+initAuth();
+
+if($('logout'))
+$('logout').onclick=()=>{
+
+sessionStorage.removeItem(
+'mester_auth_ok'
+);
+
+localStorage.removeItem(
+'mester_auto_login'
+);
+
+$('console')
+.classList.remove('active');
+
+$('login')
+.classList.add('active');
+
+$('password').value='';
+
+$('password').focus();
+
+};
+
+$('run').onclick=
+()=>app.calculate();
+
+$('clearInput').onclick=()=>{
+
+$('bulkInput').value='';
+
+$('result').innerHTML='';
+
+$('scanner').style.display='none';
+
+$('run').disabled=false;
+
+$('copyInput').disabled=true;
+
+app.lastCopyText='';
+
+app.cache=[];
+
+$('bulkInput').focus();
+
+app.show(
+'✓ ล้างข้อมูลแล้ว'
+);
+
+};
+
+})();
+</script>
+
+</body>
+  </html>
