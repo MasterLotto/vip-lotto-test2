@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Multi Lottery Engine V12.5.1</title>
+<title>Mester Lotto VIP+ — Multi Lottery Engine V12.5.2</title>
 <style>
 :root{--bg:#f8f5ef;--panel:#fffdf9;--line:#e8dfcf;--text:#403a31;--muted:#8b8173;--gold:#b8944a;--gold2:#806329;--rose:#b98279;--shadow:0 14px 40px rgba(79,58,31,.08)}
 *{box-sizing:border-box}
@@ -190,7 +190,6 @@ const app={
 cache:[],
 lastCopyText:'',
 toastTimer:null,
-audio(){},
 norm(x){return(x%10+10)%10},
 clamp(v,lo=0,hi=1){return Math.max(lo,Math.min(hi,Number(v)||0))},
 normalizeScores(map){
@@ -201,14 +200,6 @@ return Object.fromEntries(Object.entries(map).map(([k,v])=>[k,this.clamp(v/max)]
 },
 sourceBreadthScore(v){
 return this.clamp(1-Math.exp(-Math.max(0,v)/1.6));
-},
-consensusTier(count,total){
-const n=Math.max(1,total||1);
-if(count>=n)return 1;
-if(count===2&&n===3)return .78;
-if(count>=2)return .68;
-if(count===1)return .30;
-return 0;
 },
 flag(n){
 n=String(n).toLowerCase();
@@ -286,7 +277,8 @@ dateKey(date){
 const s=String(date||'').trim();
 const m=s.match(/^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/);
 if(m){
-const months={'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};
+const months={'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12,
+'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12};
 const month=months[m[2]]||0;
 let year=Number(m[3]);
 if(year<100)year+=2500;
@@ -608,49 +600,49 @@ const sortedSupport=[...supportValues].sort((a,b)=>b-a);
 const supportStrength=this.clamp(.40*sortedSupport[0]+.24*sortedSupport[1]+.14*sortedSupport[2]+.08*sortedSupport[3]);
 const supportBreadth=this.sourceBreadthScore(v.supportSignals);
 const hist=v.evidenceScore;
-v.reliabilityScore=this.clamp(.42*consensus+.25*hist+.18*supportBreadth+.15*supportStrength);
+v.reliabilityScore=this.clamp(.45*consensus+.25*hist+.15*supportBreadth+.15*supportStrength);
 v.totalScore=this.clamp(
-.36*consensus+
-.20*v.formula100Score+
-.09*v.radarScore+
-.08*v.backendScore+
+.45*consensus+
+.15*v.formula100Score+
+.05*v.radarScore+
+.05*v.backendScore+
 .05*v.winSetScore+
-.08*v.historicalScore+
-.08*v.recentFormScore+
+.10*v.historicalScore+
+.10*v.recentFormScore+
 .03*v.stabilityScore+
-.03*supportBreadth
+.02*supportBreadth
 );
 if(history&&history.usable>0){
-const histAdj=.90+.20*this.clamp(v.evidenceScore);
+const histAdj=.92+.16*this.clamp(v.evidenceScore);
 v.totalScore*=histAdj;
 }
-v.totalScore*=Math.min(1.02,v.hotStreakBonus);
-if(allowed.has(v.digit))v.totalScore*=1.12;
+v.totalScore*=Math.min(1.03,v.hotStreakBonus);
+if(allowed.has(v.digit))v.totalScore*=1.25;
 const poolStrength=v.modelConsensusCount/Math.max(1,models.length);
 const supportBreadthRatio=v.supportSignals/4;
 v.selectorBonus=allowed.has(v.digit)?(
-.040*poolStrength+
+.050*poolStrength+
 .030*supportBreadthRatio+
-.035*Math.max(0,v.reliabilityScore-.5)+
-.020*Math.max(0,v.evidenceScore-.5)
+.040*Math.max(0,v.reliabilityScore-.5)+
+.025*Math.max(0,v.evidenceScore-.5)
 ):0;
 const deadCandidate=
 allowed.has(v.digit)&&
 v.modelConsensusCount<=1&&
-v.reliabilityScore<.38&&
-v.evidenceScore<.42&&
+v.reliabilityScore<.35&&
+v.evidenceScore<.40&&
 v.supportSignals===0;
-const deadPenalty=deadCandidate?.84:1;
+const deadPenalty=deadCandidate?.80:1;
 const lowEvidenceSingle=
 allowed.has(v.digit)&&
 v.modelConsensusCount===1&&
-v.evidenceScore<.45&&
+v.evidenceScore<.42&&
 v.supportSignals===0;
-const lowEvidencePenalty=lowEvidenceSingle?.90:1;
-const conflictPenalty=1-Math.min(.12,Math.max(0,v.conflictSignals-1)*.03);
+const lowEvidencePenalty=lowEvidenceSingle?.88:1;
+const conflictPenalty=1-Math.min(.10,Math.max(0,v.conflictSignals-1)*.025);
 v.selectionPenalty=deadPenalty*lowEvidencePenalty*conflictPenalty;
 v.totalScore*=v.selectionPenalty;
-v.totalScore+=Math.min(.07,v.selectorBonus);
+v.totalScore+=Math.min(.08,v.selectorBonus);
 v.selectorScore=v.totalScore;
 v.selectionScore=v.selectorScore;
 }
@@ -660,10 +652,10 @@ tournament(models,score){
 const compareDigits=(a,b)=>{
 if(!a)return b;
 if(!b)return a;
-if(Math.abs(a.selectorScore-b.selectorScore)>0.000001)return a.selectorScore>b.selectorScore?a:b;
-if(Math.abs(a.evidenceScore-b.evidenceScore)>0.000001)return a.evidenceScore>b.evidenceScore?a:b;
+if(Math.abs(a.selectorScore-b.selectorScore)>0.0005)return a.selectorScore>b.selectorScore?a:b;
+if(Math.abs(a.recentFormScore-b.recentFormScore)>0.0005)return a.recentFormScore>b.recentFormScore?a:b;
+if(Math.abs(a.evidenceScore-b.evidenceScore)>0.0005)return a.evidenceScore>b.evidenceScore?a:b;
 if(a.backendScore!==b.backendScore)return a.backendScore>b.backendScore?a:b;
-if(a.formula100Score!==b.formula100Score)return a.formula100Score>b.formula100Score?a:b;
 return a.digit<=b.digit?a:b;
 };
 const modelRounds=models.map(model=>{
@@ -688,8 +680,8 @@ if(finalWinner){
 const finalMarginScore=this.clamp(finalMargin/.10);
 const supportBreadth=this.sourceBreadthScore(finalWinner.supportSignals);
 const baseConfidence=
-.38*this.clamp(finalWinner.selectorScore)+
-.22*finalMarginScore+
+.40*this.clamp(finalWinner.selectorScore)+
+.20*finalMarginScore+
 .22*this.clamp(finalWinner.evidenceScore)+
 .18*supportBreadth;
 finalWinner.confidence=this.clamp(.35+.65*baseConfidence);
@@ -1019,4 +1011,3 @@ app.show('✓ ล้างข้อมูลแล้ว');
 </script>
 </body>
 </html>
-```0
