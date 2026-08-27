@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V13.0
+MESTER LOTTO VIP+ — V14.0
 ============================================================
 AUDITED / CLEAN VERSION (UPDATED FORMULA SWAP)
 ============================================================
-- Main Model 01 (Rank 1 Formula):
-  Tens digit of 3-digit top + Tens digit of 2-digit bottom
-  -> units digit = first main digit, +1 = second main digit
-- Backend Support Formula 1 (Formula 2):
-  Sum of all 3 digits on top -> units digit + 1
-- Backend Support Formula 2 (Formula 3):
-  Hundreds digit of 3-digit top + Tens digit of 2-digit bottom
-  -> units digit + 1
-- Backend formulas NEVER replace main digits.
-- VIP+ appears only when either backend formula matches
-  either main digit.
+- Main Model 01 (Formula C & Formula D):
+  Formula C (First Main Digit): Units top - Tens top + Units bottom + 4 -> units digit
+  Formula D (Second Main Digit): 1 - Hundreds top - Tens top - Units bottom -> units digit
+- Backend Support Formulas (Former Main Models):
+  - Backend 1: Tens digit of 3-digit top + Tens digit of 2-digit bottom -> units digit, +1
+  - Backend 2: Sum of all 3 digits on top -> units digit + 1
+  - Backend 3: Hundreds digit of 3-digit top + Tens digit of 2-digit bottom -> units digit + 1
+- VIP+ appears only when any backend formula matches either main digit.
 - Original Pair / เลขเจาะ engine retained.
 - 5 pairs per main digit = 10 pairs total.
 - No double-digit pairs.
@@ -36,7 +33,7 @@ AUDITED / CLEAN VERSION (UPDATED FORMULA SWAP)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Multi Lottery Engine V13.0</title>
+<title>Mester Lotto VIP+ — Multi Lottery Engine V14.0</title>
 
 <style>
 :root{
@@ -607,7 +604,7 @@ button{
       <section class="hero">
         <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
         <h1>Multi-Lottery <em>VIP+</em></h1>
-        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรหลักเพียงสูตรเดียว</p>
+        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตร C และ สูตร D ใหม่ล่าสุด</p>
       </section>
 
       <div id="console">
@@ -1049,12 +1046,55 @@ button{
 
 
     /* =======================================================
-       MODEL 01 (MAIN FORMULA - RANK 1)
-       Tens digit of 3-digit top + Tens digit of 2-digit bottom
-       -> units digit = first main digit, +1 = second main digit
+       MAIN MODEL 01 (FORMULA C & FORMULA D)
+       - Formula C (First Main Digit):
+         Units top - Tens top + Units bottom + 4 -> units digit
+       - Formula D (Second Main Digit):
+         1 - Hundreds top - Tens top - Units bottom -> units digit
     ======================================================= */
 
     mainModel(n3, n2){
+
+      const top = String(n3)
+        .padStart(3,'0')
+        .split('')
+        .map(Number);
+
+      const bottom = String(n2)
+        .padStart(2,'0')
+        .split('')
+        .map(Number);
+
+      const H = top[0];
+      const T = top[1];
+      const U = top[2];
+      const R2 = bottom[1];
+
+      // Formula C: Units top - Tens top + Units bottom + 4
+      const sumC = U - T + R2 + 4;
+      const first = this.norm(sumC);
+
+      // Formula D: 1 - Hundreds top - Tens top - Units bottom
+      const sumD = 1 - H - T - R2;
+      const second = this.norm(sumD);
+
+      return {
+        sumC,
+        sumD,
+        first,
+        second,
+        set:[first,second]
+      };
+    },
+
+
+    /* =======================================================
+       BACKEND SUPPORT FORMULA 1 (FORMER MAIN FORMULA)
+       Tens digit of 3-digit top + Tens digit of 2-digit bottom
+       -> units digit + 1
+    ======================================================= */
+
+    backendFormula1(n3, n2){
 
       const top = String(n3)
         .padStart(3,'0')
@@ -1070,25 +1110,23 @@ button{
       const R1 = bottom[0];
 
       const sum = T + R1;
-
-      const first = this.norm(sum);
-      const second = this.norm(first + 1);
+      const q = this.norm(sum);
+      const result = this.norm(q + 1);
 
       return {
         sum,
-        first,
-        second,
-        set:[first,second]
+        q,
+        result
       };
     },
 
 
     /* =======================================================
-       BACKEND SUPPORT FORMULA 1 (FORMULA 2)
+       BACKEND SUPPORT FORMULA 2
        Sum of all 3 digits on top -> units digit + 1
     ======================================================= */
 
-    backendFormula1(n3, n2){
+    backendFormula2(n3, n2){
 
       const digits = String(n3)
         .padStart(3,'0')
@@ -1112,12 +1150,12 @@ button{
 
 
     /* =======================================================
-       BACKEND SUPPORT FORMULA 2 (FORMULA 3)
+       BACKEND SUPPORT FORMULA 3
        Hundreds digit of 3-digit top + Tens digit of 2-digit bottom
        -> units digit + 1
     ======================================================= */
 
-    backendFormula2(n3, n2){
+    backendFormula3(n3, n2){
 
       const top = String(n3)
         .padStart(3,'0')
@@ -1151,13 +1189,14 @@ button{
        They NEVER replace Model 01.
     ======================================================= */
 
-    checkVIP(main,backend1,backend2){
+    checkVIP(main,backend1,backend2,backend3){
 
       const mainSet = new Set(main.set);
 
       return (
         mainSet.has(backend1.result) ||
-        mainSet.has(backend2.result)
+        mainSet.has(backend2.result) ||
+        mainSet.has(backend3.result)
       );
     },
 
@@ -1399,8 +1438,8 @@ button{
     /* =======================================================
        MAIN ENGINE
 
-       One main formula.
-       Two backend confirmation formulas.
+       New Main Formula C & D.
+       Backend confirmation formulas.
        Original pair engine.
     ======================================================= */
 
@@ -1421,11 +1460,15 @@ button{
       const backend2 =
         this.backendFormula2(n3, n2);
 
+      const backend3 =
+        this.backendFormula3(n3, n2);
+
       const vip =
         this.checkVIP(
           main,
           backend1,
-          backend2
+          backend2,
+          backend3
         );
 
       /*
@@ -1456,6 +1499,7 @@ button{
         main,
         backend1,
         backend2,
+        backend3,
         vip,
         rawAnchor,
         anchor,
