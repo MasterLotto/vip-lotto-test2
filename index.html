@@ -16,7 +16,6 @@
   --emerald-gradient: linear-gradient(135deg, #0f5132 0%, #198754 100%);
   --gold: #b08d57;
   --gold-gradient: linear-gradient(135deg, #b08d57 0%, #dfc288 100%);
-  --silver-tone: #6c757d;
   --border-color: #e2e8f0;
   --shadow-sm: 0 4px 12px rgba(15, 81, 50, 0.05);
   --shadow-md: 0 8px 24px rgba(15, 81, 50, 0.08);
@@ -541,7 +540,7 @@ body::before {
 }
 
 .deep-scan-card.rank-1 { border-top: 3px solid #ffd700; }
-.deep-scan-card.rank-2 { border-top: 3px solid #5a6268; } /* ปรับสีเงินให้เข้มขึ้น คมชัด ไม่อ่อนจนกลืนกับพื้นหลัง */
+.deep-scan-card.rank-2 { border-top: 3px solid #5a6268; }
 .deep-scan-card.rank-3 { border-top: 3px solid #cd7f32; }
 
 .deep-scan-digit-box {
@@ -655,7 +654,7 @@ body::before {
   color: var(--text-muted);
 }
 
-/* Curated Win Set (ลบขีดสีด้านบนออก ปล่อยโล่งสะอาดตา) */
+/* Curated Win Set */
 .ind-win-set {
   background: #fafbfc;
   border: 1px solid var(--border-color);
@@ -707,7 +706,6 @@ body::before {
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  /* เอาแถบขีดสีด้านบนออกแล้ว ปล่อยโล่งสะอาดตาตามข้อกำหนด */
 }
 
 .ind-win-item:hover {
@@ -837,7 +835,6 @@ body::before {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Login View Styling */
 #loginView {
   text-align: center;
   padding: 20px 0;
@@ -875,7 +872,7 @@ body::before {
       <p class="app-subtitle">Multi-Model Ensemble & Dynamic Voting System</p>
     </div>
 
-    <!-- ยกระดับ 3 ช่องสถิติด้านล่างให้หรูหรา คมชัด น่าเชื่อถือ -->
+    <!-- 3 สถิติด้านล่าง -->
     <div class="stats-grid-minimal">
       <div class="stat-box">
         <div class="stat-label">ประมวลผลทั้งหมด</div>
@@ -930,8 +927,6 @@ body::before {
 
   function loop() {
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    
     flakes.forEach(f => {
       f.y += f.speedY;
       f.x += f.speedX;
@@ -949,7 +944,7 @@ body::before {
   loop();
 })();
 
-// Core Mester Lotto VIP+ Application Logic & Balanced Scoring Mechanism
+// Core Mester Lotto VIP+ Application Logic
 (function(){
   const _app = {
     _toastTimer: null,
@@ -960,9 +955,7 @@ body::before {
       });
     },
 
-    _audio(type) {
-      // Audio feedback trigger placeholder
-    },
+    _audio(type) {},
 
     login() {
       const pass = document.getElementById("passwordInput").value.trim();
@@ -981,9 +974,7 @@ body::before {
       document.getElementById("calculatorView").style.display = "none";
     },
 
-    checkSessionBadge() {
-      // Session management check
-    },
+    checkSessionBadge() {},
 
     clearCalc() {
       document.getElementById("lottoInput").value = "";
@@ -994,7 +985,6 @@ body::before {
       const rawInput = document.getElementById("lottoInput").value.trim() || "479 69";
       this._audio("click");
 
-      // แยกตัวเลขจาก Input เพื่อนำมาประมวลผลผ่าน Ensemble Matrix แบบสมดุล ลดความเหลื่อมล้ำ
       const digitsOnly = rawInput.replace(/\D/g, "");
       const H = parseInt(digitsOnly[0] || "4", 10);
       const T_top = parseInt(digitsOnly[1] || "7", 10);
@@ -1002,12 +992,10 @@ body::before {
       const T_bot = parseInt(digitsOnly[3] || "6", 10);
       const U_bot = parseInt(digitsOnly[4] || "9", 10);
 
-      // 1. แกนหลักสูตร Mod 10 (Main Engine - ความแม่นยำสูง 73.36%)
       const d1 = ((T_top * 2) + U_top + 2) % 10;
       const d2_dig = (9 - ((H * 2) + U_top - (T_bot * 2))) % 10;
       const normalizedD2 = (d2_dig + 10) % 10;
 
-      // 2. ระบบ Ensemble 5 Models พร้อม Dynamic Scoring ขจัดความเหลื่อมล้ำหลังบ้าน
       const models = [
         { name: "Mod 10 Position Engine", subName: "Main Core", weight: 0.35, baseScore: 73.4 },
         { name: "Frequency Vector Matrix", subName: "Backend Sup", weight: 0.20, baseScore: 70.1 },
@@ -1016,7 +1004,6 @@ body::before {
         { name: "VIP+ Final Verification", subName: "Validator", weight: 0.12, baseScore: 65.8 }
       ];
 
-      // คำนวณคะแนนกระจายแบบไดนามิก ป้องกันความเหลื่อมล้ำรุนแรง
       const evaluated = models.map((m, idx) => {
         const shiftVal = (H + T_top + idx) % 10;
         const setArr = [
@@ -1041,7 +1028,6 @@ body::before {
         return { ...m, set: uniqueSet, pairsMap, aiScore };
       });
 
-      // รวมคะแนนเสียงแบบ Consensus Voting สำหรับ Top 3 Digital Momentum
       const digitScores = {};
       evaluated.forEach(m => {
         m.set.forEach((dg, pos) => {
@@ -1234,7 +1220,7 @@ body::before {
             </div>
           </div>
 
-          <!-- ชุดวิน 6 ตัว (ลบแถบขีดสีด้านบนออก ปล่อยโล่งสะอาดตา พรีเมียม) -->
+          <!-- ชุดวิน 6 ตัว (ลบแถบขีดสีด้านบนออก ปล่อยโล่งสะอาดตา) -->
           <div class="ind-win-set">
             <div class="ind-win-header">
               <div>
