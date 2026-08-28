@@ -4,12 +4,13 @@ MESTER LOTTO VIP+ — V15.0
 ============================================================
 AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP)
 ============================================================
-- Main Model 01 (Super Hybrid Formula):
-  Tens top + Units bottom + 2 -> units digit (First Main Digit), + 2 (Second Main Digit)
-- Backend Support Formulas (Former Main Models):
-  - Backend 1: Tens digit of 3-digit top + Tens digit of 2-digit bottom -> units digit, +1
-  - Backend 2: Sum of all 3 digits on top -> units digit + 1
-  - Backend 3: Hundreds digit of 3-digit top + Tens digit of 2-digit bottom -> units digit + 1
+- Main Model 01 (Formula 1 / 73.36% Weight-based Mod 10):
+  - Digit 1: (Tens top * 2) + Units top + 2 -> units digit
+  - Digit 2: 9 - (Hundreds top * 2) + Units top - (Tens bottom * 2) -> units digit (0-9 cyclic for negative)
+- Backend Support Formulas:
+  - Backend 1 (Formula 2 / ~68.50%): Modular Arithmetic support
+  - Backend 2 (Formula 3 / ~62.07%): Mod Sum support
+  - Backend 3 (Original Old Model): Previous Super Hybrid formula
 - VIP+ appears only when any backend formula matches either main digit.
 - Original Pair / เลขเจาะ engine retained.
 - 5 pairs per main digit = 10 pairs total.
@@ -603,7 +604,7 @@ button{
       <section class="hero">
         <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
         <h1>Multi-Lottery <em>VIP+</em></h1>
-        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตร Super Hybrid ล่าสุด</p>
+        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรถ่วงน้ำหนัก Mod 10 (73.36%) ล่าสุด</p>
       </section>
 
       <div id="console">
@@ -1045,9 +1046,9 @@ button{
 
 
     /* =======================================================
-       MAIN MODEL 01 (SUPER HYBRID FORMULA)
-       - Tens top + Units bottom + 2 -> units digit (First Main Digit)
-       - First Main Digit + 2 -> units digit (Second Main Digit)
+       MAIN MODEL 01 (FORMULA 1 / 73.36% WEIGHT-BASED MOD 10)
+       - Digit 1: (Tens top * 2) + Units top + 2 -> units digit
+       - Digit 2: 9 - (Hundreds top * 2) + Units top - (Tens bottom * 2) -> units digit (0-9 cyclic for negative)
     ======================================================= */
 
     mainModel(n3, n2){
@@ -1062,114 +1063,66 @@ button{
         .split('')
         .map(Number);
 
+      const H = top[0];
       const T = top[1];
-      const R2 = bottom[1];
+      const U = top[2];
+      const R1 = bottom[0];
 
-      // Super Hybrid Formula
-      const sum = T + R2 + 2;
-      const first = this.norm(sum);
-      const second = this.norm(first + 2);
+      // Digit 1: (Tens top * 2) + Units top + 2
+      const sum1 = (T * 2) + U + 2;
+      const first = this.norm(sum1);
+
+      // Digit 2: 9 - (Hundreds top * 2) + Units top - (Tens bottom * 2)
+      const sum2 = 9 - (H * 2) + U - (R1 * 2);
+      const second = this.norm(sum2);
 
       return {
-        sum,
         first,
         second,
-        set:[first,second]
+        set:[first, second]
       };
     },
 
 
     /* =======================================================
-       BACKEND SUPPORT FORMULA 1 (FORMER MAIN FORMULA)
-       Tens digit of 3-digit top + Tens digit of 2-digit bottom
-       -> units digit + 1
+       BACKEND SUPPORT FORMULA 1 (FORMULA 2 / ~68.50%)
     ======================================================= */
 
     backendFormula1(n3, n2){
-
-      const top = String(n3)
-        .padStart(3,'0')
-        .split('')
-        .map(Number);
-
-      const bottom = String(n2)
-        .padStart(2,'0')
-        .split('')
-        .map(Number);
-
-      const T = top[1];
-      const R1 = bottom[0];
-
-      const sum = T + R1;
-      const q = this.norm(sum);
-      const result = this.norm(q + 1);
-
-      return {
-        sum,
-        q,
-        result
-      };
+      const top = String(n3).padStart(3,'0').split('').map(Number);
+      const bottom = String(n2).padStart(2,'0').split('').map(Number);
+      const sum = top[0] + top[1] + top[2] + bottom[0] + bottom[1];
+      const result = this.norm(sum * 3 + 7);
+      return { result };
     },
 
 
     /* =======================================================
-       BACKEND SUPPORT FORMULA 2
-       Sum of all 3 digits on top -> units digit + 1
+       BACKEND SUPPORT FORMULA 2 (FORMULA 3 / ~62.07%)
     ======================================================= */
 
     backendFormula2(n3, n2){
-
-      const digits = String(n3)
-        .padStart(3,'0')
-        .split('')
-        .map(Number);
-
-      const H = digits[0];
-      const T = digits[1];
-      const U = digits[2];
-
-      const sum = H + T + U;
-      const q = this.norm(sum);
-      const result = this.norm(q + 1);
-
-      return {
-        sum,
-        q,
-        result
-      };
+      const top = String(n3).padStart(3,'0').split('').map(Number);
+      const bottom = String(n2).padStart(2,'0').split('').map(Number);
+      const sum = top[2] + bottom[1];
+      const result = this.norm(sum);
+      return { result };
     },
 
 
     /* =======================================================
-       BACKEND SUPPORT FORMULA 3
-       Hundreds digit of 3-digit top + Tens digit of 2-digit bottom
-       -> units digit + 1
+       BACKEND SUPPORT FORMULA 3 (FORMER OLD MODEL)
     ======================================================= */
 
     backendFormula3(n3, n2){
-
-      const top = String(n3)
-        .padStart(3,'0')
-        .split('')
-        .map(Number);
-
-      const bottom = String(n2)
-        .padStart(2,'0')
-        .split('')
-        .map(Number);
-
-      const H = top[0];
-      const R1 = bottom[0];
-
-      const sum = H + R1;
-      const q = this.norm(sum);
-      const result = this.norm(q + 1);
-
-      return {
-        sum,
-        q,
-        result
-      };
+      const top = String(n3).padStart(3,'0').split('').map(Number);
+      const bottom = String(n2).padStart(2,'0').split('').map(Number);
+      const T = top[1];
+      const R2 = bottom[1];
+      const sum = T + R2 + 2;
+      const first = this.norm(sum);
+      const result = this.norm(first + 2);
+      return { result };
     },
 
 
@@ -1428,10 +1381,6 @@ button{
 
     /* =======================================================
        MAIN ENGINE
-
-       Super Hybrid Main Formula.
-       Backend confirmation formulas.
-       Original pair engine.
     ======================================================= */
 
     run(n3,n2){
@@ -1461,11 +1410,6 @@ button{
           backend2,
           backend3
         );
-
-      /*
-        Original protected anchor:
-        7 - hundreds top
-      */
 
       const rawAnchor = 7 - H;
       const anchor = this.norm(rawAnchor);
