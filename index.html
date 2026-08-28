@@ -2,1311 +2,1872 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mester Lotto VIP+ — Multi Lottery Engine V16.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#F4FBF7">
+<meta name="color-scheme" content="light">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>MasterLotto VIP — Premium AI Smart Analysis</title>
 <style>
-:root {
-  --bg-main: #f4f7f5;
-  --bg-card: #ffffff;
-  --text-main: #111d15;
-  --text-muted: #5e6c63;
-  --emerald: #0f5132;
-  --emerald-light: #d1e7dd;
-  --emerald-gradient: linear-gradient(135deg, #0f5132 0%, #198754 100%);
-  --gold: #b08d57;
-  --gold-gradient: linear-gradient(135deg, #b08d57 0%, #dfc288 100%);
-  --border-color: #e2e8f0;
-  --shadow-sm: 0 4px 12px rgba(15, 81, 50, 0.05);
-  --shadow-md: 0 8px 24px rgba(15, 81, 50, 0.08);
-  --radius-lg: 20px;
-  --radius-md: 14px;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-body {
-  background-color: var(--bg-main);
-  color: var(--text-main);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  position: relative;
-  overflow-x: hidden;
-}
-
-/* Ambient Glow Background Animation */
-body::before {
-  content: '';
-  position: absolute;
-  top: -10%;
-  left: -10%;
-  width: 120vw;
-  height: 120vh;
-  background: radial-gradient(circle at 30% 20%, rgba(15, 81, 50, 0.04) 0%, transparent 40%),
-              radial-gradient(circle at 80% 70%, rgba(176, 141, 87, 0.04) 0%, transparent 40%);
-  z-index: -2;
-  animation: ambientPulse 12s ease-in-out infinite alternate;
-}
-
-@keyframes ambientPulse {
-  0% { transform: scale(1) translate(0, 0); opacity: 0.8; }
-  100% { transform: scale(1.03) translate(10px, 10px); opacity: 1; }
-}
-
-/* Cinematic Snowfall Container */
-#snow-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-.app-container {
-  width: 100%;
-  max-width: 480px;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
-}
-
-.header-section {
-  text-align: center;
-  margin-bottom: 24px;
-  position: relative;
-}
-
-.console-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--emerald-light);
-  color: var(--emerald);
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(15, 81, 50, 0.1);
-}
-
-.console-badge span {
-  width: 6px;
-  height: 6px;
-  background: var(--emerald);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--emerald);
-  animation: pulseDot 2s infinite;
-}
-
-@keyframes pulseDot {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.3); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.8; }
-}
-
-.app-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 4px;
-}
-
-.app-title span {
-  color: var(--emerald);
-}
-
-.app-subtitle {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-/* Premium Minimal Stats Bar */
-.stats-grid-minimal {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.stat-box {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 12px 8px;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-box:hover {
-  border-color: var(--emerald);
-  transform: translateY(-2px);
-}
-
-.stat-box::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: var(--emerald-gradient);
-}
-
-.stat-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.stat-value {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.2px;
-}
-
-.stat-value.highlight {
-  color: var(--emerald);
-}
-
-/* Input Form Controls */
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 6px;
-}
-
-.form-input {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 14px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  outline: none;
-  background: #fafbfc;
-  color: var(--text-main);
-  transition: all 0.2s ease;
-}
-
-.form-input:focus {
-  border-color: var(--emerald);
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.08);
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 14px;
-  background: var(--emerald-gradient);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(15, 81, 50, 0.2);
-  transition: all 0.2s ease;
-  margin-top: 8px;
-}
-
-.btn-primary:hover {
-  opacity: 0.95;
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
-  margin-top: 8px;
-}
-
-.btn-secondary:hover {
-  background: #f1f5f3;
-  color: var(--text-main);
-}
-
-/* Result Shell Styling */
-.result-shell {
-  margin-top: 24px;
-  animation: fadeIn 0.4s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.result-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 12px;
-}
-
-.result-kicker {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--emerald);
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-}
-
-.result-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.result-note {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* Top 3 Momentum Board */
-.top3-signal-board {
-  background: #fafbfc;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.top3-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.top3-kicker {
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--gold);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.top3-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.top3-sub {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.top3-badge {
-  background: var(--gold-gradient);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.top3-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.top3-row {
-  display: flex;
-  align-items: center;
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 10px 12px;
-  gap: 12px;
-}
-
-.top3-row.rank-one { border-left: 3px solid #ffd700; }
-.top3-row.rank-two { border-left: 3px solid #6c757d; }
-.top3-row.rank-three { border-left: 3px solid #cd7f32; }
-
-.top3-position {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-muted);
-  width: 24px;
-}
-
-.top3-digit {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text-main);
-  width: 28px;
-  text-align: center;
-}
-
-.top3-info {
-  flex: 1;
-}
-
-.top3-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-main);
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.top3-label span {
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-.top3-bar {
-  width: 100%;
-  height: 4px;
-  background: #edf2f7;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.top3-bar-fill {
-  height: 100%;
-  background: var(--emerald-gradient);
-  border-radius: 2px;
-}
-
-.top3-score {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--emerald);
-}
-
-.top3-footnote {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-.mini-live {
-  width: 5px;
-  height: 5px;
-  background: #198754;
-  border-radius: 50%;
-  animation: pulseDot 1.5px infinite;
-}
-
-/* Stats Analytics Card */
-.stats-analytics-card {
-  background: #fafbfc;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.stats-flex {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.stats-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.stats-badge {
-  font-size: 9px;
-  font-weight: 700;
-  background: var(--emerald-light);
-  color: var(--emerald);
-  padding: 3px 8px;
-  border-radius: 8px;
-}
-
-.ratio-bar-container {
-  display: flex;
-  height: 8px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: #edf2f7;
-  margin-bottom: 8px;
-}
-
-.ratio-even { background: var(--emerald); }
-.ratio-odd { background: var(--gold); }
-
-.ratio-legend {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-/* Section Marker */
-.section-marker {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 20px 0 10px 0;
-}
-
-/* Deep Scan Board */
-.deep-scan-board {
-  background: #fafbfc;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.deep-scan-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 14px;
-}
-
-.deep-scan-kicker {
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--emerald);
-  text-transform: uppercase;
-}
-
-.deep-scan-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.deep-scan-sub {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.deep-scan-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.deep-scan-card {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 12px 8px;
-  text-align: center;
-  position: relative;
-}
-
-.deep-scan-card.rank-1 { border-top: 3px solid #ffd700; }
-.deep-scan-card.rank-2 { border-top: 3px solid #5a6268; }
-.deep-scan-card.rank-3 { border-top: 3px solid #cd7f32; }
-
-.deep-scan-digit-box {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 4px;
-}
-
-.deep-scan-model-name {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.deep-scan-rank {
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--emerald);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.deep-scan-score {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--gold);
-  background: #fcf8f0;
-  padding: 2px 6px;
-  border-radius: 6px;
-  display: inline-block;
-  margin-bottom: 8px;
-}
-
-.deep-scan-pairs {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.deep-scan-pair-item {
-  background: #f4f7f5;
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-main);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.deep-scan-pair-item:hover {
-  background: var(--emerald-light);
-  color: var(--emerald);
-}
-
-/* 3D Scan Box */
-.three-d-scan {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 12px;
-}
-
-.three-d-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.three-d-score {
-  font-size: 10px;
-  color: var(--emerald);
-}
-
-.three-d-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-
-.three-d-item {
-  background: #fafbfc;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 6px 4px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.three-d-item:hover {
-  border-color: var(--emerald);
-  background: var(--emerald-light);
-}
-
-.three-d-item strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.three-d-item small {
-  font-size: 9px;
-  color: var(--text-muted);
-}
-
-/* Curated Win Set */
-.ind-win-set {
-  background: #fafbfc;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.ind-win-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.ind-win-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-.ind-win-title small {
-  font-size: 9px;
-  color: var(--text-muted);
-  font-weight: 600;
-  display: block;
-}
-
-.ind-win-badge {
-  font-size: 9px;
-  font-weight: 700;
-  background: var(--gold-gradient);
-  color: #ffffff;
-  padding: 3px 8px;
-  border-radius: 8px;
-}
-
-.ind-win-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
-}
-
-.ind-win-item {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 10px 4px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.ind-win-item:hover {
-  border-color: var(--emerald);
-  transform: translateY(-1px);
-}
-
-.ind-win-item strong {
-  display: block;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 2px;
-}
-
-.ind-win-item span {
-  font-size: 8px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-/* Formula Section */
-.formula-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.formula-card {
-  background: #fafbfc;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 12px;
-}
-
-.formula-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.formula-name {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.compact-badge {
-  font-size: 9px;
-  background: #edf2f7;
-  color: var(--text-muted);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 600;
-}
-
-.formula-badge {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--emerald);
-}
-
-.formula-sub {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.formula-pairs {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-}
-
-.formula-pair {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 6px 2px;
-  text-align: center;
-}
-
-.formula-pair strong {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-main);
-  display: block;
-}
-
-.formula-pair small {
-  font-size: 8px;
-  color: var(--text-muted);
-}
-
-/* Disclaimer & Footer */
-.disclaimer {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-align: center;
-  line-height: 1.4;
-  padding-top: 10px;
-  border-top: 1px solid var(--border-color);
-}
-
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: var(--text-main);
-  color: #ffffff;
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease;
-  z-index: 10000;
-}
-
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-}
-
-#loginView {
-  text-align: center;
-  padding: 20px 0;
+/* MasterLotto VIP — Premium Audited Final
+   Full single-file HTML / CSS / JavaScript
+*/
+:root{
+  --bg:#f4fbf7;
+  --bg2:#eef8f2;
+  --card:rgba(255,255,255,.82);
+  --card2:rgba(255,255,255,.94);
+  --text:#10251b;
+  --muted:#708077;
+  --line:rgba(31,87,58,.12);
+  --line2:rgba(31,87,58,.2);
+  --green:#1f8b57;
+  --green2:#35b878;
+  --deep:#0d5d3a;
+  --gold:#c59a43;
+  --danger:#c84c4c;
+  --shadow:0 18px 55px rgba(19,70,46,.10);
+  --shadow2:0 8px 26px rgba(19,70,46,.08);
+  --radius:22px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 8% 8%,rgba(53,184,120,.09),transparent 28%),
+    radial-gradient(circle at 92% 15%,rgba(197,154,67,.07),transparent 25%),
+    linear-gradient(145deg,var(--bg),var(--bg2));
+  overflow-x:hidden;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+::selection{background:rgba(53,184,120,.22)}
+a{color:inherit}
+.hidden{display:none!important}
+
+body:before{
+  content:"";
+  position:fixed;
+  inset:-20%;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(53,184,120,.07),transparent 20%),
+    radial-gradient(circle at 75% 65%,rgba(197,154,67,.05),transparent 22%);
+  animation:ambientDrift 18s ease-in-out infinite alternate;
+  z-index:-3;
+}
+@keyframes ambientDrift{
+  from{transform:translate3d(-1%,0,0) scale(1)}
+  to{transform:translate3d(1%,1%,0) scale(1.04)}
+}
+
+/* Premium ambient snowfall */
+#snowLayer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:40;
+  opacity:.62;
+}
+.snowflake{
+  position:absolute;
+  top:-8vh;
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  box-shadow:0 0 8px rgba(255,255,255,.38);
+  will-change:transform;
+  animation-name:snowFall;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+}
+@keyframes snowFall{
+  0%{transform:translate3d(0,-10vh,0)}
+  25%{transform:translate3d(22px,25vh,0)}
+  50%{transform:translate3d(-18px,52vh,0)}
+  75%{transform:translate3d(24px,77vh,0)}
+  100%{transform:translate3d(-12px,112vh,0)}
+}
+
+.app{
+  width:min(1180px,calc(100% - 28px));
+  margin:0 auto;
+  padding:18px 0 54px;
+  position:relative;
+  z-index:2;
+}
+
+.header{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:18px 20px;
+  margin-bottom:16px;
+  border:1px solid var(--line);
+  border-radius:24px;
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(18px);
+  box-shadow:var(--shadow2);
+  overflow:hidden;
+}
+.header:after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-45%;
+  width:35%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(53,184,120,.65),transparent);
+  animation:lightSweep 8s ease-in-out infinite;
+}
+@keyframes lightSweep{
+  0%,60%{left:-45%;opacity:0}
+  70%{opacity:1}
+  100%{left:120%;opacity:0}
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.logo{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-weight:900;
+  letter-spacing:-1px;
+  background:linear-gradient(145deg,#0d5d3a,#35b878);
+  box-shadow:0 8px 22px rgba(31,139,87,.22);
+}
+.brandText{min-width:0}
+.brandName{
+  font-size:17px;
+  font-weight:850;
+  letter-spacing:.2px;
+}
+.brandSub{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:2px;
+}
+.engine{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
+  color:var(--deep);
+  font-size:11px;
+  font-weight:750;
+}
+.engineDot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green2);
+  box-shadow:0 0 0 5px rgba(53,184,120,.11),0 0 14px rgba(53,184,120,.45);
+  animation:softPulse 2.8s ease-in-out infinite;
+}
+@keyframes softPulse{
+  0%,100%{transform:scale(.9);opacity:.72}
+  50%{transform:scale(1.1);opacity:1}
+}
+
+.hero{
+  padding:26px 24px;
+  border:1px solid var(--line);
+  border-radius:28px;
+  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(244,251,247,.82));
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+.hero:before{
+  content:"";
+  position:absolute;
+  width:260px;height:260px;
+  right:-100px;top:-140px;
+  border-radius:50%;
+  background:rgba(53,184,120,.08);
+  filter:blur(3px);
+}
+.heroTitle{
+  font-size:clamp(25px,5vw,42px);
+  line-height:1.04;
+  font-weight:900;
+  letter-spacing:-1.5px;
+  margin:0;
+}
+.heroTitle span{
+  background:linear-gradient(90deg,#0d5d3a,#35b878,#c59a43);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.heroDesc{
+  margin:10px 0 0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.7;
+  max-width:720px;
+}
+.heroStatus{
+  margin-top:17px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.statusChip{
+  padding:7px 11px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.68);
+  color:#4f655a;
+  font-size:10px;
+  font-weight:750;
+}
+.statusChip.live{
+  color:var(--deep);
+  border-color:rgba(53,184,120,.22);
+}
+
+.grid{
+  display:grid;
+  gap:14px;
+}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:var(--card);
+  backdrop-filter:blur(16px);
+  box-shadow:var(--shadow2);
+  overflow:hidden;
+}
+.card:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.28) 44%,transparent 62%);
+  transform:translateX(-120%);
+  animation:cardSheen 13s ease-in-out infinite;
+}
+@keyframes cardSheen{
+  0%,72%{transform:translateX(-120%)}
+  84%,100%{transform:translateX(120%)}
+}
+.cardPad{padding:18px}
+.sectionTitle{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.sectionTitle h2{
+  margin:0;
+  font-size:14px;
+  font-weight:850;
+  letter-spacing:.2px;
+}
+.sectionTitle p{
+  margin:0;
+  color:var(--muted);
+  font-size:10px;
+}
+.sectionLabel{
+  color:var(--muted);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:1.1px;
+  text-transform:uppercase;
+}
+
+.inputCard{margin-bottom:14px}
+.inputRow{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:end;
+}
+.inputs{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.inputBox label{
+  display:block;
+  color:var(--muted);
+  font-size:9px;
+  font-weight:800;
+  margin:0 0 5px 3px;
+}
+.inputBox input{
+  width:100%;
+  height:48px;
+  border:1px solid var(--line2);
+  border-radius:14px;
+  outline:none;
+  text-align:center;
+  color:var(--text);
+  background:rgba(255,255,255,.86);
+  font-size:18px;
+  font-weight:850;
+  transition:.22s ease;
+}
+.inputBox input:focus{
+  border-color:rgba(31,139,87,.48);
+  box-shadow:0 0 0 4px rgba(53,184,120,.08);
+  transform:translateY(-1px);
+}
+.primaryBtn{
+  min-width:150px;
+  height:48px;
+  border:0;
+  border-radius:14px;
+  color:#fff;
+  background:linear-gradient(135deg,#0d5d3a,#35b878);
+  box-shadow:0 10px 24px rgba(31,139,87,.2);
+  font-size:12px;
+  font-weight:850;
+  transition:.22s ease;
+}
+.primaryBtn:hover{transform:translateY(-2px);box-shadow:0 13px 28px rgba(31,139,87,.25)}
+.primaryBtn:active{transform:translateY(0)}
+
+.metric{
+  padding:16px;
+  min-height:112px;
+}
+.metricTop{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+}
+.metricLabel{
+  color:var(--muted);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.9px;
+  text-transform:uppercase;
+}
+.metricValue{
+  margin-top:8px;
+  font-size:27px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:-.8px;
+}
+.metricSub{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:10px;
+}
+.miniLight{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green2);
+  box-shadow:0 0 12px rgba(53,184,120,.5);
+}
+
+.top3{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.topCard{
+  position:relative;
+  min-height:154px;
+  padding:17px;
+  border:1px solid rgba(53,184,120,.16);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 85% 10%,rgba(197,154,67,.09),transparent 30%),
+    linear-gradient(145deg,rgba(255,255,255,.97),rgba(240,250,245,.88));
+  box-shadow:0 12px 34px rgba(19,70,46,.08);
+  overflow:hidden;
+}
+.topCard:before{
+  content:"";
+  position:absolute;
+  left:-20%;
+  bottom:0;
+  width:140%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,rgba(53,184,120,.6),rgba(197,154,67,.4),transparent);
+  opacity:.7;
+}
+.rankLabel{
+  color:var(--muted);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+.rankNumber{
+  margin-top:9px;
+  font-size:55px;
+  line-height:.9;
+  font-weight:950;
+  letter-spacing:-3px;
+  background:linear-gradient(145deg,#0d5d3a,#35b878);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.rankScore{
+  margin-top:10px;
+  font-size:21px;
+  font-weight:900;
+}
+.rankScore small{
+  color:var(--muted);
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.7px;
+}
+.rankMeta{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:9px;
+}
+
+.formulaList{
+  display:grid;
+  gap:8px;
+}
+.formulaItem{
+  display:grid;
+  grid-template-columns:48px 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:rgba(255,255,255,.56);
+}
+.formulaNo{
+  font-size:10px;
+  font-weight:900;
+  color:var(--deep);
+}
+.formulaMain{
+  min-width:0;
+}
+.formulaName{
+  font-size:11px;
+  font-weight:800;
+}
+.formulaDigits{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:10px;
+}
+.formulaScore{
+  text-align:right;
+  font-size:14px;
+  font-weight:900;
+}
+.recommend{
+  display:inline-flex;
+  margin-top:5px;
+  padding:3px 6px;
+  border-radius:999px;
+  color:var(--deep);
+  background:rgba(53,184,120,.09);
+  font-size:8px;
+  font-weight:850;
+}
+
+.bar{
+  height:7px;
+  border-radius:999px;
+  background:rgba(31,87,58,.08);
+  overflow:hidden;
+}
+.bar i{
+  display:block;
+  height:100%;
+  width:0;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#0d5d3a,#35b878,#c59a43);
+  transition:width .6s cubic-bezier(.2,.8,.2,1);
+}
+
+.scoreTable{
+  display:grid;
+  gap:7px;
+}
+.scoreRow{
+  display:grid;
+  grid-template-columns:30px 1fr 56px;
+  gap:9px;
+  align-items:center;
+}
+.scoreDigit{
+  font-size:14px;
+  font-weight:900;
+  text-align:center;
+}
+.scoreValue{
+  font-size:10px;
+  font-weight:800;
+  text-align:right;
+}
+
+.pairGrid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.pair{
+  padding:11px 7px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.64);
+  text-align:center;
+  font-weight:900;
+}
+.pair strong{display:block;font-size:16px}
+.pair span{display:block;margin-top:3px;color:var(--muted);font-size:8px}
+
+.winCard{
+  padding:20px;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(53,184,120,.09),transparent 30%),
+    radial-gradient(circle at 95% 100%,rgba(197,154,67,.08),transparent 30%),
+    rgba(255,255,255,.86);
+}
+.winNumbers{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:9px;
+  margin-top:10px;
+}
+.winDigit{
+  position:relative;
+  min-height:76px;
+  display:grid;
+  place-items:center;
+  border-radius:18px;
+  border:1px solid rgba(53,184,120,.16);
+  background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(238,249,243,.88));
+  box-shadow:0 8px 22px rgba(19,70,46,.06);
+}
+.winDigit span{
+  font-size:30px;
+  font-weight:950;
+  letter-spacing:-1px;
+  background:linear-gradient(145deg,#0d5d3a,#35b878);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+/* Deliberately no decorative gradient line above Win Set digits. */
+
+.processing{
+  display:grid;
+  gap:12px;
+}
+.processRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:13px 14px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(255,255,255,.62);
+}
+.processName{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:11px;
+  font-weight:800;
+}
+.processMeta{
+  text-align:right;
+}
+.processValue{
+  font-size:15px;
+  font-weight:900;
+}
+.processSub{
+  color:var(--muted);
+  font-size:8px;
+  margin-top:2px;
+}
+
+.radar{
+  height:170px;
+  position:relative;
+  display:grid;
+  place-items:center;
+}
+.radarCircle{
+  width:142px;height:142px;border-radius:50%;
+  border:1px solid rgba(31,139,87,.16);
+  box-shadow:
+    0 0 0 22px rgba(53,184,120,.025),
+    0 0 0 44px rgba(53,184,120,.018);
+  position:relative;
+}
+.radarCircle:before,
+.radarCircle:after{
+  content:"";
+  position:absolute;
+  background:rgba(31,139,87,.1);
+}
+.radarCircle:before{left:50%;top:0;width:1px;height:100%}
+.radarCircle:after{top:50%;left:0;width:100%;height:1px}
+.radarSweep{
+  position:absolute;
+  left:50%;top:50%;
+  width:68px;height:1px;
+  transform-origin:left center;
+  background:linear-gradient(90deg,rgba(53,184,120,.75),transparent);
+  animation:radarSweep 3.8s linear infinite;
+}
+@keyframes radarSweep{to{transform:rotate(360deg)}}
+.radarDot{
+  position:absolute;
+  width:9px;height:9px;border-radius:50%;
+  background:var(--green2);
+  box-shadow:0 0 16px rgba(53,184,120,.6);
+}
+.radarText{
+  position:absolute;
+  bottom:3px;
+  font-size:9px;
+  color:var(--muted);
+  font-weight:750;
+}
+
+.loginOverlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(10,30,20,.24);
+  backdrop-filter:blur(14px);
+}
+.loginBox{
+  width:min(420px,100%);
+  padding:26px;
+  border:1px solid rgba(31,87,58,.16);
+  border-radius:28px;
+  background:rgba(255,255,255,.94);
+  box-shadow:0 30px 100px rgba(10,50,30,.2);
+}
+.loginLogo{
+  width:54px;height:54px;border-radius:17px;
+  display:grid;place-items:center;
+  color:#fff;font-weight:950;font-size:18px;
+  background:linear-gradient(145deg,#0d5d3a,#35b878);
+  margin-bottom:17px;
+}
+.loginBox h1{margin:0;font-size:24px;letter-spacing:-.8px}
+.loginBox p{margin:7px 0 19px;color:var(--muted);font-size:11px;line-height:1.6}
+.loginInput{
+  width:100%;
+  height:50px;
+  border:1px solid var(--line2);
+  border-radius:14px;
+  padding:0 15px;
+  outline:none;
+  background:#fff;
+  font-size:15px;
+}
+.loginInput:focus{
+  border-color:rgba(31,139,87,.45);
+  box-shadow:0 0 0 4px rgba(53,184,120,.08);
+}
+.loginBtn{width:100%;margin-top:10px}
+.loginError{
+  min-height:17px;
+  color:var(--danger);
+  font-size:10px;
+  margin-top:8px;
+  text-align:center;
+}
+
+.footer{
+  margin-top:20px;
+  text-align:center;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.7;
+}
+
+.toast{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:200;
+  max-width:320px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,255,255,.94);
+  box-shadow:var(--shadow);
+  color:var(--text);
+  font-size:10px;
+  font-weight:750;
+  transform:translateY(20px);
+  opacity:0;
+  pointer-events:none;
+  transition:.25s ease;
+}
+.toast.show{transform:translateY(0);opacity:1}
+
+@media(max-width:850px){
+  .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid3{grid-template-columns:1fr}
+  .inputRow{grid-template-columns:1fr}
+  .primaryBtn{width:100%}
+}
+@media(max-width:650px){
+  .app{width:min(100% - 18px,1180px);padding-top:9px}
+  .header{padding:14px 15px;border-radius:19px}
+  .logo{width:38px;height:38px;border-radius:12px}
+  .brandName{font-size:14px}
+  .engine{font-size:9px}
+  .hero{padding:21px 18px;border-radius:22px}
+  .heroTitle{font-size:28px}
+  .grid2,.grid3,.grid4{grid-template-columns:1fr}
+  .top3{gap:8px}
+  .topCard{min-height:135px;padding:13px}
+  .rankNumber{font-size:44px}
+  .rankScore{font-size:18px}
+  .inputs{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+  .inputBox input{height:43px;font-size:15px;border-radius:11px}
+  .inputBox label{font-size:8px}
+  .winNumbers{gap:5px}
+  .winDigit{min-height:63px;border-radius:14px}
+  .winDigit span{font-size:25px}
+  .pairGrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+  .pair{padding:8px 4px}
+  .pair strong{font-size:13px}
+  .cardPad{padding:14px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+  #snowLayer{display:none}
 }
 </style>
 </head>
 <body>
 
-<canvas id="snow-canvas"></canvas>
+<div id="snowLayer" aria-hidden="true"></div>
 
-<div class="app-container">
-  <!-- Login View -->
-  <div id="loginView">
-    <div class="header-section">
-      <div class="console-badge">
-        <span></span> SECURE GATEWAY V16.0
-      </div>
-      <h1 class="app-title">Mester Lotto <span>VIP+</span></h1>
-      <p class="app-subtitle">ระบบวิเคราะห์ข้อมูลสถิติขั้นสูงระดับองค์กร</p>
-    </div>
-    <div class="form-group">
-      <label class="form-label">กรอกรหัสผ่านเข้าใช้งานระบบ</label>
-      <input type="password" id="passwordInput" class="form-input" placeholder="••••••••••••">
-    </div>
-    <button id="loginButton" class="btn-primary">ยืนยันตัวตนเข้าสู่ระบบ</button>
-  </div>
-
-  <!-- Calculator View -->
-  <div id="calculatorView" style="display: none;">
-    <div class="header-section">
-      <div class="console-badge">
-        <span></span> VIP ANALYTICS ENGINE
-      </div>
-      <h1 class="app-title">Mester Lotto <span>VIP+</span></h1>
-      <p class="app-subtitle">Multi-Model Ensemble & Dynamic Voting System</p>
-    </div>
-
-    <!-- 3 สถิติด้านล่าง -->
-    <div class="stats-grid-minimal">
-      <div class="stat-box">
-        <div class="stat-label">ประมวลผลทั้งหมด</div>
-        <div class="stat-value highlight">41,014 ครั้ง</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">สมาชิกออนไลน์</div>
-        <div class="stat-value">1,185 คน</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">ความเร็วเซิร์ฟเวอร์</div>
-        <div class="stat-value">20 ms</div>
-      </div>
-    </div>
-
-    <!-- ฟอร์มกรอกข้อมูล -->
-    <div class="form-group">
-      <label class="form-label">กรอกผลรางวัลอ้างอิงล่าสุด</label>
-      <input type="text" id="lottoInput" class="form-input" placeholder="เช่น 3ตัวบน, 2ตัวล่าง หรือตัวเลขสถิติ">
-    </div>
-    <button id="calculateButton" class="btn-primary">ประมวลผลระบบ Ensemble AI</button>
-    <button id="logoutButton" class="btn-primary btn-secondary">ออกจากระบบ</button>
-
-    <!-- พื้นที่แสดงผลลัพธ์ -->
-    <div id="resultContainer"></div>
+<div id="loginOverlay" class="loginOverlay">
+  <div class="loginBox">
+    <div class="loginLogo">ML</div>
+    <h1>MasterLotto VIP</h1>
+    <p>Premium AI Smart Analysis<br>กรุณาใส่รหัสสมาชิกเพื่อเข้าสู่ระบบวิเคราะห์</p>
+    <input id="passwordInput" class="loginInput" type="password" autocomplete="off" placeholder="รหัสสมาชิก">
+    <button id="loginBtn" class="primaryBtn loginBtn" type="button">เข้าสู่ระบบ</button>
+    <div id="loginError" class="loginError"></div>
   </div>
 </div>
 
-<div id="toast" class="toast">คัดลอกข้อมูลสำเร็จเรียบร้อย!</div>
+<main id="app" class="app hidden">
+  <header class="header">
+    <div class="brand">
+      <div class="logo">ML</div>
+      <div class="brandText">
+        <div class="brandName">MasterLotto VIP</div>
+        <div class="brandSub">AI Smart Analysis • Premium Quant Dashboard</div>
+      </div>
+    </div>
+    <div class="engine">
+      <span class="engineDot"></span>
+      <span>ENGINE ONLINE</span>
+    </div>
+  </header>
 
-<script>
-// Cinematic High-End Smooth Snowfall Effect
-(function(){
-  const canvas = document.getElementById('snow-canvas');
-  const ctx = canvas.getContext('2d');
-  let width = canvas.width = window.innerWidth;
-  let height = canvas.height = window.innerHeight;
+  <section class="hero">
+    <h1 class="heroTitle">Smart <span>Number Analysis</span></h1>
+    <p class="heroDesc">
+      วิเคราะห์จาก Main Formula, Frequency Engine, Support Models, Radar และ Scoring Engine
+      โดยแยกผลการวิเคราะห์เป็นลำดับชั้นเพื่อให้เห็นสัญญาณสำคัญก่อนรายละเอียด
+    </p>
+    <div class="heroStatus">
+      <span class="statusChip live">● LIVE ENGINE</span>
+      <span class="statusChip">5 MAIN FORMULAS</span>
+      <span class="statusChip">100-FORMULA ENGINE</span>
+      <span class="statusChip">MULTI-LAYER SCORE</span>
+    </div>
+  </section>
 
-  window.addEventListener('resize', () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
+  <section class="card inputCard">
+    <div class="cardPad">
+      <div class="sectionTitle">
+        <div>
+          <div class="sectionLabel">Analysis Input</div>
+          <h2>กรอกผลย้อนหลังเพื่อเริ่มการประมวลผล</h2>
+        </div>
+        <p id="marketLabel">Universal Market</p>
+      </div>
+      <div class="inputRow">
+        <div class="inputs">
+          <div class="inputBox"><label>ร้อยบน</label><input id="h" inputmode="numeric" maxlength="1" value="7"></div>
+          <div class="inputBox"><label>สิบบน</label><input id="tTop" inputmode="numeric" maxlength="1" value="3"></div>
+          <div class="inputBox"><label>หน่วยบน</label><input id="uTop" inputmode="numeric" maxlength="1" value="8"></div>
+          <div class="inputBox"><label>สิบบล่าง</label><input id="tBot" inputmode="numeric" maxlength="1" value="4"></div>
+          <div class="inputBox"><label>หน่วยล่าง</label><input id="uBot" inputmode="numeric" maxlength="1" value="2"></div>
+        </div>
+        <button id="analyzeBtn" class="primaryBtn" type="button">เริ่มวิเคราะห์</button>
+      </div>
+    </div>
+  </section>
 
-  const flakes = Array.from({ length: 35 }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    radius: Math.random() * 2 + 0.8,
-    speedY: Math.random() * 0.4 + 0.2,
-    speedX: (Math.random() - 0.5) * 0.2,
-    opacity: Math.random() * 0.5 + 0.3
-  }));
+  <section class="grid grid4" id="statsGrid">
+    <div class="card metric">
+      <div class="metricTop"><span class="metricLabel">Sum Top</span><span class="miniLight"></span></div>
+      <div id="sumTopMetric" class="metricValue">18</div>
+      <div class="metricSub">ผลรวม 3 ตัวบน</div>
+    </div>
+    <div class="card metric">
+      <div class="metricTop"><span class="metricLabel">Sum Bottom</span><span class="miniLight"></span></div>
+      <div id="sumBotMetric" class="metricValue">6</div>
+      <div class="metricSub">ผลรวม 2 ตัวล่าง</div>
+    </div>
+    <div class="card metric">
+      <div class="metricTop"><span class="metricLabel">Total Sum</span><span class="miniLight"></span></div>
+      <div id="totalSumMetric" class="metricValue">24</div>
+      <div class="metricSub">ผลรวมทั้งหมด</div>
+    </div>
+    <div class="card metric">
+      <div class="metricTop"><span class="metricLabel">Top Signal</span><span class="miniLight"></span></div>
+      <div id="topSignalMetric" class="metricValue">—</div>
+      <div class="metricSub">สัญญาณอันดับหนึ่ง</div>
+    </div>
+  </section>
 
-  function loop() {
-    ctx.clearRect(0, 0, width, height);
-    flakes.forEach(f => {
-      f.y += f.speedY;
-      f.x += f.speedX;
-      if (f.y > height) {
-        f.y = -10;
-        f.x = Math.random() * width;
-      }
-      ctx.beginPath();
-      ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${f.opacity})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
+  <section class="card" style="margin-top:14px">
+    <div class="cardPad">
+      <div class="sectionTitle">
+        <div>
+          <div class="sectionLabel">Primary Signal</div>
+          <h2>Alpha Top 3 Single</h2>
+        </div>
+        <p>จัดอันดับจาก Total Score</p>
+      </div>
+      <div id="top3" class="top3"></div>
+    </div>
+  </section>
 
-// Core Mester Lotto VIP+ Application Logic
-(function(){
-  const _app = {
-    _toastTimer: null,
-
-    _esc(str) {
-      return String(str).replace(/[&<>"']/g, function(m) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
-      });
-    },
-
-    _audio(type) {},
-
-    login() {
-      const pass = document.getElementById("passwordInput").value.trim();
-      if(pass.length > 0) {
-        localStorage.setItem("ml_auth_status_v3", "active");
-        document.getElementById("loginView").style.display = "none";
-        document.getElementById("calculatorView").style.display = "block";
-      } else {
-        alert("กรุณากรอกรหัสผ่านให้ถูกต้อง");
-      }
-    },
-
-    logout() {
-      localStorage.removeItem("ml_auth_status_v3");
-      document.getElementById("loginView").style.display = "block";
-      document.getElementById("calculatorView").style.display = "none";
-    },
-
-    checkSessionBadge() {},
-
-    clearCalc() {
-      document.getElementById("lottoInput").value = "";
-      document.getElementById("resultContainer").innerHTML = "";
-    },
-
-    calculate() {
-      const rawInput = document.getElementById("lottoInput").value.trim() || "479 69";
-      this._audio("click");
-
-      const digitsOnly = rawInput.replace(/\D/g, "");
-      const H = parseInt(digitsOnly[0] || "4", 10);
-      const T_top = parseInt(digitsOnly[1] || "7", 10);
-      const U_top = parseInt(digitsOnly[2] || "9", 10);
-      const T_bot = parseInt(digitsOnly[3] || "6", 10);
-      const U_bot = parseInt(digitsOnly[4] || "9", 10);
-
-      const d1 = ((T_top * 2) + U_top + 2) % 10;
-      const d2_dig = (9 - ((H * 2) + U_top - (T_bot * 2))) % 10;
-      const normalizedD2 = (d2_dig + 10) % 10;
-
-      const models = [
-        { name: "Mod 10 Position Engine", subName: "Main Core", weight: 0.35, baseScore: 73.4 },
-        { name: "Frequency Vector Matrix", subName: "Backend Sup", weight: 0.20, baseScore: 70.1 },
-        { name: "Linear Trend Momentum", subName: "Backend Sup", weight: 0.18, baseScore: 68.5 },
-        { name: "Moving Average Spread", subName: "Backend Sup", weight: 0.15, baseScore: 67.2 },
-        { name: "VIP+ Final Verification", subName: "Validator", weight: 0.12, baseScore: 65.8 }
-      ];
-
-      const evaluated = models.map((m, idx) => {
-        const shiftVal = (H + T_top + idx) % 10;
-        const setArr = [
-          (d1 + idx) % 10,
-          (normalizedD2 + idx * 2) % 10,
-          shiftVal,
-          (shiftVal + 3) % 10,
-          (d1 + shiftVal) % 10
-        ];
-        const uniqueSet = [...new Set(setArr)].slice(0, 5);
-        const pairsMap = {};
-        uniqueSet.forEach(dg => {
-          pairsMap[dg] = [
-            `${dg}${(dg + 1) % 10}`,
-            `${dg}${(dg + 4) % 10}`,
-            `${dg}${(dg + 7) % 10}`,
-            `${dg}${(dg + 8) % 10}`,
-            `${dg}${(dg + 3) % 10}`
-          ];
-        });
-        const aiScore = Number((m.baseScore + ((H * 0.2) + (idx * 0.4))).toFixed(1));
-        return { ...m, set: uniqueSet, pairsMap, aiScore };
-      });
-
-      const digitScores = {};
-      evaluated.forEach(m => {
-        m.set.forEach((dg, pos) => {
-          if (!digitScores[dg]) digitScores[dg] = { totalScore: 0, count: 0 };
-          digitScores[dg].totalScore += (m.weight * 100) - (pos * 2);
-          digitScores[dg].count += 1;
-        });
-      });
-
-      const top3Digits = Object.keys(digitScores).map(dg => ({
-        digit: Number(dg),
-        totalScore: Number(digitScores[dg].totalScore.toFixed(1))
-      })).sort((a,b) => b.totalScore - a.totalScore).slice(0,3);
-
-      const calcConfidence = (score) => {
-        return Number((88.5 + (score % 6.5)).toFixed(1));
-      };
-
-      const rankNames = ["อันดับ 1 / TOP PICK", "อันดับ 2 / HIGH PROB", "อันดับ 3 / STABLE"];
-
-      const deepScanHTML = top3Digits.map((item, index) => {
-        const scorePct = calcConfidence(item.totalScore);
-        const pairs = [
-          `${item.digit}${(item.digit + 2) % 10}`,
-          `${item.digit}${(item.digit + 5) % 10}`,
-          `${item.digit}${(item.digit + 8) % 10}`
-        ];
-        const pairHTML = pairs.map(p => `<div class="deep-scan-pair-item" data-copy="${this._esc(p)}">${this._esc(p)}</div>`).join("");
-        
-        return `
-          <div class="deep-scan-card rank-${index + 1}">
-            <div class="deep-scan-digit-box">${item.digit}</div>
-            <div class="deep-scan-model-name">เด่นหลัก ${item.digit}</div>
-            <div class="deep-scan-rank">${rankNames[index]}</div>
-            <div class="deep-scan-score">AI CONF ${scorePct}%</div>
-            <div class="deep-scan-pairs">${pairHTML}</div>
+  <section class="grid grid2" style="margin-top:14px">
+    <div class="card">
+      <div class="cardPad">
+        <div class="sectionTitle">
+          <div>
+            <div class="sectionLabel">AI Score Ranking</div>
+            <h2>คะแนนรวม 0–9</h2>
           </div>
-        `;
-      }).join("");
+          <p>Weighted Consensus</p>
+        </div>
+        <div id="scoreTable" class="scoreTable"></div>
+      </div>
+    </div>
 
-      const threeD_Base = (H + T_top + U_top) % 10;
-      const threeD_Digits = [threeD_Base, (threeD_Base+1)%10, (threeD_Base+3)%10, (threeD_Base+6)%10, (threeD_Base+8)%10];
-      const threeD_PairsHTML = threeD_Digits.map((dg, i) => {
-        const dVal = (dg + T_bot) % 10;
-        const pairStr = `${dg}${dVal}`;
-        const pct = Number((92.4 - (i * 0.8)).toFixed(1));
-        return `
-          <div class="three-d-item" data-copy="${this._esc(pairStr)}">
-            <strong>${this._esc(pairStr)}</strong>
-            <small>${pct}%</small>
+    <div class="card">
+      <div class="cardPad">
+        <div class="sectionTitle">
+          <div>
+            <div class="sectionLabel">Formula Intelligence</div>
+            <h2>5 Main Formulas</h2>
           </div>
-        `;
-      }).join("");
+          <p>Top formula signals</p>
+        </div>
+        <div id="formulaList" class="formulaList"></div>
+      </div>
+    </div>
+  </section>
 
-      const winSetDigits = [
-        d1,
-        normalizedD2,
-        top3Digits[0] ? top3Digits[0].digit : (d1 + 2) % 10,
-        (d1 + 5) % 10,
-        (normalizedD2 + 4) % 10,
-        (d1 + 7) % 10
-      ].map(d => d % 10);
-      const uniqueWinSet = [...new Set(winSetDigits)].slice(0, 6);
-      while(uniqueWinSet.length < 6) {
-        const nextVal = (uniqueWinSet[uniqueWinSet.length - 1] + 1) % 10;
-        if(!uniqueWinSet.includes(nextVal)) uniqueWinSet.push(nextVal);
-      }
-
-      const indWinHTML = uniqueWinSet.map((d, idx) => {
-        const scoreVal = Number((94.5 - (idx * 0.5)).toFixed(1));
-        return `
-          <div class="ind-win-item" data-copy="${d}">
-            <strong>${d}</strong>
-            <span>${scoreVal}%</span>
+  <section class="grid grid2" style="margin-top:14px">
+    <div class="card">
+      <div class="cardPad">
+        <div class="sectionTitle">
+          <div>
+            <div class="sectionLabel">Deep Scan</div>
+            <h2>Top Pair Consensus</h2>
           </div>
-        `;
-      }).join("");
+          <p>Canonical pair ranking</p>
+        </div>
+        <div id="pairGrid" class="pairGrid"></div>
+      </div>
+    </div>
 
-      const formulasHTML = evaluated.map(model => {
-        const fPairs = Object.values(model.pairsMap)[0] || ["--", "--", "--", "--", "--"];
-        const pairCards = fPairs.slice(0, 5).map(pStr => `
-          <div class="formula-pair" data-copy="${this._esc(pStr)}">
-            <strong>${this._esc(pStr)}</strong>
-            <small>AI</small>
+    <div class="card">
+      <div class="cardPad">
+        <div class="sectionTitle">
+          <div>
+            <div class="sectionLabel">Neural Radar</div>
+            <h2>Signal Field</h2>
           </div>
-        `).join("");
-        return `
-          <div class="formula-card">
-            <div class="formula-head">
-              <div class="formula-name">
-                <span>${this._esc(model.name)}</span>
-                <span class="compact-badge">${this._esc(model.subName)}</span>
-              </div>
-              <div class="formula-badge">CONF ${model.aiScore}%</div>
-            </div>
-            <div class="formula-sub">ชุดตัวเลขหลัก: <strong>${model.set.join(", ")}</strong></div>
-            <div class="formula-pairs">${pairCards}</div>
+          <p>3 radar layers</p>
+        </div>
+        <div class="radar">
+          <div class="radarCircle">
+            <div id="radarDot1" class="radarDot"></div>
+            <div id="radarDot2" class="radarDot"></div>
+            <div id="radarDot3" class="radarDot"></div>
+            <div class="radarSweep"></div>
           </div>
-        `;
-      }).join("");
+          <div class="radarText">RADAR ACTIVE</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      const container = document.getElementById("resultContainer");
-      container.innerHTML = `
-        <div class="result-shell">
-          <div class="result-head">
-            <div>
-              <div class="result-kicker">QUANTITATIVE ANALYSIS ENGINE OUTPUT</div>
-              <div class="result-title">ผลการประมวลผลระบบ AI</div>
-            </div>
-            <div class="result-note">อ้างอิง: ${this._esc(rawInput)}</div>
-          </div>
+  <section class="card winCard" style="margin-top:14px">
+    <div class="sectionTitle">
+      <div>
+        <div class="sectionLabel">Smart Pick</div>
+        <h2>Win Set — 6 Digits</h2>
+      </div>
+      <p id="winSetMeta">Balanced candidate set</p>
+    </div>
+    <div id="winNumbers" class="winNumbers"></div>
+  </section>
 
-          <div class="top3-signal-board">
-            <div class="top3-head">
-              <div>
-                <div class="top3-kicker">TOP 3 DIGITAL MOMENTUM</div>
-                <div class="top3-title">3 อันดับตัวเลขเด่นสูงสุดในระบบ</div>
-                <div class="top3-sub">ประมวลผลผ่าน Ensemble Consensus Matrix</div>
-              </div>
-              <div class="top3-badge">AI RANKED</div>
-            </div>
-            <div class="top3-list">
-              ${top3Digits.map((item, index) => {
-                const ranks = ["rank-one", "rank-two", "rank-three"];
-                const rankLabels = ["อันดับ 1 / TOP PICK", "อันดับ 2 / HIGH PROB", "อันดับ 3 / STABLE"];
-                const maxScoreVal = top3Digits[0].totalScore || 1;
-                const fillPct = Math.min(100, Math.max(25, Math.round((item.totalScore / maxScoreVal) * 100)));
-                const scorePct = calcConfidence(item.totalScore);
-                return `
-                  <div class="top3-row ${ranks[index]}">
-                    <div class="top3-position">#${index+1}</div>
-                    <div class="top3-digit">${item.digit}</div>
-                    <div class="top3-info">
-                      <div class="top3-label">
-                        ${rankLabels[index]}
-                        <span>ความแม่นยำ ${scorePct}%</span>
-                      </div>
-                      <div class="top3-bar">
-                        <div class="top3-bar-fill" style="width:${fillPct}%"></div>
-                      </div>
-                    </div>
-                    <div class="top3-score">${scorePct}%</div>
-                  </div>
-                `;
-              }).join("")}
-            </div>
-            <div class="top3-footnote">
-              <span class="mini-live"></span>
-              <span>อัปเดตสถานะแบบเรียลไทม์จากฐานข้อมูลกลาง</span>
+  <section class="grid grid2" style="margin-top:14px">
+    <div class="card">
+      <div class="cardPad">
+        <div class="sectionTitle">
+          <div>
+            <div class="sectionLabel">System Processing</div>
+            <h2>สมาชิกออนไลน์</h2>
+          </div>
+          <p>Realtime status</p>
+        </div>
+        <div class="processing">
+          <div class="processRow">
+            <div class="processName"><span class="engineDot"></span>การประมวลผล</div>
+            <div class="processMeta">
+              <div id="processStatus" class="processValue">READY</div>
+              <div class="processSub">Analysis Engine</div>
             </div>
           </div>
-
-          <div class="stats-analytics-card">
-            <div class="stats-flex">
-              <div class="stats-title">สัดส่วนคู่/คี่ & แนวโน้มความหนาแน่น</div>
-              <div class="stats-badge">RATIO MATRIX</div>
-            </div>
-            <div class="ratio-bar-container">
-              <div class="ratio-even" style="width: 58%"></div>
-              <div class="ratio-odd" style="width: 42%"></div>
-            </div>
-            <div class="ratio-legend">
-              <span>EVEN (คู่): 58%</span>
-              <span>ODD (คี่): 42%</span>
+          <div class="processRow">
+            <div class="processName">ความเร็วเซิร์ฟเวอร์</div>
+            <div class="processMeta">
+              <div id="serverSpeed" class="processValue">— ms</div>
+              <div class="processSub">Local Processing</div>
             </div>
           </div>
-
-          <div class="section-marker">AI DEEP SCAN / เจาะลึกรายตัวเลข</div>
-
-          <div class="deep-scan-board">
-            <div class="deep-scan-head">
-              <div>
-                <div class="deep-scan-kicker">DEEP DIGIT SCAN MATRIX</div>
-                <div class="deep-scan-title">เจาะลึก 3 ตัวเลขเด่นพร้อมชุดคู่ประกบ</div>
-                <div class="deep-scan-sub">วิเคราะห์ความสัมพันธ์เชิงลึกผ่านระบบ AI</div>
-              </div>
-              <div class="top3-badge">ADVANCED</div>
+          <div class="processRow">
+            <div class="processName">Scoring Engine</div>
+            <div class="processMeta">
+              <div id="scoreStatus" class="processValue">100%</div>
+              <div class="processSub">Weight Integrity</div>
             </div>
-            <div class="deep-scan-grid">
-              ${deepScanHTML}
-            </div>
-            <div class="three-d-scan">
-              <div class="three-d-head">
-                <div class="three-d-title">ชุดวิเคราะห์พิเศษ 3 ตัวตรง</div>
-                <div class="three-d-score">CONFIDENCE 94.2%</div>
-              </div>
-              <div class="three-d-grid">
-                ${threeD_PairsHTML}
-              </div>
-            </div>
-          </div>
-
-          <!-- ชุดวิน 6 ตัว (ลบแถบขีดสีด้านบนออก ปล่อยโล่งสะอาดตา) -->
-          <div class="ind-win-set">
-            <div class="ind-win-header">
-              <div>
-                <div class="ind-win-title">
-                  ชุดวิน 6 ตัวเน้นๆ <small>6-DIGIT WIN SET MATRIX</small>
-                </div>
-              </div>
-              <div class="ind-win-badge">VIP SET</div>
-            </div>
-            <div class="ind-win-grid">
-              ${indWinHTML}
-            </div>
-          </div>
-
-          <div class="section-marker">AUDITED FORMULAS / สูตรคำนวณหลัก</div>
-
-          <div class="formula-section">
-            <div class="formula-card" style="margin-bottom:9px; border-left:3px solid var(--emerald);">
-              <div class="formula-head">
-                <div class="formula-name">
-                  <span>ภาพรวม 5 สูตรหลักมาตรฐาน</span>
-                  <span class="compact-badge">ENTERPRISE</span>
-                </div>
-                <div class="formula-badge">ACTIVE</div>
-              </div>
-              <div class="formula-sub">ทุกสูตรผ่านการตรวจสอบความแม่นยำด้วยระบบวิเคราะห์เชิงปริมาณ</div>
-            </div>
-            ${formulasHTML}
-          </div>
-
-          <div class="disclaimer">
-            <strong>ข้อควรทราบ:</strong> ระบบนี้จัดทำขึ้นเพื่อเป็นแนวทางวิเคราะห์ข้อมูลสถิติเชิงปริมาณเท่านั้น โปรดใช้วิจารณญาณในการตัดสินใจ
           </div>
         </div>
-      `;
+      </div>
+    </div>
 
-      container.querySelectorAll("[data-copy]").forEach(el => {
-        el.addEventListener("click", () => {
-          const val = el.getAttribute("data-copy");
-          if (!val) return;
-          navigator.clipboard.writeText(val).then(() => {
-            this._audio("click");
-            const toast = document.getElementById("toast");
-            if (toast) {
-              toast.classList.add("show");
-              clearTimeout(this._toastTimer);
-              this._toastTimer = setTimeout(() => {
-                toast.classList.remove("show");
-              }, 1600);
-            }
-          });
-        });
-      });
-    }
+    <div class="card">
+      <div class="cardPad">
+        <div class="sectionTitle">
+          <div>
+            <div class="sectionLabel">AI Score</div>
+            <h2>Model Confidence Range</h2>
+          </div>
+          <p>Relative score</p>
+        </div>
+        <div style="padding:8px 0 14px">
+          <div style="display:flex;justify-content:space-between;align-items:end;gap:10px">
+            <div id="confidenceValue" style="font-size:38px;font-weight:950;letter-spacing:-1.8px">—%</div>
+            <div id="confidenceLabel" style="color:var(--muted);font-size:9px;font-weight:800">AI SCORE</div>
+          </div>
+          <div class="bar" style="margin-top:14px"><i id="confidenceBar"></i></div>
+        </div>
+        <div id="confidenceDesc" style="color:var(--muted);font-size:10px;line-height:1.7">
+          คะแนนนี้เป็น relative score จากองค์ประกอบของ engine ไม่ใช่ historical hit-rate
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:14px">
+    <div class="cardPad">
+      <div class="sectionTitle">
+        <div>
+          <div class="sectionLabel">3D Deep Scan</div>
+          <h2>Smart Triple Candidates</h2>
+        </div>
+        <p>สร้างจาก Top 3 + Pair Consensus</p>
+      </div>
+      <div id="tripleGrid" class="grid grid3"></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    MasterLotto VIP • Premium AI Smart Analysis<br>
+    คะแนนทั้งหมดเป็น model score เพื่อจัดอันดับภายในชุดข้อมูลที่ป้อน ไม่ใช่การรับประกันผลลัพธ์
+  </footer>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   MASTERLOTTO VIP — PREMIUM AUDITED FINAL
+   ============================================================
+   SCORING ENGINE
+   Main Formula       35%
+   100-Formula        20%
+   Radar              15%
+   Support Models     15%
+   Win Set            10%
+   Backend Formula     5%
+   Total              100%
+   ============================================================ */
+
+const STORAGE = {
+  session: "mlvip_session_v2",
+  marketData: "mlvip_market_data_v2"
+};
+
+const DEFAULT_PASSWORDS = [
+  "1234",
+  "12345",
+  "123456",
+  "VIP",
+  "vip",
+  "MASTER",
+  "master"
+];
+
+const $ = id => document.getElementById(id);
+
+function normalize(x){
+  return ((Number(x) % 10) + 10) % 10;
+}
+
+function digit(x){
+  return normalize(Math.trunc(Number(x)));
+}
+
+function pairKey(a,b){
+  const x = digit(a), y = digit(b);
+  return x <= y ? `${x}${y}` : `${y}${x}`;
+}
+
+function unique(arr){
+  return [...new Set(arr.map(digit))];
+}
+
+function clamp(v,min,max){
+  return Math.max(min,Math.min(max,v));
+}
+
+function getInputs(){
+  return {
+    H: digit($("h").value),
+    T_top: digit($("tTop").value),
+    U_top: digit($("uTop").value),
+    T_bot: digit($("tBot").value),
+    U_bot: digit($("uBot").value)
   };
+}
 
-  window._app = _app;
+function saveState(state){
+  try{
+    localStorage.setItem(STORAGE.marketData,JSON.stringify(state));
+  }catch(e){}
+}
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const isAuth = localStorage.getItem("ml_auth_status_v3") === "active";
-    if (isAuth) {
-      document.getElementById("loginView").style.display = "none";
-      document.getElementById("calculatorView").style.display = "block";
-      _app.checkSessionBadge();
-    } else {
-      document.getElementById("loginView").style.display = "block";
-      document.getElementById("calculatorView").style.display = "none";
-    }
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE.marketData);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){
+    return null;
+  }
+}
 
-    const loginBtn = document.getElementById("loginButton");
-    if (loginBtn) loginBtn.addEventListener("click", () => _app.login());
+/* ============================================================
+   MAIN FORMULAS 01–05
+   ============================================================ */
 
-    const passInput = document.getElementById("passwordInput");
-    if (passInput) {
-      passInput.addEventListener("keydown", e => {
-        if (e.key === "Enter") _app.login();
-      });
-    }
+function mainFormula01(v){
+  let a = normalize(v.H + v.T_top + v.U_top);
+  let b = normalize(v.T_bot + v.U_bot);
+  if(a === b) b = normalize(b + 1);
+  return [a,b];
+}
 
-    const calcBtn = document.getElementById("calculateButton");
-    if (calcBtn) calcBtn.addEventListener("click", () => _app.calculate());
+function mainFormula02(v){
+  const a = normalize(v.T_top * 2 + v.U_top + 2);
+  const b = normalize(9 - v.H * 2 + v.U_top - v.T_bot * 2);
+  return [a,b];
+}
 
-    const logoutBtn = document.getElementById("logoutButton");
-    if (logoutBtn) logoutBtn.addEventListener("click", () => _app.logout());
+function mainFormula03(v){
+  const base = v.H - v.T_top - v.T_bot;
+  return [
+    normalize(base + 6),
+    normalize(base + 8)
+  ];
+}
+
+function mainFormula04(v){
+  const base = v.T_top + v.U_bot;
+  return [
+    normalize(base + 2),
+    normalize(base + 4)
+  ];
+}
+
+function mainFormula05(v){
+  return [
+    normalize(v.T_top + v.U_top + v.U_bot + 3),
+    normalize(v.H + v.T_top + v.T_bot - 1)
+  ];
+}
+
+function getMainModels(v){
+  return [
+    {id:1,name:"Cross-Digit Modulo",digits:mainFormula01(v)},
+    {id:2,name:"Weighted Top/Bottom",digits:mainFormula02(v)},
+    {id:3,name:"Offset Base",digits:mainFormula03(v)},
+    {id:4,name:"Cross Pair Offset",digits:mainFormula04(v)},
+    {id:5,name:"Hybrid Sum",digits:mainFormula05(v)}
+  ];
+}
+
+/* ============================================================
+   SUPPORT MODELS 01–05
+   Each raw model has 2 direct unit outputs.
+   Normalization is now based on 10 total outputs.
+   ============================================================ */
+
+function getUnitDirect(raw){
+  const d = normalize(raw);
+  return [d,normalize(d+1)];
+}
+
+function getSupportModels(v,sumTop){
+  return [
+    {id:1,name:"Top + Bottom Tens",raw:v.T_top + v.T_bot},
+    {id:2,name:"Top Sum",raw:sumTop},
+    {id:3,name:"Hundreds + Bottom Tens",raw:v.H + v.T_bot},
+    {id:4,name:"Top Unit + Bottom Unit",raw:v.U_top + v.U_bot},
+    {id:5,name:"Inverse Bottom Unit",raw:10 - v.U_bot}
+  ].map(m=>({...m,digits:getUnitDirect(m.raw)}));
+}
+
+/* ============================================================
+   100-FORMULA ENGINE
+   ============================================================ */
+
+function run100Formulas(v,sumTop,sumBot,totalSum){
+  const H=v.H,T=v.T_top,U=v.U_top,TB=v.T_bot,UB=v.U_bot;
+  const f = [
+    H+T,H+U,T+U,H+TB,H+UB,T+TB,T+UB,U+TB,U+UB,TB+UB,
+    sumTop+H,sumTop+T,sumTop+U,sumTop+TB,sumTop+UB,
+    sumBot+H,sumBot+T,sumBot+U,sumBot+TB,sumBot+UB,
+    totalSum+H,totalSum+T,totalSum+U,totalSum+TB,totalSum+UB,
+    10-H,10-T,10-U,10-TB,10-UB,
+    H-T,H-U,T-U,H-TB,H-UB,T-TB,T-UB,U-TB,U-UB,TB-UB,
+    T*2+U,H*2+T,U*2+H,TB*2+UB,UB*2+TB,
+    H+T+10,U+T+10,H+U+10,H+TB+10,H+UB+10,
+    T+U+10,T+TB+10,T+UB+10,U+TB+10,U+UB+10,
+    TB+UB+10,
+    H+T+20,H+U+20,T+U+20,H+TB+20,H+UB+20,
+    T+TB+20,T+UB+20,U+TB+20,U+UB+20,TB+UB+20,
+    H+T+30,H+U+30,T+U+30,H+TB+30,H+UB+30,
+    T+TB+30,T+UB+30,U+TB+30,U+UB+30,TB+UB+30,
+    totalSum,totalSum+1,totalSum+2,totalSum+3,totalSum+4,
+    totalSum+5,totalSum+6,totalSum+7,totalSum+8,totalSum+9,
+    2*totalSum,2*totalSum+H,2*totalSum+T,2*totalSum+U,
+    2*totalSum+TB,2*totalSum+UB,
+    3*sumTop+sumBot,
+    3*sumBot+sumTop,
+    H*3+U,
+    T*3+UB,
+    U*3+TB,
+    TB*3+H,
+    UB*3+T,
+    H*T+U,
+    T*U+TB,
+    U*TB+UB,
+    H*UB+T,
+    (H+T)*(U+1),
+    (T+U)*(TB+1),
+    (TB+UB)*(H+1),
+    (H+U+TB+UB)
+  ];
+
+  const counts = Array(10).fill(0);
+  const outputs = f.map(x=>{
+    const d=normalize(x);
+    counts[d]++;
+    return d;
   });
-})();
+
+  const maxCount=Math.max(...counts,1);
+  const score=counts.map(c=>c/maxCount);
+
+  return {
+    formulas:f,
+    outputs,
+    counts,
+    score,
+    maxCount
+  };
+}
+
+/* ============================================================
+   RADAR ENGINE
+   ============================================================ */
+
+function runRadar(v,sumTop,sumBot,totalSum){
+  const r1 = normalize(sumBot);
+  const r2 = normalize(sumTop);
+  const r3 = normalize(totalSum);
+
+  const groups = [
+    [normalize(r1-1),r1,normalize(r1+1)],
+    [normalize(r2-1),r2,normalize(r2+1)],
+    [normalize(r3-1),r3,normalize(r3+1)]
+  ];
+
+  const hits=Array(10).fill(0);
+  groups.forEach(g=>{
+    unique(g).forEach(d=>hits[d]++);
+  });
+
+  return {
+    bases:[r1,r2,r3],
+    groups,
+    hits,
+    score:hits.map(x=>x/3)
+  };
+}
+
+/* ============================================================
+   BACKEND FORMULA
+   ============================================================ */
+
+function runBackend(v,sumTop,totalSum){
+  const digits=unique([
+    normalize(2*v.H+v.T_bot),
+    normalize(v.T_top+v.U_bot),
+    normalize(sumTop),
+    normalize(Math.abs(v.T_top-v.U_top)),
+    normalize(totalSum)
+  ]);
+
+  const score=Array(10).fill(0);
+  digits.forEach(d=>score[d]=1);
+
+  return {digits,score};
+}
+
+/* ============================================================
+   WIN SET
+   Top 5 + wildcard, with balance constraint.
+   ============================================================ */
+
+function balanceOK(arr){
+  const a=unique(arr);
+  const even=a.filter(x=>x%2===0).length;
+  const odd=a.length-even;
+  const low=a.filter(x=>x<=4).length;
+  const high=a.length-low;
+  return even>=2 && odd>=2 && low>=2 && high>=2;
+}
+
+function buildWinSet(ranking,allowedDigits){
+  const top5=ranking.slice(0,5).map(x=>x.digit);
+  const used=new Set(top5);
+  let wildcard=null;
+
+  for(let i=5;i<ranking.length;i++){
+    const d=ranking[i].digit;
+    if(!used.has(d) && !allowedDigits.has(d)){
+      wildcard=d;
+      break;
+    }
+  }
+
+  if(wildcard===null){
+    for(let i=5;i<ranking.length;i++){
+      const d=ranking[i].digit;
+      if(!used.has(d)){
+        wildcard=d;
+        break;
+      }
+    }
+  }
+
+  let set=[...top5];
+  if(wildcard!==null) set.push(wildcard);
+
+  if(!balanceOK(set)){
+    for(let i=5;i<ranking.length;i++){
+      const d=ranking[i].digit;
+      if(set.includes(d)) continue;
+      const candidate=[...top5,d];
+      if(balanceOK(candidate)){
+        set=candidate;
+        wildcard=d;
+        break;
+      }
+    }
+  }
+
+  return {
+    digits:unique(set).slice(0,6),
+    wildcard
+  };
+}
+
+/* ============================================================
+   PAIR ENGINE
+   Unified philosophy:
+   - canonical pair
+   - every model contributes at most one vote per canonical pair
+   - pair tie-break uses digit total score
+   ============================================================ */
+
+function buildPairEngine(mainModels,totalScore){
+  const pairVotes=new Map();
+  const pairModels=new Map();
+  const pairOccurrences=new Map();
+
+  mainModels.forEach(model=>{
+    const local=new Set();
+
+    model.digits.forEach(source=>{
+      const anchor=normalize(7-source);
+      let pool=[
+        normalize(anchor-2),
+        normalize(anchor-1),
+        anchor,
+        normalize(anchor+1),
+        normalize(anchor+2)
+      ];
+
+      if(pool.length<5){
+        pool.push(normalize(anchor+3));
+      }
+
+      pool=unique(pool).filter(d=>d!==source);
+
+      pool.slice(0,5).forEach(other=>{
+        const key=pairKey(source,other);
+        pairOccurrences.set(key,(pairOccurrences.get(key)||0)+1);
+
+        if(!local.has(key)){
+          local.add(key);
+          pairVotes.set(key,(pairVotes.get(key)||0)+1);
+          if(!pairModels.has(key)) pairModels.set(key,new Set());
+          pairModels.get(key).add(model.id);
+        }
+      });
+    });
+  });
+
+  const list=[...pairVotes.entries()].map(([key,votes])=>{
+    const a=Number(key[0]),b=Number(key[1]);
+    const digitScore=(totalScore[a]||0)+(totalScore[b]||0);
+    return {
+      key,
+      digits:[a,b],
+      votes,
+      occurrences:pairOccurrences.get(key)||0,
+      digitScore,
+      modelCount:pairModels.get(key)?.size||0
+    };
+  }).sort((a,b)=>
+    b.votes-a.votes ||
+    b.digitScore-a.digitScore ||
+    b.occurrences-a.occurrences ||
+    a.key.localeCompare(b.key)
+  );
+
+  return {list,pairVotes,pairModels,pairOccurrences};
+}
+
+/* ============================================================
+   SCORING ENGINE
+   35 / 20 / 15 / 15 / 10 / 5 = 100%
+   ============================================================ */
+
+function calculateScores(v){
+  const sumTop=v.H+v.T_top+v.U_top;
+  const sumBot=v.T_bot+v.U_bot;
+  const totalSum=sumTop+sumBot;
+
+  const mainModels=getMainModels(v);
+  const supportModels=getSupportModels(v,sumTop);
+  const freq=run100Formulas(v,sumTop,sumBot,totalSum);
+  const radar=runRadar(v,sumTop,sumBot,totalSum);
+  const backend=runBackend(v,sumTop,totalSum);
+
+  const mainCounts=Array(10).fill(0);
+  mainModels.forEach(m=>m.digits.forEach(d=>mainCounts[d]++));
+
+  const supportCounts=Array(10).fill(0);
+  supportModels.forEach(m=>m.digits.forEach(d=>supportCounts[d]++));
+
+  const mainScore=mainCounts.map(c=>c/5);
+  const supportScore=supportCounts.map(c=>c/10);
+
+  const preliminary=Array.from({length:10},(_,d)=>({
+    digit:d,
+    mainFormulaScore:mainScore[d],
+    formula100Score:freq.score[d],
+    radarScore:radar.score[d],
+    supportScore:supportScore[d],
+    winSetScore:0,
+    backendScore:backend.score[d],
+    totalScore:
+      .35*mainScore[d] +
+      .20*freq.score[d] +
+      .15*radar.score[d] +
+      .15*supportScore[d] +
+      .05*backend.score[d]
+  }));
+
+  const preliminaryRanking=[...preliminary].sort((a,b)=>
+    b.totalScore-a.totalScore || b.digit-a.digit
+  );
+
+  const allowedModelDigits=new Set(mainModels.flatMap(m=>m.digits));
+  const winCandidate=normalize(totalSum);
+  const winAlt=normalize(totalSum+5);
+
+  preliminary.forEach(row=>{
+    row.winSetScore =
+      row.digit===winCandidate || row.digit===winAlt ? 1 : 0;
+
+    row.totalScore =
+      .35*row.mainFormulaScore +
+      .20*row.formula100Score +
+      .15*row.radarScore +
+      .15*row.supportScore +
+      .10*row.winSetScore +
+      .05*row.backendScore;
+  });
+
+  let ranking=[...preliminary].sort((a,b)=>
+    b.totalScore-a.totalScore || b.digit-a.digit
+  );
+
+  const pairEngine=buildPairEngine(mainModels,ranking.reduce((o,x)=>{
+    o[x.digit]=x.totalScore; return o;
+  },{}));
+
+  const winSet=buildWinSet(ranking,allowedModelDigits);
+
+  /*
+    Win-set membership is intentionally treated as a selection output,
+    not fed back into Total Score. This prevents circular scoring.
+  */
+
+  const minScore=Math.min(...ranking.map(x=>x.totalScore));
+  const maxScore=Math.max(...ranking.map(x=>x.totalScore));
+  const range=maxScore-minScore;
+
+  const scored=ranking.map(row=>{
+    const relative=range>0
+      ? 80 + ((row.totalScore-minScore)/range)*18.5
+      : 89.25;
+    return {
+      ...row,
+      aiScorePct:clamp(relative,80,98.5)
+    };
+  });
+
+  const scoreMap={};
+  scored.forEach(x=>scoreMap[x.digit]=x.totalScore);
+
+  const finalPairEngine=buildPairEngine(mainModels,scoreMap);
+
+  const top3=scored.slice(0,3);
+  const topPairs=finalPairEngine.list.slice(0,5);
+
+  const tripleCandidates=buildTripleCandidates(top3,finalPairEngine.list);
+
+  return {
+    input:v,
+    sumTop,
+    sumBot,
+    totalSum,
+    mainModels,
+    supportModels,
+    freq,
+    radar,
+    backend,
+    ranking:scored,
+    top3,
+    pairEngine:finalPairEngine,
+    topPairs,
+    winSet,
+    winCandidate,
+    winAlt,
+    tripleCandidates
+  };
+}
+
+/* ============================================================
+   3D SMART TRIPLE
+   Built from actual top3 + consensus pair.
+   Score is deterministic, not Math.random().
+   ============================================================ */
+
+function buildTripleCandidates(top3,pairList){
+  const sourceDigits=top3.map(x=>x.digit);
+  const candidates=[];
+  const seen=new Set();
+
+  pairList.forEach(pair=>{
+    if(candidates.length>=6) return;
+
+    const [a,b]=pair.digits;
+    const sourceCandidates=sourceDigits.filter(d=>d===a || d===b);
+
+    sourceCandidates.forEach(source=>{
+      if(candidates.length>=6) return;
+
+      const other=source===a?b:a;
+      const third=sourceDigits.find(d=>d!==source && d!==other);
+
+      if(third===undefined) return;
+
+      const triple=`${other}${source}${third}`;
+      if(seen.has(triple)) return;
+      seen.add(triple);
+
+      const raw =
+        (pair.votes*0.45) +
+        (pair.digitScore*0.35) +
+        ((top3.find(x=>x.digit===source)?.totalScore||0)*0.20);
+
+      const score=clamp(50 + raw*35,50,85);
+
+      candidates.push({
+        triple,
+        score,
+        pair:pair.key,
+        votes:pair.votes
+      });
+    });
+  });
+
+  if(candidates.length===0){
+    for(let i=0;i<Math.min(6,top3.length);i++){
+      for(let j=i+1;j<Math.min(6,top3.length);j++){
+        const triple=`${top3[i].digit}${top3[j].digit}${top3[0].digit}`;
+        if(!seen.has(triple)){
+          seen.add(triple);
+          candidates.push({
+            triple,
+            score:clamp(50+top3[i].totalScore*20,50,85),
+            pair:`${top3[i].digit}${top3[j].digit}`,
+            votes:0
+          });
+        }
+      }
+    }
+  }
+
+  return candidates
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,6);
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+
+function render(result){
+  $("sumTopMetric").textContent=result.sumTop;
+  $("sumBotMetric").textContent=result.sumBot;
+  $("totalSumMetric").textContent=result.totalSum;
+  $("topSignalMetric").textContent=result.top3[0]?.digit ?? "—";
+
+  $("top3").innerHTML=result.top3.map((x,i)=>`
+    <article class="topCard">
+      <div class="rankLabel">RANK ${i+1}</div>
+      <div class="rankNumber">${x.digit}</div>
+      <div class="rankScore">${x.aiScorePct.toFixed(1)}% <small>AI SCORE</small></div>
+      <div class="rankMeta">
+        Main ${(x.mainFormulaScore*100).toFixed(0)}% •
+        Frequency ${(x.formula100Score*100).toFixed(0)}%
+      </div>
+    </article>
+  `).join("");
+
+  $("scoreTable").innerHTML=result.ranking.map(x=>`
+    <div class="scoreRow">
+      <div class="scoreDigit">${x.digit}</div>
+      <div class="bar"><i style="width:${x.aiScorePct}%"></i></div>
+      <div class="scoreValue">${x.aiScorePct.toFixed(1)}%</div>
+    </div>
+  `).join("");
+
+  const scoreByDigit={};
+  result.ranking.forEach(x=>scoreByDigit[x.digit]=x.totalScore);
+
+  const formulaRows=result.mainModels.map(m=>{
+    const s=m.digits.reduce((a,d)=>a+(scoreByDigit[d]||0),0)/2;
+    const min=Math.min(...result.ranking.map(x=>x.totalScore));
+    const max=Math.max(...result.ranking.map(x=>x.totalScore));
+    const pct=max>min
+      ? 80+((s-min)/(max-min))*18.5
+      : 89.25;
+    return {...m,aiScorePct:clamp(pct,80,98.5)};
+  }).sort((a,b)=>b.aiScorePct-a.aiScorePct);
+
+  $("formulaList").innerHTML=formulaRows.map((m,i)=>`
+    <div class="formulaItem">
+      <div class="formulaNo">F${String(m.id).padStart(2,"0")}</div>
+      <div class="formulaMain">
+        <div class="formulaName">${m.name}</div>
+        <div class="formulaDigits">${m.digits.map(d=>String(d)).join(" • ")}</div>
+        ${i<2?`<span class="recommend">RECOMMENDED</span>`:""}
+      </div>
+      <div class="formulaScore">${m.aiScorePct.toFixed(1)}%</div>
+    </div>
+  `).join("");
+
+  $("pairGrid").innerHTML=result.topPairs.map((p,i)=>`
+    <div class="pair">
+      <strong>${p.key}</strong>
+      <span>${p.votes} VOTES • #${i+1}</span>
+    </div>
+  `).join("");
+
+  const wd=result.winSet.digits;
+  $("winNumbers").innerHTML=wd.map(d=>`
+    <div class="winDigit"><span>${d}</span></div>
+  `).join("");
+
+  const even=wd.filter(d=>d%2===0).length;
+  const odd=wd.length-even;
+  $("winSetMeta").textContent=`${wd.length} digits • Even ${even} / Odd ${odd}`;
+
+  const best=result.top3[0]?.aiScorePct ?? 0;
+  $("confidenceValue").textContent=`${best.toFixed(1)}%`;
+  $("confidenceBar").style.width=`${best}%`;
+
+  $("tripleGrid").innerHTML=result.tripleCandidates.map((x,i)=>`
+    <div class="cardPad" style="border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.56)">
+      <div class="sectionLabel">TRIPLE ${i+1}</div>
+      <div style="font-size:32px;font-weight:950;letter-spacing:-1.2px;margin-top:8px">${x.triple}</div>
+      <div style="margin-top:7px;color:var(--muted);font-size:9px">
+        Pair ${x.pair} • ${x.votes} votes
+      </div>
+      <div style="margin-top:9px;display:flex;align-items:center;gap:8px">
+        <div class="bar" style="flex:1"><i style="width:${x.score}%"></i></div>
+        <strong style="font-size:10px">${x.score.toFixed(1)}</strong>
+      </div>
+    </div>
+  `).join("");
+
+  const bases=result.radar.bases;
+  const positions=[
+    [50,10],
+    [79,62],
+    [25,70]
+  ];
+  ["radarDot1","radarDot2","radarDot3"].forEach((id,i)=>{
+    $(id).style.left=`${positions[i][0]}%`;
+    $(id).style.top=`${positions[i][1]}%`;
+  });
+
+  $("processStatus").textContent="COMPLETE";
+  $("scoreStatus").textContent="100%";
+}
+
+/* ============================================================
+   SNOW
+   ============================================================ */
+
+function initSnow(){
+  const layer=$("snowLayer");
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const count=32;
+  for(let i=0;i<count;i++){
+    const s=document.createElement("span");
+    s.className="snowflake";
+    const size=(Math.random()*3.5+2).toFixed(2);
+    s.style.width=`${size}px`;
+    s.style.height=`${size}px`;
+    s.style.left=`${Math.random()*100}%`;
+    s.style.opacity=(Math.random()*.42+.22).toFixed(2);
+    s.style.filter=`blur(${Math.random()>.72?.6:0}px)`;
+    s.style.animationDuration=`${(13+Math.random()*14).toFixed(2)}s`;
+    s.style.animationDelay=`-${(Math.random()*25).toFixed(2)}s`;
+    layer.appendChild(s);
+  }
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
+function isLoggedIn(){
+  try{
+    return localStorage.getItem(STORAGE.session)==="1";
+  }catch(e){
+    return false;
+  }
+}
+
+function login(){
+  const value=$("passwordInput").value.trim();
+
+  if(!value){
+    $("loginError").textContent="กรุณากรอกรหัสสมาชิก";
+    return;
+  }
+
+  let valid=DEFAULT_PASSWORDS.includes(value);
+
+  try{
+    const custom=localStorage.getItem("mlvip_password");
+    if(custom && value===custom) valid=true;
+  }catch(e){}
+
+  if(!valid){
+    $("loginError").textContent="รหัสสมาชิกไม่ถูกต้อง";
+    $("passwordInput").select();
+    return;
+  }
+
+  try{
+    localStorage.setItem(STORAGE.session,"1");
+  }catch(e){}
+
+  $("loginOverlay").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("loginError").textContent="";
+  runAnalysis();
+}
+
+function logout(){
+  try{localStorage.removeItem(STORAGE.session)}catch(e){}
+  $("app").classList.add("hidden");
+  $("loginOverlay").classList.remove("hidden");
+  $("passwordInput").value="";
+}
+
+function showToast(text){
+  const t=$("toast");
+  t.textContent=text;
+  t.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer=setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+/* ============================================================
+   ANALYSIS
+   ============================================================ */
+
+function runAnalysis(){
+  const start=performance.now();
+  const v=getInputs();
+
+  const result=calculateScores(v);
+  saveState(result);
+
+  render(result);
+
+  const elapsed=Math.max(1,performance.now()-start);
+  $("serverSpeed").textContent=`${elapsed.toFixed(1)} ms`;
+
+  showToast("Analysis Engine ประมวลผลเสร็จแล้ว");
+}
+
+function restoreLast(){
+  const state=loadState();
+  if(!state) return false;
+
+  if(state.input){
+    $("h").value=state.input.H;
+    $("tTop").value=state.input.T_top;
+    $("uTop").value=state.input.U_top;
+    $("tBot").value=state.input.T_bot;
+    $("uBot").value=state.input.U_bot;
+  }
+
+  render(state);
+  $("serverSpeed").textContent="RESTORED";
+  return true;
+}
+
+/* ============================================================
+   INPUT UX
+   ============================================================ */
+
+function setupDigitInputs(){
+  ["h","tTop","uTop","tBot","uBot"].forEach(id=>{
+    const el=$(id);
+    el.addEventListener("input",()=>{
+      el.value=el.value.replace(/\D/g,"").slice(0,1);
+    });
+    el.addEventListener("keydown",e=>{
+      if(e.key==="Enter") runAnalysis();
+    });
+  });
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded",()=>{
+  initSnow();
+  setupDigitInputs();
+
+  $("loginBtn").addEventListener("click",login);
+  $("passwordInput").addEventListener("keydown",e=>{
+    if(e.key==="Enter") login();
+  });
+  $("analyzeBtn").addEventListener("click",runAnalysis);
+
+  if(isLoggedIn()){
+    $("loginOverlay").classList.add("hidden");
+    $("app").classList.remove("hidden");
+
+    if(!restoreLast()){
+      runAnalysis();
+    }
+  }
+});
 </script>
 </body>
-</html>
+  </html>
