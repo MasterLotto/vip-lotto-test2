@@ -1995,7 +1995,7 @@ opacity:1;
 transform:translate(-50%,0);
 }
 @media(max-width:400px){
-.ind-win-grid{grid-template-columns:repeat(3,1fr);}
+.ind-win-grid{grid-template-columns:repeat(6,minmax(0,1fr));}
 .top3-row{grid-template-columns:25px 35px 1fr 50px;gap:5px;padding-left:6px;padding-right:6px;}
 .top3-title{font-size:.78rem;}
 .top3-sub{font-size:.42rem;}
@@ -2398,16 +2398,29 @@ letter-spacing:.25px;
 /* =========================================================
    MANUAL AUDIT — ROUND 4 / USER REQUESTED FINAL TUNING
    ========================================================= */
-/* Engine cards: compress top/bottom only; preserve horizontal footprint. */
-.engine-card{
-  min-height:48px!important;
-  height:48px!important;
-  padding:3px 8px!important;
-  border-radius:11px!important;
+/* Engine cards: centered, evenly spaced, preserve existing card dimensions. */
+.engine-strip{
+  width:min(100%, 760px);
+  margin-left:auto!important;
+  margin-right:auto!important;
+  gap:12px!important;
+  justify-content:center;
+  align-items:stretch;
 }
-.engine-strip{gap:8px!important;margin-bottom:8px!important;}
-.engine-label{font-size:.43rem!important;line-height:1.02!important;}
-.engine-value{margin-top:1px!important;font-size:.56rem!important;line-height:1.0!important;}
+.engine-card{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.engine-label,.engine-value{
+  justify-content:center;
+  text-align:center;
+}
+.engine-label{line-height:1.15!important;}
+.engine-value{line-height:1.12!important;}
 /* Main action: clean emerald luxury, no black/graphite, fitted 1px outline. */
 .calculate-btn{
   border:1px solid rgba(16,185,129,.42)!important;
@@ -2495,6 +2508,47 @@ letter-spacing:.25px;
     animation:none !important;
   }
 }
+</style>
+<style id="final-user-layout-tuning">
+/* FINAL USER REQUEST: keep Win Set card size; six picks stay on one horizontal row. */
+.ind-win-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important;}
+.ind-win-title{font-size:.70rem!important;font-weight:800!important;line-height:1.1!important;}
+.ind-win-title small{font-size:inherit!important;}
+@media(max-width:400px){.ind-win-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:3px!important;}}
+/* FINAL USER REQUEST: centered, orderly engine cards; do not resize them. */
+.engine-strip{width:min(100%,760px)!important;margin-left:auto!important;margin-right:auto!important;gap:12px!important;justify-content:center!important;}
+.engine-card{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;}
+.engine-label,.engine-value{justify-content:center!important;text-align:center!important;}
+/* Premium VIP action colors — visual styling only. */
+.calculate-btn{
+  color:#F4FFFA!important;
+  background:linear-gradient(135deg,#087A59 0%,#0B9A70 52%,#08704F 100%)!important;
+  border:1px solid rgba(52,211,153,.48)!important;
+  box-shadow:0 7px 17px rgba(6,95,70,.18),inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.05)!important;
+}
+.calculate-btn:hover:not(:disabled){
+  background:linear-gradient(135deg,#0A8A64 0%,#12AA7D 52%,#087956 100%)!important;
+  border-color:rgba(110,231,183,.62)!important;
+  box-shadow:0 9px 20px rgba(6,95,70,.22),0 0 12px rgba(16,185,129,.10),inset 0 1px 0 rgba(255,255,255,.25)!important;
+}
+.clear-btn{
+  color:#FFF8F7!important;
+  background:linear-gradient(135deg,#8F2631 0%,#A93643 52%,#7E202B 100%)!important;
+  border:1px solid rgba(252,165,165,.44)!important;
+  box-shadow:0 7px 16px rgba(126,32,43,.17),inset 0 1px 0 rgba(255,255,255,.20)!important;
+}
+.clear-btn:hover{
+  color:#FFFFFF!important;
+  background:linear-gradient(135deg,#9E2D39 0%,#B9414D 52%,#8C2530 100%)!important;
+  border-color:rgba(254,202,202,.62)!important;
+  box-shadow:0 9px 19px rgba(126,32,43,.22),0 0 12px rgba(185,28,28,.10),inset 0 1px 0 rgba(255,255,255,.23)!important;
+}
+</style>
+
+<style>
+/* Requested UI refinement: reduce only the icon + "ชุดวิน 6 ตัว" text, never the container. */
+.ind-win-title{font-size:calc(.70rem * .90)!important;}
+.ind-win-title::first-letter{font-size:calc(1em * .90);}
 </style>
 </head>
 <body>
@@ -3120,7 +3174,7 @@ const messages=[
 "READING INPUT STRUCTURE...",
 "CALCULATING DIGIT MOMENTUM...",
 "RUNNING TOP 5 PAIR RANKING ENGINE...",
-"EVALUATING 5 MATHEMATICAL MODELS...",
+"EVALUATING 10 LOCKED FORMULAS...",
 "BUILDING NUMBER MATRIX...",
 "MAPPING DIGIT DISTRIBUTION...",
 "GENERATING WIN SET...",
@@ -3166,140 +3220,6 @@ updateProcessedUI(true);
 _normalize(x){
 return(x%10+10)%10;
 },
-_run100FormulasEngine(
-H,
-T_top,
-U_top,
-T_bot,
-U_bot,
-sumTop,
-sumBot,
-totalSum
-){
-const rawFormulas=[
-H+T_top,
-H+U_top,
-T_top+U_top,
-H+T_bot,
-H+U_bot,
-T_top+T_bot,
-T_top+U_bot,
-U_top+T_bot,
-U_top+U_bot,
-T_bot+U_bot,
-sumTop+T_bot,
-sumTop+U_bot,
-sumTop+H,
-sumTop+T_top,
-sumTop+U_top,
-10-H,
-10-T_top,
-10-U_top,
-10-T_bot,
-10-U_bot,
-H+T_top+T_bot,
-H+U_top+U_bot,
-T_top+U_top+T_bot,
-T_top+U_top+U_bot,
-H+T_bot+U_bot,
-T_top+T_bot+U_bot,
-sumTop-T_bot,
-sumTop-U_bot,
-sumTop+sumBot,
-sumTop-sumBot,
-H+T_top-U_bot,
-T_top+U_top-T_bot,
-H+U_top-T_bot,
-20-(T_top+T_bot),
-20-(U_top+U_bot),
-H+T_top+U_top-T_bot,
-H+T_top+U_top-U_bot,
-10+T_top-U_bot,
-10+U_top-T_bot,
-sumTop+10-U_bot,
-H+U_bot-T_top,
-T_top+U_bot-H,
-U_top+T_bot-H,
-sumBot+H-T_top,
-sumBot+H-U_top,
-H+sumBot-T_top,
-H+sumBot-U_top,
-T_top+sumBot-H,
-T_top+sumBot-U_top,
-U_top+sumBot-H,
-U_top+sumBot-T_top,
-30-(H+T_top+T_bot),
-30-(H+U_top+U_bot),
-30-(T_top+U_top+T_bot),
-30-(H+T_bot+U_bot),
-H+T_top+T_bot-U_bot,
-H+U_top+U_bot-T_bot,
-T_top+U_top+T_bot-H,
-sumTop+T_bot-U_bot,
-sumTop+U_bot-T_bot,
-H+T_top+sumBot,
-H+U_top+sumBot,
-T_top+U_top+sumBot,
-H+T_bot+sumTop,
-H+U_bot+sumTop,
-T_top+T_bot+sumTop,
-T_top+U_bot+sumTop,
-U_top+T_bot+sumTop,
-U_top+U_bot+sumTop,
-T_bot+U_bot+sumTop,
-10+H+T_top,
-10+H+U_top,
-10+T_top+U_top,
-10+T_bot+U_bot,
-10+H+T_bot,
-10+H+U_bot,
-10+T_top+T_bot,
-10+T_top+U_bot,
-10+U_top+T_bot,
-10+U_top+U_bot,
-H-T_top+U_bot,
-H-U_top+T_bot,
-T_top-U_top+U_bot,
-T_bot-U_bot+H,
-T_bot-U_bot+T_top,
-T_bot-U_bot+U_top,
-20-H-T_top,
-20-H-U_top,
-20-T_top-U_top,
-20-T_bot-U_bot,
-20-H-T_bot,
-20-H-U_bot,
-20-T_top-T_bot,
-20-T_top-U_bot,
-20-U_top-T_bot,
-20-U_top-U_bot,
-totalSum,
-2*totalSum,
-totalSum+H,
-totalSum+T_bot
-];
-const countedDigits={};
-for(let d=0;d<=9;d++)
-countedDigits[d]=0;
-rawFormulas.forEach(rawVal=>{
-const unit=
-(rawVal%10+10)%10;
-countedDigits[unit]=
-(countedDigits[unit]||0)+1;
-});
-const sortedByCount=
-Object.keys(countedDigits)
-.map(Number)
-.sort(
-(a,b)=>
-countedDigits[b]-countedDigits[a]||
-b-a
-);
-return{
-ranking:sortedByCount.slice(0,10),
-counts:countedDigits
-};
-},
 runAnalysis(n3,n2){
 const inputDigits3=
 n3.split("").map(Number);
@@ -3320,351 +3240,130 @@ const sumBot=
 T_bot+U_bot;
 const totalSum=
 sumTop+sumBot;
-const formula100Engine=
-this._run100FormulasEngine(
-H,
-T_top,
-U_top,
-T_bot,
-U_bot,
-sumTop,
-sumBot,
-totalSum
-);
-const getUnitDirect=v=>{
-const str=String(v);
-const first=
-parseInt(
-str.slice(-1),
-10
-);
-return[
-first,
-(first+1)%10
+/* =========================================================
+LOCKED 10-FORMULA ENGINE
+The ten formula definitions below are immutable. They replace
+AI Model 01-05. All ten are evaluated every run; only Top 5
+are rendered in the existing five-card UI.
+========================================================= */
+const mod10=v=>this._normalize(v);
+const formulaDefinitions=[
+{ id:1, name:"สูตร 01", subName:"(A-B-D+6) mod 10", evidenceGroup:"F01", calc:()=>{const a=mod10(H-T_top-T_bot+6);return [a,mod10(a+2)];}},
+{ id:2, name:"สูตร N1", subName:"(-2A-2B+C+D-2E+9) / (-2B+C+3)", evidenceGroup:"FN1", calc:()=>[mod10(-2*H-2*T_top+U_top+T_bot-2*U_bot+9),mod10(-2*T_top+U_top+3)]},
+{ id:3, name:"สูตร 03", subName:"(2B+C+2) / (9-2A+C-2D)", evidenceGroup:"F03", calc:()=>[mod10(2*T_top+U_top+2),mod10(9-2*H+U_top-2*T_bot)]},
+{ id:4, name:"สูตร 04", subName:"(B+E+2) mod 10 / +2", evidenceGroup:"F04", calc:()=>{const a=mod10(T_top+U_bot+2);return [a,mod10(a+2)];}},
+{ id:5, name:"สูตร 05", subName:"(B+D) mod 10 / +1", evidenceGroup:"F05", calc:()=>{const a=mod10(T_top+T_bot);return [a,mod10(a+1)];}},
+{ id:6, name:"สูตร 06", subName:"(A+B+C) mod 10 / +1", evidenceGroup:"F06", calc:()=>{const a=mod10(H+T_top+U_top);return [a,mod10(a+1)];}},
+{ id:7, name:"สูตร 07", subName:"(A+D) mod 10 / +1", evidenceGroup:"F07_F10", calc:()=>{const a=mod10(H+T_bot);return [a,mod10(a+1)];}},
+{ id:8, name:"สูตร 08", subName:"(C+E) mod 10 / +1", evidenceGroup:"F08", calc:()=>{const a=mod10(U_top+U_bot);return [a,mod10(a+1)];}},
+{ id:9, name:"สูตร 09", subName:"(10-E) mod 10 / +1", evidenceGroup:"F09", calc:()=>{const a=mod10(10-U_bot);return [a,mod10(a+1)];}},
+{ id:10, name:"สูตร 10", subName:"(A+D) mod 10 / +1", evidenceGroup:"F07_F10", calc:()=>{const a=mod10(H+T_bot);return [a,mod10(a+1)];}}
 ];
-};
+const getUnitDirect=v=>{const n=mod10(v);return[n,mod10(n+1)];};
 const fixedBase=7;
-const anchorRaw=
-fixedBase-H;
-const anchor=
-(Math.abs(anchorRaw)%10+10)%10;
-let rawM1=
-(T_top+T_bot)%10;
-let rawM2=
-sumTop%10;
-let rawM3=
-(H+T_bot)%10;
-let rawM4=
-(U_top+U_bot)%10;
-let rawM5=
-(10-U_bot)%10;
-let modelRawValues=[
-rawM1,
-rawM2,
-rawM3,
-rawM4,
-rawM5
-];
-let uniqueModelDigits=
-new Set(modelRawValues);
-if(uniqueModelDigits.size<4){
-const fallbackFormulas=[
-(T_top+U_bot)%10,
-(H+U_top)%10,
-sumBot%10,
-(H+sumBot)%10,
-totalSum%10
-];
-for(
-let fbVal of fallbackFormulas
-){
-const normFb=
-(fbVal%10+10)%10;
-uniqueModelDigits.add(
-normFb
-);
-if(uniqueModelDigits.size>=6)
-break;
-}
-}
-const fList=[
-{
-id:1,
-name:"AI โมเดล 01",
-subName:"B + R1",
-set:getUnitDirect(rawM1)
-},
-{
-id:2,
-name:"AI โมเดล 02",
-subName:"A + B + C",
-set:getUnitDirect(rawM2)
-},
-{
-id:3,
-name:"AI โมเดล 03",
-subName:"A + R1",
-set:getUnitDirect(rawM3)
-},
-{
-id:4,
-name:"AI โมเดล 04",
-subName:"C + R2",
-set:getUnitDirect(rawM4)
-},
-{
-id:5,
-name:"AI โมเดล 05",
-subName:"10 - R2",
-set:getUnitDirect(rawM5)
-}
-];
-const allowedModelDigits=
-new Set();
-fList.forEach(item=>{
-item.set.forEach(d=>{
-allowedModelDigits.add(d);
-});
-});
-const evaluated=
-fList.map(model=>{
-const formulaSet=
-model.set;
+const anchor=mod10(fixedBase-H);
+const evaluated=formulaDefinitions.map(def=>{
+const set=def.calc().map(mod10);
+const pMap={};
+/* Preserve the original pair-generation / JUE source logic exactly. */
 let rawRange=[];
 let hasCollision=false;
-for(
-let offset=-2;
-offset<=2;
-offset++
-){
-const val=
-this._normalize(
-anchor+offset
-);
-if(
-formulaSet.includes(val)
-){
-hasCollision=true;
-break;
-}
+for(let offset=-2;offset<=2;offset++){
+ const val=mod10(anchor+offset);
+ if(set.includes(val)){hasCollision=true;break;}
 }
 if(hasCollision){
-for(
-let offset=-3;
-offset<=3;
-offset++
-){
-rawRange.push(
-this._normalize(
-anchor+offset
-)
-);
-}
+ for(let offset=-3;offset<=3;offset++) rawRange.push(mod10(anchor+offset));
 }else{
-for(
-let offset=-2;
-offset<=2;
-offset++
-){
-rawRange.push(
-this._normalize(
-anchor+offset
-)
-);
+ for(let offset=-2;offset<=2;offset++) rawRange.push(mod10(anchor+offset));
 }
-}
-const excludedDigits=
-[
-...new Set(formulaSet)
-];
-let cleanedPool=
-rawRange.filter(
-dg=>
-!excludedDigits.includes(dg)
-);
+const excludedDigits=[...new Set(set)];
+let cleanedPool=rawRange.filter(dg=>!excludedDigits.includes(dg));
 const generatedPairs=[];
-formulaSet.forEach(
-sourceDigit=>{
-cleanedPool.forEach(
-poolDigit=>{
-if(sourceDigit===poolDigit)
-return;
-generatedPairs.push({
-digitA:sourceDigit,
-digitB:poolDigit,
-pairStr:
-`${sourceDigit}${poolDigit}`
+set.forEach(sourceDigit=>{
+ cleanedPool.forEach(poolDigit=>{
+  if(sourceDigit===poolDigit)return;
+  generatedPairs.push({digitA:sourceDigit,digitB:poolDigit,pairStr:`${sourceDigit}${poolDigit}`});
+ });
 });
+set.forEach(sourceDigit=>{
+ let pairsForDigit=generatedPairs.filter(p=>p.digitA===sourceDigit).map(p=>p.pairStr);
+ let nextFill=(sourceDigit+1)%10;
+ while(pairsForDigit.length<5){
+  if(nextFill!==sourceDigit&&!pairsForDigit.includes(`${sourceDigit}${nextFill}`)&&!excludedDigits.includes(nextFill)) pairsForDigit.push(`${sourceDigit}${nextFill}`);
+  nextFill=(nextFill+1)%10;
+ }
+ pairsForDigit=[...new Set(pairsForDigit)].filter(p=>p[0]!==p[1]).sort();
+ if(pairsForDigit.length>5)pairsForDigit=pairsForDigit.slice(0,5);
+ pMap[sourceDigit]=pairsForDigit;
 });
-}
-);
-const pMap={};
-formulaSet.forEach(
-sourceDigit=>{
-let pairsForDigit=
-generatedPairs
-.filter(
-p=>p.digitA===sourceDigit
-)
-.map(
-p=>p.pairStr
-);
-let nextFill=
-(sourceDigit+1)%10;
-while(
-pairsForDigit.length<5
-){
-if(
-nextFill!==sourceDigit&&
-!pairsForDigit.includes(
-`${sourceDigit}${nextFill}`
-)&&
-!excludedDigits.includes(
-nextFill
-)
-){
-pairsForDigit.push(
-`${sourceDigit}${nextFill}`
-);
-}
-nextFill=
-(nextFill+1)%10;
-}
-pairsForDigit=[
-...new Set(pairsForDigit)
-]
-.filter(
-p=>p[0]!==p[1]
-)
-.sort();
-if(
-pairsForDigit.length>5
-)
-pairsForDigit=
-pairsForDigit.slice(0,5);
-pMap[sourceDigit]=
-pairsForDigit;
+return{id:def.id,name:def.name,subName:def.subName,set,pairsMap:pMap,evidenceGroup:def.evidenceGroup};
 });
-return{
-id:model.id,
-name:model.name,
-subName:model.subName,
-set:model.set,
-pairsMap:pMap
-};
-});
+const top5FormulaCount=5;
+const allowedModelDigits=new Set();
+evaluated.forEach(model=>model.set.forEach(d=>allowedModelDigits.add(d)));
+
 const digitScores={};
 for(let d=0;d<=9;d++){
-digitScores[d]={
-digit:d,
-modelScore:0,
-formula100Score:0,
-radarScore:0,
-backendScore:0,
-winSetScore:0,
-totalScore:0
-};
+ digitScores[d]={digit:d,formulaScore:0,radarScore:0,backendScore:0,winSetScore:0,totalScore:0,rankingScore:0};
 }
+/* Formula evidence: ten locked formulas are evaluated, but exact duplicate
+   formula definitions share one evidence group so F07/F10 cannot double-count. */
+const formulaEvidenceGroups={};
 evaluated.forEach(model=>{
-model.set.forEach(
-dig=>{
-digitScores[dig]
-.modelScore+=1;
-}
-);
+ const g=model.evidenceGroup;
+ if(!formulaEvidenceGroups[g]) formulaEvidenceGroups[g]=new Set();
+ model.set.forEach(d=>formulaEvidenceGroups[g].add(d));
 });
-const maxFormCount=
-Math.max(
-...Object.values(
-formula100Engine.counts
-),
-1
-);
+const groupEntries=Object.values(formulaEvidenceGroups);
+const formulaGroupHits={};
+for(let d=0;d<=9;d++) formulaGroupHits[d]=0;
+groupEntries.forEach(set=>set.forEach(d=>{formulaGroupHits[d]++;}));
+const maxFormulaGroupHits=Math.max(...Object.values(formulaGroupHits),1);
+for(let d=0;d<=9;d++) digitScores[d].formulaScore=formulaGroupHits[d]/maxFormulaGroupHits;
+
+/* Supporting signals. Kept deliberately smaller than the locked-formula
+   evidence to reduce double counting between correlated heuristics. */
+const X_val=mod10(T_bot+U_bot);
+const radar1Range=[mod10(X_val-1),X_val,mod10(X_val+1)];
+const Y_val=mod10(H+T_top+U_top);
+const radar2Range=[mod10(Y_val-1),Y_val,mod10(Y_val+1)];
+const Z_val=mod10(H+T_top+U_top+T_bot+U_bot);
+const radar3Range=[mod10(Z_val-1),Z_val,mod10(Z_val+1)];
 for(let d=0;d<=9;d++){
-digitScores[d]
-.formula100Score=
-(formula100Engine.counts[d]||0)/
-maxFormCount;
+ let hits=0;
+ if(radar1Range.includes(d))hits++;
+ if(radar2Range.includes(d))hits++;
+ if(radar3Range.includes(d))hits++;
+ digitScores[d].radarScore=hits/3;
 }
-const X_val=
-(T_bot+U_bot)%10;
-const radar1Range=[
-(X_val-1+10)%10,
-X_val,
-(X_val+1)%10
+const formulaOutputSet=new Set(evaluated.flatMap(m=>m.set));
+const backendCandidates=[
+ mod10(2*H+T_bot),mod10(T_top+U_bot),mod10(sumTop),mod10(Math.abs(T_top-U_top)),mod10(totalSum)
 ];
-const Y_val=
-(H+T_top+U_top)%10;
-const radar2Range=[
-(Y_val-1+10)%10,
-Y_val,
-(Y_val+1)%10
-];
-const Z_val=
-(H+T_top+U_top+T_bot+U_bot)%10;
-const radar3Range=[
-(Z_val-1+10)%10,
-Z_val,
-(Z_val+1)%10
-];
+const backendFormulasSet=[...new Set(backendCandidates)].filter(d=>!formulaOutputSet.has(d));
+for(let d=0;d<=9;d++) if(backendFormulasSet.includes(d)) digitScores[d].backendScore=1;
+const winCandidate=mod10(totalSum);
+for(let d=0;d<=9;d++) if(d===winCandidate||d===mod10(winCandidate+5)) digitScores[d].winSetScore=1;
+
+/* Balanced backend weights: formula evidence is primary; correlated
+   supporting signals cannot overpower it. */
 for(let d=0;d<=9;d++){
-let rHits=0;
-if(
-radar1Range.includes(d)
-)
-rHits++;
-if(
-radar2Range.includes(d)
-)
-rHits++;
-if(
-radar3Range.includes(d)
-)
-rHits++;
-digitScores[d]
-.radarScore=
-rHits/3;
+ const item=digitScores[d];
+ item.rawScore=
+   .60*item.formulaScore+
+   .15*item.radarScore+
+   .15*item.backendScore+
+   .10*item.winSetScore;
+ item.totalScore=item.rawScore;
+ item.rankingScore=item.rawScore;
 }
-const mainModelOutputSet=new Set(modelRawValues.map(v=>this._normalize(v)));
-const backendFormulasSet=[
-(2*H+T_bot)%10,
-(T_top+U_bot)%10,
-sumTop%10,
-Math.abs(T_top-U_top)%10,
-totalSum%10
-].map(v=>this._normalize(v)).filter((v,i,a)=>!mainModelOutputSet.has(v)&&a.indexOf(v)===i);
-for(let d=0;d<=9;d++){
-if(
-backendFormulasSet.includes(d)
-)
-digitScores[d]
-.backendScore=1;
-}
-const winCandidate=
-(H+T_top+U_top+T_bot+U_bot)%10;
-for(let d=0;d<=9;d++){
-if(
-d===winCandidate||
-d===(winCandidate+5)%10
-)
-digitScores[d]
-.winSetScore=1;
-}
-for(let d=0;d<=9;d++){
-const item=
-digitScores[d];
-item.totalScore=
-.35*item.modelScore+
-.25*item.formula100Score+
-.15*item.radarScore+
-.15*item.backendScore+
-.1*item.winSetScore;
-}
+
 const matrixSortedAll=
 Object.values(digitScores)
 .sort(
 (a,b)=>
-b.totalScore-a.totalScore||
+b.rankingScore-a.rankingScore||
 b.digit-a.digit
 );
 const matrixSorted=
@@ -3695,39 +3394,19 @@ normalizedPct
 ).toFixed(1)
 );
 };
-evaluated.forEach(model=>{
-const modelScoreSum=
-model.set.reduce(
-(sum,dig)=>
-sum+
-(
-digitScores[dig]
-.totalScore>0
-?
-digitScores[dig]
-.totalScore
-:
-0
-),
-0
-);
-model.aiScore=
-calcConfidence(
-modelScoreSum/2
-);
+Object.values(digitScores).forEach(item=>{
+item.displayConfidence=calcConfidence(item.rankingScore);
 });
-evaluated.sort(
-(a,b)=>
-b.aiScore-a.aiScore
-);
-evaluated.forEach(
-(model,idx)=>{
-model.isRecommended=
-idx<2;
-}
-);
-const top3Digits=
-matrixSorted.slice(0,3);
+evaluated.forEach(model=>{
+ const distinctDigits=[...new Set(model.set)];
+ const support=distinctDigits.reduce((sum,d)=>sum+(digitScores[d]?.totalScore||0),0)/(distinctDigits.length||1);
+ model.aiScore=calcConfidence(support);
+ model.rawFormulaSupport=support;
+});
+evaluated.sort((a,b)=>b.aiScore-a.aiScore||a.id-b.id);
+evaluated.forEach((model,idx)=>{model.isRecommended=idx<top5FormulaCount;});
+const top3Digits=matrixSorted.slice(0,3);
+
 const thirdRankDigit=
 top3Digits[2]
 ?
@@ -4196,9 +3875,8 @@ p=>
 );
 const cScore3=
 Number(
-(
-50.1+
-.8*Math.random()
+calcConfidence(
+(top3Digits[0]?.totalScore||0)
 ).toFixed(1)
 );
 let top5Digits=
@@ -4500,9 +4178,7 @@ const top3HTML=
 top3Digits.map(
 (item,index)=>{
 const pct=
-calcConfidence(
-item.totalScore
-);
+item.displayConfidence;
 return`
 <div
 class="top3-row ${top3Class[index]}"
@@ -4535,7 +4211,7 @@ ${pct.toFixed(1)}%
 }
 ).join("");
 let allFormulasHTML="";
-evaluated.forEach(
+evaluated.slice(0,5).forEach(
 item=>{
 let pairs=[];
 item.set.forEach(
@@ -4730,7 +4406,7 @@ ${threeHTML}
 </section>
 <section class="ind-win-set">
 <div class="ind-win-header">
-<div class="ind-win-title"><small>CURATED WIN SET • 6 PICKS</small>
+<div class="ind-win-title">🧩 ชุดวิน 6 ตัว
 </div>
 <div class="ind-win-badge">
 ✦ VIP SET
