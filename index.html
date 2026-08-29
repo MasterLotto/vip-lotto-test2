@@ -2412,6 +2412,10 @@ letter-spacing:.25px;
 
 
 
+
+
+
+
 /* =========================================================
    MANUAL AUDIT — ROUND 4 / USER REQUESTED FINAL TUNING
    ========================================================= */
@@ -2569,12 +2573,24 @@ letter-spacing:.25px;
 
 
 
+
+
+
+
+
+
+
+
 <style>
 /* Requested UI refinement: reduce only the icon + "ชุดวิน 6 ตัว" text, never the container. */
 .ind-win-title{font-size:calc(.70rem * .90)!important;}
 .ind-win-title::first-letter{font-size:calc(1em * .90);}
 </style>
 <style>
+
+
+
+
 
 
 
@@ -2615,6 +2631,14 @@ body{color:var(--premium-ink);text-rendering:optimizeLegibility;-webkit-font-smo
 .deep-scan-card .deep-pair{box-shadow:0 3px 9px rgba(16,35,29,.035),inset 0 1px 0 #fff;}
 .deep-scan-card .deep-pair.jue-rank-1::after{display:none;}
 #toast{box-shadow:0 12px 28px rgba(16,35,29,.18);}
+
+
+
+
+
+
+
+
 
 
 
@@ -2691,12 +2715,20 @@ body{color:var(--premium-ink);text-rendering:optimizeLegibility;-webkit-font-smo
 
 
 
+
+
+
+
 <style id="final-luxury-visual-tuning">
 /* =========================================================
    FINAL VISUAL TUNING — USER REQUESTED
    Scope: Clear button + ~5% richer color + subtle vitality.
    No calculation logic changed.
    ========================================================= */
+
+
+
+
 
 
 
@@ -2741,6 +2773,10 @@ body{color:var(--premium-ink);text-rendering:optimizeLegibility;-webkit-font-smo
 
 
 
+
+
+
+
 /* ~5% richer global color presence without making the interface loud. */
 body{
   background:
@@ -2771,6 +2807,10 @@ body{
 
 
 
+
+
+
+
 /* Give the existing ambient layer a little life, not a distracting animation. */
 .ambient::before,
 .ambient::after{
@@ -2792,6 +2832,10 @@ body{
   from{transform:translate3d(0,0,0) scale(1);}
   to{transform:translate3d(-10px,-7px,0) scale(1.03);}
 }
+
+
+
+
 
 
 
@@ -2834,6 +2878,10 @@ body{
 
 
 
+
+
+
+
 /* Formula Recommendation: genuinely micro-sized and visually quiet. */
 .formula-signal-right{
   flex:0 1 auto;
@@ -2868,11 +2916,19 @@ body{
 
 
 
+
+
+
+
 /* The model title is intentionally concise and international. */
 .formula-name{
   letter-spacing:.25px;
 }
 </style>
+
+
+
+
 
 
 
@@ -2892,6 +2948,7 @@ body{background:radial-gradient(circle at 10% 4%,rgba(16,185,129,.222),transpare
 .formula-card{background:linear-gradient(145deg,#fff,#F1F7F4)!important;border-color:rgba(90,105,98,.24)!important}.formula-card::before{background:linear-gradient(180deg,#F0BE32,#A9B5B0,#C78461)!important;opacity:.95!important}.formula-model-pct{color:#087A55!important}.overview-bar{border-color:rgba(8,122,85,.14)!important}.ind-win-set{background:linear-gradient(145deg,#fff,#F2F9F5 76%,#FFF9E8)!important;border-color:rgba(183,122,8,.21)!important}.ind-win-item{border-color:rgba(183,122,8,.21)!important}
 @media(prefers-reduced-motion:reduce){.calculate-btn::before,.clear-btn::before{animation:none!important}}
 </style>
+
 
 <style id="final-audited-action-buttons">
 /* AUDITED POINT 3 — only Calculate/Clear button appearance. */
@@ -2956,6 +3013,7 @@ body{background:radial-gradient(circle at 10% 4%,rgba(16,185,129,.222),transpare
   .calculate-btn::before,.clear-btn::before{animation:none!important}
 }
 </style>
+
 
 </head>
 <body>
@@ -3730,6 +3788,10 @@ mainEvaluated.forEach(model=>model.set.forEach(d=>allowedModelDigits.add(d)));
 
 
 
+
+
+
+
 const digitScores={};
 for(let d=0;d<=9;d++)digitScores[d]={digit:d,formulaScore:0,radarScore:0,backendScore:0,winSetScore:0,totalScore:0,rankingScore:0};
 const mainFormulaGroups={};
@@ -3764,7 +3826,18 @@ mainEvaluated.forEach(model=>{
  model.aiScore=calcConfidence(support);
  model.rawFormulaSupport=support;
  model.isRecommended=false;
- model.recommendedDigits=distinctDigits
+/* Keep the formula and its score logic unchanged; only de-duplicate the displayed
+   primary/secondary digit direction when a formula yields the same digit twice. */
+ const formulaDigits=[...model.set];
+ if(formulaDigits.length>1&&formulaDigits[0]===formulaDigits[1]){
+   formulaDigits[1]=(formulaDigits[1]+1)%10;
+ }
+ const distinctFormulaDigits=[];
+ formulaDigits.forEach(d=>{
+   if(!distinctFormulaDigits.includes(d))distinctFormulaDigits.push(d);
+ });
+ model.set=distinctFormulaDigits;
+ model.recommendedDigits=distinctFormulaDigits
    .map(d=>({digit:d,score:digitScores[d]?.totalScore||0,confidence:digitScores[d]?.displayConfidence||80}))
    .sort((a,b)=>b.score-a.score||b.confidence-a.confidence||a.digit-b.digit)
    .slice(0,3);
@@ -3818,34 +3891,62 @@ DEEP SCAN — 3 REAL TOP DIGIT SETS
 ========================================================= */
 function findPairsForDigit(digit){
  /*
-  * Backend source remains the original 01–10 formula family, after
-  * duplicate formulas have been removed.  We aggregate every backend
-  * model that can produce a pair containing the target digit instead
-  * of stopping at the first model. This prevents TOP 3 digits from
-  * incorrectly showing "ไม่มีข้อมูล" when another backend model has
-  * a valid pair for that digit. Pair direction and formula generation
-  * are unchanged; only the retrieval/aggregation is fixed.
+  * TOP 3 MATRIX SIGNALS must be driven only by the five PRIMARY AI
+  * formulas (N1..N5). The selected Top-3 digit is the fixed leading
+  * digit, and its JUE pair is taken from the N1..N5 formula that has
+  * the highest existing AI score/support for that digit.
+  *
+  * Important:
+  * - Do NOT use legacy/backend models (01..10) here.
+  * - Do NOT import pairs from another ranking position.
+  * - The Top-3 digit always stays in the tens/leading position.
+  * - The JUE digit is always the units/trailing position.
+  * - When several primary models qualify, the highest model score wins.
+  * - Ties are resolved deterministically by the pair's existing order.
   */
- const aggregate=new Map();
- backendEvaluated.forEach(model=>{
-   Object.entries(model.pairsMap||{}).forEach(([source,list])=>{
+ const target=String(digit);
+ const candidates=[];
+ mainEvaluated.forEach((model,modelIndex)=>{
+   const modelScore=Number(model.aiScore||0);
+   const targetPairs=[];
+   Object.values(model.pairsMap||{}).forEach(list=>{
      (list||[]).forEach(pairStr=>{
-       const pair=String(pairStr);
+       const pair=String(pairStr||'');
        if(!/^\d{2}$/.test(pair)||pair[0]===pair[1])return;
-       if(pair[0]!==String(digit)&&pair[1]!==String(digit))return;
-       const canonical=[pair[0],pair[1]].sort().join("");
-       const existing=aggregate.get(canonical)||{pair,canonical,votes:0,models:new Set(),digitScoreSum:0};
-       existing.votes+=1;
-       existing.models.add(String(model.id));
-       const a=Number(pair[0]),b=Number(pair[1]);
-       existing.digitScoreSum=(digitScores[a]?.totalScore||0)+(digitScores[b]?.totalScore||0);
-       aggregate.set(canonical,existing);
+       /* The Top-3 digit must be the leading/source digit. */
+       if(pair[0]!==target)return;
+       const normalized=target+pair[1];
+       if(!targetPairs.includes(normalized))targetPairs.push(normalized);
+     });
+   });
+   targetPairs.sort((a,b)=>Number(a[1])-Number(b[1]));
+   targetPairs.forEach((pair,pairIndex)=>{
+     candidates.push({
+       pair,
+       modelScore,
+       modelIndex,
+       pairIndex
      });
    });
  });
- return [...aggregate.values()]
-   .sort((a,b)=>b.votes-a.votes||b.digitScoreSum-a.digitScoreSum||a.canonical.localeCompare(b.canonical))
+ if(!candidates.length)return[];
+ /* Highest-scoring N1..N5 formula first; then stable pair ordering. */
+ candidates.sort((a,b)=>
+   b.modelScore-a.modelScore||
+   a.pairIndex-b.pairIndex||
+   a.modelIndex-b.modelIndex||
+   Number(a.pair[1])-Number(b.pair[1])
+ );
+ /* Keep the winning formula's JUE set together, not mixed with another rank. */
+ const winningScore=candidates[0].modelScore;
+ const winningModelIndex=candidates[0].modelIndex;
+ const winningCandidates=candidates.filter(item=>
+   item.modelIndex===winningModelIndex && item.modelScore===winningScore
+ );
+ return winningCandidates
    .map(item=>item.pair)
+   .filter((pair,index,arr)=>arr.indexOf(pair)===index)
+   .sort((a,b)=>Number(a[1])-Number(b[1]))
    .slice(0,5);
 }
 const deepSets=
@@ -4125,108 +4226,113 @@ b.displayPair
 .slice(0,5);
 /* =========================================================
 AUDITED 3-DIGIT SET ENGINE
-Rules:
-1. Build from the existing AI probability ranking only.
-2. Use the top 6 ranked digits as the candidate pool.
-3. Every set contains exactly 3 different digits.
-4. Order permutations are treated as the same set and shown once.
-5. Rank by existing digit strength, N1–N5 support, and existing pair support.
+Uses existing signals only:
+Digit Strength + N1–N5 Consensus + Pair Support + existing TOP 3 focus support,
+then selects a diverse Top 5. No formula generation rules are changed.
 ========================================================= */
-const threeDigitPool=
-matrixSorted
-.slice(0,6)
-.map(item=>item.digit);
+const threeDigitPool=matrixSorted.slice(0,6).map(item=>item.digit);
+
 
 const modelDigitSupport=new Map();
 mainEvaluated.forEach(model=>{
-model.set.forEach(digit=>{
-modelDigitSupport.set(
-digit,
-(modelDigitSupport.get(digit)||0)+1
-);
+  [...new Set(model.set)].forEach(digit=>{
+    modelDigitSupport.set(digit,(modelDigitSupport.get(digit)||0)+1);
+  });
 });
-});
+
 
 const pairSupport=new Map();
 backendEvaluated.forEach(model=>{
-Object.values(model.pairsMap||{}).forEach(list=>{
-(list||[]).forEach(pairStr=>{
-const pair=String(pairStr||"");
-if(!/^\d{2}$/.test(pair)||pair[0]===pair[1])return;
-const key=[Number(pair[0]),Number(pair[1])]
-.sort((a,b)=>a-b)
-.join("");
-pairSupport.set(key,(pairSupport.get(key)||0)+1);
+  Object.values(model.pairsMap||{}).forEach(list=>{
+    (list||[]).forEach(pairStr=>{
+      const pair=String(pairStr||"");
+      if(!/^\d{2}$/.test(pair)||pair[0]===pair[1])return;
+      const key=[Number(pair[0]),Number(pair[1])].sort((a,b)=>a-b).join("");
+      pairSupport.set(key,(pairSupport.get(key)||0)+1);
+    });
+  });
 });
+
+
+/* Existing TOP 3 focus signals: stronger emphasis for higher-ranked focused digits. */
+const top3FocusWeight=new Map();
+top3Digits.forEach((item,index)=>{
+  top3FocusWeight.set(item.digit,[3,2,1][index]||0);
 });
-});
+
 
 const matrixArr3d=[];
 for(let i=0;i<threeDigitPool.length-2;i++){
-for(let j=i+1;j<threeDigitPool.length-1;j++){
-for(let k=j+1;k<threeDigitPool.length;k++){
-const digits=[
-threeDigitPool[i],
-threeDigitPool[j],
-threeDigitPool[k]
-];
-const digitStrength=
-digits.reduce(
-(sum,digit)=>sum+(digitScores[digit]?.totalScore||0),
-0
-);
-const modelSupport=
-digits.reduce(
-(sum,digit)=>sum+(modelDigitSupport.get(digit)||0),
-0
-);
-const pairScore=
-[
-[digits[0],digits[1]],
-[digits[0],digits[2]],
-[digits[1],digits[2]]
-]
-.reduce(
-(sum,pair)=>sum+(
-pairSupport.get(
-[...pair].sort((a,b)=>a-b).join("")
-)||0
-),
-0
-);
-/* Canonical ascending display prevents 123 / 321 duplicates. */
-const canonicalDigits=[...digits].sort((a,b)=>a-b);
-matrixArr3d.push({
-digits:canonicalDigits,
-key:canonicalDigits.join(""),
-score:digitStrength+(modelSupport*2)+(pairScore*1.5),
-digitStrength,
-modelSupport,
-pairScore
-});
-}
-}
+  for(let j=i+1;j<threeDigitPool.length-1;j++){
+    for(let k=j+1;k<threeDigitPool.length;k++){
+      const digits=[threeDigitPool[i],threeDigitPool[j],threeDigitPool[k]];
+      const digitStrength=digits.reduce(
+        (sum,digit)=>sum+(digitScores[digit]?.totalScore||0),0
+      );
+      const modelSupport=digits.reduce(
+        (sum,digit)=>sum+(modelDigitSupport.get(digit)||0),0
+      );
+      const pairScore=[
+        [digits[0],digits[1]],[digits[0],digits[2]],[digits[1],digits[2]]
+      ].reduce((sum,pair)=>sum+(
+        pairSupport.get([...pair].sort((a,b)=>a-b).join(""))||0
+      ),0);
+      const focusSupport=digits.reduce(
+        (sum,digit)=>sum+(top3FocusWeight.get(digit)||0),0
+      );
+      const canonicalDigits=[...digits].sort((a,b)=>a-b);
+      matrixArr3d.push({
+        digits:canonicalDigits,
+        key:canonicalDigits.join(""),
+        score:digitStrength+(modelSupport*2)+(pairScore*1.5)+(focusSupport*2),
+        digitStrength,modelSupport,pairScore,focusSupport
+      });
+    }
+  }
 }
 
-matrixArr3d.sort(
-(a,b)=>
-b.score-a.score||
-b.digitStrength-a.digitStrength||
-b.modelSupport-a.modelSupport||
-b.pairScore-a.pairScore||
-a.key.localeCompare(b.key)
+
+matrixArr3d.sort((a,b)=>
+  b.score-a.score||
+  b.digitStrength-a.digitStrength||
+  b.modelSupport-a.modelSupport||
+  b.pairScore-a.pairScore||
+  b.focusSupport-a.focusSupport||
+  a.key.localeCompare(b.key)
 );
 
-const maxThreeScore=
-Math.max(
-...matrixArr3d.map(item=>item.score),
-1
-);
 
-matrixArr3d.splice(
-5
-);
+/* Diversity control: retain strength, but penalize over-repeating the same digits
+   when filling the final five positions. */
+const selectedThreeSets=[];
+const digitUsage=new Map();
+const remainingThreeSets=[...matrixArr3d];
+while(selectedThreeSets.length<5&&remainingThreeSets.length){
+  let bestIndex=0,bestAdjusted=-Infinity;
+  remainingThreeSets.forEach((item,index)=>{
+    const overlap=item.digits.reduce(
+      (sum,digit)=>sum+(digitUsage.get(digit)||0),0
+    );
+    const adjusted=item.score-(overlap*2.25);
+    if(
+      adjusted>bestAdjusted||
+      (adjusted===bestAdjusted&&item.score>remainingThreeSets[bestIndex].score)||
+      (adjusted===bestAdjusted&&item.score===remainingThreeSets[bestIndex].score&&item.key<remainingThreeSets[bestIndex].key)
+    ){
+      bestAdjusted=adjusted;
+      bestIndex=index;
+    }
+  });
+  const chosen=remainingThreeSets.splice(bestIndex,1)[0];
+  selectedThreeSets.push(chosen);
+  chosen.digits.forEach(digit=>{
+    digitUsage.set(digit,(digitUsage.get(digit)||0)+1);
+  });
+}
+matrixArr3d.splice(0,matrixArr3d.length,...selectedThreeSets);
 
+
+const maxThreeScore=Math.max(...matrixArr3d.map(item=>item.score),1);
 const cScore3=
 Number(
 calcConfidence(
