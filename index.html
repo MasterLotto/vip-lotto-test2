@@ -1,32 +1,4 @@
 <!DOCTYPE html>
-<!--
-MESTER LOTTO VIP+ — V15.1
-============================================================
-AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP + DUPLICATE DIGIT +1 FIX)
-============================================================
-- Main Model 01 (Formula N1 / Experimental Weight-based Mod 10):
-  - Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2) -> units digit (0-9 cyclic for negative)
-  - Digit 2: 3 - (Tens top * 2) + Units top -> units digit (0-9 cyclic for negative)
-- Duplicate Digit Fix:
-  - If Digit 1 and Digit 2 are identical, Digit 2 is incremented by 1 (mod 10).
-- Backend Support Formulas:
-  - Backend 1 (Former Main Model 01): Formula 1 / 73.36% Weight-based Mod 10
-  - Backend 2 (Formula 2 / ~68.50%): Modular Arithmetic support
-  - Backend 3 (Formula 3 / ~62.07%): Mod Sum support
-- VIP+ appears only when any backend formula matches either main digit.
-- Original Pair / เลขเจาะ engine retained.
-- 5 pairs per main digit = 10 pairs total.
-- No double-digit pairs.
-- Main digits / backend digits are not used to pair against
-  themselves inside the protected pair engine.
-- Login system removed completely.
-- No scoring system.
-- No historical system.
-- No backtest system.
-- No walk-forward system.
-- UI kept clean and orderly.
-============================================================
--->
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -36,640 +8,93 @@ AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP + DUPLICATE DIGIT +1 FIX)
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <title>Mester Lotto VIP+ — Multi Lottery Engine V15.1</title>
-
-
 <style>
-:root{
-  --bg:#f8f5ef;
-  --panel:#fffdf9;
-  --line:#e8dfcf;
-  --text:#403a31;
-  --muted:#8b8173;
-  --gold:#b8944a;
-  --gold2:#806329;
-  --rose:#b98279;
-  --shadow:0 14px 40px rgba(79,58,31,.08);
-}
-
-
-*{
-  box-sizing:border-box;
-}
-
-
-html{
-  scroll-behavior:smooth;
-}
-
-
-body{
-  margin:0;
-  background:
-    radial-gradient(circle at 15% 10%,rgba(195,154,67,.08),transparent 25%),
-    radial-gradient(circle at 85% 20%,rgba(185,130,121,.06),transparent 25%),
-    var(--bg);
-  color:var(--text);
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-}
-
-
-button,
-input,
-textarea{
-  font:inherit;
-}
-
-
-button{
-  cursor:pointer;
-}
-
-
-#snow{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-  z-index:0;
-}
-
-
-.shell{
-  position:relative;
-  z-index:1;
-  min-height:100vh;
-  padding:18px 12px 40px;
-}
-
-
-.app{
-  width:min(760px,100%);
-  margin:0 auto;
-}
-
-
-.inner{
-  padding:12px;
-}
-
-
-.top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:14px;
-}
-
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-
-.logo{
-  width:37px;
-  height:37px;
-  border-radius:12px;
-  display:grid;
-  place-items:center;
-  background:linear-gradient(135deg,#d3b16d,#806329);
-  color:#fff;
-  font-weight:900;
-  font-size:.72rem;
-  box-shadow:0 8px 18px rgba(128,99,41,.18);
-}
-
-
-.brand b{
-  display:block;
-  font-size:.78rem;
-  letter-spacing:.1px;
-}
-
-
-.brand small{
-  display:block;
-  margin-top:2px;
-  font-size:.48rem;
-  color:var(--muted);
-  font-weight:600;
-}
-
-
-.pill{
-  padding:6px 9px;
-  border:1px solid var(--line);
-  border-radius:99px;
-  background:#fffaf0;
-  color:#806329;
-  font-size:.45rem;
-  font-weight:800;
-  white-space:nowrap;
-}
-
-
-.hero{
-  padding:18px;
-  margin-bottom:14px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));
-  box-shadow:var(--shadow);
-}
-
-
-.hero-tag{
-  font-size:.43rem;
-  font-weight:900;
-  letter-spacing:1.2px;
-  color:var(--gold2);
-}
-
-
-.hero h1{
-  margin:7px 0 5px;
-  font-size:1.55rem;
-  line-height:1.15;
-}
-
-
-.hero h1 em{
-  font-style:normal;
-  color:var(--gold2);
-}
-
-
-.hero p{
-  margin:0;
-  font-size:.55rem;
-  line-height:1.65;
-  color:var(--muted);
-}
-
-
-.panel{
-  background:rgba(255,253,249,.96);
-  border:1px solid var(--line);
-  border-radius:18px;
-  box-shadow:var(--shadow);
-}
-
-
-.bulkbox{
-  padding:14px;
-}
-
-
-.bulkbox label{
-  display:block;
-  margin-bottom:7px;
-  font-size:.55rem;
-  font-weight:900;
-  color:#806329;
-}
-
-
-.bulk{
-  display:block;
-  width:100%;
-  min-height:260px;
-  resize:vertical;
-  padding:12px;
-  border:1px solid var(--line);
-  border-radius:13px;
-  background:#fff;
-  color:var(--text);
-  outline:none;
-  font-family:"IBM Plex Mono",monospace;
-  font-size:.58rem;
-  line-height:1.65;
-}
-
-
-.bulk:focus{
-  border-color:#c6a762;
-  box-shadow:0 0 0 3px rgba(195,154,67,.10);
-}
-
-
-.actions{
-  padding:0 14px 14px;
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:8px;
-}
-
-
-.run{
-  height:43px;
-  border:0;
-  border-radius:12px;
-  background:linear-gradient(135deg,#b8944a,#806329);
-  color:#fff;
-  font-size:.59rem;
-  font-weight:900;
-}
-
-
-.copy{
-  height:43px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:#fff;
-  color:#806329;
-  font-size:.59rem;
-  font-weight:900;
-}
-
-
-.clear{
-  color:#8b8173;
-}
-
-
-.run:disabled{
-  opacity:.55;
-  cursor:not-allowed;
-}
-
-
-.scanner{
-  display:none;
-  padding:10px 14px;
-  border-top:1px solid var(--line);
-  font-size:.52rem;
-  color:var(--muted);
-}
-
-
-.scanner span{
-  font-weight:800;
-  color:#806329;
-}
-
-
-.result{
-  margin-top:14px;
-}
-
-
-.summary{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  padding:11px 12px;
-  margin-bottom:9px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:#fffdf9;
-  font-size:.54rem;
-  color:var(--muted);
-}
-
-
-.summary strong{
-  color:#806329;
-  font-size:.72rem;
-  margin:0 2px;
-}
-
-
-.lottery{
-  overflow:hidden;
-  margin-bottom:9px;
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:#fff;
-  box-shadow:var(--shadow);
-}
-
-
-.lottery-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  padding:10px 12px 9px 18px;
-  background:linear-gradient(135deg,#fff,#fbf7ed);
-}
-
-
-.lottery-name{
-  font-weight:800;
-  font-size:.72rem;
-}
-
-
-.flag{
-  margin-right:5px;
-}
-
-
-.date{
-  font-size:.52rem;
-  color:var(--muted);
-  margin-top:2px;
-}
-
-
-.vip-label{
-  display:block;
-  margin-left:auto;
-  margin-right:4px;
-  color:#806329;
-  font-size:.42rem;
-  font-weight:900;
-  letter-spacing:.2px;
-  white-space:nowrap;
-}
-
-
-.card-actions{
-  padding:0;
-  flex:0 0 auto;
-}
-
-
-.card-capture{
-  width:auto;
-  min-width:72px;
-  height:34px;
-  padding:0 10px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:#fff;
-  color:#80652b;
-  font-size:.54rem;
-  font-weight:800;
-}
-
-
-.rows{
-  padding:4px 7px 2px;
-}
-
-
-.row{
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap:6px;
-  padding:5px 7px 5px 7px;
-  border-bottom:1px solid #f0eadf;
-}
-
-
-.row:last-child{
-  border-bottom:0;
-}
-
-
-.row-label{
-  font-size:.55rem;
-  color:var(--muted);
-}
-
-
-.row-value{
-  font-family:"IBM Plex Mono",monospace;
-  font-weight:800;
-  font-size:.9rem;
-}
-
-
-.row-value.top{
-  color:#9c782e;
-}
-
-
-.digit{
-  display:grid;
-  place-items:center;
-  width:31px;
-  height:31px;
-  border-radius:10px;
-  font-family:"IBM Plex Mono",monospace;
-  font-weight:900;
-  font-size:.92rem;
-}
-
-
-.digit-gold{
-  background:#fbf1d9;
-  border:1px solid #e4ca8f;
-  color:#806329;
-}
-
-
-.digit-silver{
-  background:#f5f1eb;
-  border:1px solid #ddd5c9;
-  color:#625a50;
-}
-
-
-.sep{
-  font-family:"IBM Plex Mono",monospace;
-  font-weight:800;
-  color:#b3a694;
-}
-
-
-.pairs{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-start;
-  gap:4px;
-  margin-left:4px;
-}
-
-
-.pair{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:32px;
-  height:24px;
-  padding:0 5px;
-  border-radius:7px;
-  border:1px solid #e7dfd3;
-  background:#fff;
-  font-family:"IBM Plex Mono",monospace;
-  font-size:.51rem;
-  font-weight:800;
-  color:#645b50;
-}
-
-
-.pair-gold{
-  border-color:#d9bd79;
-  background:#fff8e7;
-  color:#806329;
-}
-
-
-.pair-silver{
-  border-color:#d7d0c6;
-  background:#f8f5ef;
-  color:#665e54;
-}
-
-
-.pair-rose{
-  border-color:#e5c7c1;
-  background:#fff5f3;
-  color:#95675f;
-}
-
-
-.footer{
-  padding:5px 10px;
-  border-top:1px solid var(--line);
-  font-size:.5rem;
-  color:var(--muted);
-}
-
-
-.copyall{
-  width:100%;
-  height:43px;
-  border:0;
-  border-radius:12px;
-  color:#fff;
-  background:linear-gradient(135deg,#b8944a,#806329);
-  font-weight:800;
-}
-
-
-.brand-footer{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:7px;
-  padding-top:9px;
-  padding-bottom:6px;
-  color:#80652b;
-  font-size:.44rem;
-  font-weight:800;
-  letter-spacing:.2px;
-}
-
-
-.brand-star{
-  color:#c39a43;
-  font-size:.58rem;
-}
-
-
-.toast{
-  position:fixed;
-  left:50%;
-  bottom:22px;
-  z-index:9;
-  transform:translate(-50%,20px);
-  opacity:0;
-  padding:9px 15px;
-  border-radius:99px;
-  color:#fff;
-  background:#806329;
-  font-size:.55rem;
-  font-weight:700;
-  transition:.2s;
-  pointer-events:none;
-}
-
-
-.toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
-}
-
-
-.errorbox{
-  padding:12px;
-  border-radius:14px;
-  border:1px solid #f0c9cd;
-  background:#fff0f1;
-  color:#a83d46;
-  font-size:.6rem;
-  line-height:1.7;
-}
-
-
+:root{--bg:#f8f5ef;--panel:#fffdf9;--line:#e8dfcf;--text:#403a31;--muted:#8b8173;--gold:#b8944a;--gold2:#806329;--rose:#b98279;--shadow:0 14px 40px rgba(79,58,31,.08);}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;background:radial-gradient(circle at 15% 10%,rgba(195,154,67,.08),transparent 25%),radial-gradient(circle at 85% 20%,rgba(185,130,121,.06),transparent 25%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+button,input,textarea{font:inherit;}
+button{cursor:pointer;}
+#snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+.shell{position:relative;z-index:1;min-height:100vh;padding:18px 12px 40px;}
+.app{width:min(760px,100%);margin:0 auto;}
+.inner{padding:12px;}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo{width:37px;height:37px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#d3b16d,#806329);color:#fff;font-weight:900;font-size:.72rem;box-shadow:0 8px 18px rgba(128,99,41,.18);}
+.brand b{display:block;font-size:.78rem;letter-spacing:.1px;}
+.brand small{display:block;margin-top:2px;font-size:.48rem;color:var(--muted);font-weight:600;}
+.pill{padding:6px 9px;border:1px solid var(--line);border-radius:99px;background:#fffaf0;color:#806329;font-size:.45rem;font-weight:800;white-space:nowrap;}
+.hero{padding:18px;margin-bottom:14px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));box-shadow:var(--shadow);}
+.hero-tag{font-size:.43rem;font-weight:900;letter-spacing:1.2px;color:var(--gold2);}
+.hero h1{margin:7px 0 5px;font-size:1.55rem;line-height:1.15;}
+.hero h1 em{font-style:normal;color:var(--gold2);}
+.hero p{margin:0;font-size:.55rem;line-height:1.65;color:var(--muted);}
+.panel{background:rgba(255,253,249,.96);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);}
+.bulkbox{padding:14px;}
+.bulkbox label{display:block;margin-bottom:7px;font-size:.55rem;font-weight:900;color:#806329;}
+.bulk{display:block;width:100%;min-height:260px;resize:vertical;padding:12px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--text);outline:none;font-family:"IBM Plex Mono",monospace;font-size:.58rem;line-height:1.65;}
+.bulk:focus{border-color:#c6a762;box-shadow:0 0 0 3px rgba(195,154,67,.10);}
+.actions{padding:0 14px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.run{height:43px;border:0;border-radius:12px;background:linear-gradient(135deg,#b8944a,#806329);color:#fff;font-size:.59rem;font-weight:900;}
+.copy{height:43px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#806329;font-size:.59rem;font-weight:900;}
+.clear{color:#8b8173;}
+.run:disabled{opacity:.55;cursor:not-allowed;}
+.scanner{display:none;padding:10px 14px;border-top:1px solid var(--line);font-size:.52rem;color:var(--muted);}
+.scanner span{font-weight:800;color:#806329;}
+.result{margin-top:14px;}
+.summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;margin-bottom:9px;border:1px solid var(--line);border-radius:14px;background:#fffdf9;font-size:.54rem;color:var(--muted);}
+.summary strong{color:#806329;font-size:.72rem;margin:0 2px;}
+.lottery{overflow:hidden;margin-bottom:9px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow);}
+.lottery-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px 9px 18px;background:linear-gradient(135deg,#fff,#fbf7ed);}
+.lottery-name{font-weight:800;font-size:.72rem;}
+.flag{margin-right:5px;}
+.date{font-size:.52rem;color:var(--muted);margin-top:2px;}
+.vip-label{display:block;margin-left:auto;margin-right:4px;color:#806329;font-size:.42rem;font-weight:900;letter-spacing:.2px;white-space:nowrap;}
+.card-actions{padding:0;flex:0 0 auto;}
+.card-capture{width:auto;min-width:72px;height:34px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#80652b;font-size:.54rem;font-weight:800;}
+.rows{padding:4px 7px 2px;}
+.row{display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:5px 7px 5px 7px;border-bottom:1px solid #f0eadf;}
+.row:last-child{border-bottom:0;}
+.row-label{font-size:.55rem;color:var(--muted);}
+.row-value{font-family:"IBM Plex Mono",monospace;font-weight:800;font-size:.9rem;}
+.row-value.top{color:#9c782e;}
+.digit{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;font-family:"IBM Plex Mono",monospace;font-weight:900;font-size:.92rem;}
+.digit-gold{background:#fbf1d9;border:1px solid #e4ca8f;color:#806329;}
+.digit-silver{background:#f5f1eb;border:1px solid #ddd5c9;color:#625a50;}
+.sep{font-family:"IBM Plex Mono",monospace;font-weight:800;color:#b3a694;}
+.pairs{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:4px;margin-left:4px;}
+.pair{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:24px;padding:0 5px;border-radius:7px;border:1px solid #e7dfd3;background:#fff;font-family:"IBM Plex Mono",monospace;font-size:.51rem;font-weight:800;color:#645b50;}
+.pair-gold{border-color:#d9bd79;background:#fff8e7;color:#806329;}
+.pair-silver{border-color:#d7d0c6;background:#f8f5ef;color:#665e54;}
+.pair-rose{border-color:#e5c7c1;background:#fff5f3;color:#95675f;}
+.footer{padding:5px 10px;border-top:1px solid var(--line);font-size:.5rem;color:var(--muted);}
+.copyall{width:100%;height:43px;border:0;border-radius:12px;color:#fff;background:linear-gradient(135deg,#b8944a,#806329);font-weight:800;}
+.brand-footer{display:flex;justify-content:center;align-items:center;gap:7px;padding-top:9px;padding-bottom:6px;color:#80652b;font-size:.44rem;font-weight:800;letter-spacing:.2px;}
+.brand-star{color:#c39a43;font-size:.58rem;}
+.toast{position:fixed;left:50%;bottom:22px;z-index:9;transform:translate(-50%,20px);opacity:0;padding:9px 15px;border-radius:99px;color:#fff;background:#806329;font-size:.55rem;font-weight:700;transition:.2s;pointer-events:none;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+.errorbox{padding:12px;border-radius:14px;border:1px solid #f0c9cd;background:#fff0f1;color:#a83d46;font-size:.6rem;line-height:1.7;}
 @media(max-width:390px){
-  .bulk{
-    min-height:250px;
-  }
-
-
-  .pairs{
-    gap:2px;
-  }
-
-
-  .pair{
-    min-width:30px;
-    height:23px;
-    font-size:.50rem;
-    padding:0 4px;
-  }
-
-
-  .row{
-    min-height:39px;
-    padding:3px 4px 3px 7px;
-    gap:3px;
-  }
-
-
-  .digit{
-    font-size:.92rem;
-  }
+.bulk{min-height:250px;}
+.pairs{gap:2px;}
+.pair{min-width:30px;height:23px;font-size:.50rem;padding:0 4px;}
+.row{min-height:39px;padding:3px 4px 3px 7px;gap:3px;}
+.digit{font-size:.92rem;}
 }
-
-
 @media(max-width:420px){
-  .lottery{
-    padding:0;
-  }
-
-
-  .lottery-head{
-    padding-left:18px;
-    padding-right:1px;
-  }
-
-
-  .vip-label{
-    font-size:.39rem;
-    padding:3px 2px;
-  }
-
-
-  .pair{
-    min-width:31px;
-  }
+.lottery{padding:0;}
+.lottery-head{padding-left:18px;padding-right:1px;}
+.vip-label{font-size:.39rem;padding:3px 2px;}
+.pair{min-width:31px;}
 }
 </style>
 </head>
-
-
 <body>
-
-
 <canvas id="snow"></canvas>
-
-
 <div class="shell">
   <div class="app">
     <div class="inner">
-
-
       <div class="top">
         <div class="brand">
           <div class="logo">AI</div>
@@ -678,89 +103,48 @@ button{
             <small>Multi Lottery Engine</small>
           </div>
         </div>
-
-
         <div class="pill">● ENGINE READY</div>
       </div>
-
-
       <section class="hero">
         <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
         <h1>Multi-Lottery <em>VIP+</em></h1>
         <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรทดลอง N1 ล่าสุด</p>
       </section>
-
-
       <div id="console">
-
-
         <section class="panel">
-
-
           <div class="bulkbox">
             <label>📥 LOTTERY INPUT</label>
-
-
             <textarea
               id="bulkInput"
               class="bulk"
               placeholder="ฮานอย HD | 26 ส.ค. 69&#10;067&#10;36&#10;&#10;ฮานอย VIP | 26 ส.ค. 69&#10;123&#10;45"
             ></textarea>
           </div>
-
-
           <div class="actions">
             <button id="run" class="run">⚡ ประมวลผล</button>
             <button id="copyInput" class="copy" disabled>📋 COPY</button>
             <button id="clearInput" class="copy clear">ล้างข้อมูล</button>
           </div>
-
-
           <div id="scanner" class="scanner">
             สถานะ: <span id="scanText">กำลังเตรียมระบบ...</span>
           </div>
-
-
         </section>
-
-
         <div id="result" class="result"></div>
-
-
       </div>
-
-
       <div id="toast" class="toast">คัดลอกแล้ว</div>
-
-
     </div>
   </div>
 </div>
-
-
 <script>
 (() => {
-
-
-  /* =========================================================
-     SNOW / BACKGROUND
-  ========================================================= */
-
-
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
-
-
   let width = canvas.width = innerWidth;
   let height = canvas.height = innerHeight;
-
-
   addEventListener('resize', () => {
     width = canvas.width = innerWidth;
     height = canvas.height = innerHeight;
   });
-
-
   const particles = Array.from({length:42}, () => ({
     x:Math.random()*width,
     y:Math.random()*height,
@@ -770,52 +154,27 @@ button{
     p:Math.random()*6.28,
     tone:Math.random()>.72 ? 'rose' : 'gold'
   }));
-
-
   (function drawSnow(){
     ctx.clearRect(0,0,width,height);
-
-
     particles.forEach(p => {
       p.p += .01;
       p.y += p.s;
       p.x += Math.sin(p.p)*.25;
-
-
       if(p.y > height+5){
         p.y = -5;
         p.x = Math.random()*width;
       }
-
-
       ctx.beginPath();
       ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-
-
       ctx.fillStyle =
         p.tone === 'rose'
           ? `rgba(185,130,121,${p.a*.55})`
           : `rgba(195,154,67,${p.a})`;
-
-
       ctx.fill();
     });
-
-
     requestAnimationFrame(drawSnow);
   })();
-
-
-
-
-  /* =========================================================
-     HELPERS
-  ========================================================= */
-
-
   const $ = id => document.getElementById(id);
-
-
   const esc = value =>
     String(value)
       .replace(/&/g,'&amp;')
@@ -823,31 +182,14 @@ button{
       .replace(/>/g,'&gt;')
       .replace(/"/g,'&quot;')
       .replace(/'/g,'&#039;');
-
-
-
-
-  /* =========================================================
-     MAIN APPLICATION
-  ========================================================= */
-
-
   const app = {
-
-
     lastCopyText:'',
     toastTimer:null,
-
-
     norm(value){
       return (value % 10 + 10) % 10;
     },
-
-
     flag(name){
       const n = String(name).toLowerCase();
-
-
       if(/ลาว|lao/.test(n)) return '🇱🇦';
       if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n)) return '🇻🇳';
       if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n)) return '🇲🇲';
@@ -868,185 +210,100 @@ button{
       if(/ออสเตรเลีย|australia|asx/.test(n)) return '🇦🇺';
       if(/แคนาดา|canada/.test(n)) return '🇨🇦';
       if(/หุ้นไทย|ไทย|thai|set/.test(n)) return '🇹🇭';
-
-
       return '🌐';
     },
-
-
-
-
-    /* =======================================================
-       INPUT PARSER
-    ======================================================= */
-
-
     parse(text){
-
-
       const raw = String(text || '')
         .replace(/\r/g,'')
         .trim();
-
-
       if(!raw){
         return {
           records:[],
           errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
         };
       }
-
-
       const lines = raw
         .split('\n')
         .map(v => v.trim());
-
-
       const records = [];
       const errors = [];
-
-
       let i = 0;
-
-
       while(i < lines.length){
-
-
         if(!lines[i]){
           i++;
           continue;
         }
-
-
         const header = lines[i].match(/^(.+?)\s*\|\s*(.+?)$/);
-
-
         if(!header){
           errors.push(
             `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
           );
-
-
           i++;
           continue;
         }
-
-
         const name = header[1].trim();
         const date = header[2].trim();
-
-
         if(!this.parseDateValue(date)){
           errors.push(
             `${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 25 ส.ค. 69`
           );
-
-
           i++;
           continue;
         }
-
-
         const n3raw = lines[i+1] || '';
         const n2raw = lines[i+2] || '';
-
-
         const n3 =
           /^[\d\s]+$/.test(n3raw)
             ? n3raw.replace(/\s+/g,'')
             : n3raw;
-
-
         const n2 =
           /^[\d\s]+$/.test(n2raw)
             ? n2raw.replace(/\s+/g,'')
             : n2raw;
-
-
         if(!/^\d{3}$/.test(n3)){
           errors.push(
             `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
           );
-
-
           i += 1;
           continue;
         }
-
-
         if(!/^\d{2}$/.test(n2)){
           errors.push(
             `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
           );
-
-
           i += 2;
           continue;
         }
-
-
         records.push({
           name,
           date,
           n3,
           n2
         });
-
-
         i += 3;
       }
-
-
       return {
         records,
         errors
       };
     },
-
-
-
-
     parseDateValue(date){
-
-
       const value = String(date || '').trim();
-
-
       if(!value) return false;
-
-
       if(/^\d{1,2}\s+\S+\s+\d{2,4}$/.test(value))
         return true;
-
-
       if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value))
         return true;
-
-
       if(/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(value))
         return true;
-
-
       return false;
     },
-
-
-
-
     dateKey(date){
-
-
       const value = String(date || '').trim();
-
-
       const thai = value.match(
         /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
       );
-
-
       if(thai){
-
-
         const months = {
           'ม.ค.':1,
           'ก.พ.':2,
@@ -1061,106 +318,56 @@ button{
           'พ.ย.':11,
           'ธ.ค.':12
         };
-
-
         const month = months[thai[2]] || 0;
-
-
         let year = Number(thai[3]);
-
-
         if(year < 100){
           year += 2500;
         }
-
-
         return [
           year,
           String(month).padStart(2,'0'),
           String(Number(thai[1])).padStart(2,'0')
         ].join('-');
       }
-
-
       const numeric = value.match(
         /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
       );
-
-
       if(numeric){
-
-
         let year = Number(numeric[3]);
-
-
         if(year < 100){
           year += 2500;
         }
-
-
         return [
           year,
           String(Number(numeric[2])).padStart(2,'0'),
           String(Number(numeric[1])).padStart(2,'0')
         ].join('-');
       }
-
-
       return value;
     },
-
-
-
-
     sortChronological(records){
-
-
       return records
         .map((record,index) => ({
           ...record,
           __index:index
         }))
         .sort((a,b) => {
-
-
           const ka = this.dateKey(a.date);
           const kb = this.dateKey(b.date);
-
-
           if(ka < kb) return -1;
           if(ka > kb) return 1;
-
-
           return a.__index - b.__index;
         })
         .map(record => {
-
-
           const clean = {...record};
-
-
           delete clean.__index;
-
-
           return clean;
         });
     },
-
-
-
-
     groupByLottery(records){
-
-
       const groupsMap = {};
-
-
       records.forEach((record,index) => {
-
-
         const key = record.name.trim();
-
-
         if(!groupsMap[key]){
           groupsMap[key] = {
             name:key,
@@ -1170,45 +377,21 @@ button{
             __order:index
           };
         }
-
-
         groupsMap[key].records.push(record);
       });
-
-
       const groups = Object.values(groupsMap);
-
-
       groups.forEach(group => {
-
-
         const sorted = this.sortChronological(group.records);
-
-
         const byDate = new Map();
         const clean = [];
-
-
         sorted.forEach(record => {
-
-
           const key = this.dateKey(record.date);
-
-
           if(!byDate.has(key)){
-
-
             byDate.set(key,record);
             clean.push(record);
-
-
             return;
           }
-
-
           const previous = byDate.get(key);
-
-
           if(
             previous.n3 === record.n3 &&
             previous.n2 === record.n2
@@ -1216,103 +399,49 @@ button{
             group.duplicateCount++;
             return;
           }
-
-
           group.conflictCount++;
-
-
           const index = clean.indexOf(previous);
-
-
           if(index >= 0){
             clean[index] = record;
           }
-
-
           byDate.set(key,record);
         });
-
-
         group.records = this.sortChronological(clean);
       });
-
-
       return groups
         .sort((a,b) => a.__order - b.__order)
         .map(group => {
-
-
           delete group.__order;
-
-
           return group;
         });
     },
-
-
-
-
-    /* =======================================================
-       MAIN MODEL 01 (FORMULA N1 / EXPERIMENTAL MOD 10)
-       - Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2) -> units digit
-       - Digit 2: 3 - (Tens top * 2) + Units top -> units digit
-       - Duplicate Fix: If first === second, second = norm(second + 1)
-    ======================================================= */
-
-
     mainModel(n3, n2){
-
-
       const top = String(n3)
         .padStart(3,'0')
         .split('')
         .map(Number);
-
-
       const bottom = String(n2)
         .padStart(2,'0')
         .split('')
         .map(Number);
-
-
       const H = top[0];
       const T = top[1];
       const U = top[2];
       const R1 = bottom[0];
       const R2 = bottom[1];
-
-
-      // Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2)
       const sum1 = 9 - (H * 2) - (T * 2) + U + R1 - (R2 * 2);
       let first = this.norm(sum1);
-
-
-      // Digit 2: 3 - (Tens top * 2) + Units top
       const sum2 = 3 - (T * 2) + U;
       let second = this.norm(sum2);
-
-
-      // Check duplicate between rows and apply +1 offset if needed
       if(first === second){
         second = this.norm(second + 1);
       }
-
-
       return {
         first,
         second,
         set:[first, second]
       };
     },
-
-
-
-
-    /* =======================================================
-       BACKEND SUPPORT FORMULA 1 (FORMER MAIN MODEL 01)
-    ======================================================= */
-
-
     backendFormula1(n3, n2){
       const top = String(n3).padStart(3,'0').split('').map(Number);
       const bottom = String(n2).padStart(2,'0').split('').map(Number);
@@ -1320,24 +449,12 @@ button{
       const T = top[1];
       const U = top[2];
       const R1 = bottom[0];
-
       const sum1 = (T * 2) + U + 2;
       const first = this.norm(sum1);
-
       const sum2 = 9 - (H * 2) + U - (R1 * 2);
       const second = this.norm(sum2);
-
       return { result: first };
     },
-
-
-
-
-    /* =======================================================
-       BACKEND SUPPORT FORMULA 2 (FORMULA 2 / ~68.50%)
-    ======================================================= */
-
-
     backendFormula2(n3, n2){
       const top = String(n3).padStart(3,'0').split('').map(Number);
       const bottom = String(n2).padStart(2,'0').split('').map(Number);
@@ -1345,15 +462,6 @@ button{
       const result = this.norm(sum * 3 + 7);
       return { result };
     },
-
-
-
-
-    /* =======================================================
-       BACKEND SUPPORT FORMULA 3 (FORMULA 3 / ~62.07%)
-    ======================================================= */
-
-
     backendFormula3(n3, n2){
       const top = String(n3).padStart(3,'0').split('').map(Number);
       const bottom = String(n2).padStart(2,'0').split('').map(Number);
@@ -1361,72 +469,20 @@ button{
       const result = this.norm(sum);
       return { result };
     },
-
-
-
-
-    /* =======================================================
-       VIP+ CONFIRMATION
-
-
-       Backend formulas may only confirm.
-       They NEVER replace Model 01.
-    ======================================================= */
-
-
     checkVIP(main,backend1,backend2,backend3){
-
-
       const mainSet = new Set(main.set);
-
-
       return (
         mainSet.has(backend1.result) ||
         mainSet.has(backend2.result) ||
         mainSet.has(backend3.result)
       );
     },
-
-
-
-
-    /* =======================================================
-       PROTECTED ORIGINAL PAIR / เลขเจาะ ENGINE
-
-
-       Base:
-       7 - hundreds top
-
-
-       Normal:
-       ±2
-
-
-       Collision with main digit:
-       ±3
-
-
-       No main digits inside the pair range.
-       No double pairs.
-    ======================================================= */
-
-
     buildPairs(mainSet,anchor){
-
-
       const pairsMap = {};
-
-
       mainSet.forEach(sourceDigit => {
-
-
         let range = [];
         let collision = false;
-
-
         for(let offset = -2; offset <= 2; offset++){
-
-
           if(
             mainSet.includes(
               this.norm(anchor + offset)
@@ -1436,71 +492,41 @@ button{
             break;
           }
         }
-
-
         for(
           let offset = collision ? -3 : -2;
           offset <= (collision ? 3 : 2);
           offset++
         ){
-
-
           const digit = this.norm(anchor + offset);
-
-
           if(!range.includes(digit)){
             range.push(digit);
           }
         }
-
-
         const pairs = [];
-
-
         range.forEach(target => {
-
-
           if(target === sourceDigit){
             return;
           }
-
-
           if(mainSet.includes(target)){
             return;
           }
-
-
           const pair = `${sourceDigit}${target}`;
-
-
           if(
             pair[0] === pair[1]
           ){
             return;
           }
-
-
           if(!pairs.includes(pair)){
             pairs.push(pair);
           }
         });
-
-
         let next = this.norm(sourceDigit + 1);
-
-
         while(pairs.length < 5){
-
-
           if(
             next !== sourceDigit &&
             !mainSet.includes(next)
           ){
-
-
             const pair = `${sourceDigit}${next}`;
-
-
             if(
               pair[0] !== pair[1] &&
               !pairs.includes(pair)
@@ -1508,83 +534,39 @@ button{
               pairs.push(pair);
             }
           }
-
-
           next = this.norm(next + 1);
         }
-
-
         pairsMap[sourceDigit] =
           [...new Set(pairs)]
             .filter(pair => pair[0] !== pair[1])
             .slice(0,5);
       });
-
-
       return pairsMap;
     },
-
-
-
-
-    /* =======================================================
-       PAIR COLOR / CONSENSUS
-       Kept clean and lightweight.
-    ======================================================= */
-
-
     pairKey(pair){
-
-
       const value = String(pair);
-
-
       if(!/^\d{2}$/.test(value)){
         return value;
       }
-
-
       return [
         value[0],
         value[1]
       ].sort().join('');
     },
-
-
-
-
     buildPairConsensus(pairSets){
-
-
       const all = [];
-
-
       pairSets.forEach((set,rowIndex) => {
-
-
         set.slice(0,5).forEach(pair => {
-
-
           all.push({
             pair:String(pair),
             rowIndex
           });
         });
       });
-
-
       const counts = {};
-
-
       all.forEach(item => {
-
-
         const key = this.pairKey(item.pair);
-
-
         if(!counts[key]){
-
-
           counts[key] = {
             key,
             score:0,
@@ -1592,14 +574,10 @@ button{
             pairs:new Set()
           };
         }
-
-
         counts[key].score++;
         counts[key].rows.add(item.rowIndex);
         counts[key].pairs.add(item.pair);
       });
-
-
       const ranked =
         Object.values(counts)
           .sort(
@@ -1608,17 +586,9 @@ button{
               b.rows.size - a.rows.size ||
               Number(a.key) - Number(b.key)
           );
-
-
       const colorMap = {};
-
-
       ranked.slice(0,6).forEach((item,index) => {
-
-
         let color;
-
-
         if(index < 2){
           color = 'gold';
         }else if(index < 4){
@@ -1626,29 +596,19 @@ button{
         }else{
           color = 'rose';
         }
-
-
         colorMap[item.key] = {
           color,
           rank:index + 1,
           score:item.score
         };
       });
-
-
       return {
         counts,
         ranked,
         colorMap
       };
     },
-
-
-
-
     sortPairs(pairs){
-
-
       return pairs
         .map(String)
         .filter(pair =>
@@ -1657,70 +617,33 @@ button{
         )
         .sort((a,b) => Number(a) - Number(b));
     },
-
-
-
-
     pairClass(pair,colorMap){
-
-
       const info =
         colorMap[this.pairKey(pair)];
-
-
       if(!info){
         return 'pair';
       }
-
-
       if(info.color === 'gold'){
         return 'pair pair-gold';
       }
-
-
       if(info.color === 'silver'){
         return 'pair pair-silver';
       }
-
-
       return 'pair pair-rose';
     },
-
-
-
-
-    /* =======================================================
-       MAIN ENGINE
-    ======================================================= */
-
-
     run(n3,n2){
-
-
       const topDigits = String(n3)
         .padStart(3,'0')
         .split('')
         .map(Number);
-
-
       const H = topDigits[0];
-
-
       const main = this.mainModel(n3, n2);
-
-
       const backend1 =
         this.backendFormula1(n3, n2);
-
-
       const backend2 =
         this.backendFormula2(n3, n2);
-
-
       const backend3 =
         this.backendFormula3(n3, n2);
-
-
       const vip =
         this.checkVIP(
           main,
@@ -1728,31 +651,21 @@ button{
           backend2,
           backend3
         );
-
-
       const rawAnchor = 7 - H;
       const anchor = this.norm(rawAnchor);
-
-
       const pairsMap =
         this.buildPairs(
           main.set,
           anchor
         );
-
-
       const pairSets = main.set.map(
         digit =>
           this.sortPairs(
             pairsMap[digit] || []
           ).slice(0,5)
       );
-
-
       const consensus =
         this.buildPairConsensus(pairSets);
-
-
       return {
         main,
         backend1,
@@ -1768,47 +681,24 @@ button{
         top2Digit:main.second
       };
     },
-
-
-
-
-    /* =======================================================
-       CAPTURE
-    ======================================================= */
-
-
     async captureCard(cardId,name){
-
-
       const element =
         document.getElementById(cardId);
-
-
       if(!element){
         return;
       }
-
-
       const controls =
         [...element.querySelectorAll('[data-no-capture]')];
-
-
       try{
-
-
         if(typeof html2canvas === 'undefined'){
           throw new Error(
             'ไม่พบระบบแคปภาพ กรุณาเปิดอินเทอร์เน็ตแล้วลองใหม่'
           );
         }
-
-
         controls.forEach(
           element =>
             element.style.visibility = 'hidden'
         );
-
-
         const canvas =
           await html2canvas(
             element,
@@ -1825,12 +715,8 @@ button{
               logging:false
             }
           );
-
-
         const link =
           document.createElement('a');
-
-
         const safe =
           String(name || 'lottery')
             .replace(
@@ -1838,166 +724,74 @@ button{
               '_'
             )
             .slice(0,60);
-
-
         link.download =
           `${safe || 'lottery'}_card.png`;
-
-
         link.href =
           canvas.toDataURL('image/png');
-
-
         link.click();
-
-
         this.show('✓ แคปการ์ดแล้ว');
-
-
       }catch(error){
-
-
         console.error(error);
-
-
         this.show('❌ แคปภาพไม่สำเร็จ');
-
-
       }finally{
-
-
         controls.forEach(
           element =>
             element.style.visibility = ''
         );
       }
     },
-
-
-
-
-    /* =======================================================
-       COPY
-    ======================================================= */
-
-
     copy(text){
-
-
       if(
         navigator.clipboard &&
         navigator.clipboard.writeText
       ){
-
-
         navigator.clipboard
           .writeText(text)
           .then(() => this.show())
           .catch(() => this.fallbackCopy(text));
-
-
         return;
       }
-
-
       this.fallbackCopy(text);
     },
-
-
-
-
     fallbackCopy(text){
-
-
       const textarea =
         document.createElement('textarea');
-
-
       textarea.value = text;
-
-
       document.body.appendChild(textarea);
-
-
       textarea.select();
-
-
       document.execCommand('copy');
-
-
       textarea.remove();
-
-
       this.show();
     },
-
-
-
-
     show(message){
-
-
       const toast = $('toast');
-
-
       if(message){
         toast.textContent = message;
       }
-
-
       toast.classList.add('show');
-
-
       clearTimeout(this.toastTimer);
-
-
       this.toastTimer =
         setTimeout(
           () => toast.classList.remove('show'),
           1500
         );
     },
-
-
-
-
-    /* =======================================================
-       NEXT DATE
-    ======================================================= */
-
-
     nextDateLabel(record){
-
-
       if(!record){
         return '';
       }
-
-
       const value =
         String(record.date || '').trim();
-
-
       const thai =
         value.match(
           /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
         );
-
-
       if(thai){
-
-
         const day = Number(thai[1]);
-
-
         let year = Number(thai[3]);
-
-
         if(year < 100){
           year += 2500;
         }
-
-
         const months = [
           'ม.ค.',
           'ก.พ.',
@@ -2012,28 +806,18 @@ button{
           'พ.ย.',
           'ธ.ค.'
         ];
-
-
         const monthIndex =
           months.indexOf(thai[2]);
-
-
         if(monthIndex >= 0){
-
-
           const date =
             new Date(
               year - 543,
               monthIndex,
               day
             );
-
-
           date.setDate(
             date.getDate() + 1
           );
-
-
           return [
             String(date.getDate()),
             months[date.getMonth()],
@@ -2041,145 +825,76 @@ button{
           ].join(' ');
         }
       }
-
-
       return 'งวดถัดไป';
     },
-
-
-
-
-    /* =======================================================
-       CALCULATE
-    ======================================================= */
-
-
     async calculate(){
-
-
       const parsed =
         this.parse(
           $('bulkInput').value
         );
-
-
       if(!parsed.records.length){
-
-
         $('result').innerHTML =
           '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
-
-
         return;
       }
-
-
       const scanner = $('scanner');
       const runButton = $('run');
-
-
       runButton.disabled = true;
-
-
       scanner.style.display = 'block';
-
-
       const scan = message => {
         $('scanText').textContent = message;
       };
-
-
       const yieldUI = () =>
         new Promise(
           resolve =>
             requestAnimationFrame(resolve)
         );
-
-
       try{
-
-
         const groups =
           this.groupByLottery(
             parsed.records
           );
-
-
         const cards = [];
         const copyBlocks = [];
-
-
         let groupIndex = 0;
-
-
         for(const group of groups){
-
-
           groupIndex++;
-
-
           const records =
             group.records;
-
-
           if(!records.length){
             continue;
           }
-
-
           const latest =
             records[records.length - 1];
-
-
           scan(
             `ประมวลผล ${group.name} • ${groupIndex}/${groups.length}`
           );
-
-
           await yieldUI();
-
-
           const result =
             this.run(
               latest.n3,
               latest.n2
             );
-
-
           const mainDigits =
             result.main.set;
-
-
           const pair1 =
             result.pairSets[0] || [];
-
-
           const pair2 =
             result.pairSets[1] || [];
-
-
           const nextDate =
             this.nextDateLabel(latest);
-
-
           const pairHTML1 =
             pair1
               .map(pair => {
-
-
                 const info =
                   result.consensus
                     .colorMap[
                       this.pairKey(pair)
                     ];
-
-
                 const title =
                   info
                     ? `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
                     : 'เลขเจาะ';
-
-
                 return `
                   <span
                     class="${this.pairClass(pair,result.consensus.colorMap)}"
@@ -2188,26 +903,18 @@ button{
                 `;
               })
               .join('');
-
-
           const pairHTML2 =
             pair2
               .map(pair => {
-
-
                 const info =
                   result.consensus
                     .colorMap[
                       this.pairKey(pair)
                     ];
-
-
                 const title =
                   info
                     ? `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
                     : 'เลขเจาะ';
-
-
                 return `
                   <span
                     class="${this.pairClass(pair,result.consensus.colorMap)}"
@@ -2216,54 +923,36 @@ button{
                 `;
               })
               .join('');
-
-
           const vipHTML =
             result.vip
               ? '<div class="vip-label">VIP+</div>'
               : '<div class="vip-label"></div>';
-
-
           const cardId =
             `lottery-card-${groupIndex}`;
-
-
           const row1 = `
             <div class="row">
               <span
                 class="digit digit-gold"
                 aria-label="เลขเด่นตัวที่หนึ่ง"
               >${esc(mainDigits[0])}</span>
-
-
               <span class="sep">:</span>
-
-
               <div class="pairs">
                 ${pairHTML1}
               </div>
             </div>
           `;
-
-
           const row2 = `
             <div class="row">
               <span
                 class="digit digit-gold"
                 aria-label="เลขเด่นตัวที่สอง"
               >${esc(mainDigits[1])}</span>
-
-
               <span class="sep">:</span>
-
-
               <div class="pairs">
                 ${pairHTML2}
               </div>
             </div>
           `;
-
-
           const footer = `
             <div class="brand-footer">
               <span class="brand-star">✦</span>
@@ -2271,35 +960,23 @@ button{
               <span class="brand-star">✦</span>
             </div>
           `;
-
-
           cards.push(`
             <article
               class="lottery"
               id="${cardId}"
               data-lottery-card="true"
             >
-
-
               <div class="lottery-head">
-
-
                 <div>
                   <div class="lottery-name">
                     <span class="flag">${this.flag(group.name)}</span>
                     <span>${esc(group.name)}</span>
                   </div>
-
-
                   <div class="date">
                     ${esc(nextDate)}
                   </div>
                 </div>
-
-
                 ${vipHTML}
-
-
                 <div
                   class="card-actions"
                   data-no-capture="true"
@@ -2312,24 +989,14 @@ button{
                     📷 แคปการ์ด
                   </button>
                 </div>
-
-
               </div>
-
-
               <div class="rows">
                 ${row1}
                 ${row2}
               </div>
-
-
               ${footer}
-
-
             </article>
           `);
-
-
           copyBlocks.push(
             [
               `${this.flag(group.name)} ${group.name} | ${nextDate}`,
@@ -2338,55 +1005,29 @@ button{
             ].join('\n')
           );
         }
-
-
         scan('ตรวจสอบความเรียบร้อยของผลลัพธ์...');
-
-
         await yieldUI();
-
-
         scan('FINALIZING...');
-
-
         await yieldUI();
-
-
         scanner.style.display = 'none';
-
-
         runButton.disabled = false;
-
-
         const all =
           copyBlocks.join('\n\n');
-
-
         this.lastCopyText = all;
-
-
         $('result').innerHTML = `
           <div class="summary">
-
-
             <span>
               ประมวลผลสำเร็จ
               <strong>${cards.length}</strong>
               ประเภท
             </span>
-
-
             <button
               class="copy"
               id="copyTop"
             >
               📋 COPY ALL
             </button>
-
-
           </div>
-
-
           ${
             parsed.errors.length
               ? `
@@ -2396,11 +1037,7 @@ button{
               `
               : ''
           }
-
-
           ${cards.join('')}
-
-
           <button
             class="copyall"
             id="copyBottom"
@@ -2408,57 +1045,33 @@ button{
             📋 คัดลอกหวยทั้งหมด
           </button>
         `;
-
-
         $('copyTop').onclick =
           () => this.copy(all);
-
-
         $('copyBottom').onclick =
           () => this.copy(all);
-
-
         $('copyInput').disabled =
           !all;
-
-
         $('copyInput').onclick =
           () => this.copy(this.lastCopyText);
-
-
         $('result')
           .querySelectorAll(
             '[data-capture-card]'
           )
           .forEach(button => {
-
-
             button.onclick = () =>
               this.captureCard(
                 button.dataset.captureCard,
                 button.dataset.captureName
               );
           });
-
-
         $('result').scrollIntoView({
           behavior:'smooth',
           block:'start'
         });
-
-
       }catch(error){
-
-
         console.error(error);
-
-
         scanner.style.display = 'none';
-
-
         runButton.disabled = false;
-
-
         $('result').innerHTML = `
           <div class="errorbox">
             ❌ เกิดข้อผิดพลาดระหว่างประมวลผล:
@@ -2468,54 +1081,19 @@ button{
       }
     }
   };
-
-
-
-
-  /* =========================================================
-     EVENTS
-  ========================================================= */
-
-
   $('run').onclick =
     () => app.calculate();
-
-
-
-
   $('clearInput').onclick = () => {
-
-
     $('bulkInput').value = '';
-
-
     $('result').innerHTML = '';
-
-
     $('scanner').style.display = 'none';
-
-
     $('run').disabled = false;
-
-
     $('copyInput').disabled = true;
-
-
     app.lastCopyText = '';
-
-
     $('bulkInput').focus();
-
-
     app.show('✓ ล้างข้อมูลแล้ว');
   };
-
-
-
-
 })();
 </script>
-
-
 </body>
 </html>
