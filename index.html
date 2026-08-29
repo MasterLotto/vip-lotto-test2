@@ -4123,16 +4123,110 @@ b.displayPair
 }
 )
 .slice(0,5);
-const arr1=
-findPairsForDigit(d1);
-const arr2=
-findPairsForDigit(d2_dig);
-const matrixArr3d=
-arr1.slice(0,5)
-.map(
-p=>
-`${p.slice(-1)}${d1}${d2_dig}`
+/* =========================================================
+AUDITED 3-DIGIT SET ENGINE
+Rules:
+1. Build from the existing AI probability ranking only.
+2. Use the top 6 ranked digits as the candidate pool.
+3. Every set contains exactly 3 different digits.
+4. Order permutations are treated as the same set and shown once.
+5. Rank by existing digit strength, N1–N5 support, and existing pair support.
+========================================================= */
+const threeDigitPool=
+matrixSorted
+.slice(0,6)
+.map(item=>item.digit);
+
+const modelDigitSupport=new Map();
+mainEvaluated.forEach(model=>{
+model.set.forEach(digit=>{
+modelDigitSupport.set(
+digit,
+(modelDigitSupport.get(digit)||0)+1
 );
+});
+});
+
+const pairSupport=new Map();
+backendEvaluated.forEach(model=>{
+Object.values(model.pairsMap||{}).forEach(list=>{
+(list||[]).forEach(pairStr=>{
+const pair=String(pairStr||"");
+if(!/^\d{2}$/.test(pair)||pair[0]===pair[1])return;
+const key=[Number(pair[0]),Number(pair[1])]
+.sort((a,b)=>a-b)
+.join("");
+pairSupport.set(key,(pairSupport.get(key)||0)+1);
+});
+});
+});
+
+const matrixArr3d=[];
+for(let i=0;i<threeDigitPool.length-2;i++){
+for(let j=i+1;j<threeDigitPool.length-1;j++){
+for(let k=j+1;k<threeDigitPool.length;k++){
+const digits=[
+threeDigitPool[i],
+threeDigitPool[j],
+threeDigitPool[k]
+];
+const digitStrength=
+digits.reduce(
+(sum,digit)=>sum+(digitScores[digit]?.totalScore||0),
+0
+);
+const modelSupport=
+digits.reduce(
+(sum,digit)=>sum+(modelDigitSupport.get(digit)||0),
+0
+);
+const pairScore=
+[
+[digits[0],digits[1]],
+[digits[0],digits[2]],
+[digits[1],digits[2]]
+]
+.reduce(
+(sum,pair)=>sum+(
+pairSupport.get(
+[...pair].sort((a,b)=>a-b).join("")
+)||0
+),
+0
+);
+/* Canonical ascending display prevents 123 / 321 duplicates. */
+const canonicalDigits=[...digits].sort((a,b)=>a-b);
+matrixArr3d.push({
+digits:canonicalDigits,
+key:canonicalDigits.join(""),
+score:digitStrength+(modelSupport*2)+(pairScore*1.5),
+digitStrength,
+modelSupport,
+pairScore
+});
+}
+}
+}
+
+matrixArr3d.sort(
+(a,b)=>
+b.score-a.score||
+b.digitStrength-a.digitStrength||
+b.modelSupport-a.modelSupport||
+b.pairScore-a.pairScore||
+a.key.localeCompare(b.key)
+);
+
+const maxThreeScore=
+Math.max(
+...matrixArr3d.map(item=>item.score),
+1
+);
+
+matrixArr3d.splice(
+5
+);
+
 const cScore3=
 Number(
 calcConfidence(
@@ -4392,12 +4486,14 @@ const threeHTML=
 matrixArr3d.length
 ?
 matrixArr3d.map(
-(p,index)=>{
+(item,index)=>{
+const p=item.key;
 const pct=
 Number(
 (
-cScore3-
-.05*index
+calcConfidence(
+(item.score/maxThreeScore)*100
+)
 ).toFixed(1)
 );
 return`
@@ -4991,4 +5087,4 @@ _app.checkSessionBadge();
 })();
 </script>
 </body>
-  </html>
+ </html>
