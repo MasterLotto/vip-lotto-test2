@@ -4147,6 +4147,58 @@ body{background:radial-gradient(circle at 10% 4%,rgba(16,185,129,.222),transpare
 }
 </style>
 
+<style id="premium-login-final-fix">
+/* Final login polish: smaller hierarchy, stronger contrast, restrained premium lighting. */
+#loginView.premium-gateway{max-width:520px;padding:14px 14px 22px}
+#loginView.premium-gateway .pg-topbar{padding-bottom:11px}
+#loginView.premium-gateway .pg-brand-name{font-size:10px;letter-spacing:1.15px}
+#loginView.premium-gateway .pg-brand-sub{font-size:6px;letter-spacing:1px}
+#loginView.premium-gateway .pg-live{font-size:6px;padding:6px 8px}
+#loginView.premium-gateway .pg-hero{padding:12px 8px 14px}
+#loginView.premium-gateway .master-logo-lockup{height:112px}
+#loginView.premium-gateway .master-logo-orbit{width:104px;height:104px}
+#loginView.premium-gateway .master-logo-core{min-width:166px;padding:14px 19px 12px}
+#loginView.premium-gateway .master-logo-core strong{font-size:30px}
+#loginView.premium-gateway .master-logo-top{font-size:9px;letter-spacing:2px}
+#loginView.premium-gateway .master-logo-divider{margin:4px 0 8px}
+#loginView.premium-gateway .master-ai-title{font-size:15px!important;line-height:1.45!important;letter-spacing:-.15px;margin:7px 0 0!important;color:#123E31!important}
+#loginView.premium-gateway .master-ai-title em{font-size:16px!important;font-weight:900;background:linear-gradient(90deg,#075E42,#087A73,#8A6200)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;text-shadow:0 1px 0 rgba(255,255,255,.8)}
+#loginView.premium-gateway .pg-pricing{margin-top:8px;padding:12px;border-radius:17px}
+#loginView.premium-gateway .pg-section-title{margin-bottom:8px}
+#loginView.premium-gateway .pg-section-title strong{font-size:11px;margin-top:3px}
+#loginView.premium-gateway .pg-package{padding:10px;border-radius:14px}
+#loginView.premium-gateway .pg-package-top{font-size:7px}
+#loginView.premium-gateway .pg-package-top small{font-size:5.5px}
+#loginView.premium-gateway .pg-price{margin:7px 0 3px}
+#loginView.premium-gateway .pg-price strong{font-size:22px}
+#loginView.premium-gateway .pg-price span{font-size:8px}
+#loginView.premium-gateway .pg-package p{font-size:6.5px;min-height:18px;margin-bottom:7px}
+#loginView.premium-gateway .pg-package button{font-size:6.5px;padding:6px}
+#loginView.premium-gateway .pg-badge{font-size:5px;padding:3px 5px}
+#loginView.premium-gateway .pg-trust{padding:10px 7px 0}
+#loginView.premium-gateway .pg-trust span{font-size:5.5px}
+#loginView.premium-gateway .pg-trust b{font-size:6.5px}
+#loginView.premium-gateway .pg-login-panel{margin-top:9px!important;padding:13px!important}
+#loginView.premium-gateway .pg-login-panel .login-heading{font-size:13px!important}
+#loginView.premium-gateway .pg-login-panel .login-description{font-size:8px!important;line-height:1.55}
+#loginView.premium-gateway .pg-login-panel input{font-size:11px!important;padding:10px 11px!important}
+#loginView.premium-gateway .pg-login-panel .primary-btn{font-size:9px!important;padding:10px 12px!important}
+#loginView.premium-gateway .pg-login-panel .contact-btn{font-size:8px!important}
+#loginView.premium-gateway .pg-eyebrow,#loginView.premium-gateway .pg-section-title small{font-size:6px}
+#loginView.premium-gateway::after{opacity:.38;animation-duration:15s}
+@media(max-width:430px){
+ #loginView.premium-gateway{max-width:500px;padding:11px 10px 18px}
+ #loginView.premium-gateway .pg-hero{padding:8px 5px 10px}
+ #loginView.premium-gateway .master-logo-lockup{height:96px}
+ #loginView.premium-gateway .master-logo-orbit{width:90px;height:90px}
+ #loginView.premium-gateway .master-logo-core{min-width:148px;padding:12px 16px 10px}
+ #loginView.premium-gateway .master-logo-core strong{font-size:27px}
+ #loginView.premium-gateway .master-ai-title{font-size:13px!important}
+ #loginView.premium-gateway .master-ai-title em{font-size:14px!important}
+ #loginView.premium-gateway .pg-package{padding:8px}
+}
+</style>
+
 </head>
 <body>
 <canvas id="snowCanvas"></canvas>
@@ -4486,11 +4538,16 @@ _hashes:[
 ],
 async _checkMatch(inputVal){
   const value=String(inputVal||"").trim();
-  if(!value || !window.crypto?.subtle) return false;
-  const data=new TextEncoder().encode(value);
-  const digest=await crypto.subtle.digest("SHA-256",data);
-  const hash=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
-  return this._hashes.includes(hash);
+  if(!value) return false;
+  if(window.crypto?.subtle){
+    const data=new TextEncoder().encode(value);
+    const digest=await crypto.subtle.digest("SHA-256",data);
+    const hash=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
+    return this._hashes.includes(hash);
+  }
+  // Local file:// fallback: keep the same access key without requiring Web Crypto.
+  // The normal path above remains SHA-256 based.
+  return value === "MasterAdmin2026";
 }
 };
 const _app={
@@ -5958,4 +6015,4 @@ _app.checkSessionBadge();
 })();
 </script>
 </body>
-  </html>
+ </html>
