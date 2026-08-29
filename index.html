@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V15.0
+MESTER LOTTO VIP+ — V15.1
 ============================================================
-AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP)
+AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP + DUPLICATE DIGIT +1 FIX)
 ============================================================
 - Main Model 01 (Formula N1 / Experimental Weight-based Mod 10):
   - Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2) -> units digit (0-9 cyclic for negative)
   - Digit 2: 3 - (Tens top * 2) + Units top -> units digit (0-9 cyclic for negative)
+- Duplicate Digit Fix:
+  - If Digit 1 and Digit 2 are identical, Digit 2 is incremented by 1 (mod 10).
 - Backend Support Formulas:
   - Backend 1 (Former Main Model 01): Formula 1 / 73.36% Weight-based Mod 10
   - Backend 2 (Formula 2 / ~68.50%): Modular Arithmetic support
@@ -33,7 +35,7 @@ AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Multi Lottery Engine V15.0</title>
+<title>Mester Lotto VIP+ — Multi Lottery Engine V15.1</title>
 
 
 <style>
@@ -1254,6 +1256,7 @@ button{
        MAIN MODEL 01 (FORMULA N1 / EXPERIMENTAL MOD 10)
        - Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2) -> units digit
        - Digit 2: 3 - (Tens top * 2) + Units top -> units digit
+       - Duplicate Fix: If first === second, second = norm(second + 1)
     ======================================================= */
 
 
@@ -1281,12 +1284,18 @@ button{
 
       // Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2)
       const sum1 = 9 - (H * 2) - (T * 2) + U + R1 - (R2 * 2);
-      const first = this.norm(sum1);
+      let first = this.norm(sum1);
 
 
       // Digit 2: 3 - (Tens top * 2) + Units top
       const sum2 = 3 - (T * 2) + U;
-      const second = this.norm(sum2);
+      let second = this.norm(sum2);
+
+
+      // Check duplicate between rows and apply +1 offset if needed
+      if(first === second){
+        second = this.norm(second + 1);
+      }
 
 
       return {
