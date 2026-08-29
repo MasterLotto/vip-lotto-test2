@@ -2872,10 +2872,89 @@ inset:0;
 width:100%;
 height:100%;
 pointer-events:none;
-z-index:9999;
-opacity:.72;
+z-index:2147483000;
+opacity:.82;
 mix-blend-mode:normal;
 }
+
+/* =========================================================
+   AUDITED PREMIUM FINISHING — ONLY REQUESTED UI REFINEMENTS
+   ========================================================= */
+.top3-row.rank-three{
+ background:linear-gradient(90deg,rgba(250,229,218,.72),rgba(247,252,249,.96));
+ border-color:rgba(181,111,79,.24);
+}
+.top3-row.rank-three .top3-position{color:#A96843;}
+.top3-row.rank-three .top3-digit{
+ background:linear-gradient(135deg,#E8B9A0,#C9896A);
+ color:#5E3426;
+ border-color:rgba(157,88,58,.34);
+ box-shadow:0 4px 10px rgba(157,88,58,.12),inset 0 1px 0 rgba(255,255,255,.68);
+}
+.top3-row.rank-three .top3-bar-fill{background:linear-gradient(90deg,#A96843,#D8A083);}
+.top3-row.rank-three .top3-score{color:#A96843;}
+
+/* Premium rose-gold treatment for Gamma / rank 3 deep scan. */
+.deep-scan-card.rank-three::before{background:linear-gradient(180deg,#A96843,#E0A98E);}
+.deep-scan-card.rank-three::after{background:rgba(192,121,88,.055);}
+.deep-scan-card.rank-three .deep-scan-model-name{color:#9A5730;text-shadow:0 0 9px rgba(192,121,88,.10);}
+.deep-scan-card.rank-three .deep-scan-digit{
+ color:#5E3426;
+ background:linear-gradient(135deg,#E8B9A0,#C9896A);
+ border-color:rgba(157,88,58,.34);
+ box-shadow:0 4px 10px rgba(157,88,58,.11),inset 0 1px 0 rgba(255,255,255,.68);
+}
+.deep-scan-card.rank-three .deep-scan-rank{color:#9A5730;background:rgba(250,229,218,.86);border-color:rgba(157,88,58,.20);}
+.deep-scan-card.rank-three .deep-scan-score{color:#A96843;}
+.deep-scan-card.rank-three .deep-pair{border-color:rgba(157,88,58,.16);}
+.deep-scan-card.rank-three .deep-pair strong{color:#9A5730;}
+
+/* Darker, still-premium silver for rank 2 in the focused TOP-3 set. */
+.deep-scan-card .deep-pair.jue-rank-2{
+ background:linear-gradient(135deg,rgba(225,231,228,.99),rgba(250,252,251,.99));
+ border-color:rgba(83,100,94,.38);
+ box-shadow:0 4px 11px rgba(63,75,71,.10);
+}
+.deep-scan-card .deep-pair.jue-rank-2 strong{color:#46534F;}
+.deep-scan-card .deep-pair.jue-rank-2 small{color:#5B6963;}
+
+/* Make the existing six-number win box feel richer without changing its palette. */
+.ind-win-set{
+ box-shadow:var(--shadowSoft),0 0 0 1px rgba(255,255,255,.45) inset;
+ animation:winSetBreath 9s ease-in-out infinite;
+}
+.ind-win-item{
+ transition:transform .35s var(--ease),box-shadow .35s ease,border-color .35s ease;
+}
+.ind-win-item:hover{transform:translateY(-2px) scale(1.012);}
+@keyframes winSetBreath{
+ 0%,100%{box-shadow:var(--shadowSoft),0 0 0 1px rgba(255,255,255,.45) inset;}
+ 50%{box-shadow:0 8px 24px rgba(10,102,71,.075),0 0 0 1px rgba(255,255,255,.62) inset;}
+}
+
+
+.overview-bar.rank-3{border-color:rgba(157,88,58,.28);}
+.overview-bar.rank-3 .overview-rank{color:#9A5730;border-color:rgba(157,88,58,.20);background:rgba(250,229,218,.90);}
+.overview-bar.rank-3 .overview-digit{color:#9A5730;text-shadow:0 1px 0 rgba(255,255,255,.82);}
+.overview-bar.rank-3 .overview-score{color:#A96843;}
+
+/* Subtle site-wide premium motion: restrained, staggered, and low contrast. */
+.stats-analytics-card,.overview-panel,.deep-scan-board,.formula-section,.result-shell{
+ animation:premiumFloat 12s ease-in-out infinite;
+}
+.stats-analytics-card{animation-delay:-2s;}
+.overview-panel{animation-delay:-4s;}
+.deep-scan-board{animation-delay:-6s;}
+.formula-section{animation-delay:-8s;}
+.result-shell{animation-delay:-10s;}
+@keyframes premiumFloat{
+ 0%,100%{transform:translateY(0);}
+ 50%{transform:translateY(-1px);}
+}
+@media(prefers-reduced-motion:reduce){
+ .ind-win-set,.stats-analytics-card,.overview-panel,.deep-scan-board,.formula-section,.result-shell{animation:none!important;}
+}
+
 </style>
 </head>
 
@@ -5250,9 +5329,9 @@ digitScores[d];
 /* Balanced evidence stack: no subsystem gets a
    multiplicative after-bonus that can override the others. */
 item.totalScore=
-.40*item.modelScore+
-.20*item.formula100Score+
-.15*item.radarScore+
+.50*item.modelScore+
+.15*item.formula100Score+
+.10*item.radarScore+
 .15*item.backendScore+
 .10*item.winSetScore;
 
@@ -5328,27 +5407,21 @@ normalizedPct
 evaluated.forEach(model=>{
 
 
-const modelScoreSum=
-model.set.reduce(
-(sum,dig)=>
-sum+
-(
-digitScores[dig]
-.totalScore>0
-?
-digitScores[dig]
-.totalScore
-:
-0
-),
-0
-);
+/* Score each primary model from independent evidence only.
+   Do not feed totalScore back into the model itself; that creates
+   a recursive reinforcement loop and can distort the Top-3 ranking. */
+const modelScoreSum=model.set.reduce((sum,dig)=>{
+const item=digitScores[dig];
+const independentScore=
+.50*item.modelScore+
+.15*item.formula100Score+
+.10*item.radarScore+
+.15*item.backendScore+
+.10*item.winSetScore;
+return sum+independentScore;
+},0);
 
-
-model.aiScore=
-calcConfidence(
-modelScoreSum/2
-);
+model.aiScore=calcConfidence(modelScoreSum/2);
 
 
 });
@@ -7946,13 +8019,13 @@ let flakes=[];
 let lastTime=0;
 
 const settings={
-count:78,
-minRadius:.45,
-maxRadius:2.15,
-minSpeed:12,
-maxSpeed:30,
-wind:.7,
-gust:.45
+count:88,
+minRadius:.35,
+maxRadius:2.35,
+minSpeed:9,
+maxSpeed:28,
+wind:.62,
+gust:.34
 };
 
 function resize(){
@@ -7964,7 +8037,7 @@ canvas.height=Math.round(height*dpr);
 canvas.style.width=width+"px";
 canvas.style.height=height+"px";
 ctx.setTransform(dpr,0,0,dpr,0,0);
-const target=Math.round(Math.min(settings.count,Math.max(42,width*height/18000)));
+const target=Math.round(Math.min(settings.count,Math.max(48,width*height/16500)));
 flakes=Array.from({length:target},()=>makeFlake(true));
 }
 
@@ -7976,8 +8049,8 @@ return{
  speed:settings.minSpeed+Math.random()*(settings.maxSpeed-settings.minSpeed),
  drift:(Math.random()-.5)*settings.wind,
  phase:Math.random()*Math.PI*2,
- opacity:.16+Math.random()*.42,
- depth:.45+Math.random()*.55
+ opacity:.12+Math.random()*.34,
+ depth:.35+Math.random()*.65
 };
 }
 
@@ -7992,11 +8065,17 @@ for(const f of flakes){
  if(f.y>height+10){f.y=-8;f.x=Math.random()*width;}
  if(f.x>width+12)f.x=-12;
  if(f.x<-12)f.x=width+12;
+ const radius=f.r*(.72+.62*f.depth);
+ const alpha=Math.min(.62,f.opacity*(.72+.42*f.depth));
  ctx.beginPath();
- ctx.arc(f.x,f.y,f.r*f.depth,0,Math.PI*2);
- ctx.fillStyle=`rgba(255,255,255,${f.opacity*f.depth})`;
- ctx.shadowBlur=f.r>1.4?3:1.5;
- ctx.shadowColor=`rgba(255,255,255,${.12*f.depth})`;
+ ctx.arc(f.x,f.y,radius,0,Math.PI*2);
+ const glow=ctx.createRadialGradient(f.x-radius*.25,f.y-radius*.25,0,f.x,f.y,radius*1.9);
+ glow.addColorStop(0,`rgba(255,255,255,${alpha})`);
+ glow.addColorStop(.55,`rgba(255,255,255,${alpha*.52})`);
+ glow.addColorStop(1,'rgba(255,255,255,0)');
+ ctx.fillStyle=glow;
+ ctx.shadowBlur=radius>1.65?3.2:1.1;
+ ctx.shadowColor=`rgba(255,255,255,${.10*f.depth})`;
  ctx.fill();
 }
 ctx.shadowBlur=0;
@@ -8015,4 +8094,4 @@ requestAnimationFrame(frame);
 
 
 </body>
-  </html>
+ </html>
