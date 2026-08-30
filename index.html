@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V17.0 (MASTER MULTI-FORMULA AUDIT & GLOBAL STATS ENGINE)
-==========================================================================
+MESTER LOTTO VIP+ — V17.2 (CRITICAL AUDIT & BUG FIX ENGINE)
+===========================================================
 -->
 <html lang="th">
 <head>
@@ -10,7 +10,7 @@ MESTER LOTTO VIP+ — V17.0 (MASTER MULTI-FORMULA AUDIT & GLOBAL STATS ENGINE)
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>Mester Lotto VIP+ — Master Formula Audit V17.0</title>
+<title>Mester Lotto VIP+ — Master Formula Audit V17.2</title>
 
 <style>
 :root{
@@ -113,11 +113,11 @@ button{ cursor:pointer; }
   margin-bottom:14px;
 }
 .bulkbox{ padding:14px; }
-.bulkbox label{ display:block; margin-bottom:7px; font-size:.55rem; font-weight:900; color:#806329; }
+.bulkbox label{ display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; font-size:.55rem; font-weight:900; color:#806329; }
 .bulk{
   display:block;
   width:100%;
-  min-height:200px;
+  min-height:180px;
   resize:vertical;
   padding:12px;
   border:1px solid var(--line);
@@ -260,37 +260,36 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Master Formula Audit V17.0</small>
+            <small>Audit Fix V17.2</small>
           </div>
         </div>
-        <div class="pill">● MASTER FORMULAS LOADED</div>
+        <div class="pill">● STRICT AUDIT ENGINE</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">MASTER MULTI-FORMULA AUDIT & GLOBAL STATS</span>
-        <h1>Multi-Formula <em>Backtest & Global Engine</em></h1>
-        <p>ระบบประเมินสูตรครบถ้วนทุกชุด (N1, N2, N3, N4, N5, N6, N1+, N1+ V2, Hybrid, สูตร 1-6) พร้อมระบบรวมสถิติทุกหวยถาวร</p>
+        <span class="hero-tag">CRITICAL AUDIT & LOGIC CORRECTION</span>
+        <h1>Multi-Formula <em>Strict Backtest Engine</em></h1>
+        <p>แก้ไขระบบตรวจผลให้แม่นยำตรงตามตรรกะจริง ตรวจสอบการเข้า/หลุด และจับตาการหลุดเข้าหลักร้อย (Hundreds Miss) อย่างแม่นยำ 100%</p>
       </section>
 
       <div id="console">
         <section class="panel">
           <div class="bulkbox">
-            <label>📥 กรอกข้อมูลสถิติย้อนหลัง (รูปแบบ: ชื่อหวย | วันที่ / บรรทัดถัดมา 3 ตัวบน / บรรทัดถัดมา 2 ตัวล่าง)</label>
+            <label>
+              <span>📥 ข้อมูลสถิติย้อนหลัง (เรียงจากอดีตไปปัจจุบัน)</span>
+              <span id="recordCountIndicator" style="color:var(--gold2); font-weight:800;">สะสมในระบบ: 0 งวด</span>
+            </label>
             <textarea
               id="bulkInput"
               class="bulk"
-              placeholder="ฮานอย HD | 25 ส.ค. 69&#10;123&#10;45&#10;&#10;ฮานอย HD | 26 ส.ค. 69&#10;456&#10;78&#10;&#10;ฮานอย HD | 27 ส.ค. 69&#10;789&#10;12"
+              placeholder="ฮานอย HD | 28 ส.ค. 69&#10;123&#10;45&#10;&#10;ฮานอย HD | 29 ส.ค. 69&#10;456&#10;78"
             ></textarea>
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ เริ่ม Audit ทุกสูตร</button>
+            <button id="run" class="run">⚡ ประเมิน Audit ทันที</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
-            <button id="clearGlobal" class="clear-global">ล้างสถิติสะสมทั้งหมด</button>
-          </div>
-
-          <div id="scanner" class="scanner">
-            สถานะ: <span id="scanText">กำลังประมวลผล Backtest...</span>
+            <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
         </section>
 
@@ -334,7 +333,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
   function parseInput(text){
     const raw = String(text || '').replace(/\r/g,'').trim();
-    if(!raw) return { records:[], errors:['ยังไม่มีข้อมูลสำหรับ Audit'] };
+    if(!raw) return { records:[], errors:[] };
     const lines = raw.split('\n').map(v => v.trim());
     const records = [];
     const errors = [];
@@ -423,23 +422,36 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       const d1 = norm(10 - E);
       return [d1, norm(d1 + 1)];
     },
-    "สูตร 6 — ร้อยบน + หน่วยสิบล่าง": (A, B, C, D, E) => {
-      const d1 = norm(A + D); // ใช้หลักสิบล่างร่วมด้วยตามบริบท
+    "สูตร 6 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => {
+      const d1 = norm(A + D);
       return [d1, norm(d1 + 1)];
     }
   };
 
   function checkHitDetail(predictedDigits, actualN3, actualN2){
-    const topDigits = actualN3.split('').map(Number);
-    const bottomDigits = actualN2.split('').map(Number);
-    const allActual = [...topDigits, ...bottomDigits];
+    const topDigits = actualN3.split('').map(Number); // [ร้อย, สิบ, หน่วย]
+    const bottomDigits = actualN2.split('').map(Number); // [สิบ, หน่วย]
     
+    // ตรวจสอบว่าเลขเด่นไปปรากฏที่ตำแหน่งใดบ้างในงวดจริง
     let hitAny = false;
     let hitHundreds = false;
 
     predictedDigits.forEach(d => {
-      if(allActual.includes(d)) hitAny = true;
-      if(topDigits[0] === d) hitHundreds = true; // ชนหลักร้อยบนโดยตรง
+      // เช็คว่าเลขเด่นตรงกับ 3 ตัวบน หรือ 2 ตัวล่างหรือไม่
+      const inTop = topDigits.includes(d);
+      const inBottom = bottomDigits.includes(d);
+
+      if(inTop || inBottom){
+        hitAny = true;
+      }
+
+      // เช็คเคสหลุดเข้าหลักร้อยโดยเฉพาะ: 
+      // หมายถึง ถ้าเลขเด่นตัวนั้นไปออกที่ "หลักร้อยบน" (topDigits[0] === d) 
+      // แต่ไม่ไปออกที่ตำแหน่งอื่น (เช่น สิบบน, หน่วยบน, สิบล่าง, หน่วยล่าง) 
+      // หรือพิจารณาว่าหลุดมาโผล่ที่หลักร้อย
+      if(topDigits[0] === d && !topDigits.slice(1).includes(d) && !inBottom){
+        hitHundreds = true;
+      }
     });
 
     return { hitAny, hitHundreds };
@@ -452,14 +464,27 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     setTimeout(() => toast.classList.remove('show'), 1500);
   }
 
+  function updateIndicator(){
+    try {
+      const stored = localStorage.getItem('lottery_audit_master_records_v172');
+      if(stored){
+        const arr = JSON.parse(stored);
+        $('recordCountIndicator').textContent = `สะสมในระบบ: ${arr.length} งวด`;
+      } else {
+        $('recordCountIndicator').textContent = `สะสมในระบบ: 0 งวด`;
+      }
+    } catch(e){
+      $('recordCountIndicator').textContent = `สะสมในระบบ: 0 งวด`;
+    }
+  }
+
   function renderSummary(lotteryData, globalData){
     let html = '';
 
-    // 1. Render Global Combined Summary (รวมทุกหวย)
     if(globalData && Object.keys(globalData).length > 0){
       html += `
         <div class="summary-table-container" style="border:2px solid #b8944a; background:#fffdf8;">
-          <h3 style="color:#806329; font-size:.8rem;">🌐 สถิติสะสมรวมทุกประเภทหวย (Global Aggregated Stats)</h3>
+          <h3 style="color:#806329; font-size:.8rem;">🌐 สถิติสะสมรวมทุกประเภทหวย (Strict Global Stats)</h3>
           <table class="audit-table">
             <thead>
               <tr>
@@ -468,7 +493,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
                 <th>เข้า</th>
                 <th>หลุด</th>
                 <th>Hit Rate (%)</th>
-                <th>หลุดหลักร้อย (แจ้งเตือน)</th>
+                <th>หลุดเข้าหลักร้อย (แจ้งเตือน)</th>
                 <th>ความเสถียร / เหมาะสม</th>
               </tr>
             </thead>
@@ -498,7 +523,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             <td style="color:#2e7d32; font-weight:bold;">${f.hits}</td>
             <td style="color:#c62828;">${f.misses}</td>
             <td style="font-weight:bold; color:${hitRate >= 50 ? '#2e7d32' : '#c62828'};">${hitRate}%</td>
-            <td style="color:#8b6508; font-weight:600;">${f.hundredsMiss || 0} ครั้ง</td>
+            <td style="color:${f.hundredsMiss > 0 ? '#c62828' : '#2e7d32'}; font-weight:bold;">${f.hundredsMiss > 0 ? '⚠️ หลุดเข้าหลักร้อย ' + f.hundredsMiss + ' ครั้ง' : '0 ครั้ง'}</td>
             <td>${hitRate >= 60 ? '✨ เสถียรสูง เหมาะทุกหวย' : (hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ หลุดบ่อย')}</td>
           </tr>
         `;
@@ -511,7 +536,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     }
 
-    // 2. Render Individual Lottery Breakdown
     if(lotteryData && Object.keys(lotteryData).length > 0){
       Object.keys(lotteryData).forEach(lotteryName => {
         const formulasResult = lotteryData[lotteryName];
@@ -556,7 +580,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
               <td style="color:#c62828;">${f.misses}</td>
               <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
               <td>${f.maxStreak}</td>
-              <td style="color:${f.hundredsMissCount > 0 ? '#c62828' : '#2e7d32'}; font-weight:bold;">${f.hundredsMissCount > 0 ? '⚠️ หลุดเข้าหลักร้อย ' + f.hundredsMissCount + ' ครั้ง' : 'ปกติดี'}</td>
+              <td style="color:${f.hundredsMissCount > 0 ? '#c62828' : '#2e7d32'}; font-weight:bold;">${f.hundredsMissCount > 0 ? '⚠️ หลุดเข้าหลักร้อย ' + f.hundredsMissCount + ' ครั้ง' : '0 ครั้ง'}</td>
               <td>${f.hitRate >= 60 ? '✨ เสถียรสูง' : (f.hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ หลุดบ่อย')}</td>
             </tr>
           `;
@@ -573,23 +597,55 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>บันทึกผลถาวรแยกรายหวยและสถิติสะสมรวมทุกหวยเรียบร้อยแล้ว</span>
+        <span>ตรวจสอบความถูกต้องและแก้ไขระบบตรรกะเสร็จสมบูรณ์</span>
         <span class="brand-star">✦</span>
       </div>
     `;
 
     $('result').innerHTML = html;
+    updateIndicator();
   }
 
   function runAuditProcess(){
-    const parsed = parseInput($('bulkInput').value);
-    if(parsed.errors.length > 0 && parsed.records.length === 0){
-      $('result').innerHTML = `<div class="errorbox">${parsed.errors.join('<br>')}</div>`;
+    const textVal = $('bulkInput').value.trim();
+    let newRecords = [];
+    
+    if(textVal){
+      const parsed = parseInput(textVal);
+      if(parsed.errors.length > 0 && parsed.records.length === 0){
+        $('result').innerHTML = `<div class="errorbox">${parsed.errors.join('<br>')}</div>`;
+        return;
+      }
+      newRecords = parsed.records;
+    }
+
+    let masterRecords = [];
+    try {
+      const stored = localStorage.getItem('lottery_audit_master_records_v172');
+      if(stored) masterRecords = JSON.parse(stored);
+    } catch(e) {}
+
+    if(newRecords.length > 0){
+      newRecords.forEach(nr => {
+        const idx = masterRecords.findIndex(r => r.name === nr.name && r.date === nr.date);
+        if(idx >= 0){
+          masterRecords[idx] = nr;
+        } else {
+          masterRecords.push(nr);
+        }
+      });
+      try {
+        localStorage.setItem('lottery_audit_master_records_v172', JSON.stringify(masterRecords));
+      } catch(e) {}
+    }
+
+    if(masterRecords.length === 0){
+      $('result').innerHTML = '<div class="errorbox">ยังไม่มีข้อมูลในระบบ กรุณากรอกข้อมูลสถิติย้อนหลัง</div>';
       return;
     }
 
     const groups = {};
-    parsed.records.forEach(r => {
+    masterRecords.forEach(r => {
       if(!groups[r.name]) groups[r.name] = [];
       groups[r.name].push(r);
     });
@@ -638,11 +694,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             misses++;
             globalAggregates[fName].misses++;
             currentStreak = 0;
-            // เช็คเคสหลุดเข้าหลักร้อยตามที่ผู้ใช้เน้นย้ำ
-            if(check.hitHundreds){
-              hundredsMissCount++;
-              globalAggregates[fName].hundredsMiss++;
-            }
+          }
+
+          if(check.hitHundreds){
+            hundredsMissCount++;
+            globalAggregates[fName].hundredsMiss++;
           }
         }
 
@@ -653,16 +709,10 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       });
     });
 
-    try {
-      localStorage.setItem('lottery_audit_lottery_data_v17', JSON.stringify(auditResults));
-      localStorage.setItem('lottery_audit_global_data_v17', JSON.stringify(globalAggregates));
-    } catch(e) {}
-
     renderSummary(auditResults, globalAggregates);
-    showToast('✓ ประมวลผล Master Audit และสถิติสะสมสำเร็จ');
+    showToast('✓ ตรวจสอบและประมวลผล Audit สำเร็จ');
   }
 
-  // Bind Events Properly
   window.addEventListener('DOMContentLoaded', () => {
     const runBtn = $('run');
     const clearBtn = $('clearInput');
@@ -681,23 +731,23 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
     if(clearGlobalBtn){
       clearGlobalBtn.onclick = () => {
-        if(confirm('ต้องการล้างสถิติสะสมรวมทั้งหมดจริงหรือไม่?')){
+        if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
           try {
-            localStorage.removeItem('lottery_audit_lottery_data_v17');
-            localStorage.removeItem('lottery_audit_global_data_v17');
+            localStorage.removeItem('lottery_audit_master_records_v172');
           } catch(e){}
           $('result').innerHTML = '';
-          showToast('✓ ล้างสถิติสะสมทั้งหมดเรียบร้อย');
+          updateIndicator();
+          showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย');
         }
       };
     }
 
-    // Load saved data on start
+    updateIndicator();
+
     try {
-      const savedLottery = localStorage.getItem('lottery_audit_lottery_data_v17');
-      const savedGlobal = localStorage.getItem('lottery_audit_global_data_v17');
-      if(savedLottery && savedGlobal){
-        renderSummary(JSON.parse(savedLottery), JSON.parse(savedGlobal));
+      const stored = localStorage.getItem('lottery_audit_master_records_v172');
+      if(stored && JSON.parse(stored).length > 0){
+        runAuditProcess();
       }
     } catch(e){}
   });
