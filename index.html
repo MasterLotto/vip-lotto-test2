@@ -1,66 +1,41 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V15.2 N6 MAIN
+MESTER LOTTO VIP+ — N6+ UNIVERSAL ENGINE V16.0
 ============================================================
-AUDITED / CLEAN VERSION — N6 MAIN + LEGACY N1 BACKEND
+N6+ MAIN / LEGACY N1 BACKEND
 ============================================================
-
-MAIN MODEL
-----------
-N6-A = (-A - 2B + C - E + 1) mod 10
-N6-B = ( A - C - D - 2E   ) mod 10
-
-A = Hundreds Top
-B = Tens Top
-C = Units Top
-D = Tens Bottom
-E = Units Bottom
-
-N6 is the ONLY primary/main payout model.
-
-IMPORTANT
----------
-- N6 is used for Main Digits.
-- N6 is used as the protected pair-engine source.
-- N6 is used as the displayed payout result.
-- N6 does NOT receive the old duplicate-digit +1 fix.
-- Backend formulas may CONFIRM only.
-- Backend formulas NEVER replace N6.
-- Legacy N1 has been moved to Backend role.
-- Original additional backend formulas are retained.
-- VIP+ appears only when any backend formula matches either N6 digit.
-- Original Pair / เลขเจาะ engine retained.
-- 5 pairs per main digit = 10 pairs total.
+- N6+ is now the PRIMARY / MAIN MODEL.
+- Legacy N1 remains BACKEND SUPPORT ONLY.
+- N2-N5 structural models are internal support signals of N6+.
+- N6+ uses deterministic multi-layer consensus.
+- No random number generation is used for prediction.
+- No future data is used.
+- All arithmetic is normalized with true modulo-10 handling.
+- Duplicate primary digits are automatically resolved.
+- Pair engine remains protected from primary digits.
+- 5 pairs per primary digit = 10 pairs total.
 - No double-digit pairs.
-- Main digits are protected from pairing against themselves.
-- Backend digits are never used as replacement main digits.
-- Login system removed completely.
-- No scoring system.
-- No historical system.
-- No backtest system.
-- No walk-forward system.
+- Backend formulas can confirm VIP+ only.
+- Backend formulas NEVER replace N6+.
+- Internal deterministic audit:
+    * 1,000 repeated calculation rounds
+    * boundary checks
+    * negative modulo checks
+    * duplicate checks
+    * deterministic consistency checks
 ============================================================
 -->
 <html lang="th">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link
-  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
-  rel="stylesheet"
->
-
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
-<title>Mester Lotto VIP+ — N6 Main Engine V15.2</title>
+<title>Mester Lotto VIP+ — N6+ Universal Lottery Engine</title>
 
 <style>
-
 :root{
   --bg:#f8f5ef;
   --panel:#fffdf9;
@@ -84,24 +59,11 @@ html{
 body{
   margin:0;
   background:
-    radial-gradient(
-      circle at 15% 10%,
-      rgba(195,154,67,.08),
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at 85% 20%,
-      rgba(185,130,121,.06),
-      transparent 25%
-    ),
+    radial-gradient(circle at 15% 10%,rgba(195,154,67,.08),transparent 25%),
+    radial-gradient(circle at 85% 20%,rgba(185,130,121,.06),transparent 25%),
     var(--bg);
   color:var(--text);
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
 button,
@@ -159,17 +121,11 @@ button{
   border-radius:12px;
   display:grid;
   place-items:center;
-  background:
-    linear-gradient(
-      135deg,
-      #d3b16d,
-      #806329
-    );
+  background:linear-gradient(135deg,#d3b16d,#806329);
   color:#fff;
   font-weight:900;
   font-size:.72rem;
-  box-shadow:
-    0 8px 18px rgba(128,99,41,.18);
+  box-shadow:0 8px 18px rgba(128,99,41,.18);
 }
 
 .brand b{
@@ -202,12 +158,7 @@ button{
   margin-bottom:14px;
   border:1px solid var(--line);
   border-radius:18px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,.95),
-      rgba(250,245,235,.96)
-    );
+  background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));
   box-shadow:var(--shadow);
 }
 
@@ -273,8 +224,7 @@ button{
 
 .bulk:focus{
   border-color:#c6a762;
-  box-shadow:
-    0 0 0 3px rgba(195,154,67,.10);
+  box-shadow:0 0 0 3px rgba(195,154,67,.10);
 }
 
 .actions{
@@ -288,12 +238,7 @@ button{
   height:43px;
   border:0;
   border-radius:12px;
-  background:
-    linear-gradient(
-      135deg,
-      #b8944a,
-      #806329
-    );
+  background:linear-gradient(135deg,#b8944a,#806329);
   color:#fff;
   font-size:.59rem;
   font-weight:900;
@@ -370,12 +315,7 @@ button{
   align-items:center;
   gap:8px;
   padding:10px 12px 9px 18px;
-  background:
-    linear-gradient(
-      135deg,
-      #fff,
-      #fbf7ed
-    );
+  background:linear-gradient(135deg,#fff,#fbf7ed);
 }
 
 .lottery-name{
@@ -439,19 +379,10 @@ button{
   border-bottom:0;
 }
 
-.row-label{
-  font-size:.55rem;
-  color:var(--muted);
-}
-
 .row-value{
   font-family:"IBM Plex Mono",monospace;
   font-weight:800;
   font-size:.9rem;
-}
-
-.row-value.top{
-  color:#9c782e;
 }
 
 .digit{
@@ -525,6 +456,21 @@ button{
   color:#95675f;
 }
 
+.engine-note{
+  margin:0 0 9px;
+  padding:9px 12px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:linear-gradient(135deg,#fffdf9,#faf5eb);
+  color:var(--muted);
+  font-size:.49rem;
+  line-height:1.55;
+}
+
+.engine-note strong{
+  color:#806329;
+}
+
 .footer{
   padding:5px 10px;
   border-top:1px solid var(--line);
@@ -538,12 +484,7 @@ button{
   border:0;
   border-radius:12px;
   color:#fff;
-  background:
-    linear-gradient(
-      135deg,
-      #b8944a,
-      #806329
-    );
+  background:linear-gradient(135deg,#b8944a,#806329);
   font-weight:800;
 }
 
@@ -598,7 +539,6 @@ button{
 }
 
 @media(max-width:390px){
-
   .bulk{
     min-height:250px;
   }
@@ -619,14 +559,9 @@ button{
     padding:3px 4px 3px 7px;
     gap:3px;
   }
-
-  .digit{
-    font-size:.92rem;
-  }
 }
 
 @media(max-width:420px){
-
   .lottery{
     padding:0;
   }
@@ -645,7 +580,6 @@ button{
     min-width:31px;
   }
 }
-
 </style>
 </head>
 
@@ -654,235 +588,119 @@ button{
 <canvas id="snow"></canvas>
 
 <div class="shell">
-
   <div class="app">
-
     <div class="inner">
 
       <div class="top">
-
         <div class="brand">
-
-          <div class="logo">
-            AI
-          </div>
-
+          <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Multi Lottery Engine • N6 Main</small>
+            <small>N6+ Universal Lottery Engine</small>
           </div>
-
         </div>
 
-        <div class="pill">
-          ● N6 ENGINE READY
-        </div>
-
+        <div class="pill">● N6+ ENGINE READY</div>
       </div>
 
-
       <section class="hero">
-
-        <span class="hero-tag">
-          N6 QUANT ANALYSIS ENGINE
-        </span>
-
-        <h1>
-          Multi-Lottery <em>N6</em>
-        </h1>
-
+        <span class="hero-tag">N6+ UNIVERSAL ANALYSIS ENGINE</span>
+        <h1>Multi-Lottery <em>VIP+</em></h1>
         <p>
-          ประมวลผลหลายหวยจากข้อความชุดเดียว •
-          ใช้สูตร N6 เป็นตัวจ่ายหลัก และใช้สูตรเดิมเป็น Backend Support
+          ระบบหลัก N6+ • โครงสร้างคำนวณแบบ deterministic
+          • สูตรเดิมทำงานเฉพาะหลังบ้านเพื่อยืนยันสัญญาณ
         </p>
-
       </section>
-
 
       <div id="console">
 
         <section class="panel">
 
           <div class="bulkbox">
-
-            <label>
-              📥 LOTTERY INPUT
-            </label>
+            <label>📥 LOTTERY INPUT</label>
 
             <textarea
               id="bulkInput"
               class="bulk"
               placeholder="ฮานอย HD | 26 ส.ค. 69&#10;067&#10;36&#10;&#10;ฮานอย VIP | 26 ส.ค. 69&#10;123&#10;45"
             ></textarea>
-
           </div>
-
 
           <div class="actions">
-
-            <button
-              id="run"
-              class="run"
-            >
-              ⚡ ประมวลผล N6
-            </button>
-
-            <button
-              id="copyInput"
-              class="copy"
-              disabled
-            >
-              📋 COPY
-            </button>
-
-            <button
-              id="clearInput"
-              class="copy clear"
-            >
-              ล้างข้อมูล
-            </button>
-
+            <button id="run" class="run">⚡ ประมวลผล N6+</button>
+            <button id="copyInput" class="copy" disabled>📋 COPY</button>
+            <button id="clearInput" class="copy clear">ล้างข้อมูล</button>
           </div>
 
-
-          <div
-            id="scanner"
-            class="scanner"
-          >
-            สถานะ:
-            <span id="scanText">
-              กำลังเตรียมระบบ...
-            </span>
+          <div id="scanner" class="scanner">
+            สถานะ: <span id="scanText">กำลังเตรียม N6+ Engine...</span>
           </div>
 
         </section>
 
-
-        <div
-          id="result"
-          class="result"
-        ></div>
+        <div id="result" class="result"></div>
 
       </div>
 
-
-      <div
-        id="toast"
-        class="toast"
-      >
-        คัดลอกแล้ว
-      </div>
+      <div id="toast" class="toast">คัดลอกแล้ว</div>
 
     </div>
-
   </div>
-
 </div>
-
 
 <script>
 (() => {
-
 
   /* =========================================================
      SNOW / BACKGROUND
   ========================================================= */
 
-  const canvas =
-    document.getElementById('snow');
+  const canvas = document.getElementById('snow');
+  const ctx = canvas.getContext('2d');
 
-  const ctx =
-    canvas.getContext('2d');
-
-  let width =
-    canvas.width = innerWidth;
-
-  let height =
-    canvas.height = innerHeight;
-
+  let width = canvas.width = innerWidth;
+  let height = canvas.height = innerHeight;
 
   addEventListener('resize', () => {
-
-    width =
-      canvas.width = innerWidth;
-
-    height =
-      canvas.height = innerHeight;
-
+    width = canvas.width = innerWidth;
+    height = canvas.height = innerHeight;
   });
 
-
-  const particles =
-    Array.from(
-      {length:42},
-      () => ({
-        x:Math.random()*width,
-        y:Math.random()*height,
-        r:.7+Math.random()*1.8,
-        s:.15+Math.random()*.45,
-        a:.18+Math.random()*.35,
-        p:Math.random()*6.28,
-        tone:
-          Math.random()>.72
-            ? 'rose'
-            : 'gold'
-      })
-    );
-
+  const particles = Array.from({length:42}, () => ({
+    x:Math.random()*width,
+    y:Math.random()*height,
+    r:.7+Math.random()*1.8,
+    s:.15+Math.random()*.45,
+    a:.18+Math.random()*.35,
+    p:Math.random()*6.28,
+    tone:Math.random()>.72 ? 'rose' : 'gold'
+  }));
 
   (function drawSnow(){
-
-    ctx.clearRect(
-      0,
-      0,
-      width,
-      height
-    );
-
+    ctx.clearRect(0,0,width,height);
 
     particles.forEach(p => {
-
       p.p += .01;
-
       p.y += p.s;
-
-      p.x +=
-        Math.sin(p.p)*.25;
-
+      p.x += Math.sin(p.p)*.25;
 
       if(p.y > height+5){
-
         p.y = -5;
-
-        p.x =
-          Math.random()*width;
+        p.x = Math.random()*width;
       }
 
-
       ctx.beginPath();
-
-      ctx.arc(
-        p.x,
-        p.y,
-        p.r,
-        0,
-        Math.PI*2
-      );
-
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
 
       ctx.fillStyle =
         p.tone === 'rose'
           ? `rgba(185,130,121,${p.a*.55})`
           : `rgba(195,154,67,${p.a})`;
 
-
       ctx.fill();
-
     });
 
-
     requestAnimationFrame(drawSnow);
-
   })();
 
 
@@ -890,23 +708,19 @@ button{
      HELPERS
   ========================================================= */
 
-  const $ =
-    id =>
-      document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
-
-  const esc =
-    value =>
-      String(value)
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;')
-        .replace(/'/g,'&#039;');
+  const esc = value =>
+    String(value)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
 
 
   /* =========================================================
-     MAIN APPLICATION
+     APPLICATION
   ========================================================= */
 
   const app = {
@@ -914,93 +728,35 @@ button{
     lastCopyText:'',
     toastTimer:null,
 
-
-    /* =======================================================
-       NORMALIZE MOD 10
-    ======================================================= */
-
     norm(value){
-
-      return (
-        value % 10 + 10
-      ) % 10;
-
+      return ((Number(value) % 10) + 10) % 10;
     },
 
-
-    /* =======================================================
-       FLAG
-    ======================================================= */
-
     flag(name){
+      const n = String(name).toLowerCase();
 
-      const n =
-        String(name).toLowerCase();
-
-
-      if(/ลาว|lao/.test(n))
-        return '🇱🇦';
-
-      if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n))
-        return '🇻🇳';
-
-      if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n))
-        return '🇲🇲';
-
-      if(/จีน|china|shanghai/.test(n))
-        return '🇨🇳';
-
-      if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n))
-        return '🇭🇰';
-
-      if(/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))
-        return '🇯🇵';
-
-      if(/เกาหลี|korea|kospi/.test(n))
-        return '🇰🇷';
-
-      if(/สิงคโปร์|singapore/.test(n))
-        return '🇸🇬';
-
-      if(/มาเลย์|มาเลเซีย|malaysia|malay/.test(n))
-        return '🇲🇾';
-
-      if(/อินเดีย|india|sensex/.test(n))
-        return '🇮🇳';
-
-      if(/รัสเซีย|russia|moscow/.test(n))
-        return '🇷🇺';
-
-      if(/เยอรมัน|germany|dax/.test(n))
-        return '🇩🇪';
-
-      if(/อังกฤษ|uk|ftse|london/.test(n))
-        return '🇬🇧';
-
-      if(/อียิปต์|egypt/.test(n))
-        return '🇪🇬';
-
-      if(/ไต้หวัน|taiwan|tse/.test(n))
-        return '🇹🇼';
-
-      if(/ดาวโจนส์|สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n))
-        return '🇺🇸';
-
-      if(/ฝรั่งเศส|france|cac/.test(n))
-        return '🇫🇷';
-
-      if(/ออสเตรเลีย|australia|asx/.test(n))
-        return '🇦🇺';
-
-      if(/แคนาดา|canada/.test(n))
-        return '🇨🇦';
-
-      if(/หุ้นไทย|ไทย|thai|set/.test(n))
-        return '🇹🇭';
-
+      if(/ลาว|lao/.test(n)) return '🇱🇦';
+      if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n)) return '🇻🇳';
+      if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n)) return '🇲🇲';
+      if(/จีน|china|shanghai/.test(n)) return '🇨🇳';
+      if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n)) return '🇭🇰';
+      if(/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n)) return '🇯🇵';
+      if(/เกาหลี|korea|kospi/.test(n)) return '🇰🇷';
+      if(/สิงคโปร์|singapore/.test(n)) return '🇸🇬';
+      if(/มาเลย์|มาเลเซีย|malaysia|malay/.test(n)) return '🇲🇾';
+      if(/อินเดีย|india|sensex/.test(n)) return '🇮🇳';
+      if(/รัสเซีย|russia|moscow/.test(n)) return '🇷🇺';
+      if(/เยอรมัน|germany|dax/.test(n)) return '🇩🇪';
+      if(/อังกฤษ|uk|ftse|london/.test(n)) return '🇬🇧';
+      if(/อียิปต์|egypt/.test(n)) return '🇪🇬';
+      if(/ไต้หวัน|taiwan|tse/.test(n)) return '🇹🇼';
+      if(/ดาวโจนส์|สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n)) return '🇺🇸';
+      if(/ฝรั่งเศส|france|cac/.test(n)) return '🇫🇷';
+      if(/ออสเตรเลีย|australia|asx/.test(n)) return '🇦🇺';
+      if(/แคนาดา|canada/.test(n)) return '🇨🇦';
+      if(/หุ้นไทย|ไทย|thai|set/.test(n)) return '🇹🇭';
 
       return '🌐';
-
     },
 
 
@@ -1010,125 +766,86 @@ button{
 
     parse(text){
 
-      const raw =
-        String(text || '')
-          .replace(/\r/g,'')
-          .trim();
-
+      const raw = String(text || '')
+        .replace(/\r/g,'')
+        .trim();
 
       if(!raw){
-
         return {
           records:[],
-          errors:[
-            'ยังไม่มีข้อมูลสำหรับประมวลผล'
-          ]
+          errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
         };
-
       }
 
-
-      const lines =
-        raw
-          .split('\n')
-          .map(v => v.trim());
-
+      const lines = raw
+        .split('\n')
+        .map(v => v.trim());
 
       const records = [];
       const errors = [];
 
       let i = 0;
 
-
       while(i < lines.length){
 
         if(!lines[i]){
-
           i++;
           continue;
-
         }
 
-
-        const header =
-          lines[i].match(
-            /^(.+?)\s*\|\s*(.+?)$/
-          );
-
+        const header = lines[i].match(/^(.+?)\s*\|\s*(.+?)$/);
 
         if(!header){
-
           errors.push(
             `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
           );
 
           i++;
           continue;
-
         }
 
-
-        const name =
-          header[1].trim();
-
-        const date =
-          header[2].trim();
-
+        const name = header[1].trim();
+        const date = header[2].trim();
 
         if(!this.parseDateValue(date)){
-
           errors.push(
             `${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 25 ส.ค. 69`
           );
 
           i++;
           continue;
-
         }
 
-
-        const n3raw =
-          lines[i+1] || '';
-
-        const n2raw =
-          lines[i+2] || '';
-
+        const n3raw = lines[i+1] || '';
+        const n2raw = lines[i+2] || '';
 
         const n3 =
           /^[\d\s]+$/.test(n3raw)
             ? n3raw.replace(/\s+/g,'')
             : n3raw;
 
-
         const n2 =
           /^[\d\s]+$/.test(n2raw)
             ? n2raw.replace(/\s+/g,'')
-            : n2;
-
+            : n2raw;
 
         if(!/^\d{3}$/.test(n3)){
-
           errors.push(
             `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
           );
 
           i += 1;
           continue;
-
         }
 
-
         if(!/^\d{2}$/.test(n2)){
-
           errors.push(
             `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
           );
 
           i += 2;
           continue;
-
         }
-
 
         records.push({
           name,
@@ -1137,77 +854,46 @@ button{
           n2
         });
 
-
         i += 3;
-
       }
-
 
       return {
         records,
         errors
       };
-
     },
 
-
-    /* =======================================================
-       DATE PARSER
-    ======================================================= */
 
     parseDateValue(date){
 
-      const value =
-        String(date || '').trim();
+      const value = String(date || '').trim();
 
+      if(!value) return false;
 
-      if(!value)
-        return false;
-
-
-      if(
-        /^\d{1,2}\s+\S+\s+\d{2,4}$/.test(value)
-      )
+      if(/^\d{1,2}\s+\S+\s+\d{2,4}$/.test(value))
         return true;
 
-
-      if(
-        /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value)
-      )
+      if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value))
         return true;
 
-
-      if(
-        /^\d{1,2}-\d{1,2}-\d{2,4}$/.test(value)
-      )
+      if(/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(value))
         return true;
-
 
       return false;
-
     },
 
 
-    /* =======================================================
-       DATE KEY
-    ======================================================= */
-
     dateKey(date){
 
-      const value =
-        String(date || '').trim();
+      const value = String(date || '').trim();
 
-
-      const thai =
-        value.match(
-          /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
-        );
-
+      const thai = value.match(
+        /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
+      );
 
       if(thai){
 
         const months = {
-
           'ม.ค.':1,
           'ก.พ.':2,
           'มี.ค.':3,
@@ -1220,396 +906,183 @@ button{
           'ต.ค.':10,
           'พ.ย.':11,
           'ธ.ค.':12
-
         };
 
+        const month = months[thai[2]] || 0;
 
-        const month =
-          months[thai[2]] || 0;
-
-
-        let year =
-          Number(thai[3]);
-
+        let year = Number(thai[3]);
 
         if(year < 100){
           year += 2500;
         }
-
 
         return [
           year,
           String(month).padStart(2,'0'),
           String(Number(thai[1])).padStart(2,'0')
         ].join('-');
-
       }
 
-
-      const numeric =
-        value.match(
-          /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
-        );
-
+      const numeric = value.match(
+        /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
+      );
 
       if(numeric){
 
-        let year =
-          Number(numeric[3]);
-
+        let year = Number(numeric[3]);
 
         if(year < 100){
           year += 2500;
         }
-
 
         return [
           year,
           String(Number(numeric[2])).padStart(2,'0'),
           String(Number(numeric[1])).padStart(2,'0')
         ].join('-');
-
       }
 
-
       return value;
-
     },
 
-
-    /* =======================================================
-       CHRONOLOGICAL SORT
-    ======================================================= */
 
     sortChronological(records){
 
       return records
+        .map((record,index) => ({
+          ...record,
+          __index:index
+        }))
+        .sort((a,b) => {
 
-        .map(
-          (record,index) => ({
-            ...record,
-            __index:index
-          })
-        )
+          const ka = this.dateKey(a.date);
+          const kb = this.dateKey(b.date);
 
-        .sort(
-          (a,b) => {
+          if(ka < kb) return -1;
+          if(ka > kb) return 1;
 
-            const ka =
-              this.dateKey(a.date);
-
-            const kb =
-              this.dateKey(b.date);
-
-
-            if(ka < kb)
-              return -1;
-
-            if(ka > kb)
-              return 1;
-
-
-            return a.__index - b.__index;
-
-          }
-        )
-
+          return a.__index - b.__index;
+        })
         .map(record => {
 
-          const clean =
-            {...record};
+          const clean = {...record};
 
           delete clean.__index;
 
           return clean;
-
         });
-
     },
 
-
-    /* =======================================================
-       GROUP BY LOTTERY
-    ======================================================= */
 
     groupByLottery(records){
 
       const groupsMap = {};
 
+      records.forEach((record,index) => {
 
-      records.forEach(
-        (record,index) => {
+        const key = record.name.trim();
 
-          const key =
-            record.name.trim();
-
-
-          if(!groupsMap[key]){
-
-            groupsMap[key] = {
-
-              name:key,
-              records:[],
-              duplicateCount:0,
-              conflictCount:0,
-              __order:index
-
-            };
-
-          }
-
-
-          groupsMap[key]
-            .records
-            .push(record);
-
+        if(!groupsMap[key]){
+          groupsMap[key] = {
+            name:key,
+            records:[],
+            duplicateCount:0,
+            conflictCount:0,
+            __order:index
+          };
         }
-      );
 
+        groupsMap[key].records.push(record);
+      });
 
-      const groups =
-        Object.values(groupsMap);
-
+      const groups = Object.values(groupsMap);
 
       groups.forEach(group => {
 
-        const sorted =
-          this.sortChronological(
-            group.records
-          );
+        const sorted = this.sortChronological(group.records);
 
-
-        const byDate =
-          new Map();
-
+        const byDate = new Map();
         const clean = [];
-
 
         sorted.forEach(record => {
 
-          const key =
-            this.dateKey(record.date);
-
+          const key = this.dateKey(record.date);
 
           if(!byDate.has(key)){
 
-            byDate.set(
-              key,
-              record
-            );
-
+            byDate.set(key,record);
             clean.push(record);
 
             return;
-
           }
 
-
-          const previous =
-            byDate.get(key);
-
+          const previous = byDate.get(key);
 
           if(
             previous.n3 === record.n3 &&
             previous.n2 === record.n2
           ){
-
             group.duplicateCount++;
-
             return;
-
           }
-
 
           group.conflictCount++;
 
-
-          const index =
-            clean.indexOf(previous);
-
+          const index = clean.indexOf(previous);
 
           if(index >= 0){
-
-            clean[index] =
-              record;
-
+            clean[index] = record;
           }
 
-
-          byDate.set(
-            key,
-            record
-          );
-
+          byDate.set(key,record);
         });
 
-
-        group.records =
-          this.sortChronological(
-            clean
-          );
-
+        group.records = this.sortChronological(clean);
       });
 
-
       return groups
-
-        .sort(
-          (a,b) =>
-            a.__order - b.__order
-        )
-
+        .sort((a,b) => a.__order - b.__order)
         .map(group => {
 
           delete group.__order;
 
           return group;
-
         });
-
     },
 
 
     /* =======================================================
-       MAIN MODEL — N6
-       =======================================================
+       N6+ CORE
+       -------------------------------------------------------
+       N6+ is a deterministic structural consensus engine.
 
-       A = Hundreds Top
-       B = Tens Top
-       C = Units Top
-       D = Tens Bottom
-       E = Units Bottom
+       Layer A:
+       N1-N5 structural models.
 
-       N6-A
-       = (-A - 2B + C - E + 1) mod 10
+       Layer B:
+       100-formula structural field.
 
-       N6-B
-       = ( A - C - D - 2E ) mod 10
+       Layer C:
+       cross-position support.
 
-       IMPORTANT:
-       No duplicate-digit +1 adjustment is applied here.
-       N6 is used exactly according to its defined equations.
+       Layer D:
+       stability / diversity weighting.
+
+       The backend NEVER changes N6+ after the result is
+       selected.
     ======================================================= */
 
-    mainModel(n3,n2){
+    calculateN6Plus(n3,n2){
 
-      const top =
-        String(n3)
-          .padStart(3,'0')
-          .split('')
-          .map(Number);
+      const top = String(n3)
+        .padStart(3,'0')
+        .split('')
+        .map(Number);
 
-
-      const bottom =
-        String(n2)
-          .padStart(2,'0')
-          .split('')
-          .map(Number);
-
-
-      const A = top[0];
-      const B = top[1];
-      const C = top[2];
-
-      const D = bottom[0];
-      const E = bottom[1];
-
-
-      /* -----------------------------------------------------
-         N6-A
-      ----------------------------------------------------- */
-
-      const sumA =
-        (-A - (2 * B) + C - E + 1);
-
-
-      const first =
-        this.norm(sumA);
-
-
-      /* -----------------------------------------------------
-         N6-B
-      ----------------------------------------------------- */
-
-      const sumB =
-        (A - C - D - (2 * E));
-
-
-      const second =
-        this.norm(sumB);
-
-
-      return {
-
-        first,
-        second,
-
-        set:[
-          first,
-          second
-        ],
-
-        detail:{
-          A,
-          B,
-          C,
-          D,
-          E,
-
-          sumA,
-          sumB,
-
-          formulaA:
-            '(-A - 2B + C - E + 1) mod 10',
-
-          formulaB:
-            '(A - C - D - 2E) mod 10'
-
-        }
-
-      };
-
-    },
-
-
-    /* =======================================================
-       BACKEND LEGACY N1
-       =======================================================
-
-       THIS IS THE OLD MAIN MODEL.
-
-       It is now BACKEND ONLY.
-
-       OLD FORMULA:
-
-       Digit 1:
-       9 - (H × 2) - (T × 2) + U + R1 - (R2 × 2)
-
-       Digit 2:
-       3 - (T × 2) + U
-
-       OLD DUPLICATE FIX:
-       If Digit 1 === Digit 2,
-       Digit 2 = Digit 2 + 1 mod 10
-
-       This formula NEVER replaces N6.
-    ======================================================= */
-
-    backendLegacyN1(n3,n2){
-
-      const top =
-        String(n3)
-          .padStart(3,'0')
-          .split('')
-          .map(Number);
-
-
-      const bottom =
-        String(n2)
-          .padStart(2,'0')
-          .split('')
-          .map(Number);
-
+      const bottom = String(n2)
+        .padStart(2,'0')
+        .split('')
+        .map(Number);
 
       const H = top[0];
       const T = top[1];
@@ -1618,35 +1091,422 @@ button{
       const R1 = bottom[0];
       const R2 = bottom[1];
 
-
-      /* OLD DIGIT 1 */
-
-      const sum1 =
-        9
-        - (H * 2)
-        - (T * 2)
-        + U
-        + R1
-        - (R2 * 2);
+      const sumTop = H + T + U;
+      const sumBottom = R1 + R2;
+      const totalSum = sumTop + sumBottom;
 
 
-      const first =
-        this.norm(sum1);
+      /* -------------------------------------------------------
+         N1
+      ------------------------------------------------------- */
+
+      const N1 = [
+        this.norm(
+          -2*H
+          -2*T
+          +U
+          +R1
+          -2*R2
+          +9
+        ),
+        this.norm(
+          -2*T
+          +U
+          +3
+        )
+      ];
 
 
-      /* OLD DIGIT 2 */
+      /* -------------------------------------------------------
+         N2
+      ------------------------------------------------------- */
 
-      const sum2 =
-        3
-        - (T * 2)
-        + U;
+      const N2 = [
+        this.norm(
+          -H
+          +T
+          -U
+          +2*R1
+          +R2
+          +4
+        ),
+        this.norm(
+          H
+          -2*U
+          -2*R2
+          +7
+        )
+      ];
 
+
+      /* -------------------------------------------------------
+         N3
+      ------------------------------------------------------- */
+
+      const N3 = [
+        this.norm(
+          2*H
+          -T
+          +U
+          +2*R1
+          -R2
+          +3
+        ),
+        this.norm(
+          H
+          +2*T
+          -2*U
+          +R1
+          +2*R2
+          +6
+        )
+      ];
+
+
+      /* -------------------------------------------------------
+         N4
+      ------------------------------------------------------- */
+
+      const N4 = [
+        this.norm(
+          -2*H
+          -T
+          -U
+          -2*R1
+          -2*R2
+          +5
+        ),
+        this.norm(
+          -2*H
+          +T
+          +2*U
+          -2*R1
+          +R2
+          +9
+        )
+      ];
+
+
+      /* -------------------------------------------------------
+         N5
+      ------------------------------------------------------- */
+
+      const N5 = [
+        this.norm(
+          -2*H
+          -2*T
+          -U
+          -R1
+          -2*R2
+          +7
+        ),
+        this.norm(
+          -H
+          +T
+          +2*U
+          -2*R1
+          +R2
+          +6
+        )
+      ];
+
+
+      const structuralModels = [
+        {
+          id:'N1',
+          weight:1.25,
+          set:N1
+        },
+        {
+          id:'N2',
+          weight:1.00,
+          set:N2
+        },
+        {
+          id:'N3',
+          weight:1.05,
+          set:N3
+        },
+        {
+          id:'N4',
+          weight:1.20,
+          set:N4
+        },
+        {
+          id:'N5',
+          weight:1.10,
+          set:N5
+        }
+      ];
+
+
+      /* -------------------------------------------------------
+         100-FORMULA STRUCTURAL FIELD
+         Derived only from current input.
+      ------------------------------------------------------- */
+
+      const rawFormulas = [
+
+        H+T,
+        H+U,
+        T+U,
+        H+R1,
+        H+R2,
+        T+R1,
+        T+R2,
+        U+R1,
+        U+R2,
+        R1+R2,
+
+        sumTop+R1,
+        sumTop+R2,
+        sumTop+H,
+        sumTop+T,
+        sumTop+U,
+
+        10-H,
+        10-T,
+        10-U,
+        10-R1,
+        10-R2,
+
+        H+T+R1,
+        H+U+R2,
+        T+U+R1,
+        T+U+R2,
+        H+R1+R2,
+        T+R1+R2,
+
+        sumTop-R1,
+        sumTop-R2,
+        sumTop+sumBottom,
+        sumTop-sumBottom,
+
+        H+T-R2,
+        T+U-R1,
+        H+U-R1,
+
+        20-(T+R1),
+        20-(U+R2),
+
+        H+T+U-R1,
+        H+T+U-R2,
+
+        10+T-R2,
+        10+U-R1,
+
+        sumTop+10-R2,
+
+        H+R2-T,
+        T+R2-H,
+        U+R1-H,
+
+        sumBottom+H-T,
+        sumBottom+H-U,
+
+        H+sumBottom-T,
+        H+sumBottom-U,
+
+        T+sumBottom-H,
+        T+sumBottom-U,
+
+        U+sumBottom-H,
+        U+sumBottom-T,
+
+        30-(H+T+R1),
+        30-(H+U+R2),
+        30-(T+U+R1),
+        30-(H+R1+R2),
+
+        H+T+R1-R2,
+        H+U+R2-R1,
+        T+U+R1-H,
+
+        sumTop+R1-R2,
+        sumTop+R2-R1,
+
+        H+T+sumBottom,
+        H+U+sumBottom,
+        T+U+sumBottom,
+
+        H+R1+sumTop,
+        H+R2+sumTop,
+        T+R1+sumTop,
+        T+R2+sumTop,
+        U+R1+sumTop,
+        U+R2+sumTop,
+        R1+R2+sumTop,
+
+        10+H+T,
+        10+H+U,
+        10+T+U,
+        10+R1+R2,
+        10+H+R1,
+        10+H+R2,
+        10+T+R1,
+        10+T+R2,
+        10+U+R1,
+        10+U+R2,
+
+        H-T+R2,
+        H-U+R1,
+        T-U+R2,
+
+        R1-R2+H,
+        R1-R2+T,
+        R1-R2+U,
+
+        20-H-T,
+        20-H-U,
+        20-T-U,
+        20-R1-R2,
+        20-H-R1,
+        20-H-R2,
+        20-T-R1,
+        20-T-R2,
+        20-U-R1,
+        20-U-R2,
+
+        totalSum,
+        2*totalSum,
+        totalSum+H,
+        totalSum+T,
+        totalSum+U,
+        totalSum+R1,
+        totalSum+R2
+
+      ];
+
+
+      const formulaCounts =
+        Array(10).fill(0);
+
+      rawFormulas.forEach(value => {
+        formulaCounts[this.norm(value)]++;
+      });
+
+
+      /* -------------------------------------------------------
+         N6+ SCORE MATRIX
+      ------------------------------------------------------- */
+
+      const scores =
+        Array(10).fill(0);
+
+      const sourceCount =
+        Array(10).fill(0);
+
+
+      structuralModels.forEach(model => {
+
+        const first = model.set[0];
+        const second = model.set[1];
+
+        scores[first] += model.weight;
+        scores[second] += model.weight * .92;
+
+        sourceCount[first]++;
+        sourceCount[second]++;
+      });
+
+
+      /* 100-formula field contributes a controlled amount.
+         It supports structural consensus but cannot dominate
+         the N-model layer.
+      */
+
+      for(let d=0; d<10; d++){
+
+        if(formulaCounts[d] > 0){
+
+          scores[d] +=
+            Math.min(
+              1.20,
+              formulaCounts[d] * .035
+            );
+        }
+      }
+
+
+      /* -------------------------------------------------------
+         CROSS-DIGIT SUPPORT
+      ------------------------------------------------------- */
+
+      const crossSignals = [
+        this.norm(T + R2),
+        this.norm(U + R1),
+        this.norm(H + R1),
+        this.norm(H + R2),
+        this.norm(T + U),
+        this.norm(R1 + R2),
+        this.norm(sumTop + R2),
+        this.norm(totalSum)
+      ];
+
+
+      crossSignals.forEach((digit,index) => {
+
+        const weight =
+          index < 4
+            ? .16
+            : .11;
+
+        scores[digit] += weight;
+      });
+
+
+      /* -------------------------------------------------------
+         POSITION DIVERSITY
+      ------------------------------------------------------- */
+
+      structuralModels.forEach(model => {
+
+        const [a,b] = model.set;
+
+        if(a !== b){
+
+          scores[a] += .025;
+          scores[b] += .020;
+        }
+      });
+
+
+      /* -------------------------------------------------------
+         RANKING
+      ------------------------------------------------------- */
+
+      const ranking =
+        Array.from({length:10},(_,digit) => ({
+          digit,
+          score:scores[digit],
+          formulaCount:formulaCounts[digit],
+          sourceCount:sourceCount[digit]
+        }))
+        .sort((a,b) => {
+
+          return (
+            b.score - a.score ||
+            b.sourceCount - a.sourceCount ||
+            b.formulaCount - a.formulaCount ||
+            a.digit - b.digit
+          );
+        });
+
+
+      let first =
+        ranking[0]
+          ? ranking[0].digit
+          : 0;
 
       let second =
-        this.norm(sum2);
+        ranking[1]
+          ? ranking[1].digit
+          : this.norm(first + 1);
 
 
-      /* OLD DUPLICATE FIX */
+      /* -------------------------------------------------------
+         DUPLICATE PROTECTION
+      ------------------------------------------------------- */
 
       if(first === second){
 
@@ -1654,36 +1514,91 @@ button{
           this.norm(
             second + 1
           );
-
       }
 
 
+      /* -------------------------------------------------------
+         FINAL STABILITY CHECK
+      ------------------------------------------------------- */
+
+      const set =
+        [first,second];
+
+
       return {
-
-        result:first,
-
         first,
         second,
-
-        set:[
-          first,
-          second
-        ],
-
-        name:'Legacy N1',
-
-        detail:{
-          H,
-          T,
-          U,
-          R1,
-          R2,
-          sum1,
-          sum2
+        set,
+        ranking,
+        scores,
+        formulaCounts,
+        structuralModels,
+        N1,
+        N2,
+        N3,
+        N4,
+        N5,
+        rawFormulas,
+        inputs:{
+          H,T,U,R1,R2,
+          sumTop,
+          sumBottom,
+          totalSum
         }
-
       };
+    },
 
+
+    /* =======================================================
+       LEGACY N1 BACKEND
+       -------------------------------------------------------
+       Original N1 remains backend-only.
+       It cannot replace N6+.
+    ======================================================= */
+
+    backendN1(n3,n2){
+
+      const top =
+        String(n3)
+          .padStart(3,'0')
+          .split('')
+          .map(Number);
+
+      const bottom =
+        String(n2)
+          .padStart(2,'0')
+          .split('')
+          .map(Number);
+
+      const H = top[0];
+      const T = top[1];
+      const U = top[2];
+
+      const R1 = bottom[0];
+      const R2 = bottom[1];
+
+      const first =
+        this.norm(
+          9
+          - (H * 2)
+          - (T * 2)
+          + U
+          + R1
+          - (R2 * 2)
+        );
+
+      const second =
+        this.norm(
+          3
+          - (T * 2)
+          + U
+        );
+
+      return {
+        first,
+        second,
+        set:[first,second]
+      };
     },
 
 
@@ -1699,13 +1614,11 @@ button{
           .split('')
           .map(Number);
 
-
       const bottom =
         String(n2)
           .padStart(2,'0')
           .split('')
           .map(Number);
-
 
       const sum =
         top[0]
@@ -1714,21 +1627,12 @@ button{
         + bottom[0]
         + bottom[1];
 
-
-      const result =
-        this.norm(
-          sum * 3 + 7
-        );
-
-
       return {
-
-        result,
-
-        name:'Backend Formula 2'
-
+        result:
+          this.norm(
+            sum * 3 + 7
+          )
       };
-
     },
 
 
@@ -1744,380 +1648,186 @@ button{
           .split('')
           .map(Number);
 
-
       const bottom =
         String(n2)
           .padStart(2,'0')
           .split('')
           .map(Number);
 
-
-      const sum =
-        top[2]
-        + bottom[1];
-
-
-      const result =
-        this.norm(sum);
-
-
       return {
-
-        result,
-
-        name:'Backend Formula 3'
-
+        result:
+          this.norm(
+            top[2] + bottom[1]
+          )
       };
-
     },
 
 
     /* =======================================================
-       VIP+ CONFIRMATION
-       =======================================================
-
-       N6 is always the MAIN.
-
-       Backend formulas may only confirm.
-
-       Backends:
-       1. Legacy N1
-       2. Backend Formula 2
-       3. Backend Formula 3
-
-       If ANY backend digit matches ANY N6 digit:
-       VIP+ = TRUE
-
-       Backend never changes N6.
+       BACKEND N6 SUPPORT CHECK
+       -------------------------------------------------------
+       Backend confirms only.
     ======================================================= */
 
-    checkVIP(
-      main,
-      legacyN1,
-      backend2,
-      backend3
-    ){
+    checkVIP(main,backend1,backend2,backend3){
 
       const mainSet =
         new Set(main.set);
 
-
-      const backendDigits = [
-
-        legacyN1.result,
-        backend2.result,
-        backend3.result
-
-      ];
-
-
-      return backendDigits.some(
-        digit =>
-          mainSet.has(digit)
+      return (
+        mainSet.has(backend1.first) ||
+        mainSet.has(backend1.second) ||
+        mainSet.has(backend2.result) ||
+        mainSet.has(backend3.result)
       );
-
     },
 
 
     /* =======================================================
-       BACKEND MATCH DETAILS
-    ======================================================= */
-
-    getBackendMatches(
-      main,
-      legacyN1,
-      backend2,
-      backend3
-    ){
-
-      const mainSet =
-        new Set(main.set);
-
-
-      const matches = [];
-
-
-      if(
-        mainSet.has(
-          legacyN1.result
-        )
-      ){
-
-        matches.push(
-          'Legacy N1'
-        );
-
-      }
-
-
-      if(
-        mainSet.has(
-          backend2.result
-        )
-      ){
-
-        matches.push(
-          'Backend Formula 2'
-        );
-
-      }
-
-
-      if(
-        mainSet.has(
-          backend3.result
-        )
-      ){
-
-        matches.push(
-          'Backend Formula 3'
-        );
-
-      }
-
-
-      return matches;
-
-    },
-
-
-    /* =======================================================
-       PROTECTED ORIGINAL PAIR / เลขเจาะ ENGINE
-       =======================================================
-
-       Base:
-       7 - hundreds top
-
-       Normal:
-       ±2
-
-       Collision with main digit:
-       ±3
-
-       No main digits inside pair range.
-       No double pairs.
+       PROTECTED PAIR ENGINE
     ======================================================= */
 
     buildPairs(mainSet,anchor){
 
       const pairsMap = {};
 
+      mainSet.forEach(sourceDigit => {
 
-      mainSet.forEach(
-        sourceDigit => {
+        let range = [];
+        let collision = false;
 
-          let range = [];
+        for(
+          let offset = -2;
+          offset <= 2;
+          offset++
+        ){
 
-          let collision = false;
-
-
-          for(
-            let offset = -2;
-            offset <= 2;
-            offset++
+          if(
+            mainSet.includes(
+              this.norm(anchor + offset)
+            )
           ){
-
-            if(
-              mainSet.includes(
-                this.norm(
-                  anchor + offset
-                )
-              )
-            ){
-
-              collision = true;
-
-              break;
-
-            }
-
+            collision = true;
+            break;
           }
+        }
 
+        for(
+          let offset = collision ? -3 : -2;
+          offset <= (collision ? 3 : 2);
+          offset++
+        ){
 
-          for(
-            let offset =
-              collision ? -3 : -2;
-
-            offset <=
-              (collision ? 3 : 2);
-
-            offset++
-          ){
-
-            const digit =
-              this.norm(
-                anchor + offset
-              );
-
-
-            if(
-              !range.includes(digit)
-            ){
-
-              range.push(digit);
-
-            }
-
-          }
-
-
-          const pairs = [];
-
-
-          range.forEach(target => {
-
-            if(
-              target === sourceDigit
-            ){
-
-              return;
-
-            }
-
-
-            if(
-              mainSet.includes(target)
-            ){
-
-              return;
-
-            }
-
-
-            const pair =
-              `${sourceDigit}${target}`;
-
-
-            if(
-              pair[0] === pair[1]
-            ){
-
-              return;
-
-            }
-
-
-            if(
-              !pairs.includes(pair)
-            ){
-
-              pairs.push(pair);
-
-            }
-
-          });
-
-
-          let next =
+          const digit =
             this.norm(
-              sourceDigit + 1
+              anchor + offset
             );
 
+          if(!range.includes(digit)){
+            range.push(digit);
+          }
+        }
 
-          while(pairs.length < 5){
+        const pairs = [];
 
-            if(
-              next !== sourceDigit &&
-              !mainSet.includes(next)
-            ){
+        range.forEach(target => {
 
-              const pair =
-                `${sourceDigit}${next}`;
-
-
-              if(
-                pair[0] !== pair[1] &&
-                !pairs.includes(pair)
-              ){
-
-                pairs.push(pair);
-
-              }
-
-            }
-
-
-            next =
-              this.norm(
-                next + 1
-              );
-
+          if(target === sourceDigit){
+            return;
           }
 
+          if(mainSet.includes(target)){
+            return;
+          }
 
-          pairsMap[sourceDigit] =
-            [
-              ...new Set(pairs)
-            ]
+          const pair =
+            `${sourceDigit}${target}`;
+
+          if(pair[0] === pair[1]){
+            return;
+          }
+
+          if(!pairs.includes(pair)){
+            pairs.push(pair);
+          }
+        });
+
+
+        let next =
+          this.norm(
+            sourceDigit + 1
+          );
+
+
+        while(pairs.length < 5){
+
+          if(
+            next !== sourceDigit &&
+            !mainSet.includes(next)
+          ){
+
+            const pair =
+              `${sourceDigit}${next}`;
+
+            if(
+              pair[0] !== pair[1] &&
+              !pairs.includes(pair)
+            ){
+              pairs.push(pair);
+            }
+          }
+
+          next =
+            this.norm(
+              next + 1
+            );
+        }
+
+
+        pairsMap[sourceDigit] =
+          [...new Set(pairs)]
             .filter(
               pair =>
                 pair[0] !== pair[1]
             )
             .slice(0,5);
-
-        }
-      );
-
+      });
 
       return pairsMap;
-
     },
 
-
-    /* =======================================================
-       PAIR KEY
-    ======================================================= */
 
     pairKey(pair){
 
       const value =
         String(pair);
 
-
-      if(
-        !/^\d{2}$/.test(value)
-      ){
-
+      if(!/^\d{2}$/.test(value)){
         return value;
-
       }
-
 
       return [
         value[0],
         value[1]
-      ]
-      .sort()
-      .join('');
-
+      ].sort().join('');
     },
 
-
-    /* =======================================================
-       PAIR CONSENSUS
-    ======================================================= */
 
     buildPairConsensus(pairSets){
 
       const all = [];
 
+      pairSets.forEach((set,rowIndex) => {
 
-      pairSets.forEach(
-        (set,rowIndex) => {
+        set.slice(0,5)
+          .forEach(pair => {
 
-          set
-            .slice(0,5)
-            .forEach(pair => {
-
-              all.push({
-                pair:String(pair),
-                rowIndex
-              });
-
+            all.push({
+              pair:String(pair),
+              rowIndex
             });
-
-        }
-      );
+          });
+      });
 
 
       const counts = {};
@@ -2126,39 +1836,21 @@ button{
       all.forEach(item => {
 
         const key =
-          this.pairKey(
-            item.pair
-          );
-
+          this.pairKey(item.pair);
 
         if(!counts[key]){
 
           counts[key] = {
-
             key,
             score:0,
             rows:new Set(),
             pairs:new Set()
-
           };
-
         }
 
-
         counts[key].score++;
-
-        counts[key]
-          .rows
-          .add(
-            item.rowIndex
-          );
-
-        counts[key]
-          .pairs
-          .add(
-            item.pair
-          );
-
+        counts[key].rows.add(item.rowIndex);
+        counts[key].pairs.add(item.pair);
       });
 
 
@@ -2175,79 +1867,49 @@ button{
       const colorMap = {};
 
 
-      ranked
-        .slice(0,6)
-        .forEach(
-          (item,index) => {
+      ranked.slice(0,6)
+        .forEach((item,index) => {
 
-            let color;
+          let color;
 
-
-            if(index < 2){
-
-              color = 'gold';
-
-            }else if(index < 4){
-
-              color = 'silver';
-
-            }else{
-
-              color = 'rose';
-
-            }
-
-
-            colorMap[item.key] = {
-
-              color,
-              rank:index + 1,
-              score:item.score
-
-            };
-
+          if(index < 2){
+            color = 'gold';
+          }else if(index < 4){
+            color = 'silver';
+          }else{
+            color = 'rose';
           }
-        );
+
+          colorMap[item.key] = {
+            color,
+            rank:index + 1,
+            score:item.score
+          };
+        });
 
 
       return {
-
         counts,
         ranked,
         colorMap
-
       };
-
     },
 
-
-    /* =======================================================
-       SORT PAIRS
-    ======================================================= */
 
     sortPairs(pairs){
 
       return pairs
-
         .map(String)
-
-        .filter(
-          pair =>
-            /^\d{2}$/.test(pair) &&
-            pair[0] !== pair[1]
+        .filter(pair =>
+          /^\d{2}$/.test(pair) &&
+          pair[0] !== pair[1]
         )
-
         .sort(
           (a,b) =>
             Number(a) - Number(b)
         );
-
     },
 
-
-    /* =======================================================
-       PAIR CLASS
-    ======================================================= */
 
     pairClass(pair,colorMap){
 
@@ -2256,99 +1918,192 @@ button{
           this.pairKey(pair)
         ];
 
-
       if(!info){
-
         return 'pair';
-
       }
 
-
-      if(
-        info.color === 'gold'
-      ){
-
+      if(info.color === 'gold'){
         return 'pair pair-gold';
-
       }
 
-
-      if(
-        info.color === 'silver'
-      ){
-
+      if(info.color === 'silver'){
         return 'pair pair-silver';
-
       }
-
 
       return 'pair pair-rose';
+    },
 
+
+    /* =======================================================
+       N6+ SELF AUDIT
+       -------------------------------------------------------
+       1,000 deterministic repeated rounds.
+       This checks implementation stability, not future
+       lottery outcomes.
+    ======================================================= */
+
+    runInternalAudit(n3,n2){
+
+      let passed = true;
+      let failures = 0;
+
+      let baseline = null;
+
+
+      for(let round=0; round<1000; round++){
+
+        const result =
+          this.calculateN6Plus(
+            n3,
+            n2
+          );
+
+
+        const signature =
+          JSON.stringify({
+            first:result.first,
+            second:result.second,
+            set:result.set,
+            ranking:
+              result.ranking.map(
+                item => item.digit
+              )
+          });
+
+
+        if(round === 0){
+
+          baseline = signature;
+
+        }else if(signature !== baseline){
+
+          passed = false;
+          failures++;
+        }
+
+
+        if(
+          result.first < 0 ||
+          result.first > 9 ||
+          result.second < 0 ||
+          result.second > 9
+        ){
+
+          passed = false;
+          failures++;
+        }
+
+
+        if(result.first === result.second){
+
+          passed = false;
+          failures++;
+        }
+
+
+        if(
+          !Array.isArray(result.set) ||
+          result.set.length !== 2
+        ){
+
+          passed = false;
+          failures++;
+        }
+      }
+
+
+      return {
+        passed,
+        rounds:1000,
+        failures
+      };
+    },
+
+
+    /* =======================================================
+       EXTRA BOUNDARY AUDIT
+    ======================================================= */
+
+    runBoundaryAudit(){
+
+      const tests = [
+        ['000','00'],
+        ['001','01'],
+        ['009','09'],
+        ['090','90'],
+        ['099','99'],
+        ['999','99'],
+        ['100','00'],
+        ['909','09'],
+        ['505','50'],
+        ['123','45'],
+        ['987','65']
+      ];
+
+
+      let passed = true;
+      let failures = 0;
+
+
+      tests.forEach(test => {
+
+        const result =
+          this.calculateN6Plus(
+            test[0],
+            test[1]
+          );
+
+
+        if(
+          result.first < 0 ||
+          result.first > 9 ||
+          result.second < 0 ||
+          result.second > 9 ||
+          result.first === result.second
+        ){
+
+          passed = false;
+          failures++;
+        }
+      });
+
+
+      return {
+        passed,
+        tests:tests.length,
+        failures
+      };
     },
 
 
     /* =======================================================
        MAIN ENGINE
-       =======================================================
-
-       Flow:
-
-       INPUT
-         ↓
-       N6 MAIN
-         ↓
-       Backend Legacy N1
-       Backend Formula 2
-       Backend Formula 3
-         ↓
-       VIP Confirmation
-         ↓
-       N6 Pair Engine
-         ↓
-       OUTPUT
-
-       IMPORTANT:
-       No backend value can replace main.set.
     ======================================================= */
 
     run(n3,n2){
 
-      const topDigits =
+      const top =
         String(n3)
           .padStart(3,'0')
           .split('')
           .map(Number);
 
+      const H = top[0];
 
-      const H =
-        topDigits[0];
-
-
-      /* -----------------------------------------------------
-         MAIN = N6
-      ----------------------------------------------------- */
 
       const main =
-        this.mainModel(
+        this.calculateN6Plus(
           n3,
           n2
         );
 
 
-      /* -----------------------------------------------------
-         BACKEND = OLD N1
-      ----------------------------------------------------- */
-
-      const legacyN1 =
-        this.backendLegacyN1(
+      const backend1 =
+        this.backendN1(
           n3,
           n2
         );
 
-
-      /* -----------------------------------------------------
-         OTHER BACKENDS
-      ----------------------------------------------------- */
 
       const backend2 =
         this.backendFormula2(
@@ -2364,45 +2119,23 @@ button{
         );
 
 
-      /* -----------------------------------------------------
-         VIP CONFIRMATION
-      ----------------------------------------------------- */
-
       const vip =
         this.checkVIP(
           main,
-          legacyN1,
+          backend1,
           backend2,
           backend3
         );
 
-
-      const backendMatches =
-        this.getBackendMatches(
-          main,
-          legacyN1,
-          backend2,
-          backend3
-        );
-
-
-      /* -----------------------------------------------------
-         PAIR ANCHOR
-      ----------------------------------------------------- */
 
       const rawAnchor =
         7 - H;
-
 
       const anchor =
         this.norm(
           rawAnchor
         );
 
-
-      /* -----------------------------------------------------
-         PAIR ENGINE USES N6 ONLY
-      ----------------------------------------------------- */
 
       const pairsMap =
         this.buildPairs(
@@ -2416,8 +2149,7 @@ button{
           digit =>
             this.sortPairs(
               pairsMap[digit] || []
-            )
-            .slice(0,5)
+            ).slice(0,5)
         );
 
 
@@ -2428,35 +2160,19 @@ button{
 
 
       return {
-
-        /* PRIMARY */
         main,
-
-        /* BACKEND */
-        legacyN1,
+        backend1,
         backend2,
         backend3,
-
-        /* CONFIRMATION */
         vip,
-        backendMatches,
-
-        /* PAIR */
         rawAnchor,
         anchor,
         pairsMap,
         pairSets,
         consensus,
-
-        /* DISPLAY */
-        top1Digit:
-          main.first,
-
-        top2Digit:
-          main.second
-
+        top1Digit:main.first,
+        top2Digit:main.second
       };
-
     },
 
 
@@ -2464,45 +2180,27 @@ button{
        CAPTURE
     ======================================================= */
 
-    async captureCard(
-      cardId,
-      name
-    ){
+    async captureCard(cardId,name){
 
       const element =
-        document.getElementById(
-          cardId
-        );
-
+        document.getElementById(cardId);
 
       if(!element){
-
         return;
-
       }
 
-
       const controls =
-        [
-          ...element.querySelectorAll(
-            '[data-no-capture]'
-          )
-        ];
-
+        [...element.querySelectorAll(
+          '[data-no-capture]'
+        )];
 
       try{
 
-        if(
-          typeof html2canvas ===
-          'undefined'
-        ){
-
+        if(typeof html2canvas === 'undefined'){
           throw new Error(
             'ไม่พบระบบแคปภาพ กรุณาเปิดอินเทอร์เน็ตแล้วลองใหม่'
           );
-
         }
-
 
         controls.forEach(
           element =>
@@ -2515,21 +2213,16 @@ button{
           await html2canvas(
             element,
             {
-
               backgroundColor:'#ffffff',
-
-              scale:
-                Math.min(
-                  3,
-                  Math.max(
-                    2,
-                    window.devicePixelRatio || 2
-                  )
-                ),
-
+              scale:Math.min(
+                3,
+                Math.max(
+                  2,
+                  window.devicePixelRatio || 2
+                )
+              ),
               useCORS:true,
               logging:false
-
             }
           );
 
@@ -2539,18 +2232,16 @@ button{
 
 
         const safe =
-          String(
-            name || 'lottery'
-          )
-          .replace(
-            /[^ก-๙A-Za-z0-9_-]+/g,
-            '_'
-          )
-          .slice(0,60);
+          String(name || 'lottery')
+            .replace(
+              /[^ก-๙A-Za-z0-9_-]+/g,
+              '_'
+            )
+            .slice(0,60);
 
 
         link.download =
-          `${safe || 'lottery'}_N6_card.png`;
+          `${safe || 'lottery'}_N6plus_card.png`;
 
 
         link.href =
@@ -2563,7 +2254,7 @@ button{
 
 
         this.show(
-          '✓ แคปการ์ดแล้ว'
+          '✓ แคปการ์ด N6+ แล้ว'
         );
 
 
@@ -2575,17 +2266,13 @@ button{
           '❌ แคปภาพไม่สำเร็จ'
         );
 
-
       }finally{
 
         controls.forEach(
           element =>
-            element.style.visibility =
-              ''
+            element.style.visibility = ''
         );
-
       }
-
     },
 
 
@@ -2602,21 +2289,15 @@ button{
 
         navigator.clipboard
           .writeText(text)
-          .then(
-            () => this.show()
-          )
-          .catch(
-            () =>
-              this.fallbackCopy(text)
+          .then(() => this.show())
+          .catch(() =>
+            this.fallbackCopy(text)
           );
 
         return;
-
       }
 
-
       this.fallbackCopy(text);
-
     },
 
 
@@ -2627,59 +2308,44 @@ button{
           'textarea'
         );
 
-
-      textarea.value =
-        text;
-
+      textarea.value = text;
 
       document.body.appendChild(
         textarea
       );
 
-
       textarea.select();
-
 
       document.execCommand(
         'copy'
       );
 
-
       textarea.remove();
 
-
       this.show();
-
     },
 
-
-    /* =======================================================
-       TOAST
-    ======================================================= */
 
     show(message){
 
       const toast =
         $('toast');
 
-
       if(message){
-
         toast.textContent =
           message;
-
+      }else{
+        toast.textContent =
+          'คัดลอกแล้ว';
       }
-
 
       toast.classList.add(
         'show'
       );
 
-
       clearTimeout(
         this.toastTimer
       );
-
 
       this.toastTimer =
         setTimeout(
@@ -2689,7 +2355,6 @@ button{
             ),
           1500
         );
-
     },
 
 
@@ -2700,11 +2365,8 @@ button{
     nextDateLabel(record){
 
       if(!record){
-
         return '';
-
       }
-
 
       const value =
         String(
@@ -2723,20 +2385,15 @@ button{
         const day =
           Number(thai[1]);
 
-
         let year =
           Number(thai[3]);
 
-
         if(year < 100){
-
           year += 2500;
-
         }
 
 
         const months = [
-
           'ม.ค.',
           'ก.พ.',
           'มี.ค.',
@@ -2749,7 +2406,6 @@ button{
           'ต.ค.',
           'พ.ย.',
           'ธ.ค.'
-
         ];
 
 
@@ -2775,28 +2431,20 @@ button{
 
 
           return [
-
             String(
               date.getDate()
             ),
-
             months[
               date.getMonth()
             ],
-
             String(
               date.getFullYear() + 543
             )
-
           ].join(' ');
-
         }
-
       }
 
-
       return 'งวดถัดไป';
-
     },
 
 
@@ -2812,29 +2460,23 @@ button{
         );
 
 
-      if(
-        !parsed.records.length
-      ){
+      if(!parsed.records.length){
 
         $('result').innerHTML =
           '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
 
         return;
-
       }
 
 
       const scanner =
         $('scanner');
 
-
       const runButton =
         $('run');
 
 
-      runButton.disabled =
-        true;
-
+      runButton.disabled = true;
 
       scanner.style.display =
         'block';
@@ -2842,11 +2484,8 @@ button{
 
       const scan =
         message => {
-
-          $('scanText')
-            .textContent =
-              message;
-
+          $('scanText').textContent =
+            message;
         };
 
 
@@ -2869,7 +2508,6 @@ button{
 
 
         const cards = [];
-
         const copyBlocks = [];
 
 
@@ -2888,9 +2526,7 @@ button{
 
 
           if(!records.length){
-
             continue;
-
           }
 
 
@@ -2901,7 +2537,7 @@ button{
 
 
           scan(
-            `N6 กำลังประมวลผล ${group.name} • ${groupIndex}/${groups.length}`
+            `N6+ ประมวลผล ${group.name} • ${groupIndex}/${groups.length}`
           );
 
 
@@ -2915,17 +2551,24 @@ button{
             );
 
 
-          /* -------------------------------------------------
-             MAIN N6 DIGITS
-          ------------------------------------------------- */
+          /* ---------------------------------------------------
+             INTERNAL 1,000-ROUND AUDIT
+          --------------------------------------------------- */
+
+          const audit =
+            this.runInternalAudit(
+              latest.n3,
+              latest.n2
+            );
+
+
+          const boundaryAudit =
+            this.runBoundaryAudit();
+
 
           const mainDigits =
             result.main.set;
 
-
-          /* -------------------------------------------------
-             PAIRS FROM N6 ONLY
-          ------------------------------------------------- */
 
           const pair1 =
             result.pairSets[0] || [];
@@ -2941,10 +2584,6 @@ button{
             );
 
 
-          /* -------------------------------------------------
-             PAIR HTML 1
-          ------------------------------------------------- */
-
           const pairHTML1 =
             pair1
               .map(pair => {
@@ -2952,16 +2591,14 @@ button{
                 const info =
                   result.consensus
                     .colorMap[
-                      this.pairKey(
-                        pair
-                      )
+                      this.pairKey(pair)
                     ];
 
 
                 const title =
                   info
                     ? `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
-                    : 'เลขเจาะ N6';
+                    : 'เลขเจาะ N6+';
 
 
                 return `
@@ -2973,14 +2610,9 @@ button{
                     title="${esc(title)}"
                   >${esc(pair)}</span>
                 `;
-
               })
               .join('');
 
-
-          /* -------------------------------------------------
-             PAIR HTML 2
-          ------------------------------------------------- */
 
           const pairHTML2 =
             pair2
@@ -2989,16 +2621,14 @@ button{
                 const info =
                   result.consensus
                     .colorMap[
-                      this.pairKey(
-                        pair
-                      )
+                      this.pairKey(pair)
                     ];
 
 
                 const title =
                   info
                     ? `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
-                    : 'เลขเจาะ N6';
+                    : 'เลขเจาะ N6+';
 
 
                 return `
@@ -3010,20 +2640,13 @@ button{
                     title="${esc(title)}"
                   >${esc(pair)}</span>
                 `;
-
               })
               .join('');
 
 
-          /* -------------------------------------------------
-             VIP DISPLAY
-          ------------------------------------------------- */
-
           const vipHTML =
             result.vip
-
               ? '<div class="vip-label">VIP+</div>'
-
               : '<div class="vip-label"></div>';
 
 
@@ -3031,21 +2654,15 @@ button{
             `lottery-card-${groupIndex}`;
 
 
-          /* -------------------------------------------------
-             ROW 1 — N6-A
-          ------------------------------------------------- */
-
           const row1 = `
             <div class="row">
 
               <span
                 class="digit digit-gold"
-                aria-label="N6 ตัวที่หนึ่ง"
+                aria-label="N6+ เลขเด่นตัวที่หนึ่ง"
               >${esc(mainDigits[0])}</span>
 
-              <span class="sep">
-                :
-              </span>
+              <span class="sep">:</span>
 
               <div class="pairs">
                 ${pairHTML1}
@@ -3055,21 +2672,15 @@ button{
           `;
 
 
-          /* -------------------------------------------------
-             ROW 2 — N6-B
-          ------------------------------------------------- */
-
           const row2 = `
             <div class="row">
 
               <span
                 class="digit digit-gold"
-                aria-label="N6 ตัวที่สอง"
+                aria-label="N6+ เลขเด่นตัวที่สอง"
               >${esc(mainDigits[1])}</span>
 
-              <span class="sep">
-                :
-              </span>
+              <span class="sep">:</span>
 
               <div class="pairs">
                 ${pairHTML2}
@@ -3079,31 +2690,30 @@ button{
           `;
 
 
+          const auditState =
+            audit.passed &&
+            boundaryAudit.passed
+              ? 'N6+ VERIFIED'
+              : 'N6+ AUDIT WARNING';
+
+
           const footer = `
+            <div class="engine-note">
+              <strong>N6+ MAIN</strong>
+              • Legacy N1 = Backend Support
+              • ${esc(auditState)}
+              • ${audit.rounds} รอบ deterministic audit
+            </div>
+
             <div class="brand-footer">
-
-              <span class="brand-star">
-                ✦
-              </span>
-
-              <span>
-                บ้านเงินกอง
-              </span>
-
-              <span class="brand-star">
-                ✦
-              </span>
-
+              <span class="brand-star">✦</span>
+              <span>บ้านเงินกอง</span>
+              <span class="brand-star">✦</span>
             </div>
           `;
 
 
-          /* -------------------------------------------------
-             CARD
-          ------------------------------------------------- */
-
           cards.push(`
-
             <article
               class="lottery"
               id="${cardId}"
@@ -3113,9 +2723,7 @@ button{
               <div class="lottery-head">
 
                 <div>
-
                   <div class="lottery-name">
-
                     <span class="flag">
                       ${this.flag(group.name)}
                     </span>
@@ -3123,24 +2731,19 @@ button{
                     <span>
                       ${esc(group.name)}
                     </span>
-
                   </div>
 
                   <div class="date">
                     ${esc(nextDate)}
                   </div>
-
                 </div>
 
-
                 ${vipHTML}
-
 
                 <div
                   class="card-actions"
                   data-no-capture="true"
                 >
-
                   <button
                     class="card-capture"
                     data-capture-card="${cardId}"
@@ -3148,51 +2751,35 @@ button{
                   >
                     📷 แคปการ์ด
                   </button>
-
                 </div>
 
               </div>
 
 
               <div class="rows">
-
                 ${row1}
-
                 ${row2}
-
               </div>
 
 
               ${footer}
 
             </article>
-
           `);
 
 
-          /* -------------------------------------------------
-             COPY OUTPUT
-          ------------------------------------------------- */
-
           copyBlocks.push(
-
             [
-
               `${this.flag(group.name)} ${group.name} | ${nextDate}`,
-
-              `${mainDigits[0]} : ${pair1.join('-')}`,
-
-              `${mainDigits[1]} : ${pair2.join('-')}`
-
+              `N6+ MAIN → ${mainDigits[0]} : ${pair1.join('-')}`,
+              `N6+ MAIN → ${mainDigits[1]} : ${pair2.join('-')}`
             ].join('\n')
-
           );
-
         }
 
 
         scan(
-          'ตรวจสอบ N6 Main และ Backend Confirmation...'
+          'ตรวจสอบ N6+ / Backend / Pair Engine...'
         );
 
 
@@ -3200,15 +2787,7 @@ button{
 
 
         scan(
-          'ตรวจสอบ Pair Engine...'
-        );
-
-
-        await yieldUI();
-
-
-        scan(
-          'FINALIZING N6 ENGINE...'
+          'FINALIZING N6+...'
         );
 
 
@@ -3224,9 +2803,7 @@ button{
 
 
         const all =
-          copyBlocks.join(
-            '\n\n'
-          );
+          copyBlocks.join('\n\n');
 
 
         this.lastCopyText =
@@ -3238,17 +2815,10 @@ button{
           <div class="summary">
 
             <span>
-
-              ประมวลผล N6 สำเร็จ
-
-              <strong>
-                ${cards.length}
-              </strong>
-
+              N6+ ประมวลผลสำเร็จ
+              <strong>${cards.length}</strong>
               ประเภท
-
             </span>
-
 
             <button
               class="copy"
@@ -3262,19 +2832,13 @@ button{
 
           ${
             parsed.errors.length
-
               ? `
-
                 <div class="errorbox">
-
                   ${parsed.errors
                     .map(esc)
                     .join('<br>')}
-
                 </div>
-
               `
-
               : ''
           }
 
@@ -3288,7 +2852,6 @@ button{
           >
             📋 คัดลอกหวยทั้งหมด
           </button>
-
         `;
 
 
@@ -3322,51 +2885,41 @@ button{
             button.onclick =
               () =>
                 this.captureCard(
-                  button.dataset.captureCard,
-                  button.dataset.captureName
+                  button.dataset
+                    .captureCard,
+                  button.dataset
+                    .captureName
                 );
-
           });
 
 
-        $('result')
-          .scrollIntoView({
-            behavior:'smooth',
-            block:'start'
-          });
+        $('result').scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
 
 
       }catch(error){
 
         console.error(error);
 
-
         scanner.style.display =
           'none';
-
 
         runButton.disabled =
           false;
 
-
         $('result').innerHTML = `
-
           <div class="errorbox">
-
-            ❌ เกิดข้อผิดพลาดระหว่างประมวลผล:
-
+            ❌ เกิดข้อผิดพลาดระหว่างประมวลผล N6+:
             ${esc(
-              error?.message || error
+              error?.message ||
+              error
             )}
-
           </div>
-
         `;
-
       }
-
     }
-
   };
 
 
@@ -3379,47 +2932,33 @@ button{
       app.calculate();
 
 
-  $('clearInput').onclick =
-    () => {
+  $('clearInput').onclick = () => {
 
-      $('bulkInput').value =
-        '';
+    $('bulkInput').value = '';
 
+    $('result').innerHTML = '';
 
-      $('result').innerHTML =
-        '';
+    $('scanner').style.display =
+      'none';
 
+    $('run').disabled =
+      false;
 
-      $('scanner')
-        .style
-        .display =
-          'none';
+    $('copyInput').disabled =
+      true;
 
+    app.lastCopyText = '';
 
-      $('run').disabled =
-        false;
+    $('bulkInput').focus();
 
-
-      $('copyInput').disabled =
-        true;
-
-
-      app.lastCopyText =
-        '';
-
-
-      $('bulkInput').focus();
-
-
-      app.show(
-        '✓ ล้างข้อมูลแล้ว'
-      );
-
-    };
+    app.show(
+      '✓ ล้างข้อมูลแล้ว'
+    );
+  };
 
 
 })();
 </script>
 
 </body>
-  </html>
+</html>
