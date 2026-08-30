@@ -2,15 +2,17 @@
 <!--
 MESTER LOTTO VIP+ — V15.2
 ============================================================
-AUDITED / CLEAN VERSION (N1 + V2 MAIN ENGINE + BACKEND SWAP)
+AUDITED / CLEAN VERSION (N1 + V2 VERSION 2.2 MAIN ENGINE + BACKEND SWAP)
 ============================================================
-- Main Model (Formula N1 + V2):
-  - Digit 1: (A + 3B + C + 3D + 3E + 6) mod 10
+- Main Model (Formula N1 + V2 Version 2.2):
+  - Digit 1: (A + 3B + C + 3D + 3E + K) mod 10
+    (Where K = 6 for Morning, 7 for Afternoon, 8 for Lao/Hanoi)
   - Digit 2: (-A - B - C + D - 3E + 1) mod 10
     (Where A=H, B=T, C=U, D=R1, E=R2)
-- Duplicate Digit Fix:
-  - If Digit 1 and Digit 2 are identical, Digit 2 is incremented by 1 (mod 10).
-- Backend Support Formulas:
+- Anti-Filter & Duplicate Digit Fix (Version 2.2):
+  - Anti-Filter: If Step_2 result equals Hundreds top (A), Step_2 += 1.
+  - Anti-Duplicate: If Digit 1 and Digit 2 are identical, Digit 2 += 1 (mod 10).
+- Backend Support Formulas (Former Main Model & Support):
   - Backend 1 (Former Main Model): Formula based on Mod 10 support
   - Backend 2 (Formula 2 / ~68.50%): Modular Arithmetic support
   - Backend 3 (Formula 3 / ~62.07%): Mod Sum support
@@ -603,7 +605,7 @@ button{
       <section class="hero">
         <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
         <h1>Multi-Lottery <em>VIP+</em></h1>
-        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรหลัก N1 + V2 ล่าสุด</p>
+        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรหลัก N1 + V2 เวอร์ชัน 2.2 ล่าสุด</p>
       </section>
 
       <div id="console">
@@ -1046,18 +1048,39 @@ button{
 
 
     /* =======================================================
-       MAIN MODEL (FORMULA N1 + V2)
+       MAIN MODEL (FORMULA N1 + V2 VERSION 2.2)
        - A = Hundreds top (H)
        - B = Tens top (T)
        - C = Units top (U)
        - D = Tens bottom (R1)
        - E = Units bottom (R2)
-       - Digit 1: (A + 3B + C + 3D + 3E + 6) mod 10
-       - Digit 2: (-A - B - C + D - 3E + 1) mod 10
-       - Duplicate Fix: If first === second, second = norm(second + 1)
+       - Dynamic Time-Constant (K): 
+         - Morning Stock = 6
+         - Afternoon Stock = 7
+         - Lao / Hanoi = 8
+         (Determined automatically via lottery name matching)
+       - Digit 1: (A + 3B + C + 3D + 3E + K) mod 10
+       - Step 2: (-A - B - C + D - 3E + 1)
+       - Anti-Filter: If Step 2 result equals A, Step 2 += 1
+       - Digit 2: Step 2 mod 10
+       - Anti-Duplicate Fix: If Digit 1 === Digit 2, Digit 2 = norm(Digit 2 + 1)
     ======================================================= */
 
-    mainModel(n3, n2){
+    getTimeConstant(name){
+      const n = String(name || '').toLowerCase();
+      // หวยชุดลาว/ฮานอย ใช้ K = 8
+      if(/ลาว|ฮานอย|เวียดนาม|vietnam|viet|lao/.test(n)) {
+        return 8;
+      }
+      // หุ้นรอบบ่าย ใช้ K = 7
+      if(/บ่าย|รอบบ่าย|pm|下午|下午场|午後/.test(n)) {
+        return 7;
+      }
+      // หุ้นรอบเช้าหรือทั่วไป ใช้ K = 6 เป็นค่ามาตรฐาน
+      return 6;
+    },
+
+    mainModel(n3, n2, lotteryName){
 
       const top = String(n3)
         .padStart(3,'0')
@@ -1075,15 +1098,23 @@ button{
       const D = bottom[0];
       const E = bottom[1];
 
-      // เด่น 1 = (A + 3B + C + 3D + 3E + 6) mod 10
-      const sum1 = A + (3 * B) + C + (3 * D) + (3 * E) + 6;
+      const K = this.getTimeConstant(lotteryName);
+
+      // เด่น 1 = (A + 3B + C + 3D + 3E + K) mod 10
+      const sum1 = A + (3 * B) + C + (3 * D) + (3 * E) + K;
       let first = this.norm(sum1);
 
-      // เด่น 2 = (-A - B - C + D - 3E + 1) mod 10
-      const sum2 = -A - B - C + D - (3 * E) + 1;
-      let second = this.norm(sum2);
+      // Step 2 สำหรับคำนวณเด่น 2
+      let step2 = -A - B - C + D - (3 * E) + 1;
 
-      // Check duplicate between digits and apply +1 offset if needed
+      // Anti-Filter: ถ้าผลลัพธ์ตรงกับหลักร้อยบน (A) พอดี ให้บวกเพิ่ม 1 แต้ม
+      if (step2 === A) {
+        step2 += 1;
+      }
+
+      let second = this.norm(step2);
+
+      // Anti-Duplicate Fix: ป้องกันเลขเด่นชนกันเองในกรณีออกเลขเบิ้ล
       if(first === second){
         second = this.norm(second + 1);
       }
@@ -1399,7 +1430,7 @@ button{
        MAIN ENGINE
     ======================================================= */
 
-    run(n3,n2){
+    run(n3,n2,lotteryName){
 
       const topDigits = String(n3)
         .padStart(3,'0')
@@ -1408,7 +1439,7 @@ button{
 
       const H = topDigits[0];
 
-      const main = this.mainModel(n3, n2);
+      const main = this.mainModel(n3, n2, lotteryName);
 
       const backend1 =
         this.backendFormula1(n3, n2);
@@ -1750,7 +1781,8 @@ button{
           const result =
             this.run(
               latest.n3,
-              latest.n2
+              latest.n2,
+              group.name
             );
 
           const mainDigits =
