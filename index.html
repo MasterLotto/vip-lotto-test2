@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V21.0 (SEPARATED AUDIT & PREDICTION ENGINE)
-===============================================================
+MESTER LOTTO VIP+ — V22.0 (AUDIT & 2-DIGIT PREDICTION ENGINE)
+==============================================================
 -->
 <html lang="th">
 <head>
@@ -10,7 +10,7 @@ MESTER LOTTO VIP+ — V21.0 (SEPARATED AUDIT & PREDICTION ENGINE)
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>Mester Lotto VIP+ — Separated Audit & Prediction Engine V21.0</title>
+<title>Mester Lotto VIP+ — Audit & 2-Digit Prediction Engine V22.0</title>
 
 <style>
 :root{
@@ -165,7 +165,6 @@ button{ cursor:pointer; }
 }
 .result{ margin-top:14px; }
 
-/* แยกสัดส่วนชัดเจนระหว่าง Audit กับ Prediction */
 .section-title{
   font-size:.8rem;
   font-weight:900;
@@ -304,16 +303,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Separated Audit & Prediction V21.0</small>
+            <small>Global Master Audit & 2-Digit Prediction V22.0</small>
           </div>
         </div>
-        <div class="pill">● SEPARATED MODULES</div>
+        <div class="pill">● GLOBAL MASTER TABLE & 2 DIGITS</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">STRICTLY SEPARATED ENGINE</span>
-        <h1>Audit & Prediction <em>Decoupled System</em></h1>
-        <p>ระบบแยกหน้าที่อิสระ 100%: <b>(1) ตารางออดิตย้อนหลัง (Audit Mode)</b> ทำหน้าที่ประเมินความแม่นยำและสถานะของสูตรโดยเฉพาะ และ <b>(2) ระบบคำนวณเลขเด่นงวดถัดไป (Prediction Mode)</b> ทำหน้าที่ดึงขุมพลังจากสูตรที่มีแรงส่งระยะสั้นมาประมวลผลหาเลขเด่นโดยไม่ปะปนกัน</p>
+        <span class="hero-tag">GLOBAL AUDIT & 2-DIGIT ENGINE</span>
+        <h1>Master Summary & <em>2-Digit Precision</em></h1>
+        <p>เพิ่มตารางออดิตสะสมรวมทุกหวย (Global Master Summary Table) เพื่อประเมินภาพรวมความแม่นยำของแต่ละสูตรข้ามหวย พร้อมทั้งปรับลดจำนวนเลขเด่นเหลือเพียง **2 ตัวเด่น** ตามความต้องการ</p>
       </section>
 
       <div id="console">
@@ -331,7 +330,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผลแยกส่วน (Audit & Predict)</button>
+            <button id="run" class="run">⚡ ประมวลผล Master Audit & 2-Digits</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -446,7 +445,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
   function updateIndicator(){
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v210');
+      const stored = localStorage.getItem('lottery_audit_master_records_v220');
       if(stored){
         const arr = JSON.parse(stored);
         $('recordCountIndicator').textContent = `สะสมในระบบ: ${arr.length} งวด`;
@@ -458,11 +457,61 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     }
   }
 
-  function renderSeparatedUI(auditDataMap, predictionDataMap){
+  function renderFullUI(globalAuditMap, auditDataMap, predictionDataMap){
     let html = '';
 
-    // ส่วนที่ 1: ตารางออดิตย้อนหลัง (Audit Mode - Strictly Separated)
-    html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลัง (Formula Historical Audit)</div>`;
+    // ส่วนที่ 0: ตารางสะสมรวมทุกหวย (Global Master Summary Table)
+    html += `<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย (Global Master Summary Table)</div>`;
+    html += `
+      <div class="summary-table-container">
+        <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (รวมทุกหวยในระบบ)</h3>
+        <table class="audit-table">
+          <thead>
+            <tr>
+              <th>ชื่อสูตร</th>
+              <th>งวดทดสอบรวม</th>
+              <th>เข้าสะสมรวม</th>
+              <th>หลุดสะสมรวม</th>
+              <th>Global Hit Rate (%)</th>
+              <th>สถานะภาพรวม</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    let bestGlobalFormula = '';
+    let highestGlobalRate = -1;
+    Object.keys(globalAuditMap).forEach(fName => {
+      if(globalAuditMap[fName].hitRate > highestGlobalRate){
+        highestGlobalRate = globalAuditMap[fName].hitRate;
+        bestGlobalFormula = fName;
+      }
+    });
+
+    Object.keys(globalAuditMap).forEach(fName => {
+      const g = globalAuditMap[fName];
+      const isBest = (fName === bestGlobalFormula);
+
+      html += `
+        <tr>
+          <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<br><span class="badge-best">แชมป์รวมทุกหวย 👑</span>' : ''}</td>
+          <td>${g.totalTested}</td>
+          <td style="color:#2e7d32; font-weight:bold;">${g.hits}</td>
+          <td style="color:#c62828;">${g.misses}</td>
+          <td style="font-weight:bold; color:${g.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${g.hitRate}%</td>
+          <td>${g.hitRate >= 60 ? '<span class="badge-status status-hot">ยอดเยี่ยม</span>' : '<span class="badge-status status-cooling">ปานกลาง</span>'}</td>
+        </tr>
+      `;
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    // ส่วนที่ 1: ตารางออดิตย้อนหลังรายหวย (Audit Mode)
+    html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลัง (Formula Historical Audit by Lottery)</div>`;
     
     Object.keys(auditDataMap).forEach(lotteryName => {
       const formulasResult = auditDataMap[lotteryName];
@@ -480,26 +529,13 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
                 <th>สถานะงวดล่าสุด</th>
                 <th>เข้าติดต่อกัน</th>
                 <th>หลุดติดต่อกัน</th>
-                <th>สถานะออดิต</th>
               </tr>
             </thead>
             <tbody>
       `;
 
-      let bestFormula = '';
-      let highestRate = -1;
       Object.keys(formulasResult).forEach(fName => {
         const f = formulasResult[fName];
-        if(f.hitRate > highestRate){
-          highestRate = f.hitRate;
-          bestFormula = fName;
-        }
-      });
-
-      Object.keys(formulasResult).forEach(fName => {
-        const f = formulasResult[fName];
-        const isBest = (fName === bestFormula);
-
         let badgeHTML = '<span class="badge-status status-hot">🟢 เข้า</span>';
         if(f.lastHit === false){
           if(f.curMissStreak >= 2){
@@ -511,7 +547,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
         html += `
           <tr>
-            <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<br><span class="badge-best">แชมป์ความแม่นยำ 🔥</span>' : ''}</td>
+            <td style="font-weight:bold; text-align:left;">${esc(fName)}</td>
             <td>${f.totalTested}</td>
             <td style="color:#2e7d32; font-weight:bold;">${f.hits}</td>
             <td style="color:#c62828;">${f.misses}</td>
@@ -519,7 +555,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             <td>${badgeHTML}</td>
             <td style="color:#2e7d32; font-weight:bold;">${f.curStreak} งวด</td>
             <td style="color:#c62828; font-weight:bold;">${f.curMissStreak} งวด</td>
-            <td>${f.hitRate >= 60 ? '✨ เสถียรสูง' : '⚠️ ระวังหลุด'}</td>
           </tr>
         `;
       });
@@ -531,8 +566,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    // ส่วนที่ 2: ระบบคำนวณเลขเด่นงวดถัดไป (Prediction Mode - Independent Momentum Engine)
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (Next Draw Prediction Engine)</div>`;
+    // ส่วนที่ 2: ระบบคำนวณเลขเด่นงวดถัดไป (Prediction Mode - เหลือแค่ 2 ตัวเด่น)
+    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (2-Digit Next Draw Prediction)</div>`;
 
     Object.keys(predictionDataMap).forEach(lotteryName => {
       const p = predictionDataMap[lotteryName];
@@ -541,9 +576,9 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <h3>หวย: ${esc(lotteryName)} (อ้างอิงจากงวดวันที่ ${esc(p.lastDate)})</h3>
           <div style="font-size:.5rem; color:#6b5f4f; font-family:'IBM Plex Mono',monospace; margin-bottom:6px;">
             • ผลออกงวดล่าสุด: ${esc(p.lastN3)} / ${esc(p.lastN2)}<br>
-            • ตรรกะแรงส่ง: ดึงสูตรที่มีพฤติกรรมหลุด 2 งวดแล้วเตรียมรีบาวด์ (Rebound) หรือสูตรที่กำลังเดินดี มาเวทคะแนนหาเลขเด่นอิสระ
+            • สกัดเน้นๆ เหลือ <b>2 ตัวเด่น</b> ประจำงวดจากคะแนนแรงส่ง (Momentum & Rebound)
           </div>
-          <div style="font-size:.55rem; font-weight:bold; color:#806329; margin-top:6px;">เลขเด่นแนะนำสำหรับงวดถัดไป:</div>
+          <div style="font-size:.55rem; font-weight:bold; color:#806329; margin-top:6px;">2 ตัวเด่นแนะนำสำหรับงวดถัดไป:</div>
           <div class="digit-chips">
             ${p.topDigits.map(d => `<div class="digit-chip">${d}</div>`).join('')}
           </div>
@@ -557,7 +592,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ระบบแยกส่วน Audit & Prediction สมบูรณ์แบบ 100%</span>
+        <span>ระบบ Global Master Audit & 2-Digits สมบูรณ์แบบ 100%</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -581,7 +616,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
     let masterRecords = [];
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v210');
+      const stored = localStorage.getItem('lottery_audit_master_records_v220');
       if(stored) masterRecords = JSON.parse(stored);
     } catch(e) {}
 
@@ -592,7 +627,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         else masterRecords.push(nr);
       });
       try {
-        localStorage.setItem('lottery_audit_master_records_v210', JSON.stringify(masterRecords));
+        localStorage.setItem('lottery_audit_master_records_v220', JSON.stringify(masterRecords));
       } catch(e) {}
     }
 
@@ -609,6 +644,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
     const auditDataMap = {};
     const predictionDataMap = {};
+    const globalAccumulator = {}; // สะสมสถิติรวมทุกหวยสำหรับแต่ละสูตร
+
+    Object.keys(formulas).forEach(fName => {
+      globalAccumulator[fName] = { totalTested: 0, hits: 0, misses: 0 };
+    });
 
     Object.keys(groups).forEach(lotteryName => {
       const recs = groups[lotteryName];
@@ -617,7 +657,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       auditDataMap[lotteryName] = {};
       const formulaNames = Object.keys(formulas);
 
-      // 1. MODULE: HISTORICAL AUDIT (รันย้อนหลังเพื่อดูความแม่นยำสูตร)
+      // 1. HISTORICAL AUDIT BY LOTTERY
       formulaNames.forEach(fName => {
         let hits = 0, misses = 0, currentStreak = 0, maxStreak = 0, currentMissStreak = 0, maxMissStreak = 0, totalTested = 0, lastHitResult = true;
 
@@ -640,6 +680,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           }
         }
 
+        // สะสมเข้า Global Accumulator
+        globalAccumulator[fName].totalTested += totalTested;
+        globalAccumulator[fName].hits += hits;
+        globalAccumulator[fName].misses += misses;
+
         const hitRate = totalTested > 0 ? Number(((hits / totalTested) * 100).toFixed(2)) : 0;
         auditDataMap[lotteryName][fName] = {
           totalTested, hits, misses, hitRate, maxStreak, maxMissStreak, 
@@ -647,8 +692,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         };
       });
 
-      // 2. MODULE: PREDICTION ENGINE (คำนวณหาเลขเด่นงวดถัดไปโดยใช้แรงส่ง)
-      // ใช้ข้อมูลจากงวดล่าสุด (recs[recs.length - 1]) มาคำนวณ
+      // 2. PREDICTION ENGINE (เหลือแค่ 2 ตัวเด่น)
       const latestRec = recs[recs.length - 1];
       const lTop = latestRec.n3.split('').map(Number);
       const lBot = latestRec.n2.split('').map(Number);
@@ -660,7 +704,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         const auditStats = auditDataMap[lotteryName][fName];
         const predicted = formulas[fName](lTop[0], lTop[1], lTop[2], lBot[0], lBot[1]);
 
-        // คำนวณคะแนนแรงส่งเฉพาะกิจสำหรับการทำนาย
         let weight = auditStats.hitRate;
         if(auditStats.lastHit === false && auditStats.curMissStreak === 2){
           weight += 30; // โบนัสรีบาวด์งวดที่ 3
@@ -676,7 +719,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       });
 
       const sortedDigits = Object.keys(digitScores).map(Number).sort((a,b) => digitScores[b] - digitScores[a]);
-      const topDigits = sortedDigits.slice(0, 5);
+      const topDigits = sortedDigits.slice(0, 2); // บังคับเหลือ 2 ตัวเด่นตามต้องการ
 
       const supportingFormulas = [];
       topDigits.forEach(d => {
@@ -690,12 +733,25 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         lastN3: latestRec.n3,
         lastN2: latestRec.n2,
         topDigits,
-        supportingFormulas: supportingFormulas.slice(0, 4)
+        supportingFormulas
       };
     });
 
-    renderSeparatedUI(auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลแยกส่วน Audit & Predict สำเร็จ');
+    // สรุปผล Global Master Audit Table
+    const globalAuditMap = {};
+    Object.keys(globalAccumulator).forEach(fName => {
+      const g = globalAccumulator[fName];
+      const hitRate = g.totalTested > 0 ? Number(((g.hits / g.totalTested) * 100).toFixed(2)) : 0;
+      globalAuditMap[fName] = {
+        totalTested: g.totalTested,
+        hits: g.hits,
+        misses: g.misses,
+        hitRate
+      };
+    });
+
+    renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
+    showToast('✓ ประมวลผล Global Master Audit & 2-Digits สำเร็จ');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -713,7 +769,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     if(clearGlobalBtn){
       clearGlobalBtn.onclick = () => {
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
-          try { localStorage.removeItem('lottery_audit_master_records_v210'); } catch(e){}
+          try { localStorage.removeItem('lottery_audit_master_records_v220'); } catch(e){}
           $('result').innerHTML = '';
           updateIndicator();
           showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย');
@@ -723,7 +779,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
     updateIndicator();
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v210');
+      const stored = localStorage.getItem('lottery_audit_master_records_v220');
       if(stored && JSON.parse(stored).length > 0) runEngine();
     } catch(e){}
   });
