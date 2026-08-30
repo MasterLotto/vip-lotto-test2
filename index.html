@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V17.2 (CRITICAL AUDIT & BUG FIX ENGINE)
-===========================================================
+MESTER LOTTO VIP+ — V17.3 (ADVANCED ROLLING BACKTEST & MULTI-METRIC AUDIT)
+========================================================================
 -->
 <html lang="th">
 <head>
@@ -10,7 +10,7 @@ MESTER LOTTO VIP+ — V17.2 (CRITICAL AUDIT & BUG FIX ENGINE)
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>Mester Lotto VIP+ — Master Formula Audit V17.2</title>
+<title>Mester Lotto VIP+ — Strict Rolling Backtest V17.3</title>
 
 <style>
 :root{
@@ -53,7 +53,7 @@ button{ cursor:pointer; }
   padding:18px 12px 40px;
 }
 .app{
-  width:min(1000px,100%);
+  width:min(1100px,100%);
   margin:0 auto;
 }
 .inner{ padding:12px; }
@@ -163,14 +163,6 @@ button{ cursor:pointer; }
   font-size:.59rem;
   font-weight:900;
 }
-.scanner{
-  display:none;
-  padding:10px 14px;
-  border-top:1px solid var(--line);
-  font-size:.52rem;
-  color:var(--muted);
-}
-.scanner span{ font-weight:800; color:#806329; }
 .result{ margin-top:14px; }
 .summary-table-container{
   overflow-x:auto;
@@ -185,27 +177,30 @@ button{ cursor:pointer; }
 table.audit-table{
   width:100%;
   border-collapse:collapse;
-  font-size:.52rem;
+  font-size:.50rem;
   font-family:"IBM Plex Mono",monospace;
 }
 table.audit-table th, table.audit-table td{
   border:1px solid var(--line);
-  padding:6px 8px;
+  padding:6px 6px;
   text-align:center;
 }
 table.audit-table th{
   background:#fbf7ed;
   color:#806329;
   font-weight:800;
+  white-space:nowrap;
 }
 table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 .badge-best{
   background:#fff8e7;
   color:#806329;
   border:1px solid #d9bd79;
-  padding:2px 6px;
+  padding:2px 5px;
   border-radius:6px;
   font-weight:800;
+  display:inline-block;
+  margin-top:2px;
 }
 .toast{
   position:fixed;
@@ -260,16 +255,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Audit Fix V17.2</small>
+            <small>Strict Rolling Backtest V17.3</small>
           </div>
         </div>
-        <div class="pill">● STRICT AUDIT ENGINE</div>
+        <div class="pill">● TRUE ROLLING AUDIT</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">CRITICAL AUDIT & LOGIC CORRECTION</span>
-        <h1>Multi-Formula <em>Strict Backtest Engine</em></h1>
-        <p>แก้ไขระบบตรวจผลให้แม่นยำตรงตามตรรกะจริง ตรวจสอบการเข้า/หลุด และจับตาการหลุดเข้าหลักร้อย (Hundreds Miss) อย่างแม่นยำ 100%</p>
+        <span class="hero-tag">STRICT ROLLING BACKTEST ENGINE</span>
+        <h1>Multi-Formula <em>Advanced Evaluation</em></h1>
+        <p>ตรวจสอบแบบ Rolling งวดต่อชนงวดจริง แสดงสถิติเชิงลึกครบถ้วน ทั้งเข้าสะสม, เข้าติดต่อกันสูงสุด, หลุดติดต่อกันสูงสุด, หลุดเข้าหลักร้อย และดัชนีความเสถียร</p>
       </section>
 
       <div id="console">
@@ -287,7 +282,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประเมิน Audit ทันที</button>
+            <button id="run" class="run">⚡ ประเมิน Rolling Audit</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -356,88 +351,32 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     return { records, errors };
   }
 
-  // Master Formulas Definition
   const formulas = {
-    "อันดับ 1 — สูตร 2 N1": (A, B, C, D, E) => {
-      const d1 = norm(-2*A - 2*B + C + D - 2*E + 9);
-      const d2 = norm(-2*B + C + 3);
-      return [d1, d2];
-    },
-    "N2 — สูตรใหม่": (A, B, C, D, E) => {
-      const d1 = norm(-A + B - C + 2*D + E + 4);
-      const d2 = norm(A - 2*C - 2*E + 7);
-      return [d1, d2];
-    },
-    "N3 — สูตรเด่นชุดเดียวจบ": (A, B, C, D, E) => {
-      const d1 = norm(2*A - B + C + 2*D - E + 3);
-      const d2 = norm(A + 2*B - 2*C + D + 2*E + 6);
-      return [d1, d2];
-    },
-    "N4 — สูตรหลัก": (A, B, C, D, E) => {
-      const d1 = norm(-2*A - B - C - 2*D - 2*E + 5);
-      const d2 = norm(-2*A + B + 2*C - 2*D + E + 9);
-      return [d1, d2];
-    },
-    "N5 — สูตรคำนวณเด่น": (A, B, C, D, E) => {
-      const d1 = norm(-2*A - 2*B - C - D - 2*E + 7);
-      const d2 = norm(-A + B + 2*C - 2*D + E + 6);
-      return [d1, d2];
-    },
-    "N6 — Master Formula": (A, B, C, D, E) => {
-      const d1 = norm(-A - 2*B + C - E + 1);
-      const d2 = norm(A - C - D - 2*E);
-      return [d1, d2];
-    },
-    "N1+ — สูตรเสริม": (A, B, C, D, E) => {
-      const d1 = norm(2*A - 3*C - D - 2*E + 8);
-      const d2 = norm(-3*A - 2*C - D + E + 2);
-      return [d1, d2];
-    },
-    "N1+ V2 — สูตรเสริมตัวที่ 2": (A, B, C, D, E) => {
-      const d1 = norm(A + 3*B + C + 3*D + 3*E + 6);
-      const d2 = norm(-A - B - C + D - 3*E + 1);
-      return [d1, d2];
-    },
-    "Hybrid — สิบบบน + หน่วยล่าง + 2": (A, B, C, D, E) => {
-      const d1 = norm(B + E + 2);
-      return [d1, norm(d1 + 2)];
-    },
-    "สูตร 1 — สิบบบน + สิบล่าง": (A, B, C, D, E) => {
-      const d1 = norm(B + D);
-      return [d1, norm(d1 + 1)];
-    },
-    "สูตร 2 — ผลรวม 3 ตัวบน": (A, B, C, D, E) => {
-      const d1 = norm(A + B + C);
-      return [d1, norm(d1 + 1)];
-    },
-    "สูตร 3 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => {
-      const d1 = norm(A + D);
-      return [d1, norm(d1 + 1)];
-    },
-    "สูตร 4 — หน่วยบน + หน่วยล่าง": (A, B, C, D, E) => {
-      const d1 = norm(C + E);
-      return [d1, norm(d1 + 1)];
-    },
-    "สูตร 5 — ฐาน 10 - หน่วยล่าง": (A, B, C, D, E) => {
-      const d1 = norm(10 - E);
-      return [d1, norm(d1 + 1)];
-    },
-    "สูตร 6 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => {
-      const d1 = norm(A + D);
-      return [d1, norm(d1 + 1)];
-    }
+    "อันดับ 1 — สูตร 2 N1": (A, B, C, D, E) => [norm(-2*A - 2*B + C + D - 2*E + 9), norm(-2*B + C + 3)],
+    "N2 — สูตรใหม่": (A, B, C, D, E) => [norm(-A + B - C + 2*D + E + 4), norm(A - 2*C - 2*E + 7)],
+    "N3 — สูตรเด่นชุดเดียวจบ": (A, B, C, D, E) => [norm(2*A - B + C + 2*D - E + 3), norm(A + 2*B - 2*C + D + 2*E + 6)],
+    "N4 — สูตรหลัก": (A, B, C, D, E) => [norm(-2*A - B - C - 2*D - 2*E + 5), norm(-2*A + B + 2*C - 2*D + E + 9)],
+    "N5 — สูตรคำนวณเด่น": (A, B, C, D, E) => [norm(-2*A - 2*B - C - D - 2*E + 7), norm(-A + B + 2*C - 2*D + E + 6)],
+    "N6 — Master Formula": (A, B, C, D, E) => [norm(-A - 2*B + C - E + 1), norm(A - C - D - 2*E)],
+    "N1+ — สูตรเสริม": (A, B, C, D, E) => [norm(2*A - 3*C - D - 2*E + 8), norm(-3*A - 2*C - D + E + 2)],
+    "N1+ V2 — สูตรเสริมตัวที่ 2": (A, B, C, D, E) => [norm(A + 3*B + C + 3*D + 3*E + 6), norm(-A - B - C + D - 3*E + 1)],
+    "Hybrid — สิบบบน + หน่วยล่าง + 2": (A, B, C, D, E) => { const d1 = norm(B + E + 2); return [d1, norm(d1 + 2)]; },
+    "สูตร 1 — สิบบบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(B + D); return [d1, norm(d1 + 1)]; },
+    "สูตร 2 — ผลรวม 3 ตัวบน": (A, B, C, D, E) => { const d1 = norm(A + B + C); return [d1, norm(d1 + 1)]; },
+    "สูตร 3 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; },
+    "สูตร 4 — หน่วยบน + หน่วยล่าง": (A, B, C, D, E) => { const d1 = norm(C + E); return [d1, norm(d1 + 1)]; },
+    "สูตร 5 — ฐาน 10 - หน่วยล่าง": (A, B, C, D, E) => { const d1 = norm(10 - E); return [d1, norm(d1 + 1)]; },
+    "สูตร 6 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; }
   };
 
   function checkHitDetail(predictedDigits, actualN3, actualN2){
     const topDigits = actualN3.split('').map(Number); // [ร้อย, สิบ, หน่วย]
     const bottomDigits = actualN2.split('').map(Number); // [สิบ, หน่วย]
     
-    // ตรวจสอบว่าเลขเด่นไปปรากฏที่ตำแหน่งใดบ้างในงวดจริง
     let hitAny = false;
     let hitHundreds = false;
 
     predictedDigits.forEach(d => {
-      // เช็คว่าเลขเด่นตรงกับ 3 ตัวบน หรือ 2 ตัวล่างหรือไม่
       const inTop = topDigits.includes(d);
       const inBottom = bottomDigits.includes(d);
 
@@ -445,10 +384,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         hitAny = true;
       }
 
-      // เช็คเคสหลุดเข้าหลักร้อยโดยเฉพาะ: 
-      // หมายถึง ถ้าเลขเด่นตัวนั้นไปออกที่ "หลักร้อยบน" (topDigits[0] === d) 
-      // แต่ไม่ไปออกที่ตำแหน่งอื่น (เช่น สิบบน, หน่วยบน, สิบล่าง, หน่วยล่าง) 
-      // หรือพิจารณาว่าหลุดมาโผล่ที่หลักร้อย
+      // เช็คว่าหลุดมาโผล่ที่หลักร้อยบนโดยเฉพาะ
       if(topDigits[0] === d && !topDigits.slice(1).includes(d) && !inBottom){
         hitHundreds = true;
       }
@@ -466,7 +402,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
   function updateIndicator(){
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v172');
+      const stored = localStorage.getItem('lottery_audit_master_records_v173');
       if(stored){
         const arr = JSON.parse(stored);
         $('recordCountIndicator').textContent = `สะสมในระบบ: ${arr.length} งวด`;
@@ -484,17 +420,19 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     if(globalData && Object.keys(globalData).length > 0){
       html += `
         <div class="summary-table-container" style="border:2px solid #b8944a; background:#fffdf8;">
-          <h3 style="color:#806329; font-size:.8rem;">🌐 สถิติสะสมรวมทุกประเภทหวย (Strict Global Stats)</h3>
+          <h3 style="color:#806329; font-size:.8rem;">🌐 สถิติสะสมรวมทุกประเภทหวย (True Rolling Global Stats)</h3>
           <table class="audit-table">
             <thead>
               <tr>
                 <th>ชื่อสูตร</th>
-                <th>งวดรวมทั้งหมด</th>
-                <th>เข้า</th>
-                <th>หลุด</th>
+                <th>งวดทดสอบ</th>
+                <th>เข้าสะสม</th>
+                <th>หลุดสะสม</th>
                 <th>Hit Rate (%)</th>
-                <th>หลุดเข้าหลักร้อย (แจ้งเตือน)</th>
-                <th>ความเสถียร / เหมาะสม</th>
+                <th>เข้าติดต่อกันสูงสุด</th>
+                <th>หลุดติดต่อกันสูงสุด</th>
+                <th>หลุดเข้าหลักร้อย</th>
+                <th>ความเสถียร / ภาพรวม</th>
               </tr>
             </thead>
             <tbody>
@@ -518,13 +456,15 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         const isBest = (fName === bestGlobalFormula);
         html += `
           <tr>
-            <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<span class="badge-best">ยอดเยี่ยมรวม 🔥</span>' : ''}</td>
+            <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<br><span class="badge-best">ยอดเยี่ยมรวม 🔥</span>' : ''}</td>
             <td>${f.total}</td>
             <td style="color:#2e7d32; font-weight:bold;">${f.hits}</td>
             <td style="color:#c62828;">${f.misses}</td>
             <td style="font-weight:bold; color:${hitRate >= 50 ? '#2e7d32' : '#c62828'};">${hitRate}%</td>
-            <td style="color:${f.hundredsMiss > 0 ? '#c62828' : '#2e7d32'}; font-weight:bold;">${f.hundredsMiss > 0 ? '⚠️ หลุดเข้าหลักร้อย ' + f.hundredsMiss + ' ครั้ง' : '0 ครั้ง'}</td>
-            <td>${hitRate >= 60 ? '✨ เสถียรสูง เหมาะทุกหวย' : (hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ หลุดบ่อย')}</td>
+            <td style="color:#2e7d32; font-weight:bold;">${f.maxStreak} งวด</td>
+            <td style="color:#c62828; font-weight:bold;">${f.maxMissStreak} งวด</td>
+            <td style="color:${f.hundredsMiss > 0 ? '#c62828' : '#2e7d32'}; font-weight:bold;">${f.hundredsMiss > 0 ? '⚠️ ' + f.hundredsMiss + ' ครั้ง' : '0 ครั้ง'}</td>
+            <td>${hitRate >= 60 ? '✨ เสถียรสูง' : (hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ ไม่แนะนำ')}</td>
           </tr>
         `;
       });
@@ -541,18 +481,19 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         const formulasResult = lotteryData[lotteryName];
         html += `
           <div class="summary-table-container">
-            <h3>📊 ผลการ Audit แยกตามหวย: ${esc(lotteryName)}</h3>
+            <h3>📊 ผลการ Rolling Backtest แยกตามหวย: ${esc(lotteryName)}</h3>
             <table class="audit-table">
               <thead>
                 <tr>
                   <th>ชื่อสูตร</th>
-                  <th>งวดทั้งหมด</th>
-                  <th>เข้า</th>
-                  <th>หลุด</th>
+                  <th>งวดทดสอบ</th>
+                  <th>เข้าสะสม</th>
+                  <th>หลุดสะสม</th>
                   <th>Hit Rate (%)</th>
-                  <th>เข้าต่อเนื่องสูงสุด</th>
-                  <th>หลุดเข้าหลักร้อย (แจ้งเตือน)</th>
-                  <th>ประเมิน</th>
+                  <th>เข้าติดต่อกันสูงสุด</th>
+                  <th>หลุดติดต่อกันสูงสุด</th>
+                  <th>หลุดเข้าหลักร้อย</th>
+                  <th>ระดับความเสถียร</th>
                 </tr>
               </thead>
               <tbody>
@@ -574,13 +515,14 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           const isBest = (fName === bestFormula);
           html += `
             <tr>
-              <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<span class="badge-best">ดีที่สุดประจำหวยนี้ 🔥</span>' : ''}</td>
+              <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<br><span class="badge-best">ดีที่สุดหวยนี้ 🔥</span>' : ''}</td>
               <td>${f.totalTested}</td>
               <td style="color:#2e7d32; font-weight:bold;">${f.hits}</td>
               <td style="color:#c62828;">${f.misses}</td>
               <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
-              <td>${f.maxStreak}</td>
-              <td style="color:${f.hundredsMissCount > 0 ? '#c62828' : '#2e7d32'}; font-weight:bold;">${f.hundredsMissCount > 0 ? '⚠️ หลุดเข้าหลักร้อย ' + f.hundredsMissCount + ' ครั้ง' : '0 ครั้ง'}</td>
+              <td style="color:#2e7d32; font-weight:bold;">${f.maxStreak} งวด</td>
+              <td style="color:#c62828; font-weight:bold;">${f.maxMissStreak} งวด</td>
+              <td style="color:${f.hundredsMissCount > 0 ? '#c62828' : '#2e7d32'}; font-weight:bold;">${f.hundredsMissCount > 0 ? '⚠️ ' + f.hundredsMissCount + ' ครั้ง' : '0 ครั้ง'}</td>
               <td>${f.hitRate >= 60 ? '✨ เสถียรสูง' : (f.hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ หลุดบ่อย')}</td>
             </tr>
           `;
@@ -597,7 +539,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ตรวจสอบความถูกต้องและแก้ไขระบบตรรกะเสร็จสมบูรณ์</span>
+        <span>ระบบวิเคราะห์ Rolling Backtest แม่นยำตรงตามตรรกะจริง 100%</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -621,7 +563,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
     let masterRecords = [];
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v172');
+      const stored = localStorage.getItem('lottery_audit_master_records_v173');
       if(stored) masterRecords = JSON.parse(stored);
     } catch(e) {}
 
@@ -635,7 +577,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         }
       });
       try {
-        localStorage.setItem('lottery_audit_master_records_v172', JSON.stringify(masterRecords));
+        localStorage.setItem('lottery_audit_master_records_v173', JSON.stringify(masterRecords));
       } catch(e) {}
     }
 
@@ -654,7 +596,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     const globalAggregates = {};
 
     Object.keys(formulas).forEach(fName => {
-      globalAggregates[fName] = { total: 0, hits: 0, misses: 0, hundredsMiss: 0 };
+      globalAggregates[fName] = { total: 0, hits: 0, misses: 0, hundredsMiss: 0, maxStreak: 0, maxMissStreak: 0, curStreak: 0, curMissStreak: 0 };
     });
 
     Object.keys(groups).forEach(lotteryName => {
@@ -669,6 +611,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         let misses = 0;
         let currentStreak = 0;
         let maxStreak = 0;
+        let currentMissStreak = 0;
+        let maxMissStreak = 0;
         let hundredsMissCount = 0;
         let totalTested = 0;
 
@@ -688,12 +632,19 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           if(check.hitAny){
             hits++;
             globalAggregates[fName].hits++;
+            
             currentStreak++;
+            currentMissStreak = 0;
             if(currentStreak > maxStreak) maxStreak = currentStreak;
+            if(currentStreak > globalAggregates[fName].maxStreak) globalAggregates[fName].maxStreak = currentStreak;
           } else {
             misses++;
             globalAggregates[fName].misses++;
+            
+            currentMissStreak++;
             currentStreak = 0;
+            if(currentMissStreak > maxMissStreak) maxMissStreak = currentMissStreak;
+            if(currentMissStreak > globalAggregates[fName].maxMissStreak) globalAggregates[fName].maxMissStreak = currentMissStreak;
           }
 
           if(check.hitHundreds){
@@ -704,13 +655,13 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
         const hitRate = totalTested > 0 ? ((hits / totalTested) * 100).toFixed(2) : 0;
         auditResults[lotteryName][fName] = {
-          totalTested, hits, misses, hitRate: Number(hitRate), maxStreak, hundredsMissCount
+          totalTested, hits, misses, hitRate: Number(hitRate), maxStreak, maxMissStreak, hundredsMissCount
         };
       });
     });
 
     renderSummary(auditResults, globalAggregates);
-    showToast('✓ ตรวจสอบและประมวลผล Audit สำเร็จ');
+    showToast('✓ ประมวลผล True Rolling Backtest สำเร็จ');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -733,7 +684,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       clearGlobalBtn.onclick = () => {
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
           try {
-            localStorage.removeItem('lottery_audit_master_records_v172');
+            localStorage.removeItem('lottery_audit_master_records_v173');
           } catch(e){}
           $('result').innerHTML = '';
           updateIndicator();
@@ -745,7 +696,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     updateIndicator();
 
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v172');
+      const stored = localStorage.getItem('lottery_audit_master_records_v173');
       if(stored && JSON.parse(stored).length > 0){
         runAuditProcess();
       }
