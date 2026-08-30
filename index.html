@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V16.2 (FIXED AUDIT & BACKTEST ENGINE)
-============================================================
+MESTER LOTTO VIP+ — V17.0 (MASTER MULTI-FORMULA AUDIT & GLOBAL STATS ENGINE)
+==========================================================================
 -->
 <html lang="th">
 <head>
@@ -10,7 +10,7 @@ MESTER LOTTO VIP+ — V16.2 (FIXED AUDIT & BACKTEST ENGINE)
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>Mester Lotto VIP+ — Full Formula Audit V16.2</title>
+<title>Mester Lotto VIP+ — Master Formula Audit V17.0</title>
 
 <style>
 :root{
@@ -53,7 +53,7 @@ button{ cursor:pointer; }
   padding:18px 12px 40px;
 }
 .app{
-  width:min(940px,100%);
+  width:min(1000px,100%);
   margin:0 auto;
 }
 .inner{ padding:12px; }
@@ -117,7 +117,7 @@ button{ cursor:pointer; }
 .bulk{
   display:block;
   width:100%;
-  min-height:220px;
+  min-height:200px;
   resize:vertical;
   padding:12px;
   border:1px solid var(--line);
@@ -133,7 +133,7 @@ button{ cursor:pointer; }
 .actions{
   padding:0 14px 14px;
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1fr 1fr 1fr;
   gap:8px;
 }
 .run{
@@ -151,6 +151,15 @@ button{ cursor:pointer; }
   border-radius:12px;
   background:#fff;
   color:#8b8173;
+  font-size:.59rem;
+  font-weight:900;
+}
+.clear-global{
+  height:43px;
+  border:1px solid #f0c9cd;
+  border-radius:12px;
+  background:#fff0f1;
+  color:#a83d46;
   font-size:.59rem;
   font-weight:900;
 }
@@ -251,22 +260,22 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Full Formula Audit V16.2</small>
+            <small>Master Formula Audit V17.0</small>
           </div>
         </div>
-        <div class="pill">● FIXED ENGINE</div>
+        <div class="pill">● MASTER FORMULAS LOADED</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">COMPREHENSIVE FORMULA AUDIT SYSTEM</span>
-        <h1>Multi-Formula <em>Backtest & Audit</em></h1>
-        <p>ระบบตรวจสอบความแม่นยำรวมทุกสูตร แก้ไขปัญหาปุ่มกดแล้วไม่ทำงานเรียบร้อยแล้ว</p>
+        <span class="hero-tag">MASTER MULTI-FORMULA AUDIT & GLOBAL STATS</span>
+        <h1>Multi-Formula <em>Backtest & Global Engine</em></h1>
+        <p>ระบบประเมินสูตรครบถ้วนทุกชุด (N1, N2, N3, N4, N5, N6, N1+, N1+ V2, Hybrid, สูตร 1-6) พร้อมระบบรวมสถิติทุกหวยถาวร</p>
       </section>
 
       <div id="console">
         <section class="panel">
           <div class="bulkbox">
-            <label>📥 ข้อมูลสถิติย้อนหลังสำหรับ Audit (รูปแบบ: ชื่อหวย | วันที่ / บรรทัดถัดมา 3 ตัวบน / บรรทัดถัดมา 2 ตัวล่าง)</label>
+            <label>📥 กรอกข้อมูลสถิติย้อนหลัง (รูปแบบ: ชื่อหวย | วันที่ / บรรทัดถัดมา 3 ตัวบน / บรรทัดถัดมา 2 ตัวล่าง)</label>
             <textarea
               id="bulkInput"
               class="bulk"
@@ -276,7 +285,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
           <div class="actions">
             <button id="run" class="run">⚡ เริ่ม Audit ทุกสูตร</button>
-            <button id="clearInput" class="clear">ล้างข้อมูลทั้งหมด</button>
+            <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
+            <button id="clearGlobal" class="clear-global">ล้างสถิติสะสมทั้งหมด</button>
           </div>
 
           <div id="scanner" class="scanner">
@@ -347,55 +357,92 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     return { records, errors };
   }
 
+  // Master Formulas Definition
   const formulas = {
-    "สูตรใหม่ (สิบบบน + หน่วยล่าง + 2)": (A, B, C, D, E) => {
+    "อันดับ 1 — สูตร 2 N1": (A, B, C, D, E) => {
+      const d1 = norm(-2*A - 2*B + C + D - 2*E + 9);
+      const d2 = norm(-2*B + C + 3);
+      return [d1, d2];
+    },
+    "N2 — สูตรใหม่": (A, B, C, D, E) => {
+      const d1 = norm(-A + B - C + 2*D + E + 4);
+      const d2 = norm(A - 2*C - 2*E + 7);
+      return [d1, d2];
+    },
+    "N3 — สูตรเด่นชุดเดียวจบ": (A, B, C, D, E) => {
+      const d1 = norm(2*A - B + C + 2*D - E + 3);
+      const d2 = norm(A + 2*B - 2*C + D + 2*E + 6);
+      return [d1, d2];
+    },
+    "N4 — สูตรหลัก": (A, B, C, D, E) => {
+      const d1 = norm(-2*A - B - C - 2*D - 2*E + 5);
+      const d2 = norm(-2*A + B + 2*C - 2*D + E + 9);
+      return [d1, d2];
+    },
+    "N5 — สูตรคำนวณเด่น": (A, B, C, D, E) => {
+      const d1 = norm(-2*A - 2*B - C - D - 2*E + 7);
+      const d2 = norm(-A + B + 2*C - 2*D + E + 6);
+      return [d1, d2];
+    },
+    "N6 — Master Formula": (A, B, C, D, E) => {
+      const d1 = norm(-A - 2*B + C - E + 1);
+      const d2 = norm(A - C - D - 2*E);
+      return [d1, d2];
+    },
+    "N1+ — สูตรเสริม": (A, B, C, D, E) => {
+      const d1 = norm(2*A - 3*C - D - 2*E + 8);
+      const d2 = norm(-3*A - 2*C - D + E + 2);
+      return [d1, d2];
+    },
+    "N1+ V2 — สูตรเสริมตัวที่ 2": (A, B, C, D, E) => {
+      const d1 = norm(A + 3*B + C + 3*D + 3*E + 6);
+      const d2 = norm(-A - B - C + D - 3*E + 1);
+      return [d1, d2];
+    },
+    "Hybrid — สิบบบน + หน่วยล่าง + 2": (A, B, C, D, E) => {
       const d1 = norm(B + E + 2);
       return [d1, norm(d1 + 2)];
     },
-    "สูตร 1 (สิบบบน + สิบล่าง)": (A, B, C, D, E) => {
+    "สูตร 1 — สิบบบน + สิบล่าง": (A, B, C, D, E) => {
       const d1 = norm(B + D);
       return [d1, norm(d1 + 1)];
     },
-    "สูตร 2 (ผลรวม 3 ตัวบน)": (A, B, C, D, E) => {
+    "สูตร 2 — ผลรวม 3 ตัวบน": (A, B, C, D, E) => {
       const d1 = norm(A + B + C);
       return [d1, norm(d1 + 1)];
     },
-    "สูตร 3 (ร้อยบน + สิบล่าง)": (A, B, C, D, E) => {
+    "สูตร 3 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => {
       const d1 = norm(A + D);
       return [d1, norm(d1 + 1)];
     },
-    "สูตร 4 (หน่วยบน + หน่วยล่าง)": (A, B, C, D, E) => {
+    "สูตร 4 — หน่วยบน + หน่วยล่าง": (A, B, C, D, E) => {
       const d1 = norm(C + E);
       return [d1, norm(d1 + 1)];
     },
-    "สูตร 5 (ฐาน 10 - หน่วยล่าง)": (A, B, C, D, E) => {
+    "สูตร 5 — ฐาน 10 - หน่วยล่าง": (A, B, C, D, E) => {
       const d1 = norm(10 - E);
       return [d1, norm(d1 + 1)];
     },
-    "สูตร 6 (ร้อยบน + หน่วยสิบล่าง -> N6)": (A, B, C, D, E) => {
-      const aVal = norm(-A - 2*B + C - E + 1);
-      const bVal = norm(A - C - D - 2*E);
-      return [aVal, bVal];
-    },
-    "สูตรทดสอบ ตัวที่ 1": (A, B, C, D, E) => {
-      const d1 = norm(B + C + E + 3);
-      return [d1, norm(d1 + 1)];
-    },
-    "สูตรทดสอบ ตัวที่ 2": (A, B, C, D, E) => {
-      const d1 = norm(A + B + D - 1);
+    "สูตร 6 — ร้อยบน + หน่วยสิบล่าง": (A, B, C, D, E) => {
+      const d1 = norm(A + D); // ใช้หลักสิบล่างร่วมด้วยตามบริบท
       return [d1, norm(d1 + 1)];
     }
   };
 
-  function checkHit(predictedDigits, actualN3, actualN2){
+  function checkHitDetail(predictedDigits, actualN3, actualN2){
     const topDigits = actualN3.split('').map(Number);
     const bottomDigits = actualN2.split('').map(Number);
     const allActual = [...topDigits, ...bottomDigits];
-    let hit = false;
+    
+    let hitAny = false;
+    let hitHundreds = false;
+
     predictedDigits.forEach(d => {
-      if(allActual.includes(d)) hit = true;
+      if(allActual.includes(d)) hitAny = true;
+      if(topDigits[0] === d) hitHundreds = true; // ชนหลักร้อยบนโดยตรง
     });
-    return hit;
+
+    return { hitAny, hitHundreds };
   }
 
   function showToast(msg){
@@ -405,58 +452,54 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     setTimeout(() => toast.classList.remove('show'), 1500);
   }
 
-  function renderSummary(data){
-    if(!data || Object.keys(data).length === 0){
-      $('result').innerHTML = '<div class="errorbox">ไม่มีข้อมูลเพียงพอสำหรับการทำ Backtest (ต้องการข้อมูลย้อนหลังอย่างน้อย 2 งวด)</div>';
-      return;
-    }
-
+  function renderSummary(lotteryData, globalData){
     let html = '';
-    Object.keys(data).forEach(lotteryName => {
-      const formulasResult = data[lotteryName];
+
+    // 1. Render Global Combined Summary (รวมทุกหวย)
+    if(globalData && Object.keys(globalData).length > 0){
       html += `
-        <div class="summary-table-container">
-          <h3>📊 ผลการ Audit ทุกสูตร: ${esc(lotteryName)}</h3>
+        <div class="summary-table-container" style="border:2px solid #b8944a; background:#fffdf8;">
+          <h3 style="color:#806329; font-size:.8rem;">🌐 สถิติสะสมรวมทุกประเภทหวย (Global Aggregated Stats)</h3>
           <table class="audit-table">
             <thead>
               <tr>
                 <th>ชื่อสูตร</th>
-                <th>งวดทั้งหมด</th>
+                <th>งวดรวมทั้งหมด</th>
                 <th>เข้า</th>
                 <th>หลุด</th>
                 <th>Hit Rate (%)</th>
-                <th>เข้าต่อเนื่องสูงสุด</th>
-                <th>หลุดสะสมสูงสุด</th>
-                <th>ประเมิน</th>
+                <th>หลุดหลักร้อย (แจ้งเตือน)</th>
+                <th>ความเสถียร / เหมาะสม</th>
               </tr>
             </thead>
             <tbody>
       `;
 
-      let bestFormula = '';
-      let highestRate = -1;
+      let bestGlobalFormula = '';
+      let highestGlobalRate = -1;
 
-      Object.keys(formulasResult).forEach(fName => {
-        const f = formulasResult[fName];
-        if(f.hitRate > highestRate){
-          highestRate = f.hitRate;
-          bestFormula = fName;
+      Object.keys(globalData).forEach(fName => {
+        const f = globalData[fName];
+        const rate = f.total > 0 ? (f.hits / f.total) * 100 : 0;
+        if(rate > highestGlobalRate){
+          highestGlobalRate = rate;
+          bestGlobalFormula = fName;
         }
       });
 
-      Object.keys(formulasResult).forEach(fName => {
-        const f = formulasResult[fName];
-        const isBest = (fName === bestFormula);
+      Object.keys(globalData).forEach(fName => {
+        const f = globalData[fName];
+        const hitRate = f.total > 0 ? ((f.hits / f.total) * 100).toFixed(2) : 0;
+        const isBest = (fName === bestGlobalFormula);
         html += `
           <tr>
-            <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<span class="badge-best">ดีที่สุด 🔥</span>' : ''}</td>
-            <td>${f.totalTested}</td>
+            <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<span class="badge-best">ยอดเยี่ยมรวม 🔥</span>' : ''}</td>
+            <td>${f.total}</td>
             <td style="color:#2e7d32; font-weight:bold;">${f.hits}</td>
             <td style="color:#c62828;">${f.misses}</td>
-            <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
-            <td>${f.maxStreak}</td>
-            <td>${f.maxMiss}</td>
-            <td>${f.hitRate >= 60 ? '✨ เสถียรสูง' : (f.hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ หลุดบ่อย')}</td>
+            <td style="font-weight:bold; color:${hitRate >= 50 ? '#2e7d32' : '#c62828'};">${hitRate}%</td>
+            <td style="color:#8b6508; font-weight:600;">${f.hundredsMiss || 0} ครั้ง</td>
+            <td>${hitRate >= 60 ? '✨ เสถียรสูง เหมาะทุกหวย' : (hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ หลุดบ่อย')}</td>
           </tr>
         `;
       });
@@ -466,12 +509,71 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </table>
         </div>
       `;
-    });
+    }
+
+    // 2. Render Individual Lottery Breakdown
+    if(lotteryData && Object.keys(lotteryData).length > 0){
+      Object.keys(lotteryData).forEach(lotteryName => {
+        const formulasResult = lotteryData[lotteryName];
+        html += `
+          <div class="summary-table-container">
+            <h3>📊 ผลการ Audit แยกตามหวย: ${esc(lotteryName)}</h3>
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>ชื่อสูตร</th>
+                  <th>งวดทั้งหมด</th>
+                  <th>เข้า</th>
+                  <th>หลุด</th>
+                  <th>Hit Rate (%)</th>
+                  <th>เข้าต่อเนื่องสูงสุด</th>
+                  <th>หลุดเข้าหลักร้อย (แจ้งเตือน)</th>
+                  <th>ประเมิน</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        let bestFormula = '';
+        let highestRate = -1;
+
+        Object.keys(formulasResult).forEach(fName => {
+          const f = formulasResult[fName];
+          if(f.hitRate > highestRate){
+            highestRate = f.hitRate;
+            bestFormula = fName;
+          }
+        });
+
+        Object.keys(formulasResult).forEach(fName => {
+          const f = formulasResult[fName];
+          const isBest = (fName === bestFormula);
+          html += `
+            <tr>
+              <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<span class="badge-best">ดีที่สุดประจำหวยนี้ 🔥</span>' : ''}</td>
+              <td>${f.totalTested}</td>
+              <td style="color:#2e7d32; font-weight:bold;">${f.hits}</td>
+              <td style="color:#c62828;">${f.misses}</td>
+              <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
+              <td>${f.maxStreak}</td>
+              <td style="color:${f.hundredsMissCount > 0 ? '#c62828' : '#2e7d32'}; font-weight:bold;">${f.hundredsMissCount > 0 ? '⚠️ หลุดเข้าหลักร้อย ' + f.hundredsMissCount + ' ครั้ง' : 'ปกติดี'}</td>
+              <td>${f.hitRate >= 60 ? '✨ เสถียรสูง' : (f.hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ หลุดบ่อย')}</td>
+            </tr>
+          `;
+        });
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      });
+    }
 
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>บันทึกผลถาวรเรียบร้อยแล้ว</span>
+        <span>บันทึกผลถาวรแยกรายหวยและสถิติสะสมรวมทุกหวยเรียบร้อยแล้ว</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -493,6 +595,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     const auditResults = {};
+    const globalAggregates = {};
+
+    Object.keys(formulas).forEach(fName => {
+      globalAggregates[fName] = { total: 0, hits: 0, misses: 0, hundredsMiss: 0 };
+    });
 
     Object.keys(groups).forEach(lotteryName => {
       const recs = groups[lotteryName];
@@ -506,8 +613,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         let misses = 0;
         let currentStreak = 0;
         let maxStreak = 0;
-        let currentMiss = 0;
-        let maxMiss = 0;
+        let hundredsMissCount = 0;
         let totalTested = 0;
 
         for(let i = 0; i < recs.length - 1; i++){
@@ -518,41 +624,49 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           const bot = curr.n2.split('').map(Number);
           
           const predicted = formulas[fName](top[0], top[1], top[2], bot[0], bot[1]);
-          const isHit = checkHit(predicted, next.n3, next.n2);
+          const check = checkHitDetail(predicted, next.n3, next.n2);
 
           totalTested++;
-          if(isHit){
+          globalAggregates[fName].total++;
+
+          if(check.hitAny){
             hits++;
+            globalAggregates[fName].hits++;
             currentStreak++;
-            currentMiss = 0;
             if(currentStreak > maxStreak) maxStreak = currentStreak;
           } else {
             misses++;
-            currentMiss++;
+            globalAggregates[fName].misses++;
             currentStreak = 0;
-            if(currentMiss > maxMiss) maxMiss = currentMiss;
+            // เช็คเคสหลุดเข้าหลักร้อยตามที่ผู้ใช้เน้นย้ำ
+            if(check.hitHundreds){
+              hundredsMissCount++;
+              globalAggregates[fName].hundredsMiss++;
+            }
           }
         }
 
         const hitRate = totalTested > 0 ? ((hits / totalTested) * 100).toFixed(2) : 0;
         auditResults[lotteryName][fName] = {
-          totalTested, hits, misses, hitRate: Number(hitRate), maxStreak, maxMiss
+          totalTested, hits, misses, hitRate: Number(hitRate), maxStreak, hundredsMissCount
         };
       });
     });
 
     try {
-      localStorage.setItem('lottery_audit_full_data_v162', JSON.stringify(auditResults));
+      localStorage.setItem('lottery_audit_lottery_data_v17', JSON.stringify(auditResults));
+      localStorage.setItem('lottery_audit_global_data_v17', JSON.stringify(globalAggregates));
     } catch(e) {}
 
-    renderSummary(auditResults);
-    showToast('✓ Audit และคำนวณสถิติสำเร็จ');
+    renderSummary(auditResults, globalAggregates);
+    showToast('✓ ประมวลผล Master Audit และสถิติสะสมสำเร็จ');
   }
 
   // Bind Events Properly
   window.addEventListener('DOMContentLoaded', () => {
     const runBtn = $('run');
     const clearBtn = $('clearInput');
+    const clearGlobalBtn = $('clearGlobal');
 
     if(runBtn){
       runBtn.onclick = runAuditProcess;
@@ -561,18 +675,29 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     if(clearBtn){
       clearBtn.onclick = () => {
         $('bulkInput').value = '';
-        $('result').innerHTML = '';
-        try { localStorage.removeItem('lottery_audit_full_data_v162'); } catch(e){}
-        showToast('✓ ล้างข้อมูลเรียบร้อย');
+        showToast('✓ ล้างกล่องกรอกข้อมูลแล้ว');
+      };
+    }
+
+    if(clearGlobalBtn){
+      clearGlobalBtn.onclick = () => {
+        if(confirm('ต้องการล้างสถิติสะสมรวมทั้งหมดจริงหรือไม่?')){
+          try {
+            localStorage.removeItem('lottery_audit_lottery_data_v17');
+            localStorage.removeItem('lottery_audit_global_data_v17');
+          } catch(e){}
+          $('result').innerHTML = '';
+          showToast('✓ ล้างสถิติสะสมทั้งหมดเรียบร้อย');
+        }
       };
     }
 
     // Load saved data on start
     try {
-      const saved = localStorage.getItem('lottery_audit_full_data_v162');
-      if(saved){
-        const data = JSON.parse(saved);
-        renderSummary(data);
+      const savedLottery = localStorage.getItem('lottery_audit_lottery_data_v17');
+      const savedGlobal = localStorage.getItem('lottery_audit_global_data_v17');
+      if(savedLottery && savedGlobal){
+        renderSummary(JSON.parse(savedLottery), JSON.parse(savedGlobal));
       }
     } catch(e){}
   });
