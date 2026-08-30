@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V30.5 (BAN KONG NGERN STRICT COLOR & COUNT FIX)
-===================================================================
+MESTER LOTTO VIP+ — V30.7 (SORTED RANKING & MEDAL AUDIT FIX)
+============================================================
 -->
 <html lang="th">
 <head>
@@ -11,7 +11,7 @@ MESTER LOTTO VIP+ — V30.5 (BAN KONG NGERN STRICT COLOR & COUNT FIX)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Kong Ngern V30.5</title>
+<title>Mester Lotto VIP+ — Ban Kong Ngern V30.7</title>
 
 <style>
 :root{
@@ -236,16 +236,45 @@ table.audit-table th{
   white-space:nowrap;
 }
 table.audit-table tr:nth-child(even){ background:#fdfbf7; }
-.badge-best{
-  background:#fff8e7;
-  color:#806329;
-  border:1px solid #d9bd79;
-  padding:2px 5px;
-  border-radius:6px;
-  font-weight:800;
+
+.badge-rank-1{
+  background:linear-gradient(135deg,#fff3cd,#ffe69c);
+  color:#856404;
+  border:1px solid #ffeeba;
+  padding:3px 8px;
+  border-radius:8px;
+  font-weight:900;
   display:inline-block;
-  margin-top:2px;
+  box-shadow:0 2px 5px rgba(255,193,7,.2);
 }
+.badge-rank-2{
+  background:linear-gradient(135deg,#e2e3e5,#d6d8db);
+  color:#383d41;
+  border:1px solid #c6c8ca;
+  padding:3px 8px;
+  border-radius:8px;
+  font-weight:900;
+  display:inline-block;
+}
+.badge-rank-3{
+  background:linear-gradient(135deg,#f8d7da,#f5c6cb);
+  color:#721c24;
+  border:1px solid #f5c6cb;
+  padding:3px 8px;
+  border-radius:8px;
+  font-weight:900;
+  display:inline-block;
+}
+.badge-rank-other{
+  background:#f8f9fa;
+  color:#6c757d;
+  border:1px solid #dee2e6;
+  padding:3px 8px;
+  border-radius:8px;
+  font-weight:700;
+  display:inline-block;
+}
+
 .badge-status{
   padding:2px 6px;
   border-radius:6px;
@@ -257,6 +286,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 .status-cooling{ background:#fffde7; color:#f57f17; border:1px solid #ffe082; }
 .status-danger{ background:#ffebee; color:#c62828; border:1px solid #ef9a9a; }
 .status-warning{ background:#fff3e0; color:#ef6c00; border:1px solid #ffe0b2; }
+
 .toast{
   position:fixed;
   left:50%;
@@ -310,16 +340,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Ban Kong Ngern V30.5</small>
+            <small>Ban Kong Ngern V30.7</small>
           </div>
         </div>
-        <div class="pill">● V30.5 บ้านกองเงิน ACTIVE</div>
+        <div class="pill">● V30.7 บ้านกองเงิน ACTIVE</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">BAN KONG NGERN STRICT COLOR & COUNT V30.5</span>
-        <h1>Master Audit & <em>บ้านกองเงิน V30.5</em></h1>
-        <p>แก้ไขกฎจำนวนคู่เจาะและสีตามเงื่อนไขเป๊ะ: เลขเด่น 1 ตัวมีเลขเจาะรวม 5 คู่ (สีทอง 1 คู่, สีเงิน 1 คู่, สีโรสโกลด์/รถโก 1 คู่ และไม่มีสี 2 คู่ รวมเป็น 5 คู่ต่อเลขเด่น 1 ตัว / การ์ดรวมกัน 10 คู่) เรียงจากน้อยไปหามากอย่างแม่นยำ</p>
+        <span class="hero-tag">BAN KONG NGERN RANKED MEDAL AUDIT V30.7</span>
+        <h1>Master Audit & <em>บ้านกองเงิน V30.7</em></h1>
+        <p>อัปเดตระบบจัดอันดับ (Ranking 1, 2, 3...) เรียงตามเปอร์เซ็นต์ความแม่นยำสูงสูด พร้อมเหรียญรางวัลทอง เงิน ทองแดง เด่นชัด ทั้งตารางสะสมรวมและตารางรายหวย พร้อมตรรกะเข้มงวดหลักร้อย 100%</p>
       </section>
 
       <div id="console">
@@ -337,7 +367,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผลระบบ V30.5</button>
+            <button id="run" class="run">⚡ ประมวลผลระบบ V30.7</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -354,7 +384,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v305';
+  const STORAGE_KEY = 'lottery_audit_master_records_v307';
 
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
@@ -591,16 +621,23 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
   function renderFullUI(globalAuditMap, auditDataMap, predictionDataMap){
     let html = '';
 
-    html += `<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย & Global Offset Tuning</div>`;
+    // Sort global formulas by hitRate desc
+    const sortedGlobalFormulas = Object.keys(globalAuditMap).sort((a, b) => {
+      return globalAuditMap[b].hitRate - globalAuditMap[a].hitRate;
+    });
+
+    html += `<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย & จัดอันดับความแม่นยำ (Ranking 1, 2, 3...)</div>`;
     html += `
       <div class="summary-table-container">
-        <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (รวมทุกหวยในระบบ - พร้อมวิธีปรับ Offset ชัดเจน)</h3>
+        <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (จัดเรียงอันดับจากเปอร์เซ็นต์สูงสุด)</h3>
         <table class="audit-table">
           <thead>
             <tr>
+              <th>อันดับ (Rank)</th>
               <th>ชื่อสูตร</th>
               <th>งวดทดสอบรวม</th>
               <th>เข้า / หลุด</th>
+              <th>ออกหลักร้อยเดี่ยว</th>
               <th>Hit Rate (%)</th>
               <th>สถานะภาพรวม</th>
               <th>วิธีแนะนำปรับ Offset อย่างละเอียด</th>
@@ -609,18 +646,14 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <tbody>
     `;
 
-    let bestGlobalFormula = '';
-    let highestGlobalRate = -1;
-    Object.keys(globalAuditMap).forEach(fName => {
-      if(globalAuditMap[fName].hitRate > highestGlobalRate){
-        highestGlobalRate = globalAuditMap[fName].hitRate;
-        bestGlobalFormula = fName;
-      }
-    });
-
-    Object.keys(globalAuditMap).forEach(fName => {
+    sortedGlobalFormulas.forEach((fName, index) => {
       const g = globalAuditMap[fName];
-      const isBest = (fName === bestGlobalFormula);
+      const rank = index + 1;
+      let rankBadge = `<span class="badge-rank-other">อันดับ ${rank}</span>`;
+      if(rank === 1) rankBadge = `<span class="badge-rank-1">🥇 อันดับ 1 (ทอง)</span>`;
+      else if(rank === 2) rankBadge = `<span class="badge-rank-2">🥈 อันดับ 2 (เงิน)</span>`;
+      else if(rank === 3) rankBadge = `<span class="badge-rank-3">🥉 อันดับ 3 (ทองแดง)</span>`;
+
       const improvedRate = Math.min(100, Number((g.hitRate * 1.12).toFixed(2)));
       const diffGain = Number((improvedRate - g.hitRate).toFixed(2));
       const detailedOffsetTip = g.bestOffset !== 0 ? 
@@ -629,9 +662,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
       html += `
         <tr>
-          <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<br><span class="badge-best">แชมป์รวมทุกหวย 👑</span>' : ''}</td>
+          <td>${rankBadge}</td>
+          <td style="font-weight:bold; text-align:left;">${esc(fName)}</td>
           <td>${g.totalTested}</td>
           <td><span style="color:#2e7d32; font-weight:bold;">${g.hits}</span> / <span style="color:#c62828;">${g.misses}</span></td>
+          <td style="color:#ef6c00; font-weight:bold;">${g.hundredsOnlyCount || 0} งวด</td>
           <td style="font-weight:bold; color:${g.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${g.hitRate}%</td>
           <td>${g.hitRate >= 60 ? '<span class="badge-status status-hot">ยอดเยี่ยม</span>' : '<span class="badge-status status-cooling">ปานกลาง</span>'}</td>
           <td style="color:#806329; font-weight:bold; background:#fffaf0; text-align:left; padding-left:8px;">${detailedOffsetTip}</td>
@@ -645,19 +680,25 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       </div>
     `;
 
-    html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย & วิธีปรับ Offset รายสูตร</div>`;
+    html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย & จัดอันดับ Ranking 1-3 ตามเปอร์เซ็นต์</div>`;
     
     Object.keys(auditDataMap).forEach(lotteryName => {
       const formulasResult = auditDataMap[lotteryName];
+      const sortedFormulas = Object.keys(formulasResult).sort((a, b) => {
+        return formulasResult[b].hitRate - formulasResult[a].hitRate;
+      });
+
       html += `
         <div class="summary-table-container">
-          <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">หวย: ${esc(lotteryName)}</h3>
+          <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">หวย: ${esc(lotteryName)} (จัดเรียงอันดับสูตรแม่นยำสูงสุด)</h3>
           <table class="audit-table">
             <thead>
               <tr>
+                <th>อันดับ (Rank)</th>
                 <th>ชื่อสูตร</th>
                 <th>งวดทดสอบ</th>
                 <th>เข้า / หลุด</th>
+                <th>ออกหลักร้อยเดี่ยว</th>
                 <th>Hit Rate (%)</th>
                 <th>สถานะงวดล่าสุด</th>
                 <th>เข้า/หลุดติดต่อกัน</th>
@@ -667,8 +708,14 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             <tbody>
       `;
 
-      Object.keys(formulasResult).forEach(fName => {
+      sortedFormulas.forEach((fName, index) => {
         const f = formulasResult[fName];
+        const rank = index + 1;
+        let rankBadge = `<span class="badge-rank-other">อันดับ ${rank}</span>`;
+        if(rank === 1) rankBadge = `<span class="badge-rank-1">🥇 อันดับ 1 (ทอง)</span>`;
+        else if(rank === 2) rankBadge = `<span class="badge-rank-2">🥈 อันดับ 2 (เงิน)</span>`;
+        else if(rank === 3) rankBadge = `<span class="badge-rank-3">🥉 อันดับ 3 (ทองแดง)</span>`;
+
         let badgeHTML = '<span class="badge-status status-hot">🟢 เข้า</span>';
         if(f.lastHit === false){
           if(f.hitHundredsOnly){
@@ -691,9 +738,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
         html += `
           <tr>
+            <td>${rankBadge}</td>
             <td style="font-weight:bold; text-align:left;">${esc(fName)}</td>
             <td>${f.totalTested}</td>
             <td style="font-weight:bold;"><span style="color:#2e7d32;">${f.hits}</span> / <span style="color:#c62828;">${f.misses}</span></td>
+            <td style="color:#ef6c00; font-weight:bold;">${f.hundredsOnlyCount || 0} งวด</td>
             <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
             <td>${badgeHTML}</td>
             <td><span style="color:#2e7d32;">${f.curStreak} ติด</span> / <span style="color:#c62828;">${f.curMissStreak} หลุด</span></td>
@@ -709,7 +758,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V30.5 Strict Color & Count)</div>`;
+    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V30.7 Ranked Medal)</div>`;
 
     let cardIdx = 0;
     Object.keys(predictionDataMap).forEach(lotteryName => {
@@ -786,7 +835,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ระบบบ้านกองเงิน V30.5 Strict Color & Count สมบูรณ์แบบ 100%</span>
+        <span>ระบบบ้านกองเงิน V30.7 Ranked Medal Audit สมบูรณ์แบบ 100%</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -844,7 +893,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     const globalAccumulator = {};
 
     Object.keys(formulas).forEach(fName => {
-      globalAccumulator[fName] = { totalTested: 0, hits: 0, misses: 0, bestOffset: 0 };
+      globalAccumulator[fName] = { totalTested: 0, hits: 0, misses: 0, hundredsOnlyCount: 0, bestOffset: 0 };
     });
 
     Object.keys(groups).forEach(lotteryName => {
@@ -855,7 +904,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       const formulaNames = Object.keys(formulas);
 
       formulaNames.forEach(fName => {
-        let hits = 0, misses = 0, currentStreak = 0, maxStreak = 0, currentMissStreak = 0, maxMissStreak = 0, totalTested = 0, lastHitResult = true, lastHitHundredsOnly = false;
+        let hits = 0, misses = 0, hundredsOnlyCount = 0, currentStreak = 0, maxStreak = 0, currentMissStreak = 0, maxMissStreak = 0, totalTested = 0, lastHitResult = true, lastHitHundredsOnly = false;
 
         const offsets = [0, 1, -1, 2, -2];
         let bestOffset = 0;
@@ -890,6 +939,10 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           const check = checkHitDetail(predicted, next.n3, next.n2);
 
           totalTested++;
+          if(check.hitHundredsOnly){
+            hundredsOnlyCount++;
+          }
+
           if(check.hitAny){
             hits++; currentStreak++; currentMissStreak = 0; lastHitResult = true; lastHitHundredsOnly = false;
             if(currentStreak > maxStreak) maxStreak = currentStreak;
@@ -903,11 +956,12 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         globalAccumulator[fName].totalTested += totalTested;
         globalAccumulator[fName].hits += hits;
         globalAccumulator[fName].misses += misses;
+        globalAccumulator[fName].hundredsOnlyCount += hundredsOnlyCount;
         globalAccumulator[fName].bestOffset = bestOffset;
 
         const hitRate = totalTested > 0 ? Number(((hits / totalTested) * 100).toFixed(2)) : 0;
         auditDataMap[lotteryName][fName] = {
-          totalTested, hits, misses, hitRate, maxStreak, maxMissStreak, 
+          totalTested, hits, misses, hundredsOnlyCount, hitRate, maxStreak, maxMissStreak, 
           curStreak: currentStreak, curMissStreak: currentMissStreak, lastHit: lastHitResult, hitHundredsOnly: lastHitHundredsOnly,
           bestOffset
         };
@@ -942,8 +996,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       const d1 = topDigits[0] !== undefined ? topDigits[0] : 4;
       const d2 = topDigits[1] !== undefined ? topDigits[1] : 1;
 
-      // กฎใหม่ตามคำสั่ง: เลขเด่น 1 ตัว มีเลขเจาะรวม 5 คู่
-      // สีทอง 1 คู่, สีเงิน 1 คู่, สีโรสโกลด์/รถโก 1 คู่, และไม่มีสี 2 คู่ (รวม 5 คู่ต่อเลขเด่น 1 ตัว / ทั้งการ์ดรวม 10 คู่)
       const makePairsForDigitStrict = (mainDigit, otherDigit) => {
         const candidatePool = [0,1,2,3,4,5,6,7,8,9];
         const validPool = candidatePool.filter(n => n !== mainDigit && n !== otherDigit && n !== Number(`${mainDigit}${mainDigit}`[0]));
@@ -970,14 +1022,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         }
 
         rawPairs.sort((a, b) => b.score - a.score);
-        const selectedPairs = rawPairs.slice(0, 5); // ต้องมีแค่ 5 คู่ถ้วนต่อเลขเด่น 1 ตัว
+        const selectedPairs = rawPairs.slice(0, 5);
 
-        // กำหนดสีตามกฎเป๊ะ:
-        // Index 0: gold (สีทอง 1 คู่)
-        // Index 1: silver (สีเงิน 1 คู่)
-        // Index 2: rose_gold (สีโรสโกลด์ / รถโก 1 คู่)
-        // Index 3: default (ไม่มีสี)
-        // Index 4: default (ไม่มีสี)
         const rankedPairs = selectedPairs.map((item, idx) => {
           let colorType = 'default';
           if(idx === 0) colorType = 'gold';
@@ -988,7 +1034,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           return { pair: item.pair, color: colorType, score: item.score };
         });
 
-        // จัดเรียงตัวเลขคู่เจาะจากน้อยไปหามากในแต่ละกลุ่ม
         rankedPairs.sort((a, b) => parseInt(a.pair, 10) - parseInt(b.pair, 10));
 
         return rankedPairs;
@@ -1013,13 +1058,14 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         totalTested: g.totalTested,
         hits: g.hits,
         misses: g.misses,
+        hundredsOnlyCount: g.hundredsOnlyCount,
         hitRate,
         bestOffset: g.bestOffset
       };
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V30.5 สำเร็จสมบูรณ์');
+    showToast('✓ ประมวลผลระบบ V30.7 สำเร็จสมบูรณ์');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1039,8 +1085,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
           try { 
             localStorage.removeItem(STORAGE_KEY);
-            localStorage.removeItem('lottery_audit_master_records_v304');
-            localStorage.removeItem('lottery_audit_master_records_v303');
+            localStorage.removeItem('lottery_audit_master_records_v306');
+            localStorage.removeItem('lottery_audit_master_records_v305');
           } catch(e){}
           $('result').innerHTML = '';
           updateIndicator();
