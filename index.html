@@ -1,24 +1,21 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V15.1
+MESTER LOTTO VIP+ — V15.2
 ============================================================
-AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP + DUPLICATE DIGIT +1 FIX)
+AUDITED / CLEAN VERSION (N1 + V2 MAIN ENGINE + BACKEND SWAP)
 ============================================================
-- Main Model 01 (Formula N1 / Experimental Weight-based Mod 10):
-  - Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2) -> units digit (0-9 cyclic for negative)
-  - Digit 2: 3 - (Tens top * 2) + Units top -> units digit (0-9 cyclic for negative)
+- Main Model (Formula N1 + V2):
+  - Digit 1: (A + 3B + C + 3D + 3E + 6) mod 10
+  - Digit 2: (-A - B - C + D - 3E + 1) mod 10
+    (Where A=H, B=T, C=U, D=R1, E=R2)
 - Duplicate Digit Fix:
   - If Digit 1 and Digit 2 are identical, Digit 2 is incremented by 1 (mod 10).
 - Backend Support Formulas:
-  - Backend 1 (Former Main Model 01): Formula 1 / 73.36% Weight-based Mod 10
+  - Backend 1 (Former Main Model): Formula based on Mod 10 support
   - Backend 2 (Formula 2 / ~68.50%): Modular Arithmetic support
   - Backend 3 (Formula 3 / ~62.07%): Mod Sum support
 - VIP+ appears only when any backend formula matches either main digit.
 - Original Pair / เลขเจาะ engine retained.
-- 5 pairs per main digit = 10 pairs total.
-- No double-digit pairs.
-- Main digits / backend digits are not used to pair against
-  themselves inside the protected pair engine.
 - Login system removed completely.
 - No scoring system.
 - No historical system.
@@ -35,8 +32,7 @@ AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP + DUPLICATE DIGIT +1 FIX)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Multi Lottery Engine V15.1</title>
-
+<title>Mester Lotto VIP+ — Multi Lottery Engine V15.2</title>
 
 <style>
 :root{
@@ -51,16 +47,13 @@ AUDITED / CLEAN VERSION (SUPER HYBRID FORMULA SWAP + DUPLICATE DIGIT +1 FIX)
   --shadow:0 14px 40px rgba(79,58,31,.08);
 }
 
-
 *{
   box-sizing:border-box;
 }
 
-
 html{
   scroll-behavior:smooth;
 }
-
 
 body{
   margin:0;
@@ -72,18 +65,15 @@ body{
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
-
 button,
 input,
 textarea{
   font:inherit;
 }
 
-
 button{
   cursor:pointer;
 }
-
 
 #snow{
   position:fixed;
@@ -94,7 +84,6 @@ button{
   z-index:0;
 }
 
-
 .shell{
   position:relative;
   z-index:1;
@@ -102,17 +91,14 @@ button{
   padding:18px 12px 40px;
 }
 
-
 .app{
   width:min(760px,100%);
   margin:0 auto;
 }
 
-
 .inner{
   padding:12px;
 }
-
 
 .top{
   display:flex;
@@ -122,13 +108,11 @@ button{
   margin-bottom:14px;
 }
 
-
 .brand{
   display:flex;
   align-items:center;
   gap:10px;
 }
-
 
 .logo{
   width:37px;
@@ -143,13 +127,11 @@ button{
   box-shadow:0 8px 18px rgba(128,99,41,.18);
 }
 
-
 .brand b{
   display:block;
   font-size:.78rem;
   letter-spacing:.1px;
 }
-
 
 .brand small{
   display:block;
@@ -158,7 +140,6 @@ button{
   color:var(--muted);
   font-weight:600;
 }
-
 
 .pill{
   padding:6px 9px;
@@ -171,7 +152,6 @@ button{
   white-space:nowrap;
 }
 
-
 .hero{
   padding:18px;
   margin-bottom:14px;
@@ -181,7 +161,6 @@ button{
   box-shadow:var(--shadow);
 }
 
-
 .hero-tag{
   font-size:.43rem;
   font-weight:900;
@@ -189,19 +168,16 @@ button{
   color:var(--gold2);
 }
 
-
 .hero h1{
   margin:7px 0 5px;
   font-size:1.55rem;
   line-height:1.15;
 }
 
-
 .hero h1 em{
   font-style:normal;
   color:var(--gold2);
 }
-
 
 .hero p{
   margin:0;
@@ -210,7 +186,6 @@ button{
   color:var(--muted);
 }
 
-
 .panel{
   background:rgba(255,253,249,.96);
   border:1px solid var(--line);
@@ -218,11 +193,9 @@ button{
   box-shadow:var(--shadow);
 }
 
-
 .bulkbox{
   padding:14px;
 }
-
 
 .bulkbox label{
   display:block;
@@ -231,7 +204,6 @@ button{
   font-weight:900;
   color:#806329;
 }
-
 
 .bulk{
   display:block;
@@ -249,12 +221,10 @@ button{
   line-height:1.65;
 }
 
-
 .bulk:focus{
   border-color:#c6a762;
   box-shadow:0 0 0 3px rgba(195,154,67,.10);
 }
-
 
 .actions{
   padding:0 14px 14px;
@@ -262,7 +232,6 @@ button{
   grid-template-columns:1fr 1fr 1fr;
   gap:8px;
 }
-
 
 .run{
   height:43px;
@@ -274,7 +243,6 @@ button{
   font-weight:900;
 }
 
-
 .copy{
   height:43px;
   border:1px solid var(--line);
@@ -285,17 +253,14 @@ button{
   font-weight:900;
 }
 
-
 .clear{
   color:#8b8173;
 }
-
 
 .run:disabled{
   opacity:.55;
   cursor:not-allowed;
 }
-
 
 .scanner{
   display:none;
@@ -305,17 +270,14 @@ button{
   color:var(--muted);
 }
 
-
 .scanner span{
   font-weight:800;
   color:#806329;
 }
 
-
 .result{
   margin-top:14px;
 }
-
 
 .summary{
   display:flex;
@@ -331,13 +293,11 @@ button{
   color:var(--muted);
 }
 
-
 .summary strong{
   color:#806329;
   font-size:.72rem;
   margin:0 2px;
 }
-
 
 .lottery{
   overflow:hidden;
@@ -348,7 +308,6 @@ button{
   box-shadow:var(--shadow);
 }
 
-
 .lottery-head{
   display:flex;
   justify-content:space-between;
@@ -358,24 +317,20 @@ button{
   background:linear-gradient(135deg,#fff,#fbf7ed);
 }
 
-
 .lottery-name{
   font-weight:800;
   font-size:.72rem;
 }
 
-
 .flag{
   margin-right:5px;
 }
-
 
 .date{
   font-size:.52rem;
   color:var(--muted);
   margin-top:2px;
 }
-
 
 .vip-label{
   display:block;
@@ -388,12 +343,10 @@ button{
   white-space:nowrap;
 }
 
-
 .card-actions{
   padding:0;
   flex:0 0 auto;
 }
-
 
 .card-capture{
   width:auto;
@@ -408,11 +361,9 @@ button{
   font-weight:800;
 }
 
-
 .rows{
   padding:4px 7px 2px;
 }
-
 
 .row{
   display:flex;
@@ -423,17 +374,14 @@ button{
   border-bottom:1px solid #f0eadf;
 }
 
-
 .row:last-child{
   border-bottom:0;
 }
-
 
 .row-label{
   font-size:.55rem;
   color:var(--muted);
 }
-
 
 .row-value{
   font-family:"IBM Plex Mono",monospace;
@@ -441,11 +389,9 @@ button{
   font-size:.9rem;
 }
 
-
 .row-value.top{
   color:#9c782e;
 }
-
 
 .digit{
   display:grid;
@@ -458,13 +404,11 @@ button{
   font-size:.92rem;
 }
 
-
 .digit-gold{
   background:#fbf1d9;
   border:1px solid #e4ca8f;
   color:#806329;
 }
-
 
 .digit-silver{
   background:#f5f1eb;
@@ -472,13 +416,11 @@ button{
   color:#625a50;
 }
 
-
 .sep{
   font-family:"IBM Plex Mono",monospace;
   font-weight:800;
   color:#b3a694;
 }
-
 
 .pairs{
   display:flex;
@@ -487,7 +429,6 @@ button{
   gap:4px;
   margin-left:4px;
 }
-
 
 .pair{
   display:inline-flex;
@@ -505,13 +446,11 @@ button{
   color:#645b50;
 }
 
-
 .pair-gold{
   border-color:#d9bd79;
   background:#fff8e7;
   color:#806329;
 }
-
 
 .pair-silver{
   border-color:#d7d0c6;
@@ -519,13 +458,11 @@ button{
   color:#665e54;
 }
 
-
 .pair-rose{
   border-color:#e5c7c1;
   background:#fff5f3;
   color:#95675f;
 }
-
 
 .footer{
   padding:5px 10px;
@@ -533,7 +470,6 @@ button{
   font-size:.5rem;
   color:var(--muted);
 }
-
 
 .copyall{
   width:100%;
@@ -544,7 +480,6 @@ button{
   background:linear-gradient(135deg,#b8944a,#806329);
   font-weight:800;
 }
-
 
 .brand-footer{
   display:flex;
@@ -559,12 +494,10 @@ button{
   letter-spacing:.2px;
 }
 
-
 .brand-star{
   color:#c39a43;
   font-size:.58rem;
 }
-
 
 .toast{
   position:fixed;
@@ -583,12 +516,10 @@ button{
   pointer-events:none;
 }
 
-
 .toast.show{
   opacity:1;
   transform:translate(-50%,0);
 }
-
 
 .errorbox{
   padding:12px;
@@ -600,17 +531,14 @@ button{
   line-height:1.7;
 }
 
-
 @media(max-width:390px){
   .bulk{
     min-height:250px;
   }
 
-
   .pairs{
     gap:2px;
   }
-
 
   .pair{
     min-width:30px;
@@ -619,37 +547,31 @@ button{
     padding:0 4px;
   }
 
-
   .row{
     min-height:39px;
     padding:3px 4px 3px 7px;
     gap:3px;
   }
 
-
   .digit{
     font-size:.92rem;
   }
 }
-
 
 @media(max-width:420px){
   .lottery{
     padding:0;
   }
 
-
   .lottery-head{
     padding-left:18px;
     padding-right:1px;
   }
 
-
   .vip-label{
     font-size:.39rem;
     padding:3px 2px;
   }
-
 
   .pair{
     min-width:31px;
@@ -658,17 +580,13 @@ button{
 </style>
 </head>
 
-
 <body>
 
-
 <canvas id="snow"></canvas>
-
 
 <div class="shell">
   <div class="app">
     <div class="inner">
-
 
       <div class="top">
         <div class="brand">
@@ -679,27 +597,21 @@ button{
           </div>
         </div>
 
-
         <div class="pill">● ENGINE READY</div>
       </div>
-
 
       <section class="hero">
         <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
         <h1>Multi-Lottery <em>VIP+</em></h1>
-        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรทดลอง N1 ล่าสุด</p>
+        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรหลัก N1 + V2 ล่าสุด</p>
       </section>
-
 
       <div id="console">
 
-
         <section class="panel">
-
 
           <div class="bulkbox">
             <label>📥 LOTTERY INPUT</label>
-
 
             <textarea
               id="bulkInput"
@@ -708,58 +620,45 @@ button{
             ></textarea>
           </div>
 
-
           <div class="actions">
             <button id="run" class="run">⚡ ประมวลผล</button>
             <button id="copyInput" class="copy" disabled>📋 COPY</button>
             <button id="clearInput" class="copy clear">ล้างข้อมูล</button>
           </div>
 
-
           <div id="scanner" class="scanner">
             สถานะ: <span id="scanText">กำลังเตรียมระบบ...</span>
           </div>
 
-
         </section>
-
 
         <div id="result" class="result"></div>
 
-
       </div>
 
-
       <div id="toast" class="toast">คัดลอกแล้ว</div>
-
 
     </div>
   </div>
 </div>
 
-
 <script>
 (() => {
-
 
   /* =========================================================
      SNOW / BACKGROUND
   ========================================================= */
 
-
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
 
-
   let width = canvas.width = innerWidth;
   let height = canvas.height = innerHeight;
-
 
   addEventListener('resize', () => {
     width = canvas.width = innerWidth;
     height = canvas.height = innerHeight;
   });
-
 
   const particles = Array.from({length:42}, () => ({
     x:Math.random()*width,
@@ -771,50 +670,39 @@ button{
     tone:Math.random()>.72 ? 'rose' : 'gold'
   }));
 
-
   (function drawSnow(){
     ctx.clearRect(0,0,width,height);
-
 
     particles.forEach(p => {
       p.p += .01;
       p.y += p.s;
       p.x += Math.sin(p.p)*.25;
 
-
       if(p.y > height+5){
         p.y = -5;
         p.x = Math.random()*width;
       }
 
-
       ctx.beginPath();
       ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-
 
       ctx.fillStyle =
         p.tone === 'rose'
           ? `rgba(185,130,121,${p.a*.55})`
           : `rgba(195,154,67,${p.a})`;
 
-
       ctx.fill();
     });
 
-
     requestAnimationFrame(drawSnow);
   })();
-
-
 
 
   /* =========================================================
      HELPERS
   ========================================================= */
 
-
   const $ = id => document.getElementById(id);
-
 
   const esc = value =>
     String(value)
@@ -825,28 +713,21 @@ button{
       .replace(/'/g,'&#039;');
 
 
-
-
   /* =========================================================
      MAIN APPLICATION
   ========================================================= */
 
-
   const app = {
-
 
     lastCopyText:'',
     toastTimer:null,
-
 
     norm(value){
       return (value % 10 + 10) % 10;
     },
 
-
     flag(name){
       const n = String(name).toLowerCase();
-
 
       if(/ลาว|lao/.test(n)) return '🇱🇦';
       if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n)) return '🇻🇳';
@@ -869,25 +750,19 @@ button{
       if(/แคนาดา|canada/.test(n)) return '🇨🇦';
       if(/หุ้นไทย|ไทย|thai|set/.test(n)) return '🇹🇭';
 
-
       return '🌐';
     },
-
-
 
 
     /* =======================================================
        INPUT PARSER
     ======================================================= */
 
-
     parse(text){
-
 
       const raw = String(text || '')
         .replace(/\r/g,'')
         .trim();
-
 
       if(!raw){
         return {
@@ -896,94 +771,75 @@ button{
         };
       }
 
-
       const lines = raw
         .split('\n')
         .map(v => v.trim());
 
-
       const records = [];
       const errors = [];
 
-
       let i = 0;
 
-
       while(i < lines.length){
-
 
         if(!lines[i]){
           i++;
           continue;
         }
 
-
         const header = lines[i].match(/^(.+?)\s*\|\s*(.+?)$/);
-
 
         if(!header){
           errors.push(
             `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
           );
 
-
           i++;
           continue;
         }
 
-
         const name = header[1].trim();
         const date = header[2].trim();
-
 
         if(!this.parseDateValue(date)){
           errors.push(
             `${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 25 ส.ค. 69`
           );
 
-
           i++;
           continue;
         }
 
-
         const n3raw = lines[i+1] || '';
         const n2raw = lines[i+2] || '';
-
 
         const n3 =
           /^[\d\s]+$/.test(n3raw)
             ? n3raw.replace(/\s+/g,'')
             : n3raw;
 
-
         const n2 =
           /^[\d\s]+$/.test(n2raw)
             ? n2raw.replace(/\s+/g,'')
             : n2raw;
-
 
         if(!/^\d{3}$/.test(n3)){
           errors.push(
             `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
           );
 
-
           i += 1;
           continue;
         }
-
 
         if(!/^\d{2}$/.test(n2)){
           errors.push(
             `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
           );
 
-
           i += 2;
           continue;
         }
-
 
         records.push({
           name,
@@ -992,10 +848,8 @@ button{
           n2
         });
 
-
         i += 3;
       }
-
 
       return {
         records,
@@ -1004,48 +858,34 @@ button{
     },
 
 
-
-
     parseDateValue(date){
-
 
       const value = String(date || '').trim();
 
-
       if(!value) return false;
-
 
       if(/^\d{1,2}\s+\S+\s+\d{2,4}$/.test(value))
         return true;
 
-
       if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value))
         return true;
 
-
       if(/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(value))
         return true;
-
 
       return false;
     },
 
 
-
-
     dateKey(date){
 
-
       const value = String(date || '').trim();
-
 
       const thai = value.match(
         /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
       );
 
-
       if(thai){
-
 
         const months = {
           'ม.ค.':1,
@@ -1062,17 +902,13 @@ button{
           'ธ.ค.':12
         };
 
-
         const month = months[thai[2]] || 0;
 
-
         let year = Number(thai[3]);
-
 
         if(year < 100){
           year += 2500;
         }
-
 
         return [
           year,
@@ -1081,22 +917,17 @@ button{
         ].join('-');
       }
 
-
       const numeric = value.match(
         /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
       );
 
-
       if(numeric){
 
-
         let year = Number(numeric[3]);
-
 
         if(year < 100){
           year += 2500;
         }
-
 
         return [
           year,
@@ -1105,15 +936,11 @@ button{
         ].join('-');
       }
 
-
       return value;
     },
 
 
-
-
     sortChronological(records){
-
 
       return records
         .map((record,index) => ({
@@ -1122,44 +949,32 @@ button{
         }))
         .sort((a,b) => {
 
-
           const ka = this.dateKey(a.date);
           const kb = this.dateKey(b.date);
 
-
           if(ka < kb) return -1;
           if(ka > kb) return 1;
-
 
           return a.__index - b.__index;
         })
         .map(record => {
 
-
           const clean = {...record};
 
-
           delete clean.__index;
-
 
           return clean;
         });
     },
 
 
-
-
     groupByLottery(records){
-
 
       const groupsMap = {};
 
-
       records.forEach((record,index) => {
 
-
         const key = record.name.trim();
-
 
         if(!groupsMap[key]){
           groupsMap[key] = {
@@ -1171,43 +986,31 @@ button{
           };
         }
 
-
         groupsMap[key].records.push(record);
       });
 
-
       const groups = Object.values(groupsMap);
-
 
       groups.forEach(group => {
 
-
         const sorted = this.sortChronological(group.records);
-
 
         const byDate = new Map();
         const clean = [];
 
-
         sorted.forEach(record => {
-
 
           const key = this.dateKey(record.date);
 
-
           if(!byDate.has(key)){
-
 
             byDate.set(key,record);
             clean.push(record);
 
-
             return;
           }
 
-
           const previous = byDate.get(key);
-
 
           if(
             previous.n3 === record.n3 &&
@@ -1217,86 +1020,73 @@ button{
             return;
           }
 
-
           group.conflictCount++;
 
-
           const index = clean.indexOf(previous);
-
 
           if(index >= 0){
             clean[index] = record;
           }
 
-
           byDate.set(key,record);
         });
 
-
         group.records = this.sortChronological(clean);
       });
-
 
       return groups
         .sort((a,b) => a.__order - b.__order)
         .map(group => {
 
-
           delete group.__order;
-
 
           return group;
         });
     },
 
 
-
-
     /* =======================================================
-       MAIN MODEL 01 (FORMULA N1 / EXPERIMENTAL MOD 10)
-       - Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2) -> units digit
-       - Digit 2: 3 - (Tens top * 2) + Units top -> units digit
+       MAIN MODEL (FORMULA N1 + V2)
+       - A = Hundreds top (H)
+       - B = Tens top (T)
+       - C = Units top (U)
+       - D = Tens bottom (R1)
+       - E = Units bottom (R2)
+       - Digit 1: (A + 3B + C + 3D + 3E + 6) mod 10
+       - Digit 2: (-A - B - C + D - 3E + 1) mod 10
        - Duplicate Fix: If first === second, second = norm(second + 1)
     ======================================================= */
 
-
     mainModel(n3, n2){
-
 
       const top = String(n3)
         .padStart(3,'0')
         .split('')
         .map(Number);
 
-
       const bottom = String(n2)
         .padStart(2,'0')
         .split('')
         .map(Number);
 
+      const A = top[0];
+      const B = top[1];
+      const C = top[2];
+      const D = bottom[0];
+      const E = bottom[1];
 
-      const H = top[0];
-      const T = top[1];
-      const U = top[2];
-      const R1 = bottom[0];
-      const R2 = bottom[1];
-
-
-      // Digit 1: 9 - (Hundreds top * 2) - (Tens top * 2) + Units top + Tens bottom - (Units bottom * 2)
-      const sum1 = 9 - (H * 2) - (T * 2) + U + R1 - (R2 * 2);
+      // เด่น 1 = (A + 3B + C + 3D + 3E + 6) mod 10
+      const sum1 = A + (3 * B) + C + (3 * D) + (3 * E) + 6;
       let first = this.norm(sum1);
 
-
-      // Digit 2: 3 - (Tens top * 2) + Units top
-      const sum2 = 3 - (T * 2) + U;
+      // เด่น 2 = (-A - B - C + D - 3E + 1) mod 10
+      const sum2 = -A - B - C + D - (3 * E) + 1;
       let second = this.norm(sum2);
 
-
-      // Check duplicate between rows and apply +1 offset if needed
+      // Check duplicate between digits and apply +1 offset if needed
       if(first === second){
         second = this.norm(second + 1);
       }
-
 
       return {
         first,
@@ -1306,12 +1096,9 @@ button{
     },
 
 
-
-
     /* =======================================================
-       BACKEND SUPPORT FORMULA 1 (FORMER MAIN MODEL 01)
+       BACKEND SUPPORT FORMULA 1 (FORMER MAIN MODEL)
     ======================================================= */
-
 
     backendFormula1(n3, n2){
       const top = String(n3).padStart(3,'0').split('').map(Number);
@@ -1320,23 +1107,18 @@ button{
       const T = top[1];
       const U = top[2];
       const R1 = bottom[0];
+      const R2 = bottom[1];
 
-      const sum1 = (T * 2) + U + 2;
-      const first = this.norm(sum1);
+      const sum1 = 9 - (H * 2) - (T * 2) + U + R1 - (R2 * 2);
+      const result = this.norm(sum1);
 
-      const sum2 = 9 - (H * 2) + U - (R1 * 2);
-      const second = this.norm(sum2);
-
-      return { result: first };
+      return { result };
     },
-
-
 
 
     /* =======================================================
        BACKEND SUPPORT FORMULA 2 (FORMULA 2 / ~68.50%)
     ======================================================= */
-
 
     backendFormula2(n3, n2){
       const top = String(n3).padStart(3,'0').split('').map(Number);
@@ -1347,12 +1129,9 @@ button{
     },
 
 
-
-
     /* =======================================================
        BACKEND SUPPORT FORMULA 3 (FORMULA 3 / ~62.07%)
     ======================================================= */
-
 
     backendFormula3(n3, n2){
       const top = String(n3).padStart(3,'0').split('').map(Number);
@@ -1363,22 +1142,16 @@ button{
     },
 
 
-
-
     /* =======================================================
        VIP+ CONFIRMATION
 
-
        Backend formulas may only confirm.
-       They NEVER replace Model 01.
+       They NEVER replace Main Model.
     ======================================================= */
-
 
     checkVIP(main,backend1,backend2,backend3){
 
-
       const mainSet = new Set(main.set);
-
 
       return (
         mainSet.has(backend1.result) ||
@@ -1388,44 +1161,32 @@ button{
     },
 
 
-
-
     /* =======================================================
        PROTECTED ORIGINAL PAIR / เลขเจาะ ENGINE
-
 
        Base:
        7 - hundreds top
 
-
        Normal:
        ±2
 
-
        Collision with main digit:
        ±3
-
 
        No main digits inside the pair range.
        No double pairs.
     ======================================================= */
 
-
     buildPairs(mainSet,anchor){
-
 
       const pairsMap = {};
 
-
       mainSet.forEach(sourceDigit => {
-
 
         let range = [];
         let collision = false;
 
-
         for(let offset = -2; offset <= 2; offset++){
-
 
           if(
             mainSet.includes(
@@ -1437,41 +1198,32 @@ button{
           }
         }
 
-
         for(
           let offset = collision ? -3 : -2;
           offset <= (collision ? 3 : 2);
           offset++
         ){
 
-
           const digit = this.norm(anchor + offset);
-
 
           if(!range.includes(digit)){
             range.push(digit);
           }
         }
 
-
         const pairs = [];
 
-
         range.forEach(target => {
-
 
           if(target === sourceDigit){
             return;
           }
 
-
           if(mainSet.includes(target)){
             return;
           }
 
-
           const pair = `${sourceDigit}${target}`;
-
 
           if(
             pair[0] === pair[1]
@@ -1479,27 +1231,21 @@ button{
             return;
           }
 
-
           if(!pairs.includes(pair)){
             pairs.push(pair);
           }
         });
 
-
         let next = this.norm(sourceDigit + 1);
 
-
         while(pairs.length < 5){
-
 
           if(
             next !== sourceDigit &&
             !mainSet.includes(next)
           ){
 
-
             const pair = `${sourceDigit}${next}`;
-
 
             if(
               pair[0] !== pair[1] &&
@@ -1509,10 +1255,8 @@ button{
             }
           }
 
-
           next = this.norm(next + 1);
         }
-
 
         pairsMap[sourceDigit] =
           [...new Set(pairs)]
@@ -1520,11 +1264,8 @@ button{
             .slice(0,5);
       });
 
-
       return pairsMap;
     },
-
-
 
 
     /* =======================================================
@@ -1532,17 +1273,13 @@ button{
        Kept clean and lightweight.
     ======================================================= */
 
-
     pairKey(pair){
 
-
       const value = String(pair);
-
 
       if(!/^\d{2}$/.test(value)){
         return value;
       }
-
 
       return [
         value[0],
@@ -1551,19 +1288,13 @@ button{
     },
 
 
-
-
     buildPairConsensus(pairSets){
-
 
       const all = [];
 
-
       pairSets.forEach((set,rowIndex) => {
 
-
         set.slice(0,5).forEach(pair => {
-
 
           all.push({
             pair:String(pair),
@@ -1572,18 +1303,13 @@ button{
         });
       });
 
-
       const counts = {};
-
 
       all.forEach(item => {
 
-
         const key = this.pairKey(item.pair);
 
-
         if(!counts[key]){
-
 
           counts[key] = {
             key,
@@ -1593,12 +1319,10 @@ button{
           };
         }
 
-
         counts[key].score++;
         counts[key].rows.add(item.rowIndex);
         counts[key].pairs.add(item.pair);
       });
-
 
       const ranked =
         Object.values(counts)
@@ -1609,15 +1333,11 @@ button{
               Number(a.key) - Number(b.key)
           );
 
-
       const colorMap = {};
-
 
       ranked.slice(0,6).forEach((item,index) => {
 
-
         let color;
-
 
         if(index < 2){
           color = 'gold';
@@ -1627,14 +1347,12 @@ button{
           color = 'rose';
         }
 
-
         colorMap[item.key] = {
           color,
           rank:index + 1,
           score:item.score
         };
       });
-
 
       return {
         counts,
@@ -1644,10 +1362,7 @@ button{
     },
 
 
-
-
     sortPairs(pairs){
-
 
       return pairs
         .map(String)
@@ -1659,67 +1374,50 @@ button{
     },
 
 
-
-
     pairClass(pair,colorMap){
-
 
       const info =
         colorMap[this.pairKey(pair)];
-
 
       if(!info){
         return 'pair';
       }
 
-
       if(info.color === 'gold'){
         return 'pair pair-gold';
       }
-
 
       if(info.color === 'silver'){
         return 'pair pair-silver';
       }
 
-
       return 'pair pair-rose';
     },
-
-
 
 
     /* =======================================================
        MAIN ENGINE
     ======================================================= */
 
-
     run(n3,n2){
-
 
       const topDigits = String(n3)
         .padStart(3,'0')
         .split('')
         .map(Number);
 
-
       const H = topDigits[0];
 
-
       const main = this.mainModel(n3, n2);
-
 
       const backend1 =
         this.backendFormula1(n3, n2);
 
-
       const backend2 =
         this.backendFormula2(n3, n2);
 
-
       const backend3 =
         this.backendFormula3(n3, n2);
-
 
       const vip =
         this.checkVIP(
@@ -1729,17 +1427,14 @@ button{
           backend3
         );
 
-
       const rawAnchor = 7 - H;
       const anchor = this.norm(rawAnchor);
-
 
       const pairsMap =
         this.buildPairs(
           main.set,
           anchor
         );
-
 
       const pairSets = main.set.map(
         digit =>
@@ -1748,10 +1443,8 @@ button{
           ).slice(0,5)
       );
 
-
       const consensus =
         this.buildPairConsensus(pairSets);
-
 
       return {
         main,
@@ -1770,31 +1463,23 @@ button{
     },
 
 
-
-
     /* =======================================================
        CAPTURE
     ======================================================= */
 
-
     async captureCard(cardId,name){
-
 
       const element =
         document.getElementById(cardId);
-
 
       if(!element){
         return;
       }
 
-
       const controls =
         [...element.querySelectorAll('[data-no-capture]')];
 
-
       try{
-
 
         if(typeof html2canvas === 'undefined'){
           throw new Error(
@@ -1802,12 +1487,10 @@ button{
           );
         }
 
-
         controls.forEach(
           element =>
             element.style.visibility = 'hidden'
         );
-
 
         const canvas =
           await html2canvas(
@@ -1826,10 +1509,8 @@ button{
             }
           );
 
-
         const link =
           document.createElement('a');
-
 
         const safe =
           String(name || 'lottery')
@@ -1839,32 +1520,23 @@ button{
             )
             .slice(0,60);
 
-
         link.download =
           `${safe || 'lottery'}_card.png`;
-
 
         link.href =
           canvas.toDataURL('image/png');
 
-
         link.click();
-
 
         this.show('✓ แคปการ์ดแล้ว');
 
-
       }catch(error){
-
 
         console.error(error);
 
-
         this.show('❌ แคปภาพไม่สำเร็จ');
 
-
       }finally{
-
 
         controls.forEach(
           element =>
@@ -1874,82 +1546,59 @@ button{
     },
 
 
-
-
     /* =======================================================
        COPY
     ======================================================= */
 
-
     copy(text){
-
 
       if(
         navigator.clipboard &&
         navigator.clipboard.writeText
       ){
 
-
         navigator.clipboard
           .writeText(text)
           .then(() => this.show())
           .catch(() => this.fallbackCopy(text));
 
-
         return;
       }
-
 
       this.fallbackCopy(text);
     },
 
 
-
-
     fallbackCopy(text){
-
 
       const textarea =
         document.createElement('textarea');
 
-
       textarea.value = text;
-
 
       document.body.appendChild(textarea);
 
-
       textarea.select();
-
 
       document.execCommand('copy');
 
-
       textarea.remove();
-
 
       this.show();
     },
 
 
-
-
     show(message){
 
-
       const toast = $('toast');
-
 
       if(message){
         toast.textContent = message;
       }
 
-
       toast.classList.add('show');
 
-
       clearTimeout(this.toastTimer);
-
 
       this.toastTimer =
         setTimeout(
@@ -1959,44 +1608,33 @@ button{
     },
 
 
-
-
     /* =======================================================
        NEXT DATE
     ======================================================= */
 
-
     nextDateLabel(record){
-
 
       if(!record){
         return '';
       }
 
-
       const value =
         String(record.date || '').trim();
-
 
       const thai =
         value.match(
           /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
         );
 
-
       if(thai){
-
 
         const day = Number(thai[1]);
 
-
         let year = Number(thai[3]);
-
 
         if(year < 100){
           year += 2500;
         }
-
 
         const months = [
           'ม.ค.',
@@ -2013,13 +1651,10 @@ button{
           'ธ.ค.'
         ];
 
-
         const monthIndex =
           months.indexOf(thai[2]);
 
-
         if(monthIndex >= 0){
-
 
           const date =
             new Date(
@@ -2028,11 +1663,9 @@ button{
               day
             );
 
-
           date.setDate(
             date.getDate() + 1
           );
-
 
           return [
             String(date.getDate()),
@@ -2042,52 +1675,39 @@ button{
         }
       }
 
-
       return 'งวดถัดไป';
     },
-
-
 
 
     /* =======================================================
        CALCULATE
     ======================================================= */
 
-
     async calculate(){
-
 
       const parsed =
         this.parse(
           $('bulkInput').value
         );
 
-
       if(!parsed.records.length){
-
 
         $('result').innerHTML =
           '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
 
-
         return;
       }
-
 
       const scanner = $('scanner');
       const runButton = $('run');
 
-
       runButton.disabled = true;
 
-
       scanner.style.display = 'block';
-
 
       const scan = message => {
         $('scanText').textContent = message;
       };
-
 
       const yieldUI = () =>
         new Promise(
@@ -2095,49 +1715,37 @@ button{
             requestAnimationFrame(resolve)
         );
 
-
       try{
-
 
         const groups =
           this.groupByLottery(
             parsed.records
           );
 
-
         const cards = [];
         const copyBlocks = [];
 
-
         let groupIndex = 0;
-
 
         for(const group of groups){
 
-
           groupIndex++;
-
 
           const records =
             group.records;
-
 
           if(!records.length){
             continue;
           }
 
-
           const latest =
             records[records.length - 1];
-
 
           scan(
             `ประมวลผล ${group.name} • ${groupIndex}/${groups.length}`
           );
 
-
           await yieldUI();
-
 
           const result =
             this.run(
@@ -2145,40 +1753,32 @@ button{
               latest.n2
             );
 
-
           const mainDigits =
             result.main.set;
-
 
           const pair1 =
             result.pairSets[0] || [];
 
-
           const pair2 =
             result.pairSets[1] || [];
 
-
           const nextDate =
             this.nextDateLabel(latest);
-
 
           const pairHTML1 =
             pair1
               .map(pair => {
 
-
                 const info =
                   result.consensus
                     .colorMap[
                       this.pairKey(pair)
                     ];
 
-
                 const title =
                   info
                     ? `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
                     : 'เลขเจาะ';
-
 
                 return `
                   <span
@@ -2188,25 +1788,21 @@ button{
                 `;
               })
               .join('');
-
 
           const pairHTML2 =
             pair2
               .map(pair => {
 
-
                 const info =
                   result.consensus
                     .colorMap[
                       this.pairKey(pair)
                     ];
 
-
                 const title =
                   info
                     ? `อันดับ Consensus ${info.rank} • พบ ${info.score} ครั้ง`
                     : 'เลขเจาะ';
-
 
                 return `
                   <span
@@ -2216,17 +1812,14 @@ button{
                 `;
               })
               .join('');
-
 
           const vipHTML =
             result.vip
               ? '<div class="vip-label">VIP+</div>'
               : '<div class="vip-label"></div>';
 
-
           const cardId =
             `lottery-card-${groupIndex}`;
-
 
           const row1 = `
             <div class="row">
@@ -2235,16 +1828,13 @@ button{
                 aria-label="เลขเด่นตัวที่หนึ่ง"
               >${esc(mainDigits[0])}</span>
 
-
               <span class="sep">:</span>
-
 
               <div class="pairs">
                 ${pairHTML1}
               </div>
             </div>
           `;
-
 
           const row2 = `
             <div class="row">
@@ -2253,16 +1843,13 @@ button{
                 aria-label="เลขเด่นตัวที่สอง"
               >${esc(mainDigits[1])}</span>
 
-
               <span class="sep">:</span>
-
 
               <div class="pairs">
                 ${pairHTML2}
               </div>
             </div>
           `;
-
 
           const footer = `
             <div class="brand-footer">
@@ -2272,7 +1859,6 @@ button{
             </div>
           `;
 
-
           cards.push(`
             <article
               class="lottery"
@@ -2280,9 +1866,7 @@ button{
               data-lottery-card="true"
             >
 
-
               <div class="lottery-head">
-
 
                 <div>
                   <div class="lottery-name">
@@ -2290,15 +1874,12 @@ button{
                     <span>${esc(group.name)}</span>
                   </div>
 
-
                   <div class="date">
                     ${esc(nextDate)}
                   </div>
                 </div>
 
-
                 ${vipHTML}
-
 
                 <div
                   class="card-actions"
@@ -2313,22 +1894,17 @@ button{
                   </button>
                 </div>
 
-
               </div>
-
 
               <div class="rows">
                 ${row1}
                 ${row2}
               </div>
 
-
               ${footer}
-
 
             </article>
           `);
-
 
           copyBlocks.push(
             [
@@ -2339,42 +1915,31 @@ button{
           );
         }
 
-
         scan('ตรวจสอบความเรียบร้อยของผลลัพธ์...');
 
-
         await yieldUI();
-
 
         scan('FINALIZING...');
 
-
         await yieldUI();
-
 
         scanner.style.display = 'none';
 
-
         runButton.disabled = false;
-
 
         const all =
           copyBlocks.join('\n\n');
 
-
         this.lastCopyText = all;
-
 
         $('result').innerHTML = `
           <div class="summary">
-
 
             <span>
               ประมวลผลสำเร็จ
               <strong>${cards.length}</strong>
               ประเภท
             </span>
-
 
             <button
               class="copy"
@@ -2383,9 +1948,7 @@ button{
               📋 COPY ALL
             </button>
 
-
           </div>
-
 
           ${
             parsed.errors.length
@@ -2397,9 +1960,7 @@ button{
               : ''
           }
 
-
           ${cards.join('')}
-
 
           <button
             class="copyall"
@@ -2409,29 +1970,23 @@ button{
           </button>
         `;
 
-
         $('copyTop').onclick =
           () => this.copy(all);
-
 
         $('copyBottom').onclick =
           () => this.copy(all);
 
-
         $('copyInput').disabled =
           !all;
 
-
         $('copyInput').onclick =
           () => this.copy(this.lastCopyText);
-
 
         $('result')
           .querySelectorAll(
             '[data-capture-card]'
           )
           .forEach(button => {
-
 
             button.onclick = () =>
               this.captureCard(
@@ -2440,24 +1995,18 @@ button{
               );
           });
 
-
         $('result').scrollIntoView({
           behavior:'smooth',
           block:'start'
         });
 
-
       }catch(error){
-
 
         console.error(error);
 
-
         scanner.style.display = 'none';
 
-
         runButton.disabled = false;
-
 
         $('result').innerHTML = `
           <div class="errorbox">
@@ -2470,52 +2019,35 @@ button{
   };
 
 
-
-
   /* =========================================================
      EVENTS
   ========================================================= */
-
 
   $('run').onclick =
     () => app.calculate();
 
 
-
-
   $('clearInput').onclick = () => {
-
 
     $('bulkInput').value = '';
 
-
     $('result').innerHTML = '';
-
 
     $('scanner').style.display = 'none';
 
-
     $('run').disabled = false;
-
 
     $('copyInput').disabled = true;
 
-
     app.lastCopyText = '';
 
-
     $('bulkInput').focus();
-
 
     app.show('✓ ล้างข้อมูลแล้ว');
   };
 
-
-
-
 })();
 </script>
-
 
 </body>
 </html>
