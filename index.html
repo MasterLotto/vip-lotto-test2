@@ -949,25 +949,23 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         for(let target of validPool){
           const pairStr = `${mainDigit}${target}`;
           if(mainDigit === target) continue;
-          // ให้คะแนนความน่าจะเป็นจากผลต่างตัวเลขร่วมกับคะแนนสถิติ
           const score = Math.abs(mainDigit - target) + (digitScores[target] || 0);
           rawPairs.push({ pair: pairStr, score });
         }
 
-        // จัดเรียงตามคะแนนความแม่นยำจากมากไปน้อยก่อน เพื่อคัดเลือกคู่ที่ดีที่สุดให้อยู่ในอันดับ 1, 2, 3
+        // เรียงตามคะแนนความแม่นยำจากมากไปน้อยเพื่อจัดอันดับสีตามกฎที่กำหนด (ทอง 2, เงิน 2, โรสโกลด์ 2)
         rawPairs.sort((a, b) => b.score - a.score);
         const top5Pairs = rawPairs.slice(0, 5);
 
-        // กำหนด rank ตามลำดับความแม่นยำ (0, 1 เป็นอันดับ 1 สีทอง / 2, 3 เป็นอันดับ 2 สีเงิน / 4 เป็นอันดับ 3 โรสโกลด์)
         const rankedPairs = top5Pairs.map((item, idx) => {
           let rank = 4;
-          if(idx < 2) rank = 1;
-          else if(idx < 4) rank = 2;
-          else rank = 3;
+          if(idx < 2) rank = 1;        // อันดับ 1 (สีทอง) จำนวน 2 ตัว
+          else if(idx < 4) rank = 2; // อันดับ 2 (สีเงิน) จำนวน 2 ตัว
+          else rank = 3;             // อันดับ 3 (สีโรสโกลด์) จำนวน 1 ตัว (รวมเป็น 5 ตัวต่อแถว)
           return { pair: item.pair, rank };
         });
 
-        // หลังจากกำหนดสี/อันดับเสร็จแล้ว ให้เรียงตัวเลขคู่เจาะจากน้อยไปหามากเพื่อความสวยงามตามความต้องการ
+        // จัดเรียงตัวเลขคู่เจาะจากน้อยไปหามากในแต่ละแถวตามความต้องการ
         rankedPairs.sort((a, b) => parseInt(a.pair, 10) - parseInt(b.pair, 10));
 
         return rankedPairs;
