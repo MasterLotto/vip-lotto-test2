@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V23.0 (ULTIMATE AUDIT & STABLE 2-DIGIT ENGINE)
-==================================================================
+MESTER LOTTO VIP+ — V24.0 (FIXED SORTING & DATA ENGINE)
+======================================================
 -->
 <html lang="th">
 <head>
@@ -10,7 +10,7 @@ MESTER LOTTO VIP+ — V23.0 (ULTIMATE AUDIT & STABLE 2-DIGIT ENGINE)
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>Mester Lotto VIP+ — Ultimate Audit & Stable 2-Digit Engine V23.0</title>
+<title>Mester Lotto VIP+ — Fixed Sorting & Data Engine V24.0</title>
 
 <style>
 :root{
@@ -303,23 +303,23 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Ultimate Audit & 2-Digit Engine V23.0</small>
+            <small>Fixed Sorting & Data Engine V24.0</small>
           </div>
         </div>
-        <div class="pill">● V23.0 STABLE MASTER</div>
+        <div class="pill">● V24.0 CORRECTED SORT & STORAGE</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">STABLE ULTIMATE ENGINE</span>
-        <h1>Global Master Audit & <em>Exact 2-Digit Prediction</em></h1>
-        <p>ระบบออดิตสมบูรณ์แบบ: ตาราง Global Master สะสมรวมทุกหวย, ตารางแยกรายหวย, และระบบสกัด 2 ตัวเด่นประจำงวดโดยยึดสูตรคำนวณเดิม 100% ไม่เปลี่ยนแปลง</p>
+        <span class="hero-tag">FIXED SORTING & DATA ENGINE</span>
+        <h1>Master Audit & <em>Exact 2-Digit Prediction</em></h1>
+        <p>ระบบออดิตที่แก้ไขปัญหาการเรียงลำดับวันที่ (Sort เรียงตามลำดับเวลาจริงเก่าไปใหม่) และระบบล้างข้อมูลสะสมที่เคลียร์เกลี้ยง 100% โดยยึดสูตรคำนวณเดิมครบถ้วน</p>
       </section>
 
       <div id="console">
         <section class="panel">
           <div class="bulkbox">
             <label>
-              <span>📥 ข้อมูลสถิติย้อนหลัง (งวดล่าสุดคืองวดล่างสุด)</span>
+              <span>📥 ข้อมูลสถิติย้อนหลัง (กรอกตามลำดับเวลา)</span>
               <span id="recordCountIndicator" style="color:var(--gold2); font-weight:800;">สะสมในระบบ: 0 งวด</span>
             </label>
             <textarea
@@ -330,7 +330,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผล Ultimate System</button>
+            <button id="run" class="run">⚡ ประมวลผลระบบ V24.0</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -347,6 +347,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
+  const STORAGE_KEY = 'lottery_audit_master_records_v240';
+
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
   let width = canvas.width = innerWidth;
@@ -374,6 +376,27 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
   function esc(val){ return String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function norm(v){ return (v % 10 + 10) % 10; }
 
+  // แปลงวันที่ภาษาไทยให้เป็นตัวเลขสำหรับจัดเรียงลำดับเวลาที่ถูกต้อง
+  function parseThaiDate(dateStr){
+    const months = {
+      'ม.ค.':1, 'ก.พ.':2, 'มี.ค.':3, 'เม.ย.':4, 'พ.ค.':5, 'มิ.ย.':6,
+      'ก.ค.':7, 'ส.ค.':8, 'ก.ย.':9, 'ต.ค.':10, 'พ.ย.':11, 'ธ.ค.':12,
+      'กราคม':1, 'กุมภาพันธ์':2, 'มีนาคม':3, 'เมษายน':4, 'พฤษภาคม':5, 'มิถุนายน':6,
+      'กรกฎาคม':7, 'สิงหาคม':8, 'กันยายน':9, 'ตุลาคม':10, 'พฤศจิกายน':11, 'ธันวาคม':12
+    };
+    const cleaned = String(dateStr || '').trim();
+    const parts = cleaned.split(/\s+/);
+    if(parts.length >= 3){
+      const day = parseInt(parts[0], 10) || 1;
+      const monthStr = parts[1];
+      const month = months[monthStr] || 1;
+      let year = parseInt(parts[2], 10) || 2569;
+      if(year < 2500) year += 2543; // เผื่อกรณีใส่ปี ค.ศ.
+      return new Date(year - 543, month - 1, day).getTime();
+    }
+    return 0;
+  }
+
   function parseInput(text){
     const raw = String(text || '').replace(/\r/g,'').trim();
     if(!raw) return { records:[], errors:[] };
@@ -393,7 +416,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         errors.push(`${name} | ${date}: เลข 3 ตัวบนหรือ 2 ตัวล่างไม่ครบ 3 หรือ 2 หลัก`);
         i += 3; continue;
       }
-      records.push({ name, date, n3, n2 });
+      const timestamp = parseThaiDate(date);
+      records.push({ name, date, n3, n2, timestamp });
       i += 3;
     }
     return { records, errors };
@@ -445,7 +469,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
   function updateIndicator(){
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v230');
+      const stored = localStorage.getItem(STORAGE_KEY);
       if(stored){
         const arr = JSON.parse(stored);
         $('recordCountIndicator').textContent = `สะสมในระบบ: ${arr.length} งวด`;
@@ -573,7 +597,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       const p = predictionDataMap[lotteryName];
       html += `
         <div class="prediction-card">
-          <h3>หวย: ${esc(lotteryName)} (อ้างอิงจากงวดวันที่ ${esc(p.lastDate)})</h3>
+          <h3>หวย: ${esc(lotteryName)} (อ้างอิงจากงวดล่าสุดวันที่ ${esc(p.lastDate)})</h3>
           <div style="font-size:.5rem; color:#6b5f4f; font-family:'IBM Plex Mono',monospace; margin-bottom:6px;">
             • ผลออกงวดล่าสุด: ${esc(p.lastN3)} / ${esc(p.lastN2)}<br>
             • สกัดเน้นๆ <b>2 ตัวเด่น</b> ประจำงวดจากคะแนนแรงส่ง (Momentum & Rebound)
@@ -592,7 +616,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ระบบ Ultimate Audit & 2-Digits สมบูรณ์แบบ 100%</span>
+        <span>ระบบ Fixed Sorting V24.0 สมบูรณ์แบบ 100%</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -616,7 +640,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
     let masterRecords = [];
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v230');
+      const stored = localStorage.getItem(STORAGE_KEY);
       if(stored) masterRecords = JSON.parse(stored);
     } catch(e) {}
 
@@ -626,10 +650,14 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         if(idx >= 0) masterRecords[idx] = nr;
         else masterRecords.push(nr);
       });
-      try {
-        localStorage.setItem('lottery_audit_master_records_v230', JSON.stringify(masterRecords));
-      } catch(e) {}
     }
+
+    // บังคับเรียงลำดับข้อมูลทั้งหมดจาก อดีต ไป ปัจจุบัน (Oldest -> Newest) ตาม timestamp เสมอ
+    masterRecords.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(masterRecords));
+    } catch(e) {}
 
     if(masterRecords.length === 0){
       $('result').innerHTML = '<div class="errorbox">ยังไม่มีข้อมูลในระบบ กรุณากรอกข้อมูลสถิติย้อนหลัง</div>';
@@ -691,7 +719,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         };
       });
 
-      // 2. PREDICTION ENGINE (Exact 2 Digits)
+      // 2. PREDICTION ENGINE (Exact 2 Digits ใช้เรคคอร์ดสุดท้ายจริงที่ถูกจัดเรียงไว้แล้ว)
       const latestRec = recs[recs.length - 1];
       const lTop = latestRec.n3.split('').map(Number);
       const lBot = latestRec.n2.split('').map(Number);
@@ -749,7 +777,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผล Ultimate System สำเร็จ');
+    showToast('✓ ประมวลผลและเรียงลำดับเวลาสำเร็จ');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -767,7 +795,13 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     if(clearGlobalBtn){
       clearGlobalBtn.onclick = () => {
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
-          try { localStorage.removeItem('lottery_audit_master_records_v230'); } catch(e){}
+          try { 
+            localStorage.removeItem(STORAGE_KEY);
+            // เผื่อเคลียร์คีย์เก่าด้วย
+            localStorage.removeItem('lottery_audit_master_records_v230');
+            localStorage.removeItem('lottery_audit_master_records_v220');
+            localStorage.removeItem('lottery_audit_master_records_v210');
+          } catch(e){}
           $('result').innerHTML = '';
           updateIndicator();
           showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย');
@@ -777,7 +811,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
     updateIndicator();
     try {
-      const stored = localStorage.getItem('lottery_audit_master_records_v230');
+      const stored = localStorage.getItem(STORAGE_KEY);
       if(stored && JSON.parse(stored).length > 0) runEngine();
     } catch(e){}
   });
