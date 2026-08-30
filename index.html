@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V15.2
+MESTER LOTTO VIP+ — V15.3
 ============================================================
-AUDITED / CLEAN VERSION (N1 + V2 VERSION 2.2 MAIN ENGINE + BACKEND SWAP)
+AUDITED / CLEAN VERSION (N1 + V2 VERSION 2.3 MAIN ENGINE + BACKEND SWAP)
 ============================================================
-- Main Model (Formula N1 + V2 Version 2.2):
+- Main Model (Formula N1 + V2 Version 2.3):
   - Digit 1: (A + 3B + C + 3D + 3E + K) mod 10
     (Where K = 6 for Morning, 7 for Afternoon, 8 for Lao/Hanoi)
-  - Digit 2: (-A - B - C + D - 3E + 1) mod 10
-    (Where A=H, B=T, C=U, D=R1, E=R2)
-- Anti-Filter & Duplicate Digit Fix (Version 2.2):
-  - Anti-Filter: If Step_2 result equals Hundreds top (A), Step_2 += 1.
-  - Anti-Duplicate: If Digit 1 and Digit 2 are identical, Digit 2 += 1 (mod 10).
-- Backend Support Formulas (Former Main Model & Support):
+  - Step 2: -A - B - C + D - 3E + 1
+  - Anti-Filter: If Step 2 result equals Hundreds top (A), Step 2 += 1.
+  - Digit 2: Step 2 mod 10
+  - Anti-Duplicate Fix: If Digit 1 and Digit 2 are identical, Digit 2 = norm(Digit 2 + 1).
+- Backend Support Formulas (Version 2.2 former main model & supports shifted to backend):
   - Backend 1 (Former Main Model): Formula based on Mod 10 support
   - Backend 2 (Formula 2 / ~68.50%): Modular Arithmetic support
   - Backend 3 (Formula 3 / ~62.07%): Mod Sum support
@@ -34,7 +33,7 @@ AUDITED / CLEAN VERSION (N1 + V2 VERSION 2.2 MAIN ENGINE + BACKEND SWAP)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Multi Lottery Engine V15.2</title>
+<title>Mester Lotto VIP+ — Multi Lottery Engine V15.3</title>
 
 <style>
 :root{
@@ -605,7 +604,7 @@ button{
       <section class="hero">
         <span class="hero-tag">QUANT ANALYSIS ENGINE</span>
         <h1>Multi-Lottery <em>VIP+</em></h1>
-        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรหลัก N1 + V2 เวอร์ชัน 2.2 ล่าสุด</p>
+        <p>ประมวลผลหลายหวยจากข้อความชุดเดียว • ใช้สูตรหลัก N1 + V2 เวอร์ชัน 2.3 ล่าสุด</p>
       </section>
 
       <div id="console">
@@ -1048,7 +1047,7 @@ button{
 
 
     /* =======================================================
-       MAIN MODEL (FORMULA N1 + V2 VERSION 2.2)
+       MAIN MODEL (FORMULA N1 + V2 VERSION 2.3)
        - A = Hundreds top (H)
        - B = Tens top (T)
        - C = Units top (U)
@@ -1060,7 +1059,7 @@ button{
          - Lao / Hanoi = 8
          (Determined automatically via lottery name matching)
        - Digit 1: (A + 3B + C + 3D + 3E + K) mod 10
-       - Step 2: (-A - B - C + D - 3E + 1)
+       - Step 2: -A - B - C + D - 3E + 1
        - Anti-Filter: If Step 2 result equals A, Step 2 += 1
        - Digit 2: Step 2 mod 10
        - Anti-Duplicate Fix: If Digit 1 === Digit 2, Digit 2 = norm(Digit 2 + 1)
@@ -1104,7 +1103,7 @@ button{
       const sum1 = A + (3 * B) + C + (3 * D) + (3 * E) + K;
       let first = this.norm(sum1);
 
-      // Step 2 สำหรับคำนวณเด่น 2
+      // Step 2 สำหรับคำนวณเด่น 2 (เวอร์ชัน 2.3)
       let step2 = -A - B - C + D - (3 * E) + 1;
 
       // Anti-Filter: ถ้าผลลัพธ์ตรงกับหลักร้อยบน (A) พอดี ให้บวกเพิ่ม 1 แต้ม
@@ -1128,7 +1127,7 @@ button{
 
 
     /* =======================================================
-       BACKEND SUPPORT FORMULA 1 (FORMER MAIN MODEL)
+       BACKEND SUPPORT FORMULA 1 (FORMER MAIN MODEL V2.2)
     ======================================================= */
 
     backendFormula1(n3, n2){
