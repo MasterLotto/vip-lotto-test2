@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V24.0 (FIXED SORTING & DATA ENGINE)
-======================================================
+MESTER LOTTO VIP+ — V25.0 (STRICT HUNDREDS FILTER & AUDIT ENGINE)
+================================================================
 -->
 <html lang="th">
 <head>
@@ -10,7 +10,7 @@ MESTER LOTTO VIP+ — V24.0 (FIXED SORTING & DATA ENGINE)
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>Mester Lotto VIP+ — Fixed Sorting & Data Engine V24.0</title>
+<title>Mester Lotto VIP+ — Strict Hundreds Filter & Audit Engine V25.0</title>
 
 <style>
 :root{
@@ -250,6 +250,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 .status-hot{ background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
 .status-cooling{ background:#fffde7; color:#f57f17; border:1px solid #ffe082; }
 .status-danger{ background:#ffebee; color:#c62828; border:1px solid #ef9a9a; }
+.status-warning{ background:#fff3e0; color:#ef6c00; border:1px solid #ffe0b2; }
 .toast{
   position:fixed;
   left:50%;
@@ -303,16 +304,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Fixed Sorting & Data Engine V24.0</small>
+            <small>Strict Hundreds Filter V25.0</small>
           </div>
         </div>
-        <div class="pill">● V24.0 CORRECTED SORT & STORAGE</div>
+        <div class="pill">● V25.0 HUNDREDS FILTER ACTIVE</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">FIXED SORTING & DATA ENGINE</span>
+        <span class="hero-tag">STRICT HUNDREDS FILTER ENGINE</span>
         <h1>Master Audit & <em>Exact 2-Digit Prediction</em></h1>
-        <p>ระบบออดิตที่แก้ไขปัญหาการเรียงลำดับวันที่ (Sort เรียงตามลำดับเวลาจริงเก่าไปใหม่) และระบบล้างข้อมูลสะสมที่เคลียร์เกลี้ยง 100% โดยยึดสูตรคำนวณเดิมครบถ้วน</p>
+        <p>ระบบออดิตเวอร์ชันอัปเดต: ตัดสิทธิ์การนับแต้มเมื่อเลขเด่นไปออกที่หลักร้อย (ถือว่าหลุด) พร้อมระบบแจ้งเตือนสถานะหลุดหลักร้อยอย่างแม่นยำ</p>
       </section>
 
       <div id="console">
@@ -325,12 +326,12 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             <textarea
               id="bulkInput"
               class="bulk"
-              placeholder="ฮานอย HD | 26 ส.ค. 69&#10;123&#10;45&#10;&#10;ฮานอย HD | 27 ส.ค. 69&#10;456&#10;78&#10;&#10;ฮานอย HD | 28 ส.ค. 69&#10;789&#10;12"
+              placeholder="นิคเคอิ VIP เช้า | 17 ส.ค. 69&#10;224&#10;35&#10;&#10;นิคเคอิ VIP เช้า | 18 ส.ค. 69&#10;510&#10;20"
             ></textarea>
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผลระบบ V24.0</button>
+            <button id="run" class="run">⚡ ประมวลผลระบบ V25.0</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -347,7 +348,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v240';
+  const STORAGE_KEY = 'lottery_audit_master_records_v250';
 
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
@@ -376,7 +377,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
   function esc(val){ return String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function norm(v){ return (v % 10 + 10) % 10; }
 
-  // แปลงวันที่ภาษาไทยให้เป็นตัวเลขสำหรับจัดเรียงลำดับเวลาที่ถูกต้อง
   function parseThaiDate(dateStr){
     const months = {
       'ม.ค.':1, 'ก.พ.':2, 'มี.ค.':3, 'เม.ย.':4, 'พ.ค.':5, 'มิ.ย.':6,
@@ -391,7 +391,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       const monthStr = parts[1];
       const month = months[monthStr] || 1;
       let year = parseInt(parts[2], 10) || 2569;
-      if(year < 2500) year += 2543; // เผื่อกรณีใส่ปี ค.ศ.
+      if(year < 2500) year += 2543;
       return new Date(year - 543, month - 1, day).getTime();
     }
     return 0;
@@ -442,22 +442,37 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     "สูตร 6 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; }
   };
 
+  // ปรับปรุงเงื่อนไขหลักร้อย: หากเลขเด่นไปออกที่หลักร้อย ถือว่าหลุด (ไม่นับว่าเข้า)
   function checkHitDetail(predictedDigits, actualN3, actualN2){
     const topDigits = actualN3.split('').map(Number);
     const bottomDigits = actualN2.split('').map(Number);
     
+    const hundredsDigit = topDigits[0];
+    const tensAndUnits = topDigits.slice(1);
+    
     let hitAny = false;
-    let hitHundreds = false;
+    let hitHundredsOnly = false;
+    let matchedInValidPos = false;
 
     predictedDigits.forEach(d => {
-      const inTop = topDigits.includes(d);
       const inBottom = bottomDigits.includes(d);
+      const inTensOrUnits = tensAndUnits.includes(d);
+      const inHundreds = (hundredsDigit === d);
 
-      if(inTop || inBottom) hitAny = true;
-      if(topDigits[0] === d && !topDigits.slice(1).includes(d) && !inBottom) hitHundreds = true;
+      if(inBottom || inTensOrUnits){
+        hitAny = true;
+        matchedInValidPos = true;
+      } else if(inHundreds && !inBottom && !inTensOrUnits){
+        hitHundredsOnly = true;
+      }
     });
 
-    return { hitAny, hitHundreds };
+    // ถ้ารวมแล้วเข้าเฉพาะหลักร้อยโดยไม่เข้าหลักสิบบบน หน่วยบน หรือล่างเลย ถือว่าไม่เข้า (hitAny = false) พร้อมตีตราเตือน
+    if(!matchedInValidPos && hitHundredsOnly){
+      hitAny = false;
+    }
+
+    return { hitAny, hitHundredsOnly };
   }
 
   function showToast(msg){
@@ -484,11 +499,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
   function renderFullUI(globalAuditMap, auditDataMap, predictionDataMap){
     let html = '';
 
-    // ส่วนที่ 0: ตารางสะสมรวมทุกหวย (Global Master Summary Table)
+    // ส่วนที่ 0: ตารางสะสมรวมทุกหวย
     html += `<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย (Global Master Summary Table)</div>`;
     html += `
       <div class="summary-table-container">
-        <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (รวมทุกหวยในระบบ)</h3>
+        <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (รวมทุกหวยในระบบ - ตัดหลักร้อยออก)</h3>
         <table class="audit-table">
           <thead>
             <tr>
@@ -534,7 +549,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       </div>
     `;
 
-    // ส่วนที่ 1: ตารางออดิตย้อนหลังรายหวย (Audit Mode)
+    // ส่วนที่ 1: ตารางออดิตย้อนหลังรายหวย
     html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย (Formula Historical Audit)</div>`;
     
     Object.keys(auditDataMap).forEach(lotteryName => {
@@ -562,7 +577,9 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         const f = formulasResult[fName];
         let badgeHTML = '<span class="badge-status status-hot">🟢 เข้า</span>';
         if(f.lastHit === false){
-          if(f.curMissStreak >= 2){
+          if(f.hitHundredsOnly){
+            badgeHTML = '<span class="badge-status status-warning">⚠️ หลุด (ออกหลักร้อย)</span>';
+          } else if(f.curMissStreak >= 2){
             badgeHTML = `<span class="badge-status status-danger">🔴 หลุด ${f.curMissStreak} งวดติด</span>`;
           } else {
             badgeHTML = '<span class="badge-status status-cooling">🟡 หลุด 1 งวด</span>';
@@ -590,7 +607,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    // ส่วนที่ 2: ระบบคำนวณเลขเด่นงวดถัดไป (Prediction Mode - Exact 2 Digits)
+    // ส่วนที่ 2: ระบบคำนวณเลขเด่นงวดถัดไป
     html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (Exact 2-Digit Prediction)</div>`;
 
     Object.keys(predictionDataMap).forEach(lotteryName => {
@@ -600,7 +617,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <h3>หวย: ${esc(lotteryName)} (อ้างอิงจากงวดล่าสุดวันที่ ${esc(p.lastDate)})</h3>
           <div style="font-size:.5rem; color:#6b5f4f; font-family:'IBM Plex Mono',monospace; margin-bottom:6px;">
             • ผลออกงวดล่าสุด: ${esc(p.lastN3)} / ${esc(p.lastN2)}<br>
-            • สกัดเน้นๆ <b>2 ตัวเด่น</b> ประจำงวดจากคะแนนแรงส่ง (Momentum & Rebound)
+            • สกัดเน้นๆ <b>2 ตัวเด่น</b> ประจำงวด (กรองหลักร้อยออกเรียบร้อย)
           </div>
           <div style="font-size:.55rem; font-weight:bold; color:#806329; margin-top:6px;">2 ตัวเด่นแนะนำสำหรับงวดถัดไป:</div>
           <div class="digit-chips">
@@ -616,7 +633,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ระบบ Fixed Sorting V24.0 สมบูรณ์แบบ 100%</span>
+        <span>ระบบ Strict Hundreds Filter V25.0 สมบูรณ์แบบ 100%</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -652,7 +669,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       });
     }
 
-    // บังคับเรียงลำดับข้อมูลทั้งหมดจาก อดีต ไป ปัจจุบัน (Oldest -> Newest) ตาม timestamp เสมอ
     masterRecords.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
     try {
@@ -685,9 +701,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       auditDataMap[lotteryName] = {};
       const formulaNames = Object.keys(formulas);
 
-      // 1. HISTORICAL AUDIT BY LOTTERY
       formulaNames.forEach(fName => {
-        let hits = 0, misses = 0, currentStreak = 0, maxStreak = 0, currentMissStreak = 0, maxMissStreak = 0, totalTested = 0, lastHitResult = true;
+        let hits = 0, misses = 0, currentStreak = 0, maxStreak = 0, currentMissStreak = 0, maxMissStreak = 0, totalTested = 0, lastHitResult = true, lastHitHundredsOnly = false;
 
         for(let i = 0; i < recs.length - 1; i++){
           const curr = recs[i];
@@ -700,10 +715,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
           totalTested++;
           if(check.hitAny){
-            hits++; currentStreak++; currentMissStreak = 0; lastHitResult = true;
+            hits++; currentStreak++; currentMissStreak = 0; lastHitResult = true; lastHitHundredsOnly = false;
             if(currentStreak > maxStreak) maxStreak = currentStreak;
           } else {
             misses++; currentMissStreak++; currentStreak = 0; lastHitResult = false;
+            lastHitHundredsOnly = check.hitHundredsOnly;
             if(currentMissStreak > maxMissStreak) maxMissStreak = currentMissStreak;
           }
         }
@@ -715,11 +731,10 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         const hitRate = totalTested > 0 ? Number(((hits / totalTested) * 100).toFixed(2)) : 0;
         auditDataMap[lotteryName][fName] = {
           totalTested, hits, misses, hitRate, maxStreak, maxMissStreak, 
-          curStreak: currentStreak, curMissStreak: currentMissStreak, lastHit: lastHitResult
+          curStreak: currentStreak, curMissStreak: currentMissStreak, lastHit: lastHitResult, hitHundredsOnly: lastHitHundredsOnly
         };
       });
 
-      // 2. PREDICTION ENGINE (Exact 2 Digits ใช้เรคคอร์ดสุดท้ายจริงที่ถูกจัดเรียงไว้แล้ว)
       const latestRec = recs[recs.length - 1];
       const lTop = latestRec.n3.split('').map(Number);
       const lBot = latestRec.n2.split('').map(Number);
@@ -777,7 +792,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลและเรียงลำดับเวลาสำเร็จ');
+    showToast('✓ ประมวลผลคัดกรองหลักร้อยสำเร็จ');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -797,10 +812,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
           try { 
             localStorage.removeItem(STORAGE_KEY);
-            // เผื่อเคลียร์คีย์เก่าด้วย
+            localStorage.removeItem('lottery_audit_master_records_v240');
             localStorage.removeItem('lottery_audit_master_records_v230');
-            localStorage.removeItem('lottery_audit_master_records_v220');
-            localStorage.removeItem('lottery_audit_master_records_v210');
           } catch(e){}
           $('result').innerHTML = '';
           updateIndicator();
