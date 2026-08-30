@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V26.0 (QUANTUM DYNAMIC PRO & CLEAN UI ENGINE)
+MESTER LOTTO VIP+ — V27.0 (PRECISION CARD & DYNAMIC FLAGS ENGINE)
 ================================================================
 -->
 <html lang="th">
@@ -10,7 +10,7 @@ MESTER LOTTO VIP+ — V26.0 (QUANTUM DYNAMIC PRO & CLEAN UI ENGINE)
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>Mester Lotto VIP+ — Quantum Dynamic Pro V26.0</title>
+<title>Mester Lotto VIP+ — Precision Card & Flags V27.0</title>
 
 <style>
 :root{
@@ -183,6 +183,24 @@ button{ cursor:pointer; }
   border-radius:18px;
   background:var(--panel);
   box-shadow:var(--shadow);
+  position:relative;
+}
+.card-copy-btn{
+  position:absolute;
+  top:14px;
+  right:14px;
+  padding:4px 9px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fff;
+  color:var(--gold2);
+  font-size:.45rem;
+  font-weight:800;
+  transition:.15s;
+}
+.card-copy-btn:hover{
+  background:#fffaf0;
+  border-color:#d9bd79;
 }
 .summary-table-container{
   overflow-x:auto;
@@ -285,16 +303,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Quantum Dynamic Pro V26.0</small>
+            <small>Precision Card V27.0</small>
           </div>
         </div>
-        <div class="pill">● V26.0 DYNAMIC PRO ACTIVE</div>
+        <div class="pill">● V27.0 FLAGS & SORT ACTIVE</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">QUANTUM DYNAMIC PRO ENGINE</span>
-        <h1>Master Audit & <em>Per-Lottery Exact Prediction</em></h1>
-        <p>ระบบออดิตเวอร์ชันอัปเกรด: คัดเลือกสูตรเฉพาะเจาะจงรายหวย, ระบบคำนวณวันเดือนอัตโนมัติข้ามรอบปฏิทินจริง, ระบบปรับแต่งค่าชดเชย (Offset Recommendation) และการ์ดพยากรณ์ดีไซน์คลีน 10 คู่ตรงตามแบบ</p>
+        <span class="hero-tag">PRECISION FLAGS & SORT ENGINE</span>
+        <h1>Master Audit & <em>Exact Sorted Prediction</em></h1>
+        <p>ระบบออดิตเวอร์ชันอัปเกรด: แยกธงชาติตามประเภทหวยแม่นยำ 100%, เรียงลำดับเลขเจาะจากน้อยไปมาก, ปุ่มคัดลอกเฉพาะการ์ด และตัดข้อความส่วนเกินออกให้สะอาดตา</p>
       </section>
 
       <div id="console">
@@ -312,7 +330,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผลระบบ V26.0</button>
+            <button id="run" class="run">⚡ ประมวลผลระบบ V27.0</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -329,7 +347,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v260';
+  const STORAGE_KEY = 'lottery_audit_master_records_v270';
 
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
@@ -357,6 +375,28 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
   function $(id){ return document.getElementById(id); }
   function esc(val){ return String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function norm(v){ return (v % 10 + 10) % 10; }
+
+  // ฟังก์ชันแยกธงชาติตามชื่อหวย
+  function getLotteryFlag(name){
+    const n = String(name || '').toLowerCase();
+    if(n.includes('นิคเคอิ') || n.includes('ญี่ปุ่น')) return '🇯🇵';
+    if(n.includes('จีน')) return '🇨🇳';
+    if(n.includes('ฮั่งเส็ง') || n.includes('ฮ่องกง')) return '🇭🇰';
+    if(n.includes('ดาวโจนส์') || n.includes('อเมริกา') || n.includes('usa')  || n.includes('ดาว')) return '🇺🇸';
+    if(n.includes('ไต้หวัน')) return '🇹🇼';
+    if(n.includes('เกาหลี')) return '🇰🇷';
+    if(n.includes('สิงคโปร์')) return '🇸🇬';
+    if(n.includes('รัสเซีย')) return '🇷🇺';
+    if(n.includes('เยอรมัน')) return '🇩🇪';
+    if(n.includes('อังกฤษ')) return '🇬🇧';
+    if(n.includes('อินเดีย')) return '🇮🇳';
+    if(n.includes('อียิปต์')) return '🇪🇬';
+    if(n.includes('ลาว')) return '🇱🇦';
+    if(n.includes('ฮานอย') || n.includes('เวียดนาม')) return '🇻🇳';
+    if(n.includes('ไทย') || n.includes('รัฐบาล') || n.includes('ออมสิน') || n.includes('ธกส')) return '🇹🇭';
+    if(n.includes('มาเลย์')) return '🇲🇾';
+    return '🌐';
+  }
 
   function parseThaiDate(dateStr){
     const months = {
@@ -442,7 +482,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     "สูตร 6 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; }
   };
 
-  // ตรวจสอบหลักร้อย (Strict Hundreds Filter)
   function checkHitDetail(predictedDigits, actualN3, actualN2){
     const topDigits = actualN3.split('').map(Number);
     const bottomDigits = actualN2.split('').map(Number);
@@ -494,6 +533,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       $('recordCountIndicator').textContent = `สะสมในระบบ: 0 งวด`;
     }
   }
+
+  // ฟังก์ชันสำหรับคัดลอกข้อมูลเฉพาะการ์ดนั้นๆ
+  window.copyCardText = function(cardId, lotteryTitle, dateStr, d1, p1, d2, p2){
+    const textToCopy = `🎯 ${lotteryTitle} (${dateStr})\nเด่นตัวที่ 1 [${d1}]: ${p1.join(', ')}\nเด่นตัวที่ 2 [${d2}]: ${p2.join(', ')}`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      showToast(`✓ คัดลอกเลขเด่น ${lotteryTitle} เรียบร้อย`);
+    }).catch(() => {
+      showToast('❌ คัดลอกไม่สำเร็จ');
+    });
+  };
 
   function renderFullUI(globalAuditMap, auditDataMap, predictionDataMap){
     let html = '';
@@ -548,7 +597,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       </div>
     `;
 
-    // ส่วนที่ 1: ตารางออดิตย้อนหลังรายหวย พร้อมระบบแนะนำค่าชดเชย (Offset Recommendation)
+    // ส่วนที่ 1: ตารางออดิตย้อนหลังรายหวย & ค่าชดเชยแนะนำ
     html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย & ค่าชดเชยแนะนำ (Per-Lottery Audit & Offset Tuning)</div>`;
     
     Object.keys(auditDataMap).forEach(lotteryName => {
@@ -604,24 +653,36 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    // ส่วนที่ 2: ระบบคำนวณเลขเด่นงวดถัดไป (ดีไซน์การ์ดคลีน 10 คู่ ตามแบบเป๊ะ)
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (Exact 2-Digit Prediction Card)</div>`;
+    // ส่วนที่ 2: ส่วนคำนวณเลขเด่นงวดถัดไป (ธงชาติถูกต้อง, เรียงเลขเจาะน้อยไปมาก, มีปุ่ม copy เฉพาะการ์ด)
+    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (Exact Sorted Prediction Card)</div>`;
 
+    let cardIdx = 0;
     Object.keys(predictionDataMap).forEach(lotteryName => {
       const p = predictionDataMap[lotteryName];
       const d1 = p.topDigits[0] !== undefined ? p.topDigits[0] : 0;
       const d2 = p.topDigits[1] !== undefined ? p.topDigits[1] : 1;
       const pairs1 = p.pairs1;
       const pairs2 = p.pairs2;
+      const flagIcon = getLotteryFlag(lotteryName);
+      const cId = `card_${cardIdx++}`;
+
+      // แปลงข้อมูลเป็น string สำหรับส่งเข้าฟังก์ชัน copy
+      const jsonPairs1 = JSON.stringify(pairs1).replace(/"/g, '&quot;');
+      const jsonPairs2 = JSON.stringify(pairs2).replace(/"/g, '&quot;');
 
       html += `
-        <div class="prediction-card">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-            <div style="font-size:.85rem; font-weight:900; color:#403a31;">🇨🇳 ${esc(lotteryName)}</div>
-            <div style="font-size:.52rem; font-weight:700; color:#8b8173;">${esc(p.nextDate)} (V26.0 Quantum Pro)</div>
+        <div class="prediction-card" id="${cId}">
+          <button class="card-copy-btn" onclick="copyCardText('${cId}', '${esc(lotteryName)}', '${esc(p.nextDate)}', ${d1}, ${jsonPairs1}, ${d2}, ${jsonPairs2})">📋 คัดลอก</button>
+          
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; padding-right:70px;">
+            <div style="font-size:1.1rem;">${flagIcon}</div>
+            <div>
+              <div style="font-size:.82rem; font-weight:900; color:#403a31;">${esc(lotteryName)}</div>
+              <div style="font-size:.48rem; font-weight:700; color:#8b8173;">${esc(p.nextDate)}</div>
+            </div>
           </div>
           
-          <!-- เลขเด่นตัวที่ 1 พร้อมเลขเจาะ 5 คู่ -->
+          <!-- เลขเด่นตัวที่ 1 พร้อมเลขเจาะ 5 คู่ เรียงจากน้อยไปมาก -->
           <div style="display:flex; align-items:center; gap:10px; margin:10px 0; padding:8px 0; border-bottom:1px solid #f0e6d6;">
             <div style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#f9f3e3,#edd5a6); border:1px solid #d9bd79; color:#806329; display:grid; place-items:center; font-size:.95rem; font-weight:900;">${d1}</div>
             <div style="font-size:1rem; color:#8b8173; font-weight:bold;">:</div>
@@ -632,19 +693,15 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             </div>
           </div>
 
-          <!-- เลขเด่นตัวที่ 2 พร้อมเลขเจาะ 5 คู่ -->
-          <div style="display:flex; align-items:center; gap:10px; margin:10px 0 6px; padding:8px 0;">
+          <!-- เลขเด่นตัวที่ 2 พร้อมเลขเจาะ 5 คู่ เรียงจากน้อยไปมาก -->
+          <div style="display:flex; align-items:center; gap:10px; margin:10px 0 2px; padding:8px 0;">
             <div style="width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#f9f3e3,#edd5a6); border:1px solid #d9bd79; color:#806329; display:grid; place-items:center; font-size:.95rem; font-weight:900;">${d2}</div>
             <div style="font-size:1rem; color:#8b8173; font-weight:bold;">:</div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               ${pairs2.map((pr, idx) => `
-                <div style="width:40px; height:36px; border-radius:10px; border:1px solid ${idx === 0 ? '#d9bd79' : '#e8dfcf'}; background:${idx === 0 ? '#fffaf0' : '#fff'}; color:${idx === 3 || idx === 4 ? '#b98279' : '#403a31'}; display:grid; place-items:center; font-size:.6rem; font-weight:800; font-family:'IBM Plex Mono',monospace;">${pr}</div>
+                <div style="width:40px; height:36px; border-radius:10px; border:1px solid ${idx === 0 ? '#d9bd79' : '#e8dfcf'}; background:${idx === 0 ? '#fffaf0' : '#fff'}; color:#403a31; display:grid; place-items:center; font-size:.6rem; font-weight:800; font-family:'IBM Plex Mono',monospace;">${pr}</div>
               `).join('')}
             </div>
-          </div>
-
-          <div style="text-align:center; margin-top:12px; font-size:.44rem; font-weight:800; color:#b8944a; letter-spacing:1px;">
-            ✦ บ้านเงินกอง — Quantum V26.0 ✦
           </div>
         </div>
       `;
@@ -653,7 +710,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ระบบ Quantum Dynamic Pro V26.0 สมบูรณ์แบบ 100%</span>
+        <span>ระบบ Precision Card & Flags V27.0 สมบูรณ์แบบ 100%</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -724,7 +781,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       formulaNames.forEach(fName => {
         let hits = 0, misses = 0, currentStreak = 0, maxStreak = 0, currentMissStreak = 0, maxMissStreak = 0, totalTested = 0, lastHitResult = true, lastHitHundredsOnly = false;
 
-        // ทดสอบระบบจำลองหา Offset แนะนำที่ดีที่สุดจากอดีต (+0, +1, -1, +2, -2) โดยไม่เปลี่ยนสูตรหลัก
         const offsets = [0, 1, -1, 2, -2];
         let bestOffset = 0;
         let bestOffsetHits = -1;
@@ -792,12 +848,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         const auditStats = auditDataMap[lotteryName][fName];
         const predicted = formulas[fName](lTop[0], lTop[1], lTop[2], lBot[0], lBot[1]);
 
-        // ระบบให้น้ำหนักอัจฉริยะ (Dynamic Weighting + Rebound Bonus)
         let weight = auditStats.hitRate + 10;
         if(auditStats.lastHit === false && auditStats.curMissStreak === 2){
-          weight += 35; // โบนัสดีดกลับเมื่อหลุด 2 งวดติด
+          weight += 35;
         } else if(auditStats.lastHit === true && auditStats.curStreak >= 2){
-          weight += 20; // โบนัสสูตรกำลังเดินดี
+          weight += 20;
         }
 
         predicted.forEach(d => {
@@ -809,25 +864,27 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       const sortedDigits = Object.keys(digitScores).map(Number).sort((a,b) => digitScores[b] - digitScores[a]);
       const topDigits = sortedDigits.slice(0, 2);
 
-      // สร้างเลขเจาะ 5 คู่ต่อเลขเด่น 1 ตัว (รวม 10 คู่)
       const d1 = topDigits[0] !== undefined ? topDigits[0] : 4;
       const d2 = topDigits[1] !== undefined ? topDigits[1] : 1;
 
-      const pairs1 = [
+      // สร้างเลขเจาะ 5 คู่ และเรียงลำดับจากน้อยไปหามาก (Numerical Sort)
+      const rawPairs1 = [
         `${d1}${norm(d1 + 0)}`,
         `${d1}${norm(d1 + 2)}`,
         `${d1}${norm(d1 + 3)}`,
         `${d1}${norm(d1 + 5)}`,
         `${d1}${norm(d1 + 6)}`
       ];
+      const pairs1 = rawPairs1.map(Number).sort((a,b) => a - b).map(v => String(v).padStart(2, '0'));
 
-      const pairs2 = [
+      const rawPairs2 = [
         `${d2}${norm(d2 + 0)}`,
         `${d2}${norm(d2 + 2)}`,
         `${d2}${norm(d2 + 3)}`,
         `${d2}${norm(d2 + 5)}`,
         `${d2}${norm(d2 + 6)}`
       ];
+      const pairs2 = rawPairs2.map(Number).sort((a,b) => a - b).map(v => String(v).padStart(2, '0'));
 
       const nextDate = getNextDateStr(latestRec.date);
 
@@ -852,7 +909,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V26.0 สำเร็จสมบูรณ์');
+    showToast('✓ ประมวลผลระบบ V27.0 สำเร็จสมบูรณ์');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -872,8 +929,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
           try { 
             localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem('lottery_audit_master_records_v260');
             localStorage.removeItem('lottery_audit_master_records_v250');
-            localStorage.removeItem('lottery_audit_master_records_v240');
           } catch(e){}
           $('result').innerHTML = '';
           updateIndicator();
