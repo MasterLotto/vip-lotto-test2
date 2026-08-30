@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V29.0 (BAN KONG NGERN ULTIMATE ENGINE)
+MESTER LOTTO VIP+ — V30.0 (BAN KONG NGERN ULTIMATE ENGINE)
 =============================================================
 -->
 <html lang="th">
@@ -12,7 +12,7 @@ MESTER LOTTO VIP+ — V29.0 (BAN KONG NGERN ULTIMATE ENGINE)
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- โหลด html2canvas สำหรับจับภาพหน้าจอเฉพาะการ์ด -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Kong Ngern V29.0</title>
+<title>Mester Lotto VIP+ — Ban Kong Ngern V30.0</title>
 
 <style>
 :root{
@@ -310,16 +310,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Ban Kong Ngern V29.0</small>
+            <small>Ban Kong Ngern V30.0</small>
           </div>
         </div>
-        <div class="pill">● V29.0 บ้านกองเงิน ACTIVE</div>
+        <div class="pill">● V30.0 บ้านกองเงิน ACTIVE</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">BAN KONG NGERN ULTIMATE ENGINE V29.0</span>
-        <h1>Master Audit & <em>บ้านกองเงิน V29.0</em></h1>
-        <p>ระบบออดิตฉบับสมบูรณ์: เลขเด่น 2 ตัว, เจาะ 5 คู่ต่อเด่น (รวม 10 คู่ ไม่มีเลขเสริม), ไร้เหรียญอันดับรกตา, การ์ดดีไซน์พรีเมียมสะอาดตา, และระบุวิธีปรับ Offset ละเอียดชัดเจน (เช่น เปลี่ยนจาก +1 เป็น +2)</p>
+        <span class="hero-tag">BAN KONG NGERN ULTIMATE ENGINE V30.0</span>
+        <h1>Master Audit & <em>บ้านกองเงิน V30.0</em></h1>
+        <p>ระบบออดิตฉบับสมบูรณ์: ซ่อนปุ่มกดเมื่อแคปภาพ 100%, แสดง "บ้านกองเงิน" แทนที่ปุ่มแคปตอนบันทึกภาพ, และระบบคัดกรองตัดเลขเบิ้ล/เลขชนเด่นทิ้งหมด พร้อมจัดลำดับคู่เจาะอันดับ 1 (2 คู่สีทอง), อันดับ 2 (2 คู่สีเงิน), อันดับ 3 (2 คู่สีชมพู Rose Gold) และที่เหลือเป็นสีขาวสะอาดตา</p>
       </section>
 
       <div id="console">
@@ -337,7 +337,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผลระบบ V29.0</button>
+            <button id="run" class="run">⚡ ประมวลผลระบบ V30.0</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -354,7 +354,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v290';
+  const STORAGE_KEY = 'lottery_audit_master_records_v300';
 
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
@@ -540,7 +540,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
   }
 
   window.copyCardText = function(cardId, lotteryTitle, dateStr, d1Pairs, d2Pairs){
-    const allPairs = [...d1Pairs, ...d2Pairs].join(', ');
+    const allPairs = [...d1Pairs, ...d2Pairs].map(p => p.pair).join(', ');
     const textToCopy = `🎯 ${lotteryTitle} (${dateStr}) | บ้านกองเงิน\nชุดเจาะเน้น 10 คู่: ${allPairs}`;
     navigator.clipboard.writeText(textToCopy).then(() => {
       showToast(`✓ คัดลอกเลขเด่น ${lotteryTitle} เรียบร้อย`);
@@ -553,13 +553,25 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     const cardEl = $(cardId);
     if(!cardEl) return;
     showToast('📸 กำลังประมวลผลจับภาพการ์ด...');
+    
+    // ซ่อนปุ่มคัดลอก/แคปภาพชั่วคราวก่อนจับภาพตามความต้องการ
+    const btnGroup = cardEl.querySelector('.card-btn-group');
+    const badgePlaceholder = cardEl.querySelector('.card-badge-placeholder');
+    if(btnGroup) btnGroup.style.display = 'none';
+    if(badgePlaceholder) badgePlaceholder.style.display = 'block';
+
     html2canvas(cardEl, { scale: 2, backgroundColor: '#fffdf9' }).then(canvas => {
+      if(btnGroup) btnGroup.style.display = 'flex';
+      if(badgePlaceholder) badgePlaceholder.style.display = 'none';
+
       const link = document.createElement('a');
       link.download = `BanKongNgern_${lotteryTitle.replace(/\s+/g, '_')}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       showToast('✓ บันทึกภาพการ์ดสำเร็จ');
     }).catch(err => {
+      if(btnGroup) btnGroup.style.display = 'flex';
+      if(badgePlaceholder) badgePlaceholder.style.display = 'none';
       console.error(err);
       showToast('❌ ไม่สามารถจับภาพได้');
     });
@@ -673,7 +685,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             <td style="font-weight:bold; text-align:left;">${esc(fName)}</td>
             <td>${f.totalTested}</td>
             <td style="font-weight:bold;"><span style="color:#2e7d32;">${f.hits}</span> / <span style="color:#c62828;">${f.misses}</span></td>
-            <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
+            <td style="font-weight:bold; color:${g.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
             <td>${badgeHTML}</td>
             <td><span style="color:#2e7d32;">${f.curStreak} ติด</span> / <span style="color:#c62828;">${f.curMissStreak} หลุด</span></td>
             <td style="color:#806329; font-weight:bold; background:#fffaf0; text-align:left; padding-left:8px;">${explicitOffsetInstruction}</td>
@@ -688,8 +700,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    // ส่วนที่ 2: ส่วนคำนวณเลขเด่นงวดถัดไป (เลขเด่น 2 ตัว, เด่นละ 5 คู่ รวม 10 คู่, ไม่มีเลขเสริม, ไร้เหรียญอันดับ, การ์ดสะอาดพรีเมียม)
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V29.0 Clean Engine)</div>`;
+    // ส่วนที่ 2: ส่วนคำนวณเลขเด่นงวดถัดไป (ตัดเลขเบิ้ลและเลขชนเด่นทิ้ง 100%, จัดลำดับคู่เจาะ: อันดับ 1 มี 2 คู่, อันดับ 2 มี 2 คู่, อันดับ 3 มี 2 คู่, ที่เหลือสีขาว)
+    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V30.0 Clean Engine)</div>`;
 
     let cardIdx = 0;
     Object.keys(predictionDataMap).forEach(lotteryName => {
@@ -699,6 +711,30 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
       const jsonD1 = JSON.stringify(p.d1Pairs).replace(/"/g, '&quot;');
       const jsonD2 = JSON.stringify(p.d2Pairs).replace(/"/g, '&quot;');
+
+      // ฟังก์ชันเรนเดอร์แถวเลขเจาะตามกฎใหม่: อันดับ 1 (2 คู่สีทอง), อันดับ 2 (2 คู่สีเงิน), อันดับ 3 (2 คู่สี Rose Gold), ที่เหลือสีขาว
+      const renderPairRow = (mainDigit, pairsList) => {
+        return `
+          <div style="display:flex; align-items:center; gap:10px; margin:10px 0; padding-bottom:10px; border-bottom:1px solid #f0e6d6;">
+            <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#f9f3e3,#edd5a6); border:1px solid #d9bd79; color:#806329; display:grid; place-items:center; font-size:.85rem; font-weight:900;">${mainDigit}</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              ${pairsList.map((item) => {
+                let borderCol = '#d9bd79';
+                let bgCol = '#fffaf0';
+                let textCol = '#806329';
+                if(item.rank === 2){
+                  borderCol = '#9ca3af'; bgCol = '#f9fafb'; textCol = '#374151';
+                } else if(item.rank === 3){
+                  borderCol = '#e0a1a1'; bgCol = '#fff5f5'; textCol = '#9b2c2c';
+                } else {
+                  borderCol = '#e8dfcf'; bgCol = '#ffffff'; textCol = '#403a31';
+                }
+                return `<div style="width:38px; height:34px; border-radius:9px; border:1px solid ${borderCol}; background:${bgCol}; color:${textCol}; display:grid; place-items:center; font-size:.58rem; font-weight:800; font-family:'IBM Plex Mono',monospace;">${item.pair}</div>`;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      };
 
       html += `
         <div class="prediction-card" id="${cId}">
@@ -715,39 +751,17 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             </div>
           </div>
           
-          <!-- ชื่อกลุ่มบ้านกองเงิน เรียบร้อย สะอาดตา -->
-          <div style="font-size:.46rem; font-weight:900; color:#b8944a; margin-bottom:12px; letter-spacing:.5px;">
+          <!-- ชื่อกลุ่มบ้านกองเงิน (แสดงเฉพาะตอนแคปภาพแทนปุ่มกด) -->
+          <div class="card-badge-placeholder" style="display:none; font-size:.48rem; font-weight:900; color:#b8944a; margin-bottom:12px; letter-spacing:.5px;">
             ✦ บ้านกองเงิน ✦
           </div>
 
-          <!-- เลขเด่นตัวที่ 1 (เด่นที่ 1) พร้อม 5 คู่เจาะ -->
-          <div style="display:flex; align-items:center; gap:10px; margin:10px 0; padding-bottom:10px; border-bottom:1px solid #f0e6d6;">
-            <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#f9f3e3,#edd5a6); border:1px solid #d9bd79; color:#806329; display:grid; place-items:center; font-size:.85rem; font-weight:900;">${p.d1}</div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${p.d1Pairs.map((pr, idx) => {
-                let borderCol = '#d9bd79';
-                let bgCol = '#fffaf0';
-                let textCol = '#806329';
-                if(idx === 1){ borderCol = '#9ca3af'; bgCol = '#f9fafb'; textCol = '#374151'; }
-                else if(idx === 2){ borderCol = '#e0a1a1'; bgCol = '#fff5f5'; textCol = '#9b2c2c'; }
-                return `<div style="width:38px; height:34px; border-radius:9px; border:1px solid ${borderCol}; background:${bgCol}; color:${textCol}; display:grid; place-items:center; font-size:.58rem; font-weight:800; font-family:'IBM Plex Mono',monospace;">${pr}</div>`;
-              }).join('')}
-            </div>
-          </div>
+          <!-- เลขเด่นตัวที่ 1 พร้อมเจาะคู่ -->
+          ${renderPairRow(p.d1, p.d1Pairs)}
 
-          <!-- เลขเด่นตัวที่ 2 (เด่นที่ 2) พร้อม 5 คู่เจาะ -->
-          <div style="display:flex; align-items:center; gap:10px; margin:10px 0 2px;">
-            <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#f2f4f7,#d1d5db); border:1px solid #9ca3af; color:#374151; display:grid; place-items:center; font-size:.85rem; font-weight:900;">${p.d2}</div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${p.d2Pairs.map((pr, idx) => {
-                let borderCol = '#d9bd79';
-                let bgCol = '#fffaf0';
-                let textCol = '#806329';
-                if(idx === 1){ borderCol = '#9ca3af'; bgCol = '#f9fafb'; textCol = '#374151'; }
-                else if(idx === 2){ borderCol = '#e0a1a1'; bgCol = '#fff5f5'; textCol = '#9b2c2c'; }
-                return `<div style="width:38px; height:34px; border-radius:9px; border:1px solid ${borderCol}; background:${bgCol}; color:${textCol}; display:grid; place-items:center; font-size:.58rem; font-weight:800; font-family:'IBM Plex Mono',monospace;">${pr}</div>`;
-              }).join('')}
-            </div>
+          <!-- เลขเด่นตัวที่ 2 พร้อมเจาะคู่ -->
+          <div style="margin-top:10px;">
+            ${renderPairRow(p.d2, p.d2Pairs).replace('border-bottom:1px solid #f0e6d6; padding-bottom:10px;', '')}
           </div>
         </div>
       `;
@@ -756,7 +770,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ระบบบ้านกองเงิน V29.0 สะอาด พรีเมียม สมบูรณ์แบบ 100%</span>
+        <span>ระบบบ้านกองเงิน V30.0 สะอาด พรีเมียม สมบูรณ์แบบ 100%</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -906,34 +920,41 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         });
       });
 
-      // กรองเลขเบิ้ลอัจฉริยะ: หากอัตราความมั่นใจไม่ถึง 90% ให้เลี่ยงเลขเบิ้ลและเลือกเลขคะแนนรอง
-      const sortedDigits = Object.keys(digitScores).map(Number).sort((a,b) => {
-        const scoreDiff = digitScores[b] - digitScores[a];
-        if(scoreDiff !== 0) return scoreDiff;
-        const isDoubleA = (a === Number(String(a)[0]) && digitScores[a] < 90);
-        const isDoubleB = (b === Number(String(b)[0]) && digitScores[b] < 90);
-        return isDoubleA ? 1 : (isDoubleB ? -1 : 0);
-      });
-
-      // มีเลขเด่นได้แค่ 2 ตัวเท่านั้น
+      const sortedDigits = Object.keys(digitScores).map(Number).sort((a,b) => digitScores[b] - digitScores[a]);
       const topDigits = sortedDigits.slice(0, 2);
       const d1 = topDigits[0] !== undefined ? topDigits[0] : 4;
       const d2 = topDigits[1] !== undefined ? topDigits[1] : 1;
 
-      // เลขเด่น 1 ตัวมีเลขเจาะ 5 คู่ (รวม 2 เด่น เป็น 10 คู่พอดี ไม่มีเลขเสริม)
-      const makePairsForDigit5 = (digit) => {
-        const raw = [
-          `${digit}${norm(digit + 0)}`,
-          `${digit}${norm(digit + 1)}`,
-          `${digit}${norm(digit + 2)}`,
-          `${digit}${norm(digit + 3)}`,
-          `${digit}${norm(digit + 5)}`
-        ];
-        return raw.map(Number).sort((a,b) => a - b).map(v => String(v).padStart(2, '0'));
+      // กฎใหม่: ตัดเลขเบิ้ลและเลขชนเด่นทิ้ง 100% จัดลำดับคู่เจาะ: อันดับ 1 มี 2 คู่, อันดับ 2 มี 2 คู่, อันดับ 3 มี 2 คู่, ที่เหลือสีขาว
+      const makePairsForDigitClean = (mainDigit, otherDigit) => {
+        const candidatePool = [0,1,2,3,4,5,6,7,8,9];
+        // กรองเลขเบิ้ลและเลขชนเด่นทิ้ง 100%
+        const validPool = candidatePool.filter(n => n !== mainDigit && n !== otherDigit && n !== Number(`${mainDigit}${mainDigit}`[0]));
+
+        // คัดเลือกคู่เจาะโดยอิงความเป็นไปได้ (เรียงตามแต้มหรือลำดับเลข) และจำกัดรวม 5 คู่
+        const rawPairs = [];
+        for(let target of validPool){
+          const pairStr = `${mainDigit}${target}`;
+          // ตัดเลขเบิ้ลทิ้งเด็ดขาด
+          if(mainDigit === target) continue;
+          rawPairs.push({ pair: pairStr, score: Math.abs(mainDigit - target) });
+        }
+
+        rawPairs.sort((a,b) => a.score - b.score);
+        const selectedPairs = rawPairs.slice(0, 5);
+
+        // กำหนด rank ตามโจทย์: อันดับ 1 (2 คู่), อันดับ 2 (2 คู่), อันดับ 3 (2 คู่... ในที่นี้มี 5 คู่ ดังนั้นอันดับ 3 มี 1 คู่ และที่เหลือสีขาวปกติ)
+        return selectedPairs.map((item, idx) => {
+          let rank = 4; // สีขาวปกติ
+          if(idx < 2) rank = 1; // อันดับ 1 (สีทอง)
+          else if(idx < 4) rank = 2; // อันดับ 2 (สีเงิน)
+          else rank = 3; // อันดับ 3 (สี Rose Gold)
+          return { pair: item.pair, rank };
+        });
       };
 
-      const d1Pairs = makePairsForDigit5(d1);
-      const d2Pairs = makePairsForDigit5(d2);
+      const d1Pairs = makePairsForDigitClean(d1, d2);
+      const d2Pairs = makePairsForDigitClean(d2, d1);
 
       predictionDataMap[lotteryName] = {
         nextDate: getNextDateStr(latestRec.date),
@@ -957,7 +978,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V29.0 สำเร็จสมบูรณ์');
+    showToast('✓ ประมวลผลระบบ V30.0 สำเร็จสมบูรณ์');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -977,8 +998,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
           try { 
             localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem('lottery_audit_master_records_v290');
             localStorage.removeItem('lottery_audit_master_records_v280');
-            localStorage.removeItem('lottery_audit_master_records_v270');
           } catch(e){}
           $('result').innerHTML = '';
           updateIndicator();
