@@ -1,8 +1,8 @@
-# ระบบวิเคราะห์ Backtest และปรับปรุงสูตร Version 2.8 (Quantum Stable Edition)
-# รองรับการตรวจสอบย้อนหลังทุกประเภทหวยแบบ Triple Check และคำนวณความเสถียรของสูตร
+# ระบบวิเคราะห์และคำนวณสูตรหวย Version 2.8 (ปรับปรุงต่อเนื่องจาก Version 2.7)
 
-class LotteryBacktestEngine:
+class LotteryEngineV28:
     def __init__(self):
+        # โครงสร้างสูตรเดิมที่พัฒนาต่อจาก Version 2.7 พร้อมเพิ่มความเสถียรในการคำนวณ
         self.formulas = {
             "N1": lambda A, B, C, D, E: ((-2*A - 2*B + C + D - 2*E + 9) % 10, (-2*B + C + 3) % 10),
             "N6": lambda A, B, C, D, E: ((-A - 2*B + C - E + 1) % 10, (A - C - D - 2*E) % 10),
@@ -16,77 +16,26 @@ class LotteryBacktestEngine:
             "NEW": lambda A, B, C, D, E: ((B + E + 2) % 10, ((B + E + 2) + 2) % 10)
         }
 
-    def parse_lottery_data(self, raw_data):
-        # ฟังก์ชันจัดระเบียบข้อมูลสถิติหวยแยกตามประเภทและงวด
-        datasets = {}
-        current_lottery = "Unknown"
-        lines = raw_data.strip().split('\n')
-        i = 0
-        while i < len(lines):
-            line = lines[i].strip()
-            if '|' in line:
-                parts = line.split('|')
-                current_lottery = parts[0].strip()
-                date_str = parts[1].strip()
-                if i + 2 < len(lines):
-                    top3 = lines[i+1].strip()
-                    bottom2 = lines[i+2].strip()
-                    if top3.isdigit() and bottom2.isdigit():
-                        if current_lottery not in datasets:
-                            datasets[current_lottery] = []
-                        datasets[current_lottery].append({
-                            "date": date_str,
-                            "top3": top3,
-                            "bottom2": bottom2
-                        })
-                        i += 3
-                        continue
-            i += 1
-        return datasets
+    def calculate_next_draw(self, formula_name, top3, bottom2):
+        if formula_name not in self.formulas:
+            raise ValueError(f"ไม่พบสูตร {formula_name} ในระบบ")
+        
+        if len(top3) != 3 or len(bottom2) != 2:
+            raise ValueError("รูปแบบข้อมูลรางวัลไม่ถูกต้อง (3 ตัวบนต้องมี 3 หลัก, 2 ตัวล่างต้องมี 2 หลัก)")
 
-    def audit_formula(self, data_list, formula_func):
-        hits = 0
-        total = len(data_list) - 1
-        if total <= 0:
-            return 0.0
+        A = int(top3[0])
+        B = int(top3[1])
+        C = int(top3[2])
+        D = int(bottom2[0])
+        E = int(bottom2[1])
 
-        for idx in range(len(data_list) - 1):
-            prev = data_list[idx + 1] # งวดก่อนหน้าใช้วิเคราะห์
-            curr = data_list[idx]     # งวดปัจจุบันใช้ตรวจผล
+        formula_func = self.formulas[formula_name]
+        digit1, digit2 = formula_func(A, B, C, D, E)
+        return digit1, digit2
 
-            top3 = prev['top3']
-            bot2 = prev['bottom2']
-            if len(top3) != 3 or len(bot2) != 2:
-                continue
-
-            A = int(top3[0])
-            B = int(top3[1])
-            C = int(top3[2])
-            D = int(bot2[0])
-            E = int(bot2[1])
-
-            d1, d2 = formula_func(A, B, C, D, E)
-
-            # ตรวจสอบว่าเลขเด่นเข้าในงวดปัจจุบันหรือไม่ (เช็คจาก 3 ตัวบน หรือ 2 ตัวล่าง)
-            target_str = curr['top3'] + curr['bottom2']
-            if str(d1) in target_str or str(d2) in target_str:
-                hits += 1
-
-        return (hits / total) * 100 if total > 0 else 0.0
-
-    def run_full_quantum_audit(self, raw_data):
-        datasets = self.parse_lottery_data(raw_data)
-        summary = {}
-
-        for lot_name, records in datasets.items():
-            summary[lot_name] = {}
-            for f_name, f_func in self.formulas.items():
-                accuracy = self.audit_formula(records, f_func)
-                summary[lot_name][f_name] = accuracy
-
-        return summary
-
-# ตัวอย่างการเรียกใช้งานระบบ Version 2.8
+# ตัวอย่างการใช้งานสำหรับคำนวณงวดถัดไปจากฐาน Version 2.7
 if __name__ == "__main__":
-    engine = LotteryBacktestEngine()
-    print("Version 2.8 Quantum Audit Engine Initialized Successfully.")
+    engine = LotteryEngineV28()
+    # สมมติผลรางวัลงวดล่าสุด 3 ตัวบน = 123, 2 ตัวล่าง = 45
+    d1, d2 = engine.calculate_next_draw("N1", "123", "45")
+    print(f"ผลลัพธ์เลขเด่นจากสูตร N1: {d1} และ {d2}")
