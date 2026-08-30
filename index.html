@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V31.1 (CRITICAL FIX & SECURE EXECUTION)
+MESTER LOTTO VIP+ — V31.2 (CRITICAL FIX & SECURE EXECUTION)
 ==================================================================
 -->
 <html lang="th">
@@ -11,7 +11,7 @@ MESTER LOTTO VIP+ — V31.1 (CRITICAL FIX & SECURE EXECUTION)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Kong Ngern V31.1</title>
+<title>Mester Lotto VIP+ — Ban Kong Ngern V31.2</title>
 
 <style>
 :root{
@@ -340,16 +340,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Ban Kong Ngern V31.1</small>
+            <small>Ban Kong Ngern V31.2</small>
           </div>
         </div>
-        <div class="pill">● V31.1 ACTIVE</div>
+        <div class="pill">● V31.2 ACTIVE</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">BAN KONG NGERN ULTIMATE PRECISION V31.1</span>
-        <h1>Master Audit & <em>บ้านกองเงิน V31.1</em></h1>
-        <p>แก้ไขจุดผิดพลาดทาง syntax ในการเรียงลำดับชุดเจาะเรียบร้อย พร้อมแสดงผลลัพธ์เลขเด่นแบบเดี่ยวสะอาดตาตามเงื่อนไข Audit ทุกประการ</p>
+        <span class="hero-tag">BAN KONG NGERN ULTIMATE PRECISION V31.2</span>
+        <h1>Master Audit & <em>บ้านกองเงิน V31.2</em></h1>
+        <p>อัปเกรดระบบจัดการเลขซ้ำโดยคงสูตรเดิม 100% เพิ่มเงื่อนไขอัตโนมัติบวก 1 แต้มเมื่อสูตรคำนวณเลขเด่นออกมาตรงกัน ป้องกันเลขซ้ำในตารางออดิตและชุดเจาะ</p>
       </section>
 
       <div id="console">
@@ -367,7 +367,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผลระบบ V31.1</button>
+            <button id="run" class="run">⚡ ประมวลผลระบบ V31.2</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -384,7 +384,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v311';
+  const STORAGE_KEY = 'lottery_audit_master_records_v312';
 
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
@@ -529,6 +529,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     "สูตร 5 — ฐาน 10 - หน่วยล่าง": (A, B, C, D, E) => { const d1 = norm(10 - E); return [d1, norm(d1 + 1)]; },
     "สูตร 6 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; }
   };
+
+  // ฟังก์ชันช่วยจัดการเลขซ้ำตามเงื่อนไข: หากเลขทั้งสองตัวเหมือนกัน ให้บวก 1 แต้มที่ตัวที่สองโดยไม่เปลี่ยนสูตรหลัก
+  function sanitizeFormulaResult(rawRes) {
+    let d1 = norm(rawRes[0]);
+    let d2 = norm(rawRes[1]);
+    if (d1 === d2) {
+      d2 = norm(d2 + 1);
+    }
+    return [d1, d2];
+  }
 
   function checkHitDetail(predictedDigits, actualN3, actualN2){
     const topDigits = actualN3.split('').map(Number);
@@ -765,7 +775,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V31.1 Ultimate Rebound & Momentum Precision)</div>`;
+    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V31.2 Ultimate Rebound & Momentum Precision)</div>`;
 
     let cardIdx = 0;
     Object.keys(predictionDataMap).forEach(lotteryName => {
@@ -823,11 +833,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="card-badge-placeholder" style="display:none; position:absolute; top:14px; right:14px; font-size:.48rem; font-weight:900; color:#b8944a; letter-spacing:.5px; align-items:center; gap:3px;">
-            ✦ บ้านกองเงิน V31.1 ✦
+            ✦ บ้านกองเงิน V31.2 ✦
           </div>
           
           <div style="position:absolute; top:14px; right:14px; font-size:.48rem; font-weight:900; color:#b8944a; letter-spacing:.5px; display:flex; align-items:center; gap:3px;">
-            ✦ บ้านกองเงิน V31.1 ✦
+            ✦ บ้านกองเงิน V31.2 ✦
           </div>
 
           ${renderPairRow(p.d1, p.d1Pairs, true)}
@@ -842,7 +852,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ระบบบ้านกองเงิน V31.1 Ultimate Rebound & Momentum Precision สมบูรณ์แบบ 100%</span>
+        <span>ระบบบ้านกองเงิน V31.2 Ultimate Rebound & Momentum Precision สมบูรณ์แบบ 100%</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -930,7 +940,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             const bot = curr.n2.split('').map(Number);
             
             const rawPred = formulas[fName](top[0], top[1], top[2], bot[0], bot[1]);
-            const adjustedPred = rawPred.map(d => norm(d + off));
+            const adjustedPred = sanitizeFormulaResult([norm(rawPred[0] + off), norm(rawPred[1] + off)]);
             const check = checkHitDetail(adjustedPred, next.n3, next.n2);
             if(check.hitAny) hCount++;
           }
@@ -946,7 +956,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           const top = curr.n3.split('').map(Number);
           const bot = curr.n2.split('').map(Number);
           
-          const predicted = formulas[fName](top[0], top[1], top[2], bot[0], bot[1]);
+          const rawPred = formulas[fName](top[0], top[1], top[2], bot[0], bot[1]);
+          const predicted = sanitizeFormulaResult(rawPred);
           const check = checkHitDetail(predicted, next.n3, next.n2);
 
           totalTested++;
@@ -965,7 +976,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         }
 
         const rawLatestPred = formulas[fName](lTop[0], lTop[1], lTop[2], lBot[0], lBot[1]);
-        const latestDigits = rawLatestPred.map(d => norm(d + bestOffset));
+        const latestDigits = sanitizeFormulaResult([norm(rawLatestPred[0] + bestOffset), norm(rawLatestPred[1] + bestOffset)]);
 
         globalAccumulator[fName].totalTested += totalTested;
         globalAccumulator[fName].hits += hits;
@@ -1104,7 +1115,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V31.1 Ultimate Precision สำเร็จ');
+    showToast('✓ ประมวลผลระบบ V31.2 Ultimate Precision สำเร็จ');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1124,6 +1135,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
           try { 
             localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem('lottery_audit_master_records_v311');
             localStorage.removeItem('lottery_audit_master_records_v310');
             localStorage.removeItem('lottery_audit_master_records_v309');
           } catch(e){}
