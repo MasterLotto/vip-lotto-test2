@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V15.6 (V2.5 ULTRA CORE ENGINE)
+MESTER LOTTO VIP+ — V16.0 (AUDIT & BACKTEST ENGINE)
 ============================================================
-AUDITED / UNIFIED SINGLE-OUTPUT ENGINE (V2.5 MAIN + LEGACY BACKEND SUPPORT)
+MULTI-FORMULA BACKTESTING & STABILITY AUDIT SYSTEM
 ============================================================
-- Main Model (V2.5 Ultra High-Precision Engine):
-  - Tri-State Error Gate & Custom Pattern Profiling (C.P.P.)
-  - Maximum Density Consensus Matrix (99.99% Targeting)
-  - Clean UI: VIP+ badge only, clean footer ("บ้านเงินกอง") without version text.
-- Legacy Backend Support:
-  - Version 2.3 & 2.4 engines run silently in the background to cross-validate and support V2.5 main output.
-- Clean UI with original layout and instant processing.
+- Features:
+  - Automated Backtesting Engine for all 6 core formulas + N6.
+  - Performance Metrics: Hit Rate (%), Max Streak, Max Miss, Stability Score.
+  - Persistent Audit Records (Saved in localStorage so data won't disappear unless cleared).
+  - Clean Summary Table showing the best performing formula per lottery.
 ============================================================
 -->
 <html lang="th">
@@ -21,7 +19,7 @@ AUDITED / UNIFIED SINGLE-OUTPUT ENGINE (V2.5 MAIN + LEGACY BACKEND SUPPORT)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Multi Lottery Engine V15.6 (V2.5 Ultra)</title>
+<title>Mester Lotto VIP+ — Formula Audit & Backtest V16.0</title>
 
 <style>
 :root{
@@ -36,14 +34,8 @@ AUDITED / UNIFIED SINGLE-OUTPUT ENGINE (V2.5 MAIN + LEGACY BACKEND SUPPORT)
   --shadow:0 14px 40px rgba(79,58,31,.08);
 }
 
-*{
-  box-sizing:border-box;
-}
-
-html{
-  scroll-behavior:smooth;
-}
-
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
 body{
   margin:0;
   background:
@@ -53,17 +45,8 @@ body{
   color:var(--text);
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
-
-button,
-input,
-textarea{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-}
-
+button, input, textarea{ font:inherit; }
+button{ cursor:pointer; }
 #snow{
   position:fixed;
   inset:0;
@@ -72,23 +55,17 @@ button{
   pointer-events:none;
   z-index:0;
 }
-
 .shell{
   position:relative;
   z-index:1;
   min-height:100vh;
   padding:18px 12px 40px;
 }
-
 .app{
-  width:min(760px,100%);
+  width:min(900px,100%);
   margin:0 auto;
 }
-
-.inner{
-  padding:12px;
-}
-
+.inner{ padding:12px; }
 .top{
   display:flex;
   align-items:center;
@@ -96,13 +73,11 @@ button{
   gap:12px;
   margin-bottom:14px;
 }
-
 .brand{
   display:flex;
   align-items:center;
   gap:10px;
 }
-
 .logo{
   width:37px;
   height:37px;
@@ -115,21 +90,8 @@ button{
   font-size:.72rem;
   box-shadow:0 8px 18px rgba(128,99,41,.18);
 }
-
-.brand b{
-  display:block;
-  font-size:.78rem;
-  letter-spacing:.1px;
-}
-
-.brand small{
-  display:block;
-  margin-top:2px;
-  font-size:.48rem;
-  color:var(--muted);
-  font-weight:600;
-}
-
+.brand b{ display:block; font-size:.78rem; letter-spacing:.1px; }
+.brand small{ display:block; margin-top:2px; font-size:.48rem; color:var(--muted); font-weight:600; }
 .pill{
   padding:6px 9px;
   border:1px solid var(--line);
@@ -140,7 +102,6 @@ button{
   font-weight:800;
   white-space:nowrap;
 }
-
 .hero{
   padding:18px;
   margin-bottom:14px;
@@ -149,55 +110,23 @@ button{
   background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));
   box-shadow:var(--shadow);
 }
-
-.hero-tag{
-  font-size:.43rem;
-  font-weight:900;
-  letter-spacing:1.2px;
-  color:var(--gold2);
-}
-
-.hero h1{
-  margin:7px 0 5px;
-  font-size:1.55rem;
-  line-height:1.15;
-}
-
-.hero h1 em{
-  font-style:normal;
-  color:var(--gold2);
-}
-
-.hero p{
-  margin:0;
-  font-size:.55rem;
-  line-height:1.65;
-  color:var(--muted);
-}
-
+.hero-tag{ font-size:.43rem; font-weight:900; letter-spacing:1.2px; color:var(--gold2); }
+.hero h1{ margin:7px 0 5px; font-size:1.55rem; line-height:1.15; }
+.hero h1 em{ font-style:normal; color:var(--gold2); }
+.hero p{ margin:0; font-size:.55rem; line-height:1.65; color:var(--muted); }
 .panel{
   background:rgba(255,253,249,.96);
   border:1px solid var(--line);
   border-radius:18px;
   box-shadow:var(--shadow);
+  margin-bottom:14px;
 }
-
-.bulkbox{
-  padding:14px;
-}
-
-.bulkbox label{
-  display:block;
-  margin-bottom:7px;
-  font-size:.55rem;
-  font-weight:900;
-  color:#806329;
-}
-
+.bulkbox{ padding:14px; }
+.bulkbox label{ display:block; margin-bottom:7px; font-size:.55rem; font-weight:900; color:#806329; }
 .bulk{
   display:block;
   width:100%;
-  min-height:260px;
+  min-height:220px;
   resize:vertical;
   padding:12px;
   border:1px solid var(--line);
@@ -209,19 +138,13 @@ button{
   font-size:.58rem;
   line-height:1.65;
 }
-
-.bulk:focus{
-  border-color:#c6a762;
-  box-shadow:0 0 0 3px rgba(195,154,67,.10);
-}
-
+.bulk:focus{ border-color:#c6a762; box-shadow:0 0 0 3px rgba(195,154,67,.10); }
 .actions{
   padding:0 14px 14px;
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
   gap:8px;
 }
-
 .run{
   height:43px;
   border:0;
@@ -231,7 +154,6 @@ button{
   font-size:.59rem;
   font-weight:900;
 }
-
 .copy{
   height:43px;
   border:1px solid var(--line);
@@ -241,16 +163,8 @@ button{
   font-size:.59rem;
   font-weight:900;
 }
-
-.clear{
-  color:#8b8173;
-}
-
-.run:disabled{
-  opacity:.55;
-  cursor:not-allowed;
-}
-
+.clear{ color:#8b8173; }
+.run:disabled{ opacity:.55; cursor:not-allowed; }
 .scanner{
   display:none;
   padding:10px 14px;
@@ -258,236 +172,43 @@ button{
   font-size:.52rem;
   color:var(--muted);
 }
-
-.scanner span{
-  font-weight:800;
-  color:#806329;
-}
-
-.result{
-  margin-top:14px;
-}
-
-.summary{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  padding:11px 12px;
-  margin-bottom:9px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:#fffdf9;
-  font-size:.54rem;
-  color:var(--muted);
-}
-
-.summary strong{
-  color:#806329;
-  font-size:.72rem;
-  margin:0 2px;
-}
-
-.lottery{
-  overflow:hidden;
-  margin-bottom:9px;
+.scanner span{ font-weight:800; color:#806329; }
+.result{ margin-top:14px; }
+.summary-table-container{
+  overflow-x:auto;
+  margin-bottom:14px;
   border:1px solid var(--line);
   border-radius:16px;
   background:#fff;
+  padding:14px;
   box-shadow:var(--shadow);
 }
-
-.lottery-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  padding:10px 12px 9px 18px;
-  background:linear-gradient(135deg,#fff,#fbf7ed);
-}
-
-.lottery-name{
-  font-weight:800;
-  font-size:.72rem;
-}
-
-.flag{
-  margin-right:5px;
-}
-
-.date{
+.summary-table-container h3{ margin:0 0 10px; font-size:.75rem; color:#806329; }
+table.audit-table{
+  width:100%;
+  border-collapse:collapse;
   font-size:.52rem;
-  color:var(--muted);
-  margin-top:2px;
+  font-family:"IBM Plex Mono",monospace;
 }
-
-.vip-label{
-  display:block;
-  margin-left:auto;
-  margin-right:4px;
-  color:#806329;
-  font-size:.42rem;
-  font-weight:900;
-  letter-spacing:.2px;
-  white-space:nowrap;
-}
-
-.card-actions{
-  padding:0;
-  flex:0 0 auto;
-}
-
-.card-capture{
-  width:auto;
-  min-width:72px;
-  height:34px;
-  padding:0 10px;
+table.audit-table th, table.audit-table td{
   border:1px solid var(--line);
-  border-radius:10px;
-  background:#fff;
-  color:#80652b;
-  font-size:.54rem;
-  font-weight:800;
+  padding:6px 8px;
+  text-align:center;
 }
-
-.rows{
-  padding:4px 7px 2px;
-}
-
-.row{
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap:6px;
-  padding:5px 7px 5px 7px;
-  border-bottom:1px solid #f0eadf;
-}
-
-.row:last-child{
-  border-bottom:0;
-}
-
-.row-label{
-  font-size:.55rem;
-  color:var(--muted);
-}
-
-.row-value{
-  font-family:"IBM Plex Mono",monospace;
-  font-weight:800;
-  font-size:.9rem;
-}
-
-.row-value.top{
-  color:#9c782e;
-}
-
-.digit{
-  display:grid;
-  place-items:center;
-  width:31px;
-  height:31px;
-  border-radius:10px;
-  font-family:"IBM Plex Mono",monospace;
-  font-weight:900;
-  font-size:.92rem;
-}
-
-.digit-gold{
-  background:#fbf1d9;
-  border:1px solid #e4ca8f;
+table.audit-table th{
+  background:#fbf7ed;
   color:#806329;
-}
-
-.digit-silver{
-  background:#f5f1eb;
-  border:1px solid #ddd5c9;
-  color:#625a50;
-}
-
-.sep{
-  font-family:"IBM Plex Mono",monospace;
   font-weight:800;
-  color:#b3a694;
 }
-
-.pairs{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-start;
-  gap:4px;
-  margin-left:4px;
-}
-
-.pair{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:32px;
-  height:24px;
-  padding:0 5px;
-  border-radius:7px;
-  border:1px solid #e7dfd3;
-  background:#fff;
-  font-family:"IBM Plex Mono",monospace;
-  font-size:.51rem;
-  font-weight:800;
-  color:#645b50;
-}
-
-.pair-gold{
-  border-color:#d9bd79;
+table.audit-table tr:nth-child(even){ background:#fdfbf7; }
+.badge-best{
   background:#fff8e7;
   color:#806329;
-}
-
-.pair-silver{
-  border-color:#d7d0c6;
-  background:#f8f5ef;
-  color:#665e54;
-}
-
-.pair-rose{
-  border-color:#e5c7c1;
-  background:#fff5f3;
-  color:#95675f;
-}
-
-.footer{
-  padding:5px 10px;
-  border-top:1px solid var(--line);
-  font-size:.5rem;
-  color:var(--muted);
-}
-
-.copyall{
-  width:100%;
-  height:43px;
-  border:0;
-  border-radius:12px;
-  color:#fff;
-  background:linear-gradient(135deg,#b8944a,#806329);
+  border:1px solid #d9bd79;
+  padding:2px 6px;
+  border-radius:6px;
   font-weight:800;
 }
-
-.brand-footer{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:7px;
-  padding-top:9px;
-  padding-bottom:6px;
-  color:#80652b;
-  font-size:.44rem;
-  font-weight:800;
-  letter-spacing:.2px;
-}
-
-.brand-star{
-  color:#c39a43;
-  font-size:.58rem;
-}
-
 .toast{
   position:fixed;
   left:50%;
@@ -504,12 +225,7 @@ button{
   transition:.2s;
   pointer-events:none;
 }
-
-.toast.show{
-  opacity:1;
-  transform:translate(-50%,0);
-}
-
+.toast.show{ opacity:1; transform:translate(-50%,0); }
 .errorbox{
   padding:12px;
   border-radius:14px;
@@ -519,53 +235,17 @@ button{
   font-size:.6rem;
   line-height:1.7;
 }
-
-@media(max-width:390px){
-  .bulk{
-    min-height:250px;
-  }
-
-  .pairs{
-    gap:2px;
-  }
-
-  .pair{
-    min-width:30px;
-    height:23px;
-    font-size:.50rem;
-    padding:0 4px;
-  }
-
-  .row{
-    min-height:39px;
-    padding:3px 4px 3px 7px;
-    gap:3px;
-  }
-
-  .digit{
-    font-size:.92rem;
-  }
+.brand-footer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:7px;
+  padding:9px 0;
+  color:#80652b;
+  font-size:.44rem;
+  font-weight:800;
 }
-
-@media(max-width:420px){
-  .lottery{
-    padding:0;
-  }
-
-  .lottery-head{
-    padding-left:18px;
-    padding-right:1px;
-  }
-
-  .vip-label{
-    font-size:.39rem;
-    padding:3px 2px;
-  }
-
-  .pair{
-    min-width:31px;
-  }
-}
+.brand-star{ color:#c39a43; font-size:.58rem; }
 </style>
 </head>
 
@@ -582,50 +262,43 @@ button{
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Multi Lottery Engine V2.5 Ultra</small>
+            <small>Formula Audit & Backtest V16.0</small>
           </div>
         </div>
-
-        <div class="pill">● V2.5 READY</div>
+        <div class="pill">● AUDIT ENGINE ACTIVE</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">UNIFIED V2.5 ULTRA ENGINE (99.99% TARGET)</span>
-        <h1>Multi-Lottery <em>VIP+ V2.5</em></h1>
-        <p>ประมวลผลแม่นยำสูงสุดด้วย V2.5 เป็นแกนหลัก และขับเคลื่อนเบื้องหลังด้วยเวอร์ชัน 2.3/2.4 เพื่อความเสถียรไร้ที่ติ</p>
+        <span class="hero-tag">BACKTESTING & STABILITY AUDIT MATRIX</span>
+        <h1>Multi-Formula <em>Audit System</em></h1>
+        <p>ระบบจำลองสถิติย้อนหลัง (Backtest) ตรวจสอบความแม่นยำและความเสถียรของสูตรทั้ง 6 สูตรหลักและ N6 บันทึกผลถาวรไม่สูญหาย</p>
       </section>
 
       <div id="console">
-
         <section class="panel">
-
           <div class="bulkbox">
-            <label>📥 LOTTERY INPUT (V2.5 ULTRA MATRIX)</label>
-
+            <label>📥 ข้อมูลสถิติย้อนหลังสำหรับ Audit (เรียงจากอดีตไปปัจจุบัน)</label>
             <textarea
               id="bulkInput"
               class="bulk"
-              placeholder="ฮานอย HD | 30 ส.ค. 69&#10;067&#10;36&#10;&#10;ฮานอย VIP | 30 ส.ค. 69&#10;123&#10;45"
+              placeholder="ฮานอย HD | 25 ส.ค. 69&#10;123&#10;45&#10;&#10;ฮานอย HD | 26 ส.ค. 69&#10;456&#10;78&#10;&#10;ฮานอย HD | 27 ส.ค. 69&#10;789&#10;12"
             ></textarea>
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผล V2.5</button>
-            <button id="copyInput" class="copy" disabled>📋 COPY</button>
-            <button id="clearInput" class="copy clear">ล้างข้อมูล</button>
+            <button id="run" class="run">⚡ เริ่ม Audit สูตรทั้งหมด</button>
+            <button id="clearInput" class="copy clear">ล้างข้อมูลทั้งหมด</button>
           </div>
 
           <div id="scanner" class="scanner">
-            สถานะ: <span id="scanText">กำลังเตรียมระบบวิเคราะห์ V2.5...</span>
+            สถานะ: <span id="scanText">กำลังประมวลผล Backtest...</span>
           </div>
-
         </section>
 
         <div id="result" class="result"></div>
-
       </div>
 
-      <div id="toast" class="toast">คัดลอกแล้ว</div>
+      <div id="toast" class="toast">ดำเนินการเรียบร้อย</div>
 
     </div>
   </div>
@@ -633,978 +306,273 @@ button{
 
 <script>
 (() => {
-
-  /* =========================================================
-     SNOW / BACKGROUND
-  ========================================================= */
-
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
-
   let width = canvas.width = innerWidth;
   let height = canvas.height = innerHeight;
+  addEventListener('resize', () => { width = canvas.width = innerWidth; height = canvas.height = innerHeight; });
 
-  addEventListener('resize', () => {
-    width = canvas.width = innerWidth;
-    height = canvas.height = innerHeight;
-  });
-
-  const particles = Array.from({length:42}, () => ({
-    x:Math.random()*width,
-    y:Math.random()*height,
-    r:.7+Math.random()*1.8,
-    s:.15+Math.random()*.45,
-    a:.18+Math.random()*.35,
-    p:Math.random()*6.28,
-    tone:Math.random()>.72 ? 'rose' : 'gold'
+  const particles = Array.from({length:30}, () => ({
+    x:Math.random()*width, y:Math.random()*height, r:.7+Math.random()*1.5, s:.15+Math.random()*.4, a:.15+Math.random()*.3
   }));
 
   (function drawSnow(){
     ctx.clearRect(0,0,width,height);
-
     particles.forEach(p => {
-      p.p += .01;
       p.y += p.s;
-      p.x += Math.sin(p.p)*.25;
-
-      if(p.y > height+5){
-        p.y = -5;
-        p.x = Math.random()*width;
-      }
-
+      if(p.y > height+5){ p.y = -5; p.x = Math.random()*width; }
       ctx.beginPath();
       ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-
-      ctx.fillStyle =
-        p.tone === 'rose'
-          ? `rgba(185,130,121,${p.a*.55})`
-          : `rgba(195,154,67,${p.a})`;
-
+      ctx.fillStyle = `rgba(195,154,67,${p.a})`;
       ctx.fill();
     });
-
     requestAnimationFrame(drawSnow);
   })();
 
-
-  /* =========================================================
-     HELPERS
-  ========================================================= */
-
   const $ = id => document.getElementById(id);
-
-  const esc = value =>
-    String(value)
-      .replace(/&/g,'&amp;')
-      .replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;')
-      .replace(/'/g,'&#039;');
-
-
-  /* =========================================================
-     MAIN APPLICATION (VERSION 2.5 ULTRA ENGINE + LEGACY BACKEND)
-  ========================================================= */
+  const esc = val => String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
   const app = {
-
-    lastCopyText:'',
-    toastTimer:null,
-
-    norm(value){
-      return (value % 10 + 10) % 10;
-    },
-
-    flag(name){
-      const n = String(name).toLowerCase();
-
-      if(/ลาว|lao/.test(n)) return '🇱🇦';
-      if(/ฮานอย|เวียดนาม|vietnam|viet/.test(n)) return '🇻🇳';
-      if(/พม่า|เมียนมา|myanmar|2d|internet|modern/.test(n)) return '🇲🇲';
-      if(/จีน|china|shanghai/.test(n)) return '🇨🇳';
-      if(/ฮั่งเส็ง|hang seng|hong kong|ฮ่องกง/.test(n)) return '🇭🇰';
-      if(/นิเคอิ|นิคเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n)) return '🇯🇵';
-      if(/เกาหลี|korea|kospi/.test(n)) return '🇰🇷';
-      if(/สิงคโปร์|singapore/.test(n)) return '🇸🇬';
-      if(/มาเลย์|มาเลเซีย|malaysia|malay/.test(n)) return '🇲🇾';
-      if(/อินเดีย|india|sensex/.test(n)) return '🇮🇳';
-      if(/รัสเซีย|russia|moscow/.test(n)) return '🇷🇺';
-      if(/เยอรมัน|germany|dax/.test(n)) return '🇩🇪';
-      if(/อังกฤษ|uk|ftse|london/.test(n)) return '🇬🇧';
-      if(/อียิปต์|egypt/.test(n)) return '🇪🇬';
-      if(/ไต้หวัน|taiwan|tse/.test(n)) return '🇹🇼';
-      if(/ดาวโจนส์|สหรัฐ|usa|america|dow|nasdaq|s&p/.test(n)) return '🇺🇸';
-      if(/ฝรั่งเศส|france|cac/.test(n)) return '🇫🇷';
-      if(/ออสเตรเลีย|australia|asx/.test(n)) return '🇦🇺';
-      if(/แคนาดา|canada/.test(n)) return '🇨🇦';
-      if(/หุ้นไทย|ไทย|thai|set/.test(n)) return '🇹🇭';
-
-      return '🌐';
-    },
-
-
-    /* =======================================================
-       INPUT PARSER
-    ======================================================= */
+    norm(v){ return (v % 10 + 10) % 10; },
 
     parse(text){
-
-      const raw = String(text || '')
-        .replace(/\r/g,'')
-        .trim();
-
-      if(!raw){
-        return {
-          records:[],
-          errors:['ยังไม่มีข้อมูลสำหรับประมวลผล']
-        };
-      }
-
-      const lines = raw
-        .split('\n')
-        .map(v => v.trim());
-
+      const raw = String(text || '').replace(/\r/g,'').trim();
+      if(!raw) return { records:[], errors:['ยังไม่มีข้อมูลสำหรับ Audit'] };
+      const lines = raw.split('\n').map(v => v.trim());
       const records = [];
       const errors = [];
-
       let i = 0;
-
       while(i < lines.length){
-
-        if(!lines[i]){
-          i++;
-          continue;
-        }
-
+        if(!lines[i]){ i++; continue; }
         const header = lines[i].match(/^(.+?)\s*\|\s*(.+?)$/);
-
-        if(!header){
-          errors.push(
-            `บรรทัดที่ ${i+1}: ไม่พบรูปแบบ "ชื่อหวย | วันที่"`
-          );
-
-          i++;
-          continue;
-        }
-
+        if(!header){ errors.push(`บรรทัดที่ ${i+1}: รูปแบบไม่ถูกต้อง`); i++; continue; }
         const name = header[1].trim();
         const date = header[2].trim();
-
-        if(!this.parseDateValue(date)){
-          errors.push(
-            `${name} | ${date}: รูปแบบวันที่ไม่ถูกต้อง เช่น 30 ส.ค. 69`
-          );
-
-          i++;
-          continue;
+        const n3 = lines[i+1] || '';
+        const n2 = lines[i+2] || '';
+        if(!/^\d{3}$/.test(n3) || !/^\d{2}$/.test(n2)){
+          errors.push(`${name} | ${date}: เลข 3 ตัวบนหรือ 2 ตัวล่างไม่ครบ`);
+          i += 3; continue;
         }
-
-        const n3raw = lines[i+1] || '';
-        const n2raw = lines[i+2] || '';
-
-        const n3 =
-          /^[\d\s]+$/.test(n3raw)
-            ? n3raw.replace(/\s+/g,'')
-            : n3raw;
-
-        const n2 =
-          /^[\d\s]+$/.test(n2raw)
-            ? n2raw.replace(/\s+/g,'')
-            : n2raw;
-
-        if(!/^\d{3}$/.test(n3)){
-          errors.push(
-            `${name} | ${date}: เลข 3 ตัวบนต้องเป็น 3 หลัก`
-          );
-
-          i += 1;
-          continue;
-        }
-
-        if(!/^\d{2}$/.test(n2)){
-          errors.push(
-            `${name} | ${date}: เลข 2 ตัวล่างต้องเป็น 2 หลัก`
-          );
-
-          i += 2;
-          continue;
-        }
-
-        records.push({
-          name,
-          date,
-          n3,
-          n2
-        });
-
+        records.push({ name, date, n3, n2 });
         i += 3;
       }
-
-      return {
-        records,
-        errors
-      };
+      return { records, errors };
     },
 
-
-    parseDateValue(date){
-
-      const value = String(date || '').trim();
-
-      if(!value) return false;
-
-      if(/^\d{1,2}\s+\S+\s+\d{2,4}$/.test(value))
-        return true;
-
-      if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value))
-        return true;
-
-      if(/^\d{1,2}-\d{1,2}-\d{2,4}$/.test(value))
-        return true;
-
-      return false;
+    // 6 Formulas Definition
+    formulas: {
+      "สูตร 1": (A, B, C, D, E) => {
+        const d1 = this.norm(B + D);
+        return [d1, this.norm(d1 + 1)];
+      },
+      "สูตร 2": (A, B, C, D, E) => {
+        const sum = A + B + C;
+        const d1 = this.norm(sum);
+        return [d1, this.norm(d1 + 1)];
+      },
+      "สูตร 3": (A, B, C, D, E) => {
+        const d1 = this.norm(A + D);
+        return [d1, this.norm(d1 + 1)];
+      },
+      "สูตร 4": (A, B, C, D, E) => {
+        const d1 = this.norm(C + E);
+        return [d1, this.norm(d1 + 1)];
+      },
+      "สูตร 5": (A, B, C, D, E) => {
+        const d1 = this.norm(10 - E);
+        return [d1, this.norm(d1 + 1)];
+      },
+      "สูตร 6 (N6)": (A, B, C, D, E) => {
+        const aVal = this.norm(-A - 2*B + C - E + 1);
+        const bVal = this.norm(A - C - D - 2*E);
+        return [aVal, bVal];
+      }
     },
 
+    checkHit(predictedDigits, actualN3, actualN2){
+      const topDigits = actualN3.split('').map(Number);
+      const bottomDigits = actualN2.split('').map(Number);
+      const allActual = [...topDigits, ...bottomDigits];
+      
+      // เงื่อนไข: ถ้าเลขเด่นตรงกับเลขในผลรางวัล (พิจารณา 2 ตัวล่าง หรือ 3 ตัวบน)
+      let hit = false;
+      predictedDigits.forEach(d => {
+        if(allActual.includes(d)) hit = true;
+      });
+      return hit;
+    },
 
-    dateKey(date){
-
-      const value = String(date || '').trim();
-
-      const thai = value.match(
-        /^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/
-      );
-
-      if(thai){
-
-        const months = {
-          'ม.ค.':1,
-          'ก.พ.':2,
-          'มี.ค.':3,
-          'เม.ย.':4,
-          'พ.ค.':5,
-          'มิ.ย.':6,
-          'ก.ค.':7,
-          'ส.ค.':8,
-          'ก.ย.':9,
-          'ต.ค.':10,
-          'พ.ย.':11,
-          'ธ.ค.':12
-        };
-
-        const month = months[thai[2]] || 0;
-
-        let year = Number(thai[3]);
-
-        if(year < 100){
-          year += 2500;
-        }
-
-        return [
-          year,
-          String(month).padStart(2,'0'),
-          String(Number(thai[1])).padStart(2,'0')
-        ].join('-');
+    runAudit(){
+      const parsed = this.parse($('bulkInput').value);
+      if(!parsed.records.length){
+        $('result').innerHTML = `<div class="errorbox">${parsed.errors.join('<br>')}</div>`;
+        return;
       }
 
-      const numeric = value.match(
-        /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/
-      );
-
-      if(numeric){
-
-        let year = Number(numeric[3]);
-
-        if(year < 100){
-          year += 2500;
-        }
-
-        return [
-          year,
-          String(Number(numeric[2])).padStart(2,'0'),
-          String(Number(numeric[1])).padStart(2,'0')
-        ].join('-');
-      }
-
-      return value;
-    },
-
-
-    sortChronological(records){
-
-      return records
-        .map((record,index) => ({
-          ...record,
-          __index:index
-        }))
-        .sort((a,b) => {
-
-          const ka = this.dateKey(a.date);
-          const kb = this.dateKey(b.date);
-
-          if(ka < kb) return -1;
-          if(ka > kb) return 1;
-
-          return a.__index - b.__index;
-        })
-        .map(record => {
-
-          const clean = {...record};
-
-          delete clean.__index;
-
-          return clean;
-        });
-    },
-
-
-    groupByLottery(records){
-
-      const groupsMap = {};
-
-      records.forEach((record,index) => {
-
-        const key = record.name.trim();
-
-        if(!groupsMap[key]){
-          groupsMap[key] = {
-            name:key,
-            records:[],
-            duplicateCount:0,
-            conflictCount:0,
-            __order:index
-          };
-        }
-
-        groupsMap[key].records.push(record);
+      // Group by Lottery Name
+      const groups = {};
+      parsed.records.forEach(r => {
+        if(!groups[r.name]) groups[r.name] = [];
+        groups[r.name].push(r);
       });
 
-      const groups = Object.values(groupsMap);
+      const auditResults = {};
 
-      groups.forEach(group => {
+      Object.keys(groups).forEach(lotteryName => {
+        const recs = groups[lotteryName];
+        if(recs.length < 2) return; // ต้องมีอย่างน้อย 2 งวดเพื่อทดสอบงวดถัดไป
 
-        const sorted = this.sortChronological(group.records);
+        auditResults[lotteryName] = {};
+        const formulaNames = Object.keys(this.formulas);
 
-        const byDate = new Map();
-        const clean = [];
+        formulaNames.forEach(fName => {
+          let hits = 0;
+          let misses = 0;
+          let currentStreak = 0;
+          let maxStreak = 0;
+          let currentMiss = 0;
+          let maxMiss = 0;
+          let totalTested = 0;
 
-        sorted.forEach(record => {
+          for(let i = 0; i < recs.length - 1; i++){
+            const curr = recs[i];
+            const next = recs[i+1];
 
-          const key = this.dateKey(record.date);
+            const top = curr.n3.split('').map(Number);
+            const bot = curr.n2.split('').map(Number);
+            
+            const predicted = this.formulas[fName](top[0], top[1], top[2], bot[0], bot[1]);
+            const isHit = this.checkHit(predicted, next.n3, next.n2);
 
-          if(!byDate.has(key)){
-
-            byDate.set(key,record);
-            clean.push(record);
-
-            return;
-          }
-
-          const previous = byDate.get(key);
-
-          if(
-            previous.n3 === record.n3 &&
-            previous.n2 === record.n2
-          ){
-            group.duplicateCount++;
-            return;
-          }
-
-          group.conflictCount++;
-
-          const index = clean.indexOf(previous);
-
-          if(index >= 0){
-            clean[index] = record;
-          }
-
-          byDate.set(key,record);
-        });
-
-        group.records = this.sortChronological(clean);
-      });
-
-      return groups
-        .sort((a,b) => a.__order - b.__order)
-        .map(group => {
-
-          delete group.__order;
-
-          return group;
-        });
-    },
-
-
-    /* =======================================================
-       LEGACY BACKEND ENGINES (SUPPORTING V2.5)
-       - Version 2.3 & 2.4 Support Modules
-    ======================================================= */
-
-    legacyV23Engine(n3, n2){
-      const top = String(n3).padStart(3,'0').split('').map(Number);
-      const bottom = String(n2).padStart(2,'0').split('').map(Number);
-      const f1 = this.norm(top[0] + 2*top[1] + top[2] + bottom[0] + 3*bottom[1]);
-      const f2 = this.norm(-top[0] - top[1] + bottom[0] - 2*bottom[1] + 5);
-      return { set:[f1, f2] };
-    },
-
-    legacyV24Engine(n3, n2, name){
-      const top = String(n3).padStart(3,'0').split('').map(Number);
-      const bottom = String(n2).padStart(2,'0').split('').map(Number);
-      const K = /ลาว|ฮานอย/.test(name) ? 8 : 6;
-      const f1 = this.norm(top[0] + 3*top[1] + top[2] + 3*bottom[0] + 3*bottom[1] + K);
-      const f2 = this.norm(-top[0] - top[1] - top[2] + bottom[0] - 3*bottom[1] + 1);
-      return { set:[f1, f2] };
-    },
-
-
-    /* =======================================================
-       V2.5 ULTRA CORE ENGINE (MAIN OUTPUT)
-       - Tri-State Error Gate & Custom Pattern Profiling (C.P.P.)
-       - Maximum Density Consensus Matrix (Targeting 99.99%)
-    ======================================================= */
-
-    getUltraConstant(name, historyContext){
-      const n = String(name || '').toLowerCase();
-      let kBase = 7.25;
-      if(/ลาว|ฮานอย|เวียดนาม|vietnam|viet|lao/.test(n)) {
-        kBase = 8.65;
-      } else if(/บ่าย|รอบบ่าย|pm/.test(n)) {
-        kBase = 7.85;
-      }
-
-      // Custom Pattern Profiling (C.P.P.) feedback adjustment
-      if(historyContext && historyContext.length > 0){
-        let patternShift = 0;
-        historyContext.slice(-4).forEach((rec, idx) => {
-          const digits = String(rec.n3).split('').map(Number);
-          patternShift += (digits[0] * (idx + 1)) % 3;
-        });
-        const profileMod = (patternShift % 5) * 0.15;
-        return Number((kBase + profileMod).toFixed(3));
-      }
-
-      return kBase;
-    },
-
-    mainModel(n3, n2, lotteryName, historyContext){
-
-      const top = String(n3)
-        .padStart(3,'0')
-        .split('')
-        .map(Number);
-
-      const bottom = String(n2)
-        .padStart(2,'0')
-        .split('')
-        .map(Number);
-
-      const A = top[0];
-      const B = top[1];
-      const C = top[2];
-      const D = bottom[0];
-      const E = bottom[1];
-
-      const K_Ultra = this.getUltraConstant(lotteryName, historyContext);
-
-      // V2.5 Ultra Formula Matrix
-      const v25Sum1 = (A * 1.5) + (3.2 * B) + C + (2.8 * D) + (3.1 * E) + Math.round(K_Ultra * 10) / 10;
-      let first = this.norm(Math.round(v25Sum1));
-
-      // Tri-State Error Gate & Secondary Matrix
-      let v25Sum2 = -1.2 * A - B - (1.5 * C) + (1.2 * D) - (3.2 * E) + 2;
-      if (v25Sum2 === A || v25Sum2 === first) {
-        v25Sum2 += 3;
-      }
-      let second = this.norm(Math.round(Math.abs(v25Sum2)));
-
-      // Cross-validation with legacy backends (V2.3 & V2.4 support)
-      const v23 = this.legacyV23Engine(n3, n2);
-      const v24 = this.legacyV24Engine(n3, n2, lotteryName);
-
-      // Consensus adjustment for 99.99% accuracy target
-      if(first === second){
-        second = this.norm(second + 3);
-      }
-
-      // If backend signals strong concurrence, lock precise digit alignment
-      if(v23.set.includes(first) || v24.set.includes(first)){
-        // High density alignment confirmed
-      }
-
-      return {
-        first,
-        second,
-        set:[first, second]
-      };
-    },
-
-
-    /* =======================================================
-       BACKEND SUPPORT FORMULAS (V2.5 SUPPORT MATRIX)
-    ======================================================= */
-
-    backendFormula1(n3, n2){
-      const top = String(n3).padStart(3,'0').split('').map(Number);
-      const bottom = String(n2).padStart(2,'0').split('').map(Number);
-      const sum1 = 9 - (top[0] * 2) - (top[1] * 2) + top[2] + bottom[0] - (bottom[1] * 2) + 4;
-      const result = this.norm(sum1);
-      return { result };
-    },
-
-    backendFormula2(n3, n2){
-      const top = String(n3).padStart(3,'0').split('').map(Number);
-      const bottom = String(n2).padStart(2,'0').split('').map(Number);
-      const sum = top[0] + top[1] + top[2] + bottom[0] + bottom[1];
-      const result = this.norm(sum * 3 + 7);
-      return { result };
-    },
-
-    backendFormula3(n3, n2){
-      const top = String(n3).padStart(3,'0').split('').map(Number);
-      const bottom = String(n2).padStart(2,'0').split('').map(Number);
-      const sum = top[2] + bottom[1] + top[0];
-      const result = this.norm(sum + 4);
-      return { result };
-    },
-
-
-    /* =======================================================
-       VIP+ STABILITY CALIBRATION (TARGETING 99.99%)
-    ======================================================= */
-
-    checkVIP(main, backend1, backend2, backend3){
-      const mainSet = new Set(main.set);
-      let matchCount = 0;
-      if(mainSet.has(backend1.result)) matchCount++;
-      if(mainSet.has(backend2.result)) matchCount++;
-      if(mainSet.has(backend3.result)) matchCount++;
-
-      // V2.5 Ultra Consensus Threshold
-      return matchCount >= 1;
-    },
-
-
-    /* =======================================================
-       ULTRA PAIR ENGINE / เลขเจาะ
-    ======================================================= */
-
-    buildPairs(mainSet, anchor){
-
-      const pairsMap = {};
-
-      mainSet.forEach(sourceDigit => {
-
-        let range = [];
-        let collision = false;
-
-        for(let offset = -2; offset <= 2; offset++){
-          if(mainSet.includes(this.norm(anchor + offset))){
-            collision = true;
-            break;
-          }
-        }
-
-        for(let offset = (collision ? -3 : -2); offset <= (collision ? 3 : 2); offset++){
-          const digit = this.norm(anchor + offset);
-          if(!range.includes(digit)){
-            range.push(digit);
-          }
-        }
-
-        const pairs = [];
-
-        range.forEach(target => {
-          if(target === sourceDigit) return;
-          if(mainSet.includes(target)) return;
-
-          const pair = `${sourceDigit}${target}`;
-          if(pair[0] === pair[1]) return;
-
-          if(!pairs.includes(pair)){
-            pairs.push(pair);
-          }
-        });
-
-        let next = this.norm(sourceDigit + 1);
-
-        while(pairs.length < 5){
-          if(next !== sourceDigit && !mainSet.includes(next)){
-            const pair = `${sourceDigit}${next}`;
-            if(pair[0] !== pair[1] && !pairs.includes(pair)){
-              pairs.push(pair);
+            totalTested++;
+            if(isHit){
+              hits++;
+              currentStreak++;
+              currentMiss = 0;
+              if(currentStreak > maxStreak) maxStreak = currentStreak;
+            } else {
+              misses++;
+              currentMiss++;
+              currentStreak = 0;
+              if(currentMiss > maxMiss) maxMiss = currentMiss;
             }
           }
-          next = this.norm(next + 1);
-        }
 
-        pairsMap[sourceDigit] = [...new Set(pairs)]
-          .filter(pair => pair[0] !== pair[1])
-          .slice(0,5);
-      });
-
-      return pairsMap;
-    },
-
-
-    pairKey(pair){
-      const value = String(pair);
-      if(!/^\d{2}$/.test(value)) return value;
-      return [value[0], value[1]].sort().join('');
-    },
-
-
-    buildPairConsensus(pairSets){
-
-      const all = [];
-
-      pairSets.forEach((set,rowIndex) => {
-        set.slice(0,5).forEach(pair => {
-          all.push({ pair:String(pair), rowIndex });
+          const hitRate = totalTested > 0 ? ((hits / totalTested) * 100).toFixed(2) : 0;
+          auditResults[lotteryName][fName] = {
+            totalTested, hits, misses, hitRate: Number(hitRate), maxStreak, maxMiss
+          };
         });
       });
 
-      const counts = {};
-
-      all.forEach(item => {
-        const key = this.pairKey(item.pair);
-        if(!counts[key]){
-          counts[key] = { key, score:0, rows:new Set(), pairs:new Set() };
-        }
-        counts[key].score++;
-        counts[key].rows.add(item.rowIndex);
-        counts[key].pairs.add(item.pair);
-      });
-
-      const ranked = Object.values(counts).sort(
-        (a,b) => b.score - a.score || b.rows.size - a.rows.size || Number(a.key) - Number(b.key)
-      );
-
-      const colorMap = {};
-
-      ranked.slice(0,6).forEach((item,index) => {
-        let color = index < 2 ? 'gold' : (index < 4 ? 'silver' : 'rose');
-        colorMap[item.key] = { color, rank:index + 1, score:item.score };
-      });
-
-      return { counts, ranked, colorMap };
+      // Save to localStorage for persistence
+      localStorage.setItem('lottery_audit_data', JSON.stringify(auditResults));
+      this.renderSummary(auditResults);
     },
 
-
-    sortPairs(pairs){
-      return pairs
-        .map(String)
-        .filter(pair => /^\d{2}$/.test(pair) && pair[0] !== pair[1])
-        .sort((a,b) => Number(a) - Number(b));
-    },
-
-
-    pairClass(pair,colorMap){
-      const info = colorMap[this.pairKey(pair)];
-      if(!info) return 'pair';
-      if(info.color === 'gold') return 'pair pair-gold';
-      if(info.color === 'silver') return 'pair pair-silver';
-      return 'pair pair-rose';
-    },
-
-
-    /* =======================================================
-       MAIN ENGINE RUNNER WITH V2.5 ULTRA CORE
-    ======================================================= */
-
-    run(n3, n2, lotteryName, historyContext){
-
-      const topDigits = String(n3).padStart(3,'0').split('').map(Number);
-      const H = topDigits[0];
-
-      // V2.5 Ultra Main Engine execution with background support
-      const main = this.mainModel(n3, n2, lotteryName, historyContext);
-      const backend1 = this.backendFormula1(n3, n2);
-      const backend2 = this.backendFormula2(n3, n2);
-      const backend3 = this.backendFormula3(n3, n2);
-
-      const vip = this.checkVIP(main, backend1, backend2, backend3);
-
-      const rawAnchor = 7 - H;
-      const anchor = this.norm(rawAnchor);
-
-      const pairsMap = this.buildPairs(main.set, anchor);
-      const pairSets = main.set.map(digit => this.sortPairs(pairsMap[digit] || []).slice(0,5));
-      const consensus = this.buildPairConsensus(pairSets);
-
-      return {
-        main,
-        backend1,
-        backend2,
-        backend3,
-        vip,
-        rawAnchor,
-        anchor,
-        pairsMap,
-        pairSets,
-        consensus,
-        top1Digit:main.first,
-        top2Digit:main.second
-      };
-    },
-
-
-    /* =======================================================
-       CAPTURE & EXPORT
-    ======================================================= */
-
-    async captureCard(cardId, name){
-      const element = document.getElementById(cardId);
-      if(!element) return;
-
-      const controls = [...element.querySelectorAll('[data-no-capture]')];
-
-      try{
-        if(typeof html2canvas === 'undefined'){
-          throw new Error('ไม่พบระบบแคปภาพ กรุณาเปิดอินเทอร์เน็ตแล้วลองใหม่');
-        }
-
-        controls.forEach(el => el.style.visibility = 'hidden');
-
-        const canvas = await html2canvas(element, {
-          backgroundColor:'#ffffff',
-          scale:Math.min(3, Math.max(2, window.devicePixelRatio || 2)),
-          useCORS:true,
-          logging:false
-        });
-
-        const link = document.createElement('a');
-        const safe = String(name || 'lottery').replace(/[^ก-๙A-Za-z0-9_-]+/g, '_').slice(0,60);
-
-        link.download = `${safe || 'lottery'}_v2.5_ultra.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-
-        this.show('✓ แคปการ์ดเรียบร้อยแล้ว');
-
-      }catch(error){
-        console.error(error);
-        this.show('❌ แคปภาพไม่สำเร็จ');
-      }finally{
-        controls.forEach(el => el.style.visibility = '');
-      }
-    },
-
-
-    copy(text){
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(text)
-          .then(() => this.show())
-          .catch(() => this.fallbackCopy(text));
-        return;
-      }
-      this.fallbackCopy(text);
-    },
-
-
-    fallbackCopy(text){
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      textarea.remove();
-      this.show();
-    },
-
-
-    show(message){
-      const toast = $('toast');
-      if(message) toast.textContent = message;
-      toast.classList.add('show');
-      clearTimeout(this.toastTimer);
-      this.toastTimer = setTimeout(() => toast.classList.remove('show'), 1500);
-    },
-
-
-    nextDateLabel(record){
-      if(!record) return '';
-      const value = String(record.date || '').trim();
-      const thai = value.match(/^(\d{1,2})\s+(\S+)\s+(\d{2,4})$/);
-
-      if(thai){
-        const day = Number(thai[1]);
-        let year = Number(thai[3]);
-        if(year < 100) year += 2500;
-
-        const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-        const monthIndex = months.indexOf(thai[2]);
-
-        if(monthIndex >= 0){
-          const date = new Date(year - 543, monthIndex, day);
-          date.setDate(date.getDate() + 1);
-          return [String(date.getDate()), months[date.getMonth()], String(date.getFullYear() + 543)].join(' ');
-        }
-      }
-      return 'งวดถัดไป';
-    },
-
-
-    /* =======================================================
-       CALCULATE (V2.5 ULTRA ENGINE)
-    ======================================================= */
-
-    async calculate(){
-
-      const parsed = this.parse($('bulkInput').value);
-
-      if(!parsed.records.length){
-        $('result').innerHTML = '<div class="errorbox">❌ ไม่พบข้อมูลที่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง</div>';
+    renderSummary(data){
+      if(!data || Object.keys(data).length === 0){
+        $('result').innerHTML = '<div class="errorbox">ไม่มีข้อมูลเพียงพอสำหรับการทำ Backtest (ต้องการข้อมูลอย่างน้อย 2 งวดต่อหวย)</div>';
         return;
       }
 
-      const scanner = $('scanner');
-      const runButton = $('run');
-
-      runButton.disabled = true;
-      scanner.style.display = 'block';
-
-      const scan = msg => { $('scanText').textContent = msg; };
-      const yieldUI = () => new Promise(res => requestAnimationFrame(res));
-
-      try{
-        const groups = this.groupByLottery(parsed.records);
-        const cards = [];
-        const copyBlocks = [];
-        let groupIndex = 0;
-
-        for(const group of groups){
-          groupIndex++;
-          const records = group.records;
-          if(!records.length) continue;
-
-          scan(`V2.5 Ultra Processing: ${group.name} • ${groupIndex}/${groups.length}`);
-          await yieldUI();
-
-          const latest = records[records.length - 1];
-          const historyContext = records.slice(0, -1);
-
-          // Execute V2.5 Ultra Core Engine with legacy background support
-          const result = this.run(latest.n3, latest.n2, group.name, historyContext);
-
-          const mainDigits = result.main.set;
-          const pair1 = result.pairSets[0] || [];
-          const pair2 = result.pairSets[1] || [];
-          const nextDate = this.nextDateLabel(latest);
-
-          const pairHTML1 = pair1.map(pair => {
-            const info = result.consensus.colorMap[this.pairKey(pair)];
-            const title = info ? `Consensus Rank ${info.rank} (Score ${info.score})` : 'เลขเจาะ V2.5';
-            return `<span class="${this.pairClass(pair, result.consensus.colorMap)}" title="${esc(title)}">${esc(pair)}</span>`;
-          }).join('');
-
-          const pairHTML2 = pair2.map(pair => {
-            const info = result.consensus.colorMap[this.pairKey(pair)];
-            const title = info ? `Consensus Rank ${info.rank} (Score ${info.score})` : 'เลขเจาะ V2.5';
-            return `<span class="${this.pairClass(pair, result.consensus.colorMap)}" title="${esc(title)}">${esc(pair)}</span>`;
-          }).join('');
-
-          const vipHTML = result.vip ? '<div class="vip-label">VIP+</div>' : '<div class="vip-label"></div>';
-          const cardId = `lottery-card-${groupIndex}`;
-
-          cards.push(`
-            <article class="lottery" id="${cardId}" data-lottery-card="true">
-              <div class="lottery-head">
-                <div>
-                  <div class="lottery-name">
-                    <span class="flag">${this.flag(group.name)}</span>
-                    <span>${esc(group.name)}</span>
-                  </div>
-                  <div class="date">${esc(nextDate)}</div>
-                </div>
-                ${vipHTML}
-                <div class="card-actions" data-no-capture="true">
-                  <button class="card-capture" data-capture-card="${cardId}" data-capture-name="${esc(group.name)}">📷 แคปการ์ด</button>
-                </div>
-              </div>
-              <div class="rows">
-                <div class="row">
-                  <span class="digit digit-gold">${esc(mainDigits[0])}</span>
-                  <span class="sep">:</span>
-                  <div class="pairs">${pairHTML1}</div>
-                </div>
-                <div class="row">
-                  <span class="digit digit-gold">${esc(mainDigits[1])}</span>
-                  <span class="sep">:</span>
-                  <div class="pairs">${pairHTML2}</div>
-                </div>
-              </div>
-              <div class="brand-footer">
-                <span class="brand-star">✦</span>
-                <span>บ้านเงินกอง</span>
-                <span class="brand-star">✦</span>
-              </div>
-            </article>
-          `);
-
-          copyBlocks.push([
-            `${this.flag(group.name)} ${group.name} | ${nextDate}`,
-            `${mainDigits[0]} : ${pair1.join('-')}`,
-            `${mainDigits[1]} : ${pair2.join('-')}`
-          ].join('\n'));
-        }
-
-        scan('Finalizing V2.5 Ultra Matrix Calibration...');
-        await yieldUI();
-
-        scanner.style.display = 'none';
-        runButton.disabled = false;
-
-        const all = copyBlocks.join('\n\n');
-        this.lastCopyText = all;
-
-        $('result').innerHTML = `
-          <div class="summary">
-            <span>ประมวลผล V2.5 สำเร็จ <strong>${cards.length}</strong> ประเภท (เป้าหมาย 99.99%)</span>
-            <button class="copy" id="copyTop">📋 COPY ALL</button>
-          </div>
-          ${parsed.errors.length ? `<div class="errorbox">${parsed.errors.map(esc).join('<br>')}</div>` : ''}
-          ${cards.join('')}
-          <button class="copyall" id="copyBottom">📋 คัดลอกหวยทั้งหมด</button>
+      let html = '';
+      Object.keys(data).forEach(lotteryName => {
+        const formulas = data[lotteryName];
+        html += `
+          <div class="summary-table-container">
+            <h3>📊 ผลการ Audit สูตรหวย: ${esc(lotteryName)}</h3>
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>ชื่อสูตร</th>
+                  <th>งวดทั้งหมด</th>
+                  <th>เข้า (งวด)</th>
+                  <th>หลุด (งวด)</th>
+                  <th>Hit Rate (%)</th>
+                  <th>เข้าติดต่อสูงสุด</th>
+                  <th>หลุดสะสมสูงสุด</th>
+                  <th>สถานะประเมิน</th>
+                </tr>
+              </thead>
+              <tbody>
         `;
 
-        $('copyTop').onclick = () => this.copy(all);
-        $('copyBottom').onclick = () => this.copy(all);
-        $('copyInput').disabled = !all;
-        $('copyInput').onclick = () => this.copy(this.lastCopyText);
+        let bestFormula = '';
+        let highestRate = -1;
 
-        $('result').querySelectorAll('[data-capture-card]').forEach(button => {
-          button.onclick = () => this.captureCard(button.dataset.captureCard, button.dataset.captureName);
+        Object.keys(formulas).forEach(fName => {
+          const f = formulas[fName];
+          if(f.hitRate > highestRate){
+            highestRate = f.hitRate;
+            bestFormula = fName;
+          }
         });
 
-        $('result').scrollIntoView({ behavior:'smooth', block:'start' });
+        Object.keys(formulas).forEach(fName => {
+          const f = formulas[fName];
+          const isBest = (fName === bestFormula);
+          html += `
+            <tr>
+              <td style="font-weight:bold; text-align:left;">${esc(fName)} ${isBest ? '<span class="badge-best">แนะนำ 🔥</span>' : ''}</td>
+              <td>${f.totalTested}</td>
+              <td style="color:#2e7d32; font-weight:bold;">${f.hits}</td>
+              <td style="color:#c62828;">${f.misses}</td>
+              <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
+              <td>${f.maxStreak}</td>
+              <td>${f.maxMiss}</td>
+              <td>${f.hitRate >= 60 ? '✨ เสถียรสูง' : (f.hitRate >= 45 ? '⚠️ ปานกลาง' : '❌ หลุดบ่อย')}</td>
+            </tr>
+          `;
+        });
 
-      }catch(error){
-        console.error(error);
-        scanner.style.display = 'none';
-        runButton.disabled = false;
-        $('result').innerHTML = `<div class="errorbox">❌ เกิดข้อผิดพลาด V2.5: ${esc(error?.message || error)}</div>`;
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      });
+
+      html += `
+        <div class="brand-footer">
+          <span class="brand-star">✦</span>
+          <span>ข้อมูลถูกบันทึกไว้อย่างปลอดภัยในระบบ (ไม่หายจนกว่าจะกดล้าง)</span>
+          <span class="brand-star">✦</span>
+        </div>
+      `;
+
+      $('result').innerHTML = html;
+      this.show('✓ Audit และคำนวณสถิติสำเร็จ');
+    },
+
+    show(msg){
+      const toast = $('toast');
+      if(msg) toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1500);
+    },
+
+    init(){
+      const saved = localStorage.getItem('lottery_audit_data');
+      if(saved){
+        try{
+          const data = JSON.parse(saved);
+          this.renderSummary(data);
+        }catch(e){console.error(e);}
       }
     }
   };
 
-
-  /* =========================================================
-     EVENTS
-  ========================================================= */
-
-  $('run').onclick = () => app.calculate();
-
+  $('run').onclick = () => app.runAudit();
   $('clearInput').onclick = () => {
     $('bulkInput').value = '';
     $('result').innerHTML = '';
-    $('scanner').style.display = 'none';
-    $('run').disabled = false;
-    $('copyInput').disabled = true;
-    app.lastCopyText = '';
-    $('bulkInput').focus();
-    app.show('✓ ล้างข้อมูลเรียบร้อยแล้ว');
+    localStorage.removeItem('lottery_audit_data');
+    app.show('✓ ล้างข้อมูลทั้งหมดเรียบร้อย');
   };
 
+  app.init();
 })();
 </script>
 
