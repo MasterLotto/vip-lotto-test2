@@ -19278,5 +19278,261 @@ window.addEventListener("DOMContentLoaded",function(){
 
 
 
+
+<style id="audit-final-v340-style">
+/* Final audit polish: Thai-first labels and original shareable card treatment */
+.v34-landmark-recs{margin-top:14px}.v34-landmark-note{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--panel);font-size:.78rem;color:var(--muted);margin-bottom:12px}
+.v34-lm-rec{display:grid;grid-template-columns:70px 1fr auto;gap:12px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel);margin-bottom:10px;box-shadow:var(--shadow)}
+.v34-lm-rank{font-weight:900;font-size:.9rem;text-align:center}.v34-lm-body h4{margin:0 0 4px;font-size:.88rem}.v34-lm-body p{margin:0 0 8px;font-size:.7rem;color:var(--muted)}
+.v34-lm-numbers{display:flex;gap:8px;flex-wrap:wrap}.v34-lm-pill{border:1px solid var(--line);border-radius:10px;padding:6px 9px;background:#fffdf9;font-family:'IBM Plex Mono',monospace;font-weight:900;font-size:.68rem}
+.v34-use{border:0;border-radius:10px;padding:9px 12px;background:#3f372c;color:#fff;font-weight:800;cursor:pointer}.v34-use:hover{opacity:.9}
+.v34-hidden{display:none!important}
+@media(max-width:720px){.v34-lm-rec{grid-template-columns:1fr}.v34-use{width:100%}}
+</style>
+<script id="audit-final-v340">
+/* =========================================================
+   V34 FINAL AUDIT FIX
+   1) One-draw operational mode uses existing persistent Landmark.
+   2) Landmark never changes below 26 records.
+   3) Existing shareable prediction-card UI is restored for selected
+      recommendations and Landmark operational cards.
+   4) Thai-first audit / recommendation labels.
+   5) Locked digit/pair engines are reused; no Core formula mutation.
+========================================================= */
+(function(){
+  const V34_MIN=26;
+
+  function v34GroupsFromStorage(){
+    const all=v33ReadJSON(STORAGE_KEY,[]), g={};
+    (Array.isArray(all)?all:[]).forEach(function(r){
+      if(!r || !r.name) return;
+      (g[r.name]||(g[r.name]=[])).push(r);
+    });
+    Object.keys(g).forEach(function(n){g[n].sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);});});
+    return g;
+  }
+
+  /* Strict persistent Landmark rule. Existing champion is retained unless
+     a qualifying 26+ record set produces a strictly higher accuracy. */
+  v33UpdateLandmarks=function(groups,allFormulas){
+    const landmarks=v33GetLandmarks();
+    Object.keys(groups||{}).forEach(function(name){
+      const recs=Array.isArray(groups[name])?groups[name]:[];
+      if(recs.length<V34_MIN) return;
+      const rows=[];
+      Object.keys(allFormulas||{}).forEach(function(fName){
+        const fn=allFormulas[fName];
+        if(typeof fn!=="function") return;
+        try{
+          const st=auditFormulaOnRecords(fn,recs,0,recs.length-1);
+          rows.push({name:fName,accuracy:v33Pct(st.hitRate),tested:st.totalTested,hits:st.hits,misses:st.misses});
+        }catch(e){}
+      });
+      rows.sort(function(a,b){return b.accuracy-a.accuracy||b.tested-a.tested||a.name.localeCompare(b.name);});
+      if(!rows.length) return;
+      const key=v33LotteryKey(name), current=landmarks[key];
+      if(!current){
+        landmarks[key]={lottery:name,formula:rows[0].name,accuracy:rows[0].accuracy,tested:rows[0].tested,hits:rows[0].hits,misses:rows[0].misses,createdAt:Date.now(),updatedAt:Date.now()};
+        return;
+      }
+      const same=rows.find(function(r){return r.name===current.formula;});
+      const challenger=rows[0];
+      if(challenger.name!==current.formula && challenger.accuracy>Number(current.accuracy||0)){
+        landmarks[key]={lottery:name,formula:challenger.name,accuracy:challenger.accuracy,tested:challenger.tested,hits:challenger.hits,misses:challenger.misses,createdAt:current.createdAt||Date.now(),updatedAt:Date.now()};
+      }else if(same && same.accuracy>=Number(current.accuracy||0)){
+        /* Same champion remains champion; refresh its evidence without changing identity. */
+        landmarks[key]={lottery:name,formula:current.formula,accuracy:same.accuracy,tested:same.tested,hits:same.hits,misses:same.misses,createdAt:current.createdAt||Date.now(),updatedAt:Date.now()};
+      }
+    });
+    v33SaveLandmarks(landmarks);
+    return landmarks;
+  };
+
+  function v34ThaiStatus(rate){
+    rate=Number(rate)||0;
+    return rate>=60?'🟢 เข้าเกณฑ์ดี':rate>=50?'🟡 แข็งแรง':rate>=40?'🟠 เฝ้าดู':'🔴 หลุด';
+  }
+  function v34Rank(i){return i===0?'🥇 #1':i===1?'🥈 #2':i===2?'🥉 #3':'#'+(i+1);}
+
+  function v34LandmarkCard(lotteryName,rec,lm,fn,index){
+    if(!rec || !lm || typeof fn!=="function") return "";
+    const digits=v33FormulaLatest(fn,rec), d1=digits[0], d2=digits[1];
+    const p1=__advancedPairEngine(d1,d2,[rec],fn), p2=__advancedPairEngine(d2,d1,[rec],fn);
+    const id="lm_card_"+Date.now()+"_"+Math.random().toString(36).slice(2,8)+"_"+index;
+    const json1=JSON.stringify(p1).replace(/"/g,"&quot;");
+    const json2=JSON.stringify(p2).replace(/"/g,"&quot;");
+    const date=getNextDateStr(rec.date);
+    const flag=getLotteryFlag(lotteryName);
+    return `<div class="prediction-card recommendation-prediction-card" id="${id}" style="position:relative;">
+      <div class="card-btn-group">
+        <button class="card-action-btn" onclick="copyCardText('${id}','${esc(lotteryName)}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button>
+        <button class="card-action-btn" onclick="captureCardImage('${id}','${esc(lotteryName)}')">📸 แคปภาพ</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-size:1.1rem;">${flag}</div>
+          <div>
+            <div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(lotteryName)}</div>
+            <div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(date)}</div>
+            <div style="margin-top:3px;font-size:.4rem;color:#a28a64;font-weight:800;">🏆 Landmark ${esc(lm.formula)} · สูตรอ้างอิงประจำหวย</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-badge-placeholder" style="display:none;position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>
+      <div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;display:flex;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>
+      ${__pairCardHTML(d1,p1,true)}
+      ${__pairCardHTML(d2,p2,false)}
+    </div>`;
+  }
+
+  function v34RenderLandmarkRecommendations(groups,landmarks){
+    const list=$("recommendList");
+    if(!list) return;
+    const all=buildAllFormulas();
+    const names=Object.keys(groups||{}).filter(function(n){return groups[n]&&groups[n].length&&landmarks[v33LotteryKey(n)];});
+    if(!names.length){
+      list.innerHTML=`<div class="v34-landmark-note">ยังไม่มี Landmark สำหรับหวยที่กำลังประมวลผล หากต้องการสร้าง Landmark ต้องมีข้อมูลอย่างน้อย 26 งวด</div>`;
+      return;
+    }
+    list.innerHTML=`<div class="v34-landmark-note">🏆 <b>สูตรแนะนำจาก Landmark</b> — ใช้สูตรแชมป์ที่ระบบจำไว้ของแต่ละหวย จึงใส่ข้อมูลเพียง 1 งวดก็สร้างเลขพร้อมใช้งานได้ โดยข้อมูล 1–25 งวดจะไม่เปลี่ยน Landmark</div>`+
+      names.map(function(name,i){
+        const lm=landmarks[v33LotteryKey(name)], fn=all[lm.formula], rec=groups[name][groups[name].length-1];
+        if(typeof fn!=="function") return "";
+        const ds=v33FormulaLatest(fn,rec), p1=__advancedPairEngine(ds[0],ds[1],[rec],fn), p2=__advancedPairEngine(ds[1],ds[0],[rec],fn);
+        const pairs=p1.concat(p2).map(function(x){return x.pair;}).join(" • ");
+        return `<article class="v34-lm-rec"><div class="v34-lm-rank">${v34Rank(i)}</div><div class="v34-lm-body"><h4>${getLotteryFlag(name)} ${esc(name)} · 🏆 ${esc(lm.formula)}</h4><p>สูตรแชมป์ที่จำจากข้อมูลย้อนหลัง ${lm.tested||0} งวด · ความแม่น ${v33Pct(lm.accuracy)}% · ${v34ThaiStatus(lm.accuracy)}</p><div class="v34-lm-numbers"><span class="v34-lm-pill">เลขเด่น ${ds[0]} • ${ds[1]}</span><span class="v34-lm-pill">เลขเจาะ ${pairs}</span></div></div><button type="button" class="v34-use" data-v34-lm="${encodeURIComponent(name)}">🎴 สร้างการ์ด</button></article>`;
+      }).join("");
+    list.querySelectorAll("[data-v34-lm]").forEach(function(btn){
+      btn.onclick=function(){
+        const name=decodeURIComponent(btn.getAttribute("data-v34-lm"));
+        const groupsNow=v34GroupsFromStorage(), lm=v33GetLandmarks()[v33LotteryKey(name)], allNow=buildAllFormulas();
+        if(!lm||typeof allNow[lm.formula]!=="function") return;
+        const recs=groupsNow[name]||[]; if(!recs.length) return;
+        const html=v34LandmarkCard(name,recs[recs.length-1],lm,allNow[lm.formula],Date.now());
+        let box=$("v34OperationalCards"); if(!box){$("result").insertAdjacentHTML("beforeend",`<section id="v34OperationalCards" class="v34-landmark-recs"><div class="section-title">🎴 การ์ดพร้อมใช้งานจาก Landmark</div></section>`);box=$("v34OperationalCards");}
+        box.insertAdjacentHTML("beforeend",html); showToast("✓ สร้างการ์ดจาก Landmark แล้ว — คัดลอกหรือแคปภาพได้");
+      };
+    });
+  }
+
+  function v34RenderOperationalCards(groups,landmarks){
+    const result=$("result"); if(!result) return;
+    const old=result.querySelector("#v34OperationalCards"); if(old) old.remove();
+    const names=Object.keys(groups||{}).filter(function(n){return groups[n]&&groups[n].length&&landmarks[v33LotteryKey(n)];});
+    if(!names.length) return;
+    let html=`<section id="v34OperationalCards" class="v34-landmark-recs"><div class="section-title">🎴 การ์ดพร้อมใช้งานจาก Landmark</div><div class="v34-landmark-note">ระบบใช้ Landmark ของหวยแต่ละประเภทเป็นสูตรอ้างอิงหลัก จึงไม่ต้องใส่สถิติย้อนหลังจำนวนมากทุกครั้ง</div>`;
+    const all=buildAllFormulas();
+    names.forEach(function(name,i){
+      const lm=landmarks[v33LotteryKey(name)], fn=all[lm.formula], rec=groups[name][groups[name].length-1];
+      if(typeof fn==='function') html+=v34LandmarkCard(name,rec,lm,fn,i);
+    });
+    html+=`</section>`;
+    result.insertAdjacentHTML("beforeend",html);
+  }
+
+  /* Restore the original shareable card renderer for selected recommendations. */
+  v33RenderSelectedArea=function(){
+    const result=$("result"); if(!result)return;
+    const old=result.querySelector("#selectedRecommendationCards"); if(old)old.remove();
+    const selected=__loadSelectedRecommendations();
+    const groups=Object.keys(__formulaLabGroups||{}).length?__formulaLabGroups:v34GroupsFromStorage();
+    if(!selected.length){
+      const lm=v33GetLandmarks();
+      v34RenderLandmarkRecommendations(groups,lm);
+      return;
+    }
+    const latestByLottery={}; Object.keys(groups).forEach(function(n){if(groups[n]&&groups[n].length)latestByLottery[n]=groups[n][groups[n].length-1];});
+    let html=`<section id="selectedRecommendationCards" class="v33-selected"><div class="v33-selected-head"><div><div class="v33-kicker">สูตรแนะนำที่เลือก</div><h3>🎴 การ์ดสูตรแนะนำ</h3><p>การ์ดนี้ใช้รูปแบบเดิมที่รองรับการคัดลอกและแคปภาพ</p></div><button class="clear-recommend v33-clear-inline" type="button" id="v33ClearInline">🗑 ล้างการ์ดสูตรแนะนำ</button></div>`;
+    let count=0;
+    selected.forEach(function(c){
+      Object.keys(latestByLottery).forEach(function(name){html+=__recommendCardForLottery(name,latestByLottery[name],c,count++,groups);});
+    });
+    html+=`</section>`;
+    result.insertAdjacentHTML("beforeend",html);
+    const b=$("v33ClearInline"); if(b)b.onclick=v33ClearOnlyRecommendations;
+    const lm=v33GetLandmarks(); result.insertAdjacentHTML("beforeend",v33RenderFinalRecommendation(groups,selected,lm));
+  };
+
+  /* Thai-only Formula Recommendation presentation. */
+  finishFormulaLab=function(results){
+    const status=$("autoFormulaStatus"), list=$("recommendList"), groups=Object.keys(__formulaLabGroups||{}).length?__formulaLabGroups:v34GroupsFromStorage();
+    const all=__formulaLabAllFormulas||buildAllFormulas();
+    const enriched=(Array.isArray(results)?results:[]).map(function(item){
+      const fn=modelToFunction(item.m1,item.m2), temporal=__temporalFormulaStats(fn,groups); let baseStats=null;
+      try{const baseFn=all[item.source];if(typeof baseFn==='function')baseStats=evaluateCandidateAcrossGroups(baseFn,groups);}catch(e){}
+      const improvement=Number((item.stats.validationRate-(baseStats?baseStats.validationRate:0)).toFixed(2));
+      return Object.assign({},item,{temporal,improvement,finalRankScore:Number((item.stats.score+temporal.rate*.18-temporal.std*.06).toFixed(3))});
+    });
+    const qualified=enriched.filter(function(x){return x.stats.validationTested>=5&&x.temporal.tested>=5;}).sort(function(a,b){return b.finalRankScore-a.finalRankScore||b.stats.validationRate-a.stats.validationRate;});
+    const finalList=[],seen=new Set(); qualified.forEach(function(x){const sig=modelSignature(x.m1,x.m2);if(!seen.has(sig)&&finalList.length<5){seen.add(sig);finalList.push(x);}});
+    if(!finalList.length){
+      const lm=v33GetLandmarks();
+      status.textContent=`ยังไม่มีสูตรทดลองที่ผ่านเกณฑ์ — ระบบจะแสดงสูตร Landmark เดิมของแต่ละหวยให้ใช้งานได้ทันที`;
+      v34RenderLandmarkRecommendations(groups,lm); return;
+    }
+    status.textContent=`✓ ตรวจสอบ ${results.length} สูตรทดลองแล้ว — คัดสูตรแนะนำ ${finalList.length} สูตร`;
+    list.innerHTML=finalList.map(function(x,i){
+      x.rank=i+1;x.displayName=`สูตรแนะนำอันดับ ${i+1}`;
+      const d1=formatLinearExpression(x.m1),d2=formatLinearExpression(x.m2),overall=v33Pct(x.stats.overallRate),validation=v33Pct(x.stats.validationRate),recent=v33Pct(x.stats.recentRate),cons=x.temporal?v33Pct(100-x.temporal.std):0;
+      const first=Object.keys(groups)[0],rec=first&&groups[first]&&groups[first].length?groups[first][groups[first].length-1]:null;
+      let preview="";
+      if(rec){try{const ds=v33FormulaLatest(modelToFunction(x.m1,x.m2),rec),p1=__advancedPairEngine(ds[0],ds[1],[rec],modelToFunction(x.m1,x.m2)),p2=__advancedPairEngine(ds[1],ds[0],[rec],modelToFunction(x.m1,x.m2));preview=`<div class="v33-preview"><div><span>เลขเด่น</span><strong>${ds[0]} • ${ds[1]}</strong></div><div><span>เลขเจาะ</span><strong>${ds[0]} → ${p1.map(function(z){return z.pair;}).join(" • ")}<br>${ds[1]} → ${p2.map(function(z){return z.pair;}).join(" • ")}</strong></div></div>`;}catch(e){}}
+      const payload=encodeURIComponent(JSON.stringify({source:x.source,d1,d2,m1:x.m1,m2:x.m2,overallRate:overall,validationRate:validation,recentRate:recent,improvement:x.improvement||0,finalRankScore:x.finalRankScore,consistency:cons}));
+      return `<article class="v33-rec-card"><div class="v33-rank">${v34Rank(i)}</div><div class="v33-rec-body"><div class="v33-rec-top"><div><h4>${i===0?'🏆 ':''}สูตรแนะนำอันดับ ${i+1}</h4><div class="v33-source">ต่อยอดจาก ${esc(x.source||'สูตรเดิม')}</div></div><span class="v33-status">สูตรแนะนำ</span></div><div class="v33-stat-grid"><div><span>คะแนน</span><b>${v33Pct(x.finalRankScore)}</b></div><div><span>ความแม่น</span><b>${overall}%</b></div><div><span>ทดสอบยืนยัน</span><b>${validation}%</b></div><div><span>ผลงานล่าสุด</span><b>${recent}%</b></div><div><span>จำนวนงวดทดสอบ</span><b>${x.stats.validationTested||0}</b></div><div><span>ความสม่ำเสมอ</span><b>${cons}%</b></div></div><div class="v33-expression"><span>รายละเอียดสูตร</span><code>เด่นตัวที่ 1 = ${esc(d1)}<br>เด่นตัวที่ 2 = ${esc(d2)}</code></div>${preview}<div class="v33-why"><b>ทำไมถึงอยู่อันดับนี้</b><span>ดูจากความแม่น การทดสอบยืนยัน ผลงานล่าสุด และความสม่ำเสมอ โดยไม่แก้สูตรเลขเด่นหรือสูตรเลขเจาะเดิม</span></div></div><button class="add-recommend v33-add" data-add-recommend="${payload}">＋ เลือกสูตรนี้</button></article>`;
+    }).join("");
+    list.querySelectorAll("[data-add-recommend]").forEach(function(btn){btn.onclick=function(){try{addRecommendedFormula(JSON.parse(decodeURIComponent(btn.dataset.addRecommend)));}catch(e){showToast("❌ เลือกสูตรไม่สำเร็จ");}};});
+  };
+
+  /* Thai-first dashboard with explicit medals and เข้า/หลุด status. */
+  renderFullUI=function(globalAuditMap,auditDataMap,predictionDataMap){
+    const groups=Object.keys(__formulaLabGroups||{}).length?__formulaLabGroups:v34GroupsFromStorage();
+    const all=buildAllFormulas(), landmarks=v33UpdateLandmarks(groups,all), snap=v33FormulaSnapshot(groups,all); let html="";
+    html+=`<div class="v33-dashboard"><div class="v33-dashboard-head"><div><div class="v33-kicker">📊 ออดิตหลายมิติ</div><h2>📊 ตารางสรุปผลงานสูตร</h2><p>ดูความแม่น จำนวนงวด ผลงานล่าสุด ผลงานระยะยาว ความสม่ำเสมอ เข้า/หลุด และสูตรที่เหมาะกับหวยแต่ละประเภท</p></div><div class="v33-locked">🔒 สูตรหลักล็อกไว้<br><span>เลขเด่น + เลขเจาะ</span></div></div>`;
+    html+=`<div class="v33-cards"><div><span>หวยในระบบ</span><b>${Object.keys(groups).length}</b></div><div><span>สูตรที่ตรวจ</span><b>${Object.keys(all).length}</b></div><div><span>Landmark ที่จำไว้</span><b>${Object.keys(landmarks).length}</b></div><div><span>เกณฑ์เปลี่ยน Landmark</span><b>26 งวดขึ้นไป</b></div></div>`;
+    html+=`<div class="section-title">🏆 1. Landmark แยกตามหวย</div><div class="summary-table-container audit-table-wrap"><table class="audit-table"><thead><tr><th>หวย</th><th>แชมป์ที่จำไว้</th><th>ความแม่น</th><th>หลักฐาน</th><th>สถานะ</th></tr></thead><tbody>`;
+    Object.keys(groups).forEach(function(name){const lm=landmarks[v33LotteryKey(name)];html+=`<tr><td style="text-align:left;font-weight:900">${getLotteryFlag(name)} ${esc(name)}</td><td>${lm?`🏆 ${esc(lm.formula)}`:"— ยังไม่มี"}</td><td>${lm?v33Pct(lm.accuracy)+"%":"—"}</td><td>${lm?`${lm.tested} งวด · เข้า ${lm.hits} · หลุด ${lm.misses}`:"ต้องมีข้อมูล 26 งวดขึ้นไป"}</td><td>${groups[name].length>=26?"🟢 มีสิทธิ์ตรวจผู้ท้าชิง":"🔒 คง Landmark เดิม"}</td></tr>`;}); html+=`</tbody></table></div>`;
+    html+=`<div class="section-title">🥇 2. ตารางคะแนนรวม</div><div class="summary-table-container audit-table-wrap"><table class="audit-table"><thead><tr><th>อันดับ</th><th>สูตร</th><th>ความแม่น</th><th>จำนวนงวด</th><th>เข้า</th><th>หลุด</th><th>ผลงานล่าสุด</th><th>ระยะยาว</th><th>สม่ำเสมอ</th><th>สถานะ</th><th>เหมาะกับหวย</th></tr></thead><tbody>`;
+    Object.keys(snap.global).map(function(f){return Object.assign({name:f},snap.global[f]);}).sort(function(a,b){return b.accuracy-a.accuracy||b.tested-a.tested;}).forEach(function(g,i){html+=`<tr><td>${v34Rank(i)}</td><td style="text-align:left;font-weight:900">${esc(g.name)}</td><td><b>${g.accuracy}%</b></td><td>${g.tested}</td><td>🟢 ${g.hits}</td><td>🔴 ${g.misses}</td><td>${g.recent}%</td><td>${g.longTerm}%</td><td>${g.consistency}%</td><td>${v34ThaiStatus(g.accuracy)}</td><td>${g.lotteries} หวย</td></tr>`;});html+=`</tbody></table></div>`;
+    html+=`<div class="section-title">🎯 3. สูตรไหนเหมาะกับหวยไหน</div>`;
+    Object.keys(groups).forEach(function(name){const rows=Object.keys(snap.byLottery[name]||{}).map(function(f){return Object.assign({name:f},snap.byLottery[name][f]);}).sort(function(a,b){return b.overall-a.overall||b.sample-a.sample;});html+=`<div class="summary-table-container audit-table-wrap"><h3>${getLotteryFlag(name)} ${esc(name)} <span class="v33-note">${groups[name].length} งวดสะสม</span></h3><table class="audit-table"><thead><tr><th>อันดับ</th><th>สูตร</th><th>ความแม่น</th><th>ผลงานล่าสุด</th><th>ระยะยาว</th><th>สม่ำเสมอ</th><th>เข้า</th><th>หลุด</th><th>สถานะอันดับ</th></tr></thead><tbody>`;rows.forEach(function(r,i){html+=`<tr><td>${v34Rank(i)}</td><td style="text-align:left;font-weight:800">${esc(r.name)}</td><td>${r.overall}%</td><td>${r.recent}%</td><td>${r.longTerm}%</td><td>${r.consistency}%</td><td>🟢 ${r.winStreak}</td><td>🔴 ${r.missStreak}</td><td>${r.consistency>=70?"🟢 คงที่":r.consistency>=50?"🟡 เฝ้าดู":"🔴 ผันผวน"}</td></tr>`;});html+=`</tbody></table></div>`;});
+    html+=`<div class="section-title">🧠 4. หลายสูตรเห็นตรงกัน</div>`;
+    const selected=__loadSelectedRecommendations();
+    if(selected.length){html+=`<div class="summary-table-container audit-table-wrap"><table class="audit-table"><thead><tr><th>หวย</th><th>เลข</th><th>สนับสนุนกี่สูตร</th><th>ระดับการเห็นตรงกัน</th><th>Landmark</th></tr></thead><tbody>`;Object.keys(groups).forEach(function(name){const recs=groups[name]||[];if(!recs.length)return;const rec=recs[recs.length-1],counts={};selected.forEach(function(c){v33FormulaLatest(modelToFunction(c.m1,c.m2),rec).forEach(function(d){counts[d]=(counts[d]||0)+1;});});Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]||Number(a)-Number(b);}).slice(0,5).forEach(function(d){const lm=landmarks[v33LotteryKey(name)];html+=`<tr><td style="text-align:left;font-weight:800">${getLotteryFlag(name)} ${esc(name)}</td><td><b>${d}</b></td><td>${counts[d]} / ${selected.length} สูตร</td><td>${counts[d]>=3?"🟢 สูง":counts[d]===2?"🟡 กลาง":"⚪ เดี่ยว"}</td><td>${lm?`🏆 ${esc(lm.formula)} ${v33Pct(lm.accuracy)}%`:"—"}</td></tr>`;});});html+=`</tbody></table></div>`;}else html+=`<div class="summary-table-container"><div class="v33-note">เมื่อเลือกสูตรแนะนำหลายสูตร ระบบจะแสดงเลขที่หลายสูตรเห็นตรงกันในส่วนนี้</div></div>`;
+    html+=`<div class="section-title">🔒 5. ผลเลขจากสูตรหลัก</div>`;
+    Object.keys(predictionDataMap||{}).forEach(function(name){const p=predictionDataMap[name];html+=`<article class="prediction-card"><div style="font-weight:900;font-size:.75rem">${getLotteryFlag(name)} ${esc(name)}</div><div style="margin-top:8px;font-size:.5rem;color:var(--muted)">งวดถัดไป: ${esc(p.nextDate||"—")}</div><div class="v33-core-grid"><div><span>เลขเด่น</span><strong>${p.d1} • ${p.d2}</strong></div><div><span>เลขเจาะ</span><strong>${p.d1} → ${(p.d1Pairs||[]).map(function(x){return x.pair;}).join(" • ")}<br>${p.d2} → ${(p.d2Pairs||[]).map(function(x){return x.pair;}).join(" • ")}</strong></div></div><div class="v33-locked-note">🔒 สูตรเลขเด่นและสูตรเลขเจาะเดิม — ระบบออดิต Landmark และ Recommendation ไม่มีสิทธิ์แก้ไข</div></article>`;});
+    html+=`</div>`;$('result').innerHTML=html;v33RenderSelectedArea();
+  };
+
+  /* Daily processing: preserve the original engine, then operationally apply
+     the remembered Landmark to every lottery that has one. */
+  const v34BaseRunEngine=runEngine;
+  runEngine=function(){
+    const out=v34BaseRunEngine.apply(this,arguments);
+    try{
+      const groups=v34GroupsFromStorage(), all=buildAllFormulas();
+      const landmarks=v33UpdateLandmarks(groups,all);
+      __formulaLabGroups=groups;__formulaLabAllFormulas=all;
+      v34RenderOperationalCards(groups,landmarks);
+      const selected=__loadSelectedRecommendations();
+      if(!selected.length) v34RenderLandmarkRecommendations(groups,landmarks);
+      /* When a user entered a small fresh dataset, show the remembered champion
+         as the recommendation source without changing the stored Landmark. */
+      const input=$('bulkInput')&&$('bulkInput').value.trim();
+      if(input && Object.keys(landmarks).length && !selected.length){
+        const status=$('autoFormulaStatus'); if(status) status.textContent='✓ ใช้ Landmark เดิมของแต่ละหวยสร้างสูตรแนะนำและการ์ดพร้อมใช้งานแล้ว';
+      }
+    }catch(e){console.error('V34 operational mode',e);}
+    return out;
+  };
+
+  /* Make the visible Formula Lab heading Thai-first without changing logic. */
+  window.addEventListener('DOMContentLoaded',function(){
+    const title=document.querySelector('.auto-title'); if(title) title.textContent='✦ ห้องทดลองสูตรแนะนำ';
+    const note=document.querySelector('.auto-note'); if(note) note.textContent='ระบบเปรียบเทียบสูตรและคัดสูตรแนะนำ โดยไม่แก้สูตรเลขเด่นหรือสูตรเลขเจาะเดิม';
+    const btn=document.querySelector('#runFormulaLab'); if(btn) btn.textContent='🧬 ค้นหาสูตรแนะนำ';
+  });
+})();
+</script>
+
 </body>
   </html>
