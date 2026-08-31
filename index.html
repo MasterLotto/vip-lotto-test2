@@ -910,12 +910,15 @@ table.audit-table tr:hover{background:#fffaf0;}
 }
 
 
+
+
 .landmark-single{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel2)}
 .landmark-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.48rem;color:var(--muted)}
 .landmark-meta span{padding:5px 8px;border-radius:999px;background:#fff;border:1px solid var(--line)}
 .add-landmark-card{border:1px solid var(--gold3);background:#fffaf0;color:var(--gold2);border-radius:9px;padding:7px 10px;font-size:.52rem;font-weight:800}
 .clear-landmark{border:1px solid #e2b9bd;background:#fff5f6;color:#9b2c2c;border-radius:9px;padding:7px 10px;font-size:.52rem;font-weight:800}
 </style>
+
 
 <style id="v4-hardening-style">
   #v4EvidenceLegend{margin-bottom:10px}
@@ -5288,400 +5291,515 @@ window.addEventListener(
       }
     }catch(e){}
   });
-})();
 
-/* =========================================================
-   V4.0 AUDIT / RANKING / PAIR / LANDMARK HARDENING LAYER
-   Keeps the original formula definitions unchanged.
-   Replaces only measurement, validation, ranking, pairing,
-   persistence and data-quality behavior.
-========================================================= */
-(function(){
+
+
   'use strict';
-  const V4 = {
-    MIN_LOTTERY_SAMPLES: 12,
-    MIN_VALIDATION_SAMPLES: 8,
-    MIN_LANDMARK_SAMPLES: 26,
-    MIN_PAIR_TESTS: 8,
+
+  /* =========================================================
+     MESTER LOTTO V5 — ARCHITECTURE UPGRADE LAYER
+     Frozen Formula Contract:
+       - `formulas` object above is never mutated.
+       - Frozen formula functions are called exactly as defined.
+       - This layer changes identity, persistence, workflow and rendering only.
+  ========================================================= */
+  const V5 = {
+    SCHEMA_VERSION: 5,
+    REGISTRY_KEY: 'mester_lotto_v5_registry_v1',
+    META_KEY: 'mester_lotto_v5_meta_v1',
+    RECOMMENDATION_KEY: 'mester_lotto_v5_formula_recommendations_v1',
+    FORMULA_HISTORY_KEY: 'mester_lotto_v5_formula_history_v1',
+    CALIBRATION_HISTORY_KEY: 'mester_lotto_v5_calibration_history_v1',
+    PREDICTION_HISTORY_KEY: 'mester_lotto_v5_prediction_history_v1',
+    PAIR_EVIDENCE_KEY: 'mester_lotto_v5_pair_evidence_v1',
+    MIN_CALIBRATION: 26,
+    MAX_ROLLING: 30,
     RECENT_WINDOW: 8,
-    TEMPORAL_FOLDS: 4,
-    RECOMMEND_LIMIT: 5,
-    SCORE_WEIGHTS: {
-      validation: .35,
-      overall: .15,
-      recent: .10,
-      walkForward: .20,
-      stability: .10,
-      baselineLift: .10
-    }
+    MIN_VALIDATION: 8,
+    MIN_PAIR_TESTS: 8
   };
-  window.__V4_AUDIT_VERSION = '4.0.0';
+  window.__MESTER_LOTTO_V5__ = V5;
 
-  function safeDigits(v,len){
-    return String(v == null ? '' : v).replace(/\D/g,'').padStart(len,'0').slice(-len).split('').map(Number);
-  }
-  function pct(h,n){ return n>0 ? Number((h/n*100).toFixed(2)) : 0; }
-  function clamp01(x){ return Math.max(0,Math.min(1,Number(x)||0)); }
-  function wilson(h,n){
-    if(!n) return {low:0,high:0};
-    const z=1.96, p=h/n, z2=z*z, den=1+z2/n;
-    const c=(p+z2/(2*n))/den;
-    const d=z*Math.sqrt((p*(1-p)+z2/(4*n))/n)/den;
-    return {low:Number((Math.max(0,c-d)*100).toFixed(2)),high:Number((Math.min(1,c+d)*100).toFixed(2))};
-  }
-  function mean(a){ return a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0; }
-  function stddev(a){
-    if(!a.length) return 0;
-    const m=mean(a); return Math.sqrt(mean(a.map(x=>Math.pow(x-m,2))));
-  }
-  function canonicalLottery(name){
-    try{return normalizeLotteryName(String(name||''));}catch(e){return String(name||'').trim();}
+  function readJSON(key,fallback){try{const raw=localStorage.getItem(key);return raw==null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
+  function writeJSON(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch(e){console.error('Storage write failed',key,e);return false;}}
+  function now(){return Date.now();}
+  function clean(s){return String(s==null?'':s).replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();}
+  function normalizeKey(s){return clean(s).toLowerCase().replace(/[|]/g,' ').replace(/[._,]/g,'').replace(/\s+/g,'');}
+  function safeNum(v,f=0){const n=Number(v);return Number.isFinite(n)?n:f;}
+  function pct(h,n){return n>0?Number((h/n*100).toFixed(2)):0;}
+  function wilson(h,n){if(!n)return{low:0,high:0};const z=1.96,p=h/n,z2=z*z,den=1+z2/n,c=(p+z2/(2*n))/den,d=z*Math.sqrt((p*(1-p)+z2/(4*n))/n)/den;return{low:Number((Math.max(0,c-d)*100).toFixed(2)),high:Number((Math.min(1,c+d)*100).toFixed(2))};}
+  function mean(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
+  function std(a){if(!a.length)return 0;const m=mean(a);return Math.sqrt(mean(a.map(x=>(x-m)*(x-m))));}
+  function stableIdFromName(name){
+    let h=2166136261;
+    const s=normalizeKey(name);
+    for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+    return 'LEGACY_'+(h>>>0).toString(16).toUpperCase();
   }
 
-  /* Strict date parser: invalid input is rejected instead of silently defaulting. */
-  parseThaiDate = function(dateStr){
-    const months={"ม.ค.":1,"ก.พ.":2,"มี.ค.":3,"เม.ย.":4,"พ.ค.":5,"มิ.ย.":6,"ก.ค.":7,"ส.ค.":8,"ก.ย.":9,"ต.ค.":10,"พ.ย.":11,"ธ.ค.":12,
-      "มกราคม":1,"กุมภาพันธ์":2,"มีนาคม":3,"เมษายน":4,"พฤษภาคม":5,"มิถุนายน":6,"กรกฎาคม":7,"สิงหาคม":8,"กันยายน":9,"ตุลาคม":10,"พฤศจิกายน":11,"ธันวาคม":12};
-    const parts=String(dateStr||'').trim().split(/\s+/);
-    if(parts.length<3) return 0;
-    const day=Number(parts[0]); const month=months[parts[1]]; let year=Number(parts[2]);
-    if(!Number.isInteger(day)||!month||!Number.isInteger(year)) return 0;
-    if(year<100) year+=2500;
-    if(year<2500) year+=543;
-    if(day<1||day>31) return 0;
-    const jsYear=year-543;
-    const d=new Date(jsYear,month-1,day);
-    if(d.getFullYear()!==jsYear||d.getMonth()!==month-1||d.getDate()!==day) return 0;
-    return d.getTime();
-  };
+  const registrySeed = [
+    ['NIKKEI_AM','นิเคอิ ปกติ เช้า',['หุ้นนิคเคอิเช้า','นิคเคอิเช้า','นิเคอิ ปกติ เช้า']],
+    ['NIKKEI_PM','นิเคอิ ปกติ บ่าย',['หุ้นนิคเคอิบ่าย','นิคเคอิบ่าย','นิเคอิ ปกติ บ่าย']],
+    ['CHINA_AM','จีน ปกติ เช้า',['หุ้นจีนเช้า','จีนเช้า','จีน ปกติ เช้า']],
+    ['CHINA_PM','จีน ปกติ บ่าย',['หุ้นจีนบ่าย','จีนบ่าย','จีน ปกติ บ่าย']],
+    ['HANGSENG_AM','ฮั่งเส็ง ปกติ เช้า',['หุ้นฮั่งเส็งเช้า','ฮั่งเส็งเช้า','ฮั่งเส็ง ปกติ เช้า']],
+    ['HANGSENG_PM','ฮั่งเส็ง ปกติ บ่าย',['หุ้นฮั่งเส็งบ่าย','ฮั่งเส็งบ่าย','ฮั่งเส็ง ปกติ บ่าย']],
+    ['TAIWAN','ไต้หวัน ปกติ',['หุ้นไต้หวัน','ไต้หวัน','ไต้หวัน ปกติ']],
+    ['KOREA','เกาหลี ปกติ',['หุ้นเกาหลี','เกาหลี','เกาหลี ปกติ']],
+    ['SINGAPORE','สิงคโปร์ ปกติ',['หุ้นสิงคโปร์','สิงคโปร์','สิงคโปร์ ปกติ']],
+    ['THAI_OPEN_AM','หุ้นไทย เปิดเช้า',['หุ้นไทย เปิดเช้า','ไทย เปิดเช้า']],
+    ['THAI_CLOSE_NOON','หุ้นไทย ปิดเที่ยง',['หุ้นไทย ปิดเที่ยง','ไทย ปิดเที่ยง']],
+    ['THAI_OPEN_PM','หุ้นไทย เปิดบ่าย',['หุ้นไทย เปิดบ่าย','ไทย เปิดบ่าย']],
+    ['THAI_CLOSE_PM','หุ้นไทย ปิดเย็น',['หุ้นไทย ปิดเย็น','ไทย ปิดเย็น']],
+    ['INDIA','อินเดีย',['หุ้นอินเดีย','อินเดีย']],
+    ['EGYPT','อียิปต์',['หุ้นอียิปต์','อียิปต์']],
+    ['GERMANY','เยอรมัน ปกติ',['หุ้นเยอรมัน','เยอรมัน','เยอรมัน ปกติ']],
+    ['RUSSIA','รัสเซีย ปกติ',['หุ้นรัสเซีย','รัสเซีย','รัสเซีย ปกติ']],
+    ['UK','อังกฤษ ปกติ',['หุ้นอังกฤษ','อังกฤษ','อังกฤษ ปกติ']],
+    ['DOWJONES','ดาวโจนส์ ปกติ',['หุ้นดาวโจนส์','ดาวโจนส์','ดาวโจนส์ ปกติ']]
+  ];
 
-  /* Formula output is never silently repaired by the audit layer. */
-  sanitizeFormulaResult = function(rawRes){
-    if(!Array.isArray(rawRes)||rawRes.length<2) throw new Error('สูตรต้องคืนค่า 2 หลัก');
-    const d1=norm(rawRes[0]), d2=norm(rawRes[1]);
-    if(!Number.isFinite(d1)||!Number.isFinite(d2)) throw new Error('ผลสูตรไม่เป็นตัวเลข');
-    return [d1,d2];
-  };
-
-  /* Multi-level target metric. Legacy hitAny is preserved for compatibility,
-     while exact/position/any-digit metrics are exposed separately. */
-  checkHitDetail = function(predictedDigits, actualN3, actualN2){
-    const p=[Number(predictedDigits[0]),Number(predictedDigits[1])];
-    const n3=safeDigits(actualN3,3), n2=safeDigits(actualN2,2);
-    const pair=String(p[0])+String(p[1]);
-    const actualBottom=n2.join(''), actualTopLU=n3.slice(1).join('');
-    const exactBottom=pair===actualBottom;
-    const exactTopLU=pair===actualTopLU;
-    const exactPair=exactBottom||exactTopLU;
-    const digitHits=p.filter(d=>n2.includes(d)||n3.slice(1).includes(d)).length;
-    const positionHits=(p[0]===n3[1]?1:0)+(p[1]===n3[2]?1:0);
-    const reversedPositionHits=(p[0]===n3[2]?1:0)+(p[1]===n3[1]?1:0);
-    const exactPosition=positionHits===2;
-    const anyDigit=digitHits>0;
-    const hundredsOnly=p.some(d=>d===n3[0])&&!anyDigit;
-    return {
-      hitAny:anyDigit,
-      hitHundredsOnly:hundredsOnly,
-      exactPair, exactBottom, exactTopLU,
-      digitHitCount:digitHits,
-      positionHits, reversedPositionHits,
-      exactPosition,
-      pair:pair,
-      legacyHitAny:anyDigit
-    };
-  };
-
-  function auditRange(fn,recs,start,end){
-    let any=0, exact=0, pos=0, digitCount=0, hundreds=0, tested=0, errors=0;
-    let streak=0,missStreak=0,maxStreak=0,maxMiss=0,lastHit=null,lastDetail=null;
-    const per=[];
-    for(let i=Math.max(0,start||0);i<Math.min(end||0,recs.length-1);i++){
-      const curr=recs[i], next=recs[i+1]; if(!curr||!next) continue;
-      const t=safeDigits(curr.n3,3), b=safeDigits(curr.n2,2);
-      let pred;
-      try{pred=sanitizeFormulaResult(fn(t[0],t[1],t[2],b[0],b[1]));}
-      catch(e){errors++;continue;}
-      const d=checkHitDetail(pred,next.n3,next.n2); tested++;
-      if(d.hitAny) {any++;streak++;missStreak=0;} else {missStreak++;streak=0;}
-      maxStreak=Math.max(maxStreak,streak); maxMiss=Math.max(maxMiss,missStreak);
-      if(d.exactPair) exact++;
-      if(d.exactPosition) pos++;
-      digitCount+=d.digitHitCount;
-      if(d.hitHundredsOnly) hundreds++;
-      lastHit=d.hitAny; lastDetail=d;
-      per.push({index:i,predicted:pred,detail:d,hit:d.hitAny});
-    }
-    const w=wilson(any,tested), we=wilson(exact,tested);
-    return {totalTested:tested,hits:any,misses:tested-any,hundredsOnlyCount:hundreds,hitRate:pct(any,tested),
-      exactPairHits:exact,exactPairRate:pct(exact,tested),positionHits:pos,positionRate:pct(pos,tested),
-      digitHitCount:digitCount,avgDigitsHit:tested?Number((digitCount/tested).toFixed(3)):0,
-      curStreak:streak,curMissStreak:missStreak,maxStreak,maxMissStreak:maxMiss,lastHit,lastDetail,
-      hitHundredsOnly:lastDetail?lastDetail.hitHundredsOnly:false, errors,
-      confidenceLow:w.low,confidenceHigh:w.high,exactConfidenceLow:we.low,exactConfidenceHigh:we.high,per
-    };
-  }
-  auditFormulaOnRecords = function(formulaFn,recs,startIndex,endIndex){ return auditRange(formulaFn,recs,startIndex,endIndex); };
-
-  function baselineFor(predictedDistinct){
-    /* Reference baseline for the legacy digit-anywhere metric.
-       With two distinct predicted digits: 1-(0.8^4)=59.04%.
-       With one distinct digit: 1-(0.9^4)=34.39%.
-       This is only a theoretical reference, not a lottery-specific forecast. */
-    return Number((1-Math.pow(predictedDistinct>1?0.8:0.9,4))*100);
-  }
-  function scoreMetrics(stats,groupStats){
-    const rates=groupStats.map(x=>x.validationRate).filter(Number.isFinite);
-    const st=stddev(rates);
-    const base=baselineFor(2);
-    const lift=Math.max(-100,stats.validationRate-base);
-    const wf=stats.walkForwardRate||0;
-    const stabilityScore=Math.max(0,100-Math.min(50,st)*2);
-    const w=V4.SCORE_WEIGHTS;
-    const confidence=stats.validationTested ? Math.min(1,Math.log10(stats.validationTested+1)/3) : 0;
-    const evidenceAdj=(confidence-.5)*4;
-    return Number((stats.validationRate*w.validation+stats.overallRate*w.overall+stats.recentRate*w.recent+
-      wf*w.walkForward+stabilityScore*w.stability+lift*w.baselineLift+evidenceAdj).toFixed(3));
-  }
-
-  __temporalFormulaStats = function(fn,groups){
-    const foldStats=[]; let totalHits=0,totalTested=0;
-    Object.keys(groups||{}).forEach(name=>{
-      const recs=groups[name]||{}; const n=recs.length-1;
-      if(n<8) return;
-      const folds=Math.min(V4.TEMPORAL_FOLDS,Math.max(2,Math.floor(n/4)));
-      const warmup=Math.max(2,Math.floor(n*.20));
-      const block=Math.max(1,Math.floor((n-warmup)/folds));
-      for(let f=0;f<folds;f++){
-        const testStart=warmup+f*block;
-        const testEnd=f===folds-1?n:Math.min(n,testStart+block);
-        if(testStart>=testEnd) continue;
-        const st=auditRange(fn,recs,testStart,testEnd);
-        if(st.totalTested){totalHits+=st.hits;totalTested+=st.totalTested;foldStats.push({name,fold:f+1,tested:st.totalTested,hits:st.hits,rate:st.hitRate,start:testStart,end:testEnd});}
-      }
+  function makeRegistry(){
+    const existing=readJSON(V5.REGISTRY_KEY,{});
+    const reg=existing&&typeof existing==='object'?existing:{};
+    registrySeed.forEach(([id,display,aliases])=>{
+      if(!reg[id])reg[id]={lotteryId:id,displayName:display,inputAliases:[]};
+      reg[id].lotteryId=id;reg[id].displayName=display;
+      reg[id].inputAliases=Array.from(new Set([...(reg[id].inputAliases||[]),...aliases]));
     });
-    const rates=foldStats.map(x=>x.rate);
-    return {tested:totalTested,hits:totalHits,rate:pct(totalHits,totalTested),std:Number(stddev(rates).toFixed(2)),folds:foldStats};
-  };
+    return reg;
+  }
+  let registry=makeRegistry();
+  writeJSON(V5.REGISTRY_KEY,registry);
 
-  evaluateCandidateAcrossGroups = function(candidateFn,groups){
-    let totalTested=0,hits=0,validationTested=0,validationHits=0,recentTested=0,recentHits=0;
-    let exactHits=0,positionHits=0; const groupStats=[];
-    Object.keys(groups||{}).forEach(name=>{
-      const recs=groups[name]||[]; const n=recs.length-1; if(n<8)return;
-      const valSize=Math.max(V4.MIN_VALIDATION_SAMPLES,Math.floor(n*.30));
-      const trainEnd=Math.max(2,n-valSize), valStart=trainEnd;
-      const train=auditRange(candidateFn,recs,0,trainEnd);
-      const val=auditRange(candidateFn,recs,valStart,n);
-      const recent=auditRange(candidateFn,recs,Math.max(0,n-V4.RECENT_WINDOW),n);
-      totalTested+=train.totalTested+val.totalTested; hits+=train.hits+val.hits;
-      validationTested+=val.totalTested; validationHits+=val.hits; recentTested+=recent.totalTested; recentHits+=recent.hits;
-      exactHits+=val.exactPairHits; positionHits+=val.positionHits;
-      groupStats.push({name,trainRate:train.hitRate,validationRate:val.hitRate,recentRate:recent.hitRate,validationTested:val.totalTested,exactPairRate:val.exactPairRate});
-    });
-    const overallRate=pct(hits,totalTested), validationRate=pct(validationHits,validationTested), recentRate=pct(recentHits,recentTested);
-    const provisional={overallRate,validationRate,recentRate,validationTested,walkForwardRate:0};
-    const temporal=__temporalFormulaStats(candidateFn,groups||{});
-    provisional.walkForwardRate=temporal.rate;
-    const rates=groupStats.map(x=>x.validationRate); const stability=Number(stddev(rates).toFixed(2));
-    const score=scoreMetrics(provisional,groupStats);
-    return {overallRate,validationRate,recentRate,stability,score,validationTested,validationHits,totalTested,hits,
-      exactPairRate:pct(exactHits,validationTested),positionRate:pct(positionHits,validationTested),
-      baseline:baselineFor(validationTested),baselineLift:Number((validationRate-baselineFor(validationTested)).toFixed(2)),
-      confidenceLow:wilson(validationHits,validationTested).low,confidenceHigh:wilson(validationHits,validationTested).high,
-      walkForwardRate:temporal.rate,walkForwardStd:temporal.std,groupStats};
-  };
+  function dateSuffixRemoved(name){
+    let n=clean(name);
+    /* Accept accidental date suffixes in a name field without allowing date to become identity. */
+    n=n.replace(/\s*[|｜]\s*\d{1,2}\s+(?:ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.|มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม)\s+\d{2,4}\s*$/,'');
+    return n;
+  }
 
-  /* Never feed auto-generated formulas back into the base pool. */
-  const __origCollect = collectLinearBaseFormulas;
-  collectLinearBaseFormulas = function(allFormulas){
-    const custom=loadCustomFormulas();
-    const filteredCustom=custom.filter(x=>!x.autoGenerated);
-    const backup=window.loadCustomFormulas;
-    window.loadCustomFormulas=function(){return filteredCustom;};
-    try{return __origCollect(allFormulas);}finally{window.loadCustomFormulas=backup;}
-  };
-
-  /* Real pair backtest: exact 2-digit pair on next draw, conditioned on the
-     formula producing the requested main digit. Both bottom and top tens/units
-     are valid targets. */
-  __advancedPairEngine = function(mainDigit,otherDigit,recs,formulaFn){
-    const main=Number(mainDigit); if(!Array.isArray(recs)||recs.length<2||typeof formulaFn!=='function') return [];
-    const results=[];
-    for(let target=0;target<10;target++){
-      if(target===main||target===Number(otherDigit)) continue;
-      let tested=0,hits=0,recentTested=0,recentHits=0;
-      const n=recs.length-1;
-      for(let i=0;i<n;i++){
-        const curr=recs[i],next=recs[i+1]; if(!curr||!next)continue;
-        const t=safeDigits(curr.n3,3),b=safeDigits(curr.n2,2); let ds;
-        try{ds=sanitizeFormulaResult(formulaFn(t[0],t[1],t[2],b[0],b[1]));}catch(e){continue;}
-        if(ds[0]!==main&&ds[1]!==main)continue;
-        tested++;
-        const pair=String(main)+String(target);
-        const n3=safeDigits(next.n3,3), n2=safeDigits(next.n2,2);
-        const actuals=[n2.join(''),n3.slice(1).join('')];
-        const hit=actuals.includes(pair); if(hit)hits++;
-        if(i>=Math.max(0,n-V4.RECENT_WINDOW)){recentTested++;if(hit)recentHits++;}
-      }
-      if(tested>=V4.MIN_PAIR_TESTS){
-        const rate=pct(hits,tested), recentRate=pct(recentHits,recentTested);
-        const ci=wilson(hits,tested);
-        const pairScore=Number((rate*.65+recentRate*.20+Math.min(100,tested)/100*15).toFixed(3));
-        results.push({pair:String(main)+String(target),score:pairScore,hitRate:rate,hits,tested,recentRate,confidenceLow:ci.low,confidenceHigh:ci.high,
-          color:'default'});
+  function resolveLotteryIdentity(inputName){
+    const raw=clean(dateSuffixRemoved(inputName));
+    const k=normalizeKey(raw);
+    for(const id of Object.keys(registry)){
+      const r=registry[id];
+      const aliases=[r.displayName,...(r.inputAliases||[])];
+      for(const alias of aliases){
+        if(normalizeKey(alias)===k)return{lotteryId:id,displayName:r.displayName,rawName:clean(inputName)};
       }
     }
-    results.sort((a,b)=>b.score-a.score||b.hitRate-a.hitRate||b.tested-a.tested||a.pair.localeCompare(b.pair));
-    results.slice(0,3).forEach((x,i)=>x.color=i===0?'gold':i===1?'silver':i===2?'rose_gold':'default');
-    return results.slice(0,5);
-  };
-
-  /* Landmark = unified evidence score, persistent champion/challenger, not raw hit-rate leader. */
-  updateLandmarkForLottery = function(lotteryName,recs,audit,incomingCount){
-    const key=canonicalLottery(lotteryName), old=getLandmark(key);
-    if(!Array.isArray(recs)||recs.length<V4.MIN_LANDMARK_SAMPLES||!audit)return old;
-    const all=buildAllFormulas(), candidates=[];
-    Object.keys(audit).forEach(name=>{
-      const a=audit[name]; if(!a||a.totalTested<V4.MIN_LANDMARK_SAMPLES-1)return;
-      const fn=all[name]; if(typeof fn!=='function')return;
-      const groups={};groups[key]=recs;
-      const stats=evaluateCandidateAcrossGroups(fn,groups);
-      const recent=auditRange(fn,recs,Math.max(0,recs.length-1-V4.RECENT_WINDOW),recs.length-1);
-      const score=Number((stats.validationRate*.40+stats.recentRate*.10+stats.walkForwardRate*.20+
-        Math.max(0,stats.baselineLift)*.15+(100-stats.stability)*.10+stats.exactPairRate*.05).toFixed(3));
-      candidates.push({formula:name,score,hits:a.hits,misses:a.misses,maxMissStreak:a.maxMissStreak,maxStreak:a.maxStreak,samples:a.totalTested,
-        validationRate:stats.validationRate,recentRate:stats.recentRate,walkForwardRate:stats.walkForwardRate,stability:stats.stability,
-        exactPairRate:stats.exactPairRate,confidenceLow:stats.confidenceLow,confidenceHigh:stats.confidenceHigh,updatedAt:Date.now()});
+    /* Conservative normalization for minor spacing/prefix differences. */
+    let compact=k.replace(/^หุ้น/,'');
+    const candidates=[];
+    Object.keys(registry).forEach(id=>{
+      const r=registry[id];
+      [...(r.inputAliases||[]),r.displayName].forEach(alias=>{
+        let ak=normalizeKey(alias).replace(/^หุ้น/,'');
+        if(ak===compact||ak.replace(/ปกติ/g,'')===compact.replace(/ปกติ/g,''))candidates.push(r);
+      });
     });
-    candidates.sort((a,b)=>b.score-a.score||b.validationRate-a.validationRate||b.exactPairRate-a.exactPairRate||b.samples-a.samples||a.formula.localeCompare(b.formula,'th'));
-    const challenger=candidates[0]; if(!challenger)return old;
-    /* Existing champion remains unless the challenger has enough new evidence
-       and is genuinely stronger. This prevents one small update from flipping it. */
-    if(old){
-      const oldScore=Number(old.score)||0;
-      const oldCI=Number(old.confidenceLow)||0;
-      const newCI=Number(challenger.confidenceLow)||0;
-      const sufficient=challenger.samples>=V4.MIN_LANDMARK_SAMPLES-1;
-      const stronger=challenger.score>=oldScore+1.0 && challenger.validationRate>=old.validationRate-0.25;
-      if(!(sufficient&&stronger)) return old;
-    }
-    const store=loadLandmarks(); store[key]=challenger; saveLandmarks(store); return challenger;
-  };
+    if(candidates.length===1)return{lotteryId:candidates[0].lotteryId,displayName:candidates[0].displayName,rawName:clean(inputName)};
 
-  buildLandmarkAndRecommendationHTML = function(auditDataMap){
-    const store=loadLandmarks(), names=Object.keys(auditDataMap||{}); let h='<div class="section-title">🏆 Landmark สูตรที่แข็งแรงที่สุดรายหวย</div>'; let shown=0;
-    names.forEach(name=>{
-      const key=canonicalLottery(name),lm=store[key]||getLandmark(name); if(!lm)return; shown++;
-      const a=(auditDataMap[name]||{})[lm.formula]||{};
-      const status=a.lastHit===true?'🟢 เข้า':a.lastHit===false?'🔴 หลุด':'⚠️ เตือน';
-      h+=`<div class="summary-table-container"><h3 style="color:#806329;font-size:.75rem;margin:0 0 8px;">${esc(getLotteryFlag(name))} ${esc(name)}</h3><div class="landmark-single"><div><b>🏆 Landmark Champion</b><div style="font-size:1rem;font-weight:900;margin-top:4px;">${esc(lm.formula)}</div></div><div class="landmark-meta"><span>Score ${Number(lm.score||0).toFixed(2)}</span><span>Validation ${Number(lm.validationRate||0).toFixed(2)}%</span><span>Walk-forward ${Number(lm.walkForwardRate||0).toFixed(2)}%</span><span>CI ${Number(lm.confidenceLow||0).toFixed(1)}–${Number(lm.confidenceHigh||0).toFixed(1)}%</span><span>${status}</span><span>หลักฐาน ${lm.samples||0} งวด</span></div><button class="add-landmark-card" data-add-landmark="${esc(name)}" onclick="window.__addLandmarkCardNow(this.getAttribute('data-add-landmark'));return false;">＋ เพิ่มการ์ดสูตร Landmark</button></div></div>`;
-    });
-    if(!shown)h+='<div class="summary-table-container" style="font-size:.55rem;color:var(--muted);">ยังไม่มี Landmark ที่ผ่านเกณฑ์หลักฐาน — ต้องมีข้อมูลอย่างน้อย 26 งวด</div>';
-    return h;
-  };
+    /* Unknown legacy types receive a deterministic private ID; they never collide with named IDs. */
+    const id=stableIdFromName(raw);
+    if(!registry[id])registry[id]={lotteryId:id,displayName:raw,inputAliases:[raw],legacy:true};
+    else if(!(registry[id].inputAliases||[]).includes(raw))registry[id].inputAliases.push(raw);
+    writeJSON(V5.REGISTRY_KEY,registry);
+    return{lotteryId:id,displayName:registry[id].displayName,rawName:clean(inputName)};
+  }
 
-  /* Canonical identity for storage dedupe without changing displayed names. */
-  function canonicalizeStoredRecords(records){
+  function recordKey(r){return `${r.lotteryId||resolveLotteryIdentity(r.rawName||r.name).lotteryId}|${clean(r.date||'')}`;}
+  function canonicalizeRecord(r){
+    if(!r)return null;
+    const ident=resolveLotteryIdentity(r.rawName||r.name||r.displayName||'');
+    const status=r.status==='NO_RESULT'||clean(r.n3)==='งดออกผล'||clean(r.n2)==='งดออกผล'?'NO_RESULT':'OK';
+    const n3=status==='NO_RESULT'?null:String(r.n3||'').padStart(3,'0').slice(-3);
+    const n2=status==='NO_RESULT'?null:String(r.n2||'').padStart(2,'0').slice(-2);
+    return {rawName:clean(r.rawName||r.name||''),lotteryId:ident.lotteryId,displayName:ident.displayName,date:clean(r.date||''),n3,n2,status,timestamp:safeNum(r.timestamp,typeof parseThaiDate==='function'?parseThaiDate(r.date):0),schemaVersion:V5.SCHEMA_VERSION};
+  }
+  function loadHistory(){
+    const raw=readJSON(STORAGE_KEY,[]);
+    const arr=Array.isArray(raw)?raw:[];
     const map=new Map();
-    (Array.isArray(records)?records:[]).forEach(r=>{
-      if(!r)return; const key=canonicalLottery(r.name)+'|'+String(r.date||r.timestamp||'');
-      map.set(key,r);
-    });
-    return Array.from(map.values()).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+    arr.forEach(r=>{const c=canonicalizeRecord(r);if(c)map.set(recordKey(c),c);});
+    return Array.from(map.values()).sort((a,b)=>safeNum(a.timestamp)-safeNum(b.timestamp));
   }
-  window.__canonicalizeStoredRecords=canonicalizeStoredRecords;
+  function saveHistory(arr){return writeJSON(STORAGE_KEY,arr.map(canonicalizeRecord).filter(Boolean));}
 
-  /* Load selected recommendation cards after refresh, even when Formula Lab has not run. */
-  __appendSelectedRecommendationCards = function(){
-    const result=$('result'); if(!result)return;
-    let groups=__formulaLabGroups||{};
-    if(!Object.keys(groups).length){
-      try{
-        const raw=localStorage.getItem(STORAGE_KEY),records=raw?JSON.parse(raw):[]; groups={};
-        (Array.isArray(records)?records:[]).forEach(r=>{const key=r.name;if(!groups[key])groups[key]=[];groups[key].push(r);});
-        Object.keys(groups).forEach(k=>groups[k].sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)));
-        __formulaLabGroups=groups;
-      }catch(e){groups={};}
+  /* Migrate old Landmark records before changing the lookup key. */
+  function migrateLegacyLandmarks(){
+    const old=readJSON(LANDMARK_STORAGE_KEY,{});
+    const current=readJSON(LANDMARK_STORAGE_KEY,{});
+    let changed=false;
+    if(old&&typeof old==='object'){
+      Object.keys(old).forEach(key=>{
+        if(registry[key])return;
+        const id=resolveLotteryIdentity(key).lotteryId;
+        if(!current[id]){current[id]={...old[key],lotteryId:id,displayName:registry[id]?.displayName||key,migratedFrom:key};changed=true;}
+      });
     }
-    const selected=__loadSelectedRecommendations(); if(!selected.length)return;
-    const old=result.querySelector('#selectedRecommendationCards');if(old)old.remove();
-    const latest={};Object.keys(groups).forEach(n=>{if(groups[n].length)latest[n]=groups[n][groups[n].length-1];});
-    let html='<div id="selectedRecommendationCards" class="selected-recommendation-wrap"><div class="section-title">🧬 การ์ดสูตรแนะนำที่เลือก <span style="font-size:.55rem;color:var(--muted);">(Pair backtest จริง)</span></div>';
-    let count=0; selected.forEach(c=>Object.keys(latest).forEach(name=>{html+=__recommendCardForLottery(name,latest[name],c,count++,groups);})); html+='</div>'; result.insertAdjacentHTML('beforeend',html);
+    if(changed)writeJSON(LANDMARK_STORAGE_KEY,current);
+  }
+  migrateLegacyLandmarks();
+
+  /* Canonical functions used by all downstream Landmark code. */
+  normalizeLotteryName=function(name){return resolveLotteryIdentity(name).lotteryId;};
+  function getDisplayName(id){return registry[id]?.displayName||id;}
+  function getIdentity(idOrName){
+    if(registry[idOrName])return{lotteryId:idOrName,displayName:registry[idOrName].displayName,rawName:idOrName};
+    return resolveLotteryIdentity(idOrName);
+  }
+
+  /* Strict parser: raw input survives, dates never become lottery identity, and NO_RESULT is not numeric. */
+  parseInput=function(text){
+    const raw=String(text||'').replace(/\r/g,'').trim();
+    if(!raw)return{records:[],errors:[],warnings:[]};
+    const lines=raw.split('\n').map(clean).filter(Boolean);
+    const records=[],errors=[],warnings=[];
+    let i=0;
+    while(i<lines.length){
+      const header=lines[i].match(/^(.+?)\s*[|｜]\s*(.+?)$/);
+      if(!header){errors.push(`บรรทัดที่ ${i+1}: ต้องใช้รูปแบบ ชื่อหวย | วันที่`);i++;continue;}
+      const rawName=clean(header[1]);
+      const date=clean(header[2]);
+      if(i+2>=lines.length){errors.push(`${rawName} | ${date}: ข้อมูลผลรางวัลไม่ครบ`);break;}
+      const n3=clean(lines[i+1]),n2=clean(lines[i+2]);
+      const ident=resolveLotteryIdentity(rawName);
+      const noResult=/^งดออกผล$/i.test(n3)&&/^งดออกผล$/i.test(n2);
+      const partialNoResult=/งดออกผล/i.test(n3)||/งดออกผล/i.test(n2);
+      const ts=typeof parseThaiDate==='function'?parseThaiDate(date):0;
+      if(!ts){errors.push(`${rawName} | ${date}: วันที่ไม่ถูกต้อง`);i+=3;continue;}
+      if(noResult){
+        records.push({rawName,lotteryId:ident.lotteryId,displayName:ident.displayName,date,n3:null,n2:null,status:'NO_RESULT',timestamp:ts,schemaVersion:V5.SCHEMA_VERSION});
+      }else if(partialNoResult){
+        errors.push(`${rawName} | ${date}: งดออกผลต้องระบุทั้งเลข 3 ตัวและ 2 ตัวเป็น “งดออกผล”`);
+      }else if(/^\d{3}$/.test(n3)&&/^\d{2}$/.test(n2)){
+        records.push({rawName,lotteryId:ident.lotteryId,displayName:ident.displayName,date,n3,n2,status:'OK',timestamp:ts,schemaVersion:V5.SCHEMA_VERSION});
+      }else{
+        errors.push(`${rawName} | ${date}: เลขต้องเป็น 3 ตัวบนและ 2 ตัวล่าง หรือ “งดออกผล”`);
+      }
+      i+=3;
+    }
+    return{records,errors,warnings};
   };
 
-  /* More transparent recommendation card ranking. */
-  finishFormulaLab = function(results){
-    const status=$('autoFormulaStatus'),list=$('recommendList'),groups=__formulaLabGroups||{},all=__formulaLabAllFormulas||buildAllFormulas();
-    const enriched=(results||[]).map(item=>{
-      const fn=modelToFunction(item.m1,item.m2), stats=evaluateCandidateAcrossGroups(fn,groups), temporal=__temporalFormulaStats(fn,groups);
-      const baseFn=all[item.source],baseStats=typeof baseFn==='function'?evaluateCandidateAcrossGroups(baseFn,groups):null;
-      const improvement=Number((stats.validationRate-(baseStats?baseStats.validationRate:0)).toFixed(2));
-      const finalRankScore=Number((stats.score + temporal.rate*.20 - temporal.std*.10).toFixed(3));
-      return {...item,stats:{...stats,walkForwardRate:temporal.rate},temporal,baseStats,improvement,finalRankScore};
+  function groupHistory(history){
+    const g={};
+    history.forEach(r=>{if(!g[r.lotteryId])g[r.lotteryId]=[];g[r.lotteryId].push(r);});
+    Object.keys(g).forEach(id=>g[id].sort((a,b)=>safeNum(a.timestamp)-safeNum(b.timestamp)));
+    return g;
+  }
+  function numericRecords(recs){return (recs||[]).filter(r=>r&&r.status!=='NO_RESULT'&&/^\d{3}$/.test(String(r.n3||''))&&/^\d{2}$/.test(String(r.n2||'')));}
+
+  /* =========================================================
+     Formula Recommendation backend — per Lottery ID
+  ========================================================= */
+  function formulaStatsForLottery(fn,recs){
+    const n=recs.length-1;
+    if(n<=0)return null;
+    const valSize=Math.max(V5.MIN_VALIDATION,Math.floor(n*.30));
+    const trainEnd=Math.max(1,n-valSize);
+    const val=auditFormulaOnRecords(fn,recs,trainEnd,n);
+    const overall=auditFormulaOnRecords(fn,recs,0,n);
+    const recent=auditFormulaOnRecords(fn,recs,Math.max(0,n-V5.RECENT_WINDOW),n);
+    const folds=[];
+    const warm=Math.max(2,Math.floor(n*.2));
+    const remaining=Math.max(1,n-warm);
+    const foldCount=Math.min(4,Math.max(2,Math.floor(n/6)));
+    const block=Math.max(1,Math.floor(remaining/foldCount));
+    for(let f=0;f<foldCount;f++){
+      const s=warm+f*block,e=f===foldCount-1?n:Math.min(n,s+block);
+      if(s<e){const x=auditFormulaOnRecords(fn,recs,s,e);if(x.totalTested)folds.push(x.hitRate);}
+    }
+    const wf=folds.length?pct(folds.reduce((a,r,i)=>a+(numericRecords(recs).length?0:0),0),1):0;
+    /* Recompute walk-forward as pooled hits/tests to avoid averaging tiny folds. */
+    let wfHits=0,wfTests=0;
+    for(let f=0;f<foldCount;f++){
+      const s=warm+f*block,e=f===foldCount-1?n:Math.min(n,s+block);
+      if(s<e){const x=auditFormulaOnRecords(fn,recs,s,e);wfHits+=x.hits;wfTests+=x.totalTested;}
+    }
+    const walkForwardRate=pct(wfHits,wfTests),stability=Number(std(folds).toFixed(2));
+    const baseline=59.04;
+    const baselineLift=Number((val.hitRate-baseline).toFixed(2));
+    const stabilityScore=Math.max(0,100-Math.min(50,stability)*2);
+    const evidence=Math.min(1,Math.log10(val.totalTested+1)/3);
+    const score=Number((val.hitRate*.35+overall.hitRate*.15+recent.hitRate*.10+walkForwardRate*.20+stabilityScore*.10+Math.max(-100,baselineLift)*.10+(evidence-.5)*4).toFixed(3));
+    return {
+      overallRate:overall.hitRate,validationRate:val.hitRate,recentRate:recent.hitRate,
+      walkForwardRate,walkForwardStd:stability,stability,score,
+      totalTested:overall.totalTested,hits:overall.hits,validationTested:val.totalTested,validationHits:val.hits,
+      exactPairRate:val.exactPairRate||0,positionRate:val.positionRate||0,baselineLift,
+      confidenceLow:val.confidenceLow||wilson(val.hits,val.totalTested).low,
+      confidenceHigh:val.confidenceHigh||wilson(val.hits,val.totalTested).high,
+      samples:overall.totalTested
+    };
+  }
+
+  function candidateEvidence(id,recs){
+    const all=buildAllFormulas();
+    const out=[];
+    Object.keys(all).forEach(formula=>{
+      const fn=all[formula];
+      if(typeof fn!=='function')return;
+      /* Auto-generated formulas remain stored but are not recursively used as recommendation bases. */
+      const custom=loadCustomFormulas().find(x=>x.name===formula);
+      if(custom&&custom.autoGenerated)return;
+      try{const s=formulaStatsForLottery(fn,recs);if(s&&s.validationTested>=Math.min(V5.MIN_VALIDATION,Math.max(1,recs.length-1)))out.push({formula,...s});}catch(e){console.warn('Formula evidence error',formula,e);}
     });
-    const qualified=enriched.filter(x=>x.stats.validationTested>=V4.MIN_VALIDATION_SAMPLES&&x.temporal.tested>=V4.MIN_VALIDATION_SAMPLES)
-      .sort((a,b)=>b.finalRankScore-a.finalRankScore||b.stats.validationRate-a.stats.validationRate||b.stats.exactPairRate-a.stats.exactPairRate||b.stats.validationTested-a.stats.validationTested||modelSignature(a.m1,a.m2).localeCompare(modelSignature(b.m1,b.m2)));
-    const finalList=[],seen=new Set();qualified.forEach(x=>{const sig=modelSignature(x.m1,x.m2);if(!seen.has(sig)&&finalList.length<V4.RECOMMEND_LIMIT){seen.add(sig);finalList.push(x);}});
-    if(!finalList.length){status.textContent=`ตรวจแล้ว ${(results||[]).length} Candidate — ยังไม่มีสูตรที่มีหลักฐาน Validation เพียงพอ`;list.innerHTML='';return;}
-    status.textContent=`✓ ตรวจสอบ ${(results||[]).length} Candidate — คัด ${finalList.length} สูตรด้วยคะแนน Unified Evidence Score`;
-    list.innerHTML=finalList.map((item,index)=>{
-      const d1=formatLinearExpression(item.m1),d2=formatLinearExpression(item.m2),v=item.stats.validationRate,base=item.baseStats?item.baseStats.validationRate:0;
-      const previewLottery=Object.keys(groups)[0]; let preview='';
-      if(previewLottery&&groups[previewLottery]?.length){try{const latest=groups[previewLottery][groups[previewLottery].length-1],top=safeDigits(latest.n3,3),bot=safeDigits(latest.n2,2),ds=sanitizeFormulaResult(modelToFunction(item.m1,item.m2)(top[0],top[1],top[2],bot[0],bot[1]));const p=__advancedPairEngine(ds[0],ds[1],groups[previewLottery],modelToFunction(item.m1,item.m2)).concat(__advancedPairEngine(ds[1],ds[0],groups[previewLottery],modelToFunction(item.m1,item.m2)));preview=`<div class="recommend-preview"><div><span>Preview หวย</span><strong>${esc(previewLottery)}</strong></div><div><span>เลขเด่น</span><strong>${ds[0]} / ${ds[1]}</strong></div><div><span>เลขเจาะจาก backtest</span><strong>${p.map(x=>x.pair).join(' ')||'หลักฐานไม่พอ'}</strong></div></div>`;}catch(e){}}
-      const payload=encodeURIComponent(JSON.stringify({source:item.source,d1,d2,m1:item.m1,m2:item.m2,overallRate:item.stats.overallRate,validationRate:item.stats.validationRate,recentRate:item.stats.recentRate,improvement:item.improvement,finalRankScore:item.finalRankScore,walkForwardRate:item.temporal.rate,baselineLift:item.stats.baselineLift}));
-      const ci=`${item.stats.confidenceLow}–${item.stats.confidenceHigh}%`;
-      return `<div class="recommend-card recommend-card-v323"><div class="recommend-rank">#${index+1}</div><div class="recommend-main"><div class="recommend-name">${index===0?'🏆 ':''}สูตรแนะนำอันดับ ${index+1}</div><div class="recommend-source">ต่อยอดจาก: ${esc(item.source)}</div><div class="recommend-expression">d1 = ${esc(d1)}<br>d2 = ${esc(d2)}</div><div class="recommend-stats"><span class="stat-chip ${v>=60?'good':'warn'}">Validation ${v}%</span><span class="stat-chip">Exact Pair ${item.stats.exactPairRate}%</span><span class="stat-chip">Walk-forward ${item.temporal.rate}%</span><span class="stat-chip">Baseline Lift ${item.stats.baselineLift}%</span><span class="stat-chip">CI ${ci}</span><span class="stat-chip">Unified Score ${item.finalRankScore}</span></div>${preview}</div><button class="add-recommend" data-add-recommend="${payload}">＋ เพิ่มเป็นสูตรทดลอง</button></div>`;
-    }).join('');
-    list.querySelectorAll('[data-add-recommend]').forEach(btn=>btn.onclick=function(){try{addRecommendedFormula(JSON.parse(decodeURIComponent(btn.dataset.addRecommend)));}catch(e){showToast('❌ ไม่สามารถบันทึกสูตรแนะนำได้');}});
-  };
+    return out.sort((a,b)=>b.score-a.score||b.validationRate-a.validationRate||b.exactPairRate-a.exactPairRate||b.samples-a.samples||a.formula.localeCompare(b.formula,'th'));
+  }
 
-  /* Add a selected formula as experimental only; it never re-enters Auto Lab as a base. */
-  addRecommendedFormula = function(data){
-    const arr=loadCustomFormulas();let counter=1,name=`AUTO Formula #${counter}`;
-    while(arr.some(x=>x.name===name)||Object.prototype.hasOwnProperty.call(formulas,name)){counter++;name=`AUTO Formula #${counter}`;}
-    arr.push({id:'auto_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name,d1:data.d1,d2:data.d2,source:data.source,autoGenerated:true,experimental:true,
-      validationRate:data.validationRate,overallRate:data.overallRate,recentRate:data.recentRate,improvement:data.improvement,finalRankScore:data.finalRankScore,createdAt:Date.now()});
-    if(!saveCustomFormulas(arr)){showToast('❌ บันทึกสูตรแนะนำไม่สำเร็จ');return;}
-    const selected=__loadSelectedRecommendations(),sig=modelSignature(data.m1,data.m2);
-    if(!selected.some(x=>x.m1&&x.m2&&modelSignature(x.m1,x.m2)===sig)){selected.push({source:data.source,m1:data.m1,m2:data.m2,validationRate:data.validationRate,improvement:data.improvement,finalRankScore:data.finalRankScore,selectedAt:Date.now()});__saveSelectedRecommendations(selected);}
-    renderCustomFormulaList();__appendSelectedRecommendationCards();showToast('✓ เพิ่มเป็นสูตรทดลองและสร้างการ์ดแล้ว');
-  };
+  function recommendationStore(){const x=readJSON(V5.RECOMMENDATION_KEY,{});return x&&typeof x==='object'?x:{};}
+  function formulaHistoryStore(){const x=readJSON(V5.FORMULA_HISTORY_KEY,{});return x&&typeof x==='object'?x:{};}
+  function calibrationHistoryStore(){const x=readJSON(V5.CALIBRATION_HISTORY_KEY,{});return x&&typeof x==='object'?x:{};}
+  function updateRecommendationForLottery(id,recs,reason){
+    if(recs.length<2)return null;
+    const ranked=candidateEvidence(id,recs);
+    if(!ranked.length)return null;
+    const top=ranked.slice(0,5).map(x=>({...x,lotteryId:id,displayName:getDisplayName(id),updatedAt:now()}));
+    const store=recommendationStore();store[id]={lotteryId:id,displayName:getDisplayName(id),top,selected:store[id]?.selected||top[0],updatedAt:now(),reason:reason||'MONITORING'};writeJSON(V5.RECOMMENDATION_KEY,store);
+    const fh=formulaHistoryStore();if(!fh[id])fh[id]=[];fh[id].push({timestamp:now(),reason:reason||'MONITORING',top:top.map(x=>({formula:x.formula,score:x.score,validationRate:x.validationRate,walkForwardRate:x.walkForwardRate,stability:x.stability,samples:x.samples}))});fh[id]=fh[id].slice(-100);writeJSON(V5.FORMULA_HISTORY_KEY,fh);
+    return store[id];
+  }
 
-  /* Pair cards now expose the evidence instead of pretending colors are statistical ranks. */
-  __pairCardHTML = function(mainDigit,pairsList,isFirstRow){
-    const mainBg=isFirstRow?'linear-gradient(135deg,#f9f3e3,#edd5a6)':'linear-gradient(135deg,#f3f4f6,#e5e7eb)';
-    const mainBorder=isFirstRow?'#d9bd79':'#9ca3af',mainColor=isFirstRow?'#806329':'#374151';
-    return `<div style="display:flex;align-items:flex-start;gap:10px;margin:10px 0;padding-bottom:10px;border-bottom:1px solid #f0e6d6;"><div style="width:38px;height:38px;border-radius:10px;background:${mainBg};border:1px solid ${mainBorder};color:${mainColor};display:grid;place-items:center;font-size:.85rem;font-weight:900;flex:0 0 auto;">${mainDigit}</div><div style="display:flex;gap:6px;flex-wrap:wrap;">${(pairsList||[]).map(item=>`<div title="Backtest ${item.hits}/${item.tested}, ${item.hitRate}%" style="min-width:56px;height:46px;padding:3px 5px;box-sizing:border-box;border-radius:9px;border:1px solid #e8dfcf;background:#fff;color:#403a31;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;"><b style="font-size:.62rem;">${item.pair}</b><span style="font-size:.42rem;">${item.hitRate}% · ${item.tested}t</span></div>`).join('')||'<span style="font-size:.48rem;color:var(--muted);">หลักฐานคู่ไม่พอ</span>'}</div></div>`;
-  };
+  /* =========================================================
+     Landmark — persistent champion/challenger per Lottery ID
+  ========================================================= */
+  loadLandmarks=function(){const x=readJSON(LANDMARK_STORAGE_KEY,{});return x&&typeof x==='object'?x:{};};
+  saveLandmarks=function(x){return writeJSON(LANDMARK_STORAGE_KEY,x);};
+  getLandmark=function(name){const x=loadLandmarks();const id=resolveLotteryIdentity(name).lotteryId;return x[id]||null;};
+  resolveLandmarkFormula=function(name,allFormulas){const lm=getLandmark(name);if(!lm)return null;return typeof allFormulas[lm.formula]==='function'?allFormulas[lm.formula]:null;};
 
-  __recommendCardForLottery = function(lotteryName,rec,candidate,index,groups){
-    const fn=modelToFunction(candidate.m1,candidate.m2),top=safeDigits(rec.n3,3),bot=safeDigits(rec.n2,2),digits=sanitizeFormulaResult(fn(top[0],top[1],top[2],bot[0],bot[1])),d1=digits[0],d2=digits[1];
-    const p1=__advancedPairEngine(d1,d2,groups[lotteryName]||[],fn),p2=__advancedPairEngine(d2,d1,groups[lotteryName]||[],fn); const date=getNextDateStr(rec.date),id='rec_card_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)+'_'+index;
-    const json1=JSON.stringify(p1).replace(/"/g,'&quot;'),json2=JSON.stringify(p2).replace(/"/g,'&quot;');
-    return `<div class="prediction-card recommendation-prediction-card" id="${id}" style="position:relative;"><div class="card-btn-group"><button class="card-action-btn" onclick="copyCardText('${id}','${esc(lotteryName)}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button><button class="card-action-btn" onclick="captureCardImage('${id}','${esc(lotteryName)}')">📸 แคปภาพ</button></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;"><div style="display:flex;align-items:center;gap:8px;"><div style="font-size:1.1rem;">${getLotteryFlag(lotteryName)}</div><div><div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(lotteryName)}</div><div style="font-size:.48rem;font-weight:700;color:#8b8173;">งวดถัดไป ${esc(date)}</div></div></div></div><div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;">✦ บ้านกองเงิน ✦</div>${__pairCardHTML(d1,p1,true)}${__pairCardHTML(d2,p2,false)}</div>`;
-  };
+  function shouldReplaceChampion(old,challenger){
+    if(!old)return true;
+    if(challenger.samples<Math.max(V5.MIN_CALIBRATION-1,8))return false;
+    const oldScore=safeNum(old.score), newScore=safeNum(challenger.score);
+    const oldVal=safeNum(old.validationRate), newVal=safeNum(challenger.validationRate);
+    const oldWF=safeNum(old.walkForwardRate), newWF=safeNum(challenger.walkForwardRate);
+    return newScore>=oldScore+1 && newVal>=oldVal-.25 && newWF>=oldWF-2;
+  }
+  function calibrateLottery(id,recs,reason){
+    const numeric=numericRecords(recs);
+    if(numeric.length<V5.MIN_CALIBRATION)return getLandmark(id);
+    const ranked=candidateEvidence(id,numeric);
+    if(!ranked.length)return getLandmark(id);
+    const old=getLandmark(id);
+    const challenger=ranked[0];
+    const store=loadLandmarks();
+    const event={timestamp:now(),lotteryId:id,displayName:getDisplayName(id),reason,oldChampion:old?old.formula:null,newCandidate:challenger.formula,decision:'KEEP',evidence:{oldScore:old?.score||null,newScore:challenger.score,oldValidation:old?.validationRate||null,newValidation:challenger.validationRate,oldWalkForward:old?.walkForwardRate||null,newWalkForward:challenger.walkForwardRate,samples:challenger.samples}};
+    if(!old||shouldReplaceChampion(old,challenger)){
+      if(old&&old.formula!==challenger.formula){
+        event.decision='PROMOTE';
+        challenger.previousChampion=old.formula;
+        challenger.previousChampionScore=old.score;
+        challenger.previousChampionAt=old.updatedAt;
+      }else event.decision='INITIALIZE';
+      challenger.lotteryId=id;challenger.displayName=getDisplayName(id);challenger.currentChampion=challenger.formula;challenger.previousChampion=old?.formula||null;challenger.challenger=old&&old.formula!==challenger.formula?old.formula:null;challenger.lastUpdated=now();store[id]=challenger;
+    }else{
+      event.challenger=challenger.formula;store[id]={...old,lotteryId:id,displayName:getDisplayName(id),challenger:challenger.formula,challengerEvidence:challenger,calibrationCheckedAt:now()};
+    }
+    saveLandmarks(store);
+    const ch=calibrationHistoryStore();if(!ch[id])ch[id]=[];ch[id].push(event);ch[id]=ch[id].slice(-100);writeJSON(V5.CALIBRATION_HISTORY_KEY,ch);
+    return store[id];
+  }
+  window.__v5CalibrateLottery=calibrateLottery;
 
-  /* Patch runEngine's stored-record identity after the original has completed. */
-  const __origRunEngine = runEngine;
-  runEngine = function(){
-    __origRunEngine.apply(this,arguments);
+  function monitorLottery(id,recs){
+    const lm=getLandmark(id);if(!lm||recs.length<2)return;
+    const all=buildAllFormulas();const fn=all[lm.formula];if(typeof fn!=='function')return;
+    const numeric=numericRecords(recs);if(numeric.length<2)return;
+    const recent=auditFormulaOnRecords(fn,numeric,Math.max(0,numeric.length-1-V5.RECENT_WINDOW),numeric.length-1);
+    const store=loadLandmarks();if(store[id]){
+      const ageDays=store[id].lastUpdated?Math.floor((now()-store[id].lastUpdated)/86400000):0;
+      let update={...store[id],recentRate:recent.hitRate,recentHits:recent.hits,recentTested:recent.totalTested,health:recent.hitRate>=50?'STABLE':recent.hitRate>=35?'WATCH':'DEGRADED',lastMonitoredAt:now()};
+      if(ageDays>=7)update.monitor7={checkedAt:now(),recentRate:recent.hitRate,health:update.health};
+      if(ageDays>=15){
+        const ranked=candidateEvidence(id,numeric);
+        update.reevaluation15={checkedAt:now(),top:ranked.slice(0,3).map(x=>({formula:x.formula,score:x.score,validationRate:x.validationRate,walkForwardRate:x.walkForwardRate,stability:x.stability,samples:x.samples}))};
+      }
+      store[id]=update;saveLandmarks(store);
+    }
+  }
+
+  /* Pair evidence is supporting evidence only; it never overrides the frozen formulas. */
+  function pairEvidenceFor(mainDigit,otherDigit,recs,fn){
+    const main=Number(mainDigit);const out=[];if(!Array.isArray(recs)||recs.length<2)return out;
+    const n=recs.length-1;
+    for(let target=0;target<10;target++){
+      if(target===main||target===Number(otherDigit))continue;
+      let tested=0,hits=0,recentTested=0,recentHits=0;
+      for(let i=0;i<n;i++){
+        const curr=recs[i],next=recs[i+1];const t=String(curr.n3).padStart(3,'0').split('').map(Number),b=String(curr.n2).padStart(2,'0').split('').map(Number);let ds;try{ds=sanitizeFormulaResult(fn(t[0],t[1],t[2],b[0],b[1]));}catch(e){continue;}
+        if(ds[0]!==main&&ds[1]!==main)continue;tested++;const pair=String(main)+String(target);const actual=[String(next.n2),String(next.n3).slice(1)];const hit=actual.includes(pair);if(hit)hits++;if(i>=Math.max(0,n-V5.RECENT_WINDOW)){recentTested++;if(hit)recentHits++;}
+      }
+      if(tested>=V5.MIN_PAIR_TESTS){const ci=wilson(hits,tested);out.push({pair:String(main)+String(target),tested,hits,hitRate:pct(hits,tested),recentRate:pct(recentHits,recentTested),confidenceLow:ci.low,confidenceHigh:ci.high,score:Number((pct(hits,tested)*.65+pct(recentHits,recentTested)*.2+Math.min(100,tested)/100*15).toFixed(3))});}
+    }
+    return out.sort((a,b)=>b.score-a.score||b.hitRate-a.hitRate||b.tested-a.tested||a.pair.localeCompare(b.pair)).slice(0,5);
+  }
+  function persistPairEvidence(id,recs,lm){
+    if(!lm)return;
+    const all=buildAllFormulas(),fn=all[lm.formula];if(typeof fn!=='function')return;
+    const numeric=numericRecords(recs);if(numeric.length<2)return;
+    const latest=numeric[numeric.length-1],t=latest.n3.split('').map(Number),b=latest.n2.split('').map(Number),d=sanitizeFormulaResult(fn(t[0],t[1],t[2],b[0],b[1]));
+    const store=readJSON(V5.PAIR_EVIDENCE_KEY,{});store[id]={lotteryId:id,displayName:getDisplayName(id),formula:lm.formula,d1:d[0],d2:d[1],d1Pairs:pairEvidenceFor(d[0],d[1],numeric,fn),d2Pairs:pairEvidenceFor(d[1],d[0],numeric,fn),updatedAt:now()};writeJSON(V5.PAIR_EVIDENCE_KEY,store);
+    return store[id];
+  }
+
+  function persistPrediction(id,decision){
+    const store=readJSON(V5.PREDICTION_HISTORY_KEY,{});if(!store[id])store[id]=[];store[id].push(decision);store[id]=store[id].slice(-100);writeJSON(V5.PREDICTION_HISTORY_KEY,store);
+  }
+
+  function buildDecisionObject(id,numeric,lm,rec){
+    if(!numeric.length)return null;
+    const latest=numeric[numeric.length-1];
+    const all=buildAllFormulas();
+    let selectedFormula=lm?.formula||rec?.selected?.formula||null;
+    let fn=selectedFormula&&all[selectedFormula];
+    if(typeof fn!=='function'){selectedFormula=Object.keys(all)[0]||null;fn=selectedFormula?all[selectedFormula]:null;}
+    if(typeof fn!=='function')return null;
+    const t=latest.n3.split('').map(Number),b=latest.n2.split('').map(Number);
+    let digits;
+    try{digits=sanitizeFormulaResult(fn(t[0],t[1],t[2],b[0],b[1]));}catch(e){return null;}
+    const pe=readJSON(V5.PAIR_EVIDENCE_KEY,{});const pair=pe[id]||persistPairEvidence(id,numeric,lm||{formula:selectedFormula});
+    const evidence=lm?{score:safeNum(lm.score),validationRate:safeNum(lm.validationRate),walkForwardRate:safeNum(lm.walkForwardRate),stability:safeNum(lm.stability),confidenceLow:safeNum(lm.confidenceLow),confidenceHigh:safeNum(lm.confidenceHigh),samples:safeNum(lm.samples)}:rec?.selected||{};
+    const health=lm?.health||'WATCH';
+    return {lotteryId:id,displayName:getDisplayName(id),selectedFormula,landmarkStatus:lm?(lm.challenger?'CHALLENGER WATCH':'LANDMARK'):'UNINITIALIZED',recommendedNumbers:[digits[0],digits[1]],recommendedPairs:{d1:pair?.d1Pairs||[],d2:pair?.d2Pairs||[]},evidence,stability:evidence.stability??null,updatedAt:now(),nextDate:typeof getNextDateStr==='function'?getNextDateStr(latest.date):latest.date,health,lastResultDate:latest.date};
+  }
+
+  /* =========================================================
+     Main workflow: parse -> identity -> validate -> persist ->
+     calibrate/monitor -> temporarily feed only numeric records to
+     the legacy renderer -> restore full history -> Decision Layer.
+  ========================================================= */
+  const legacyRunEngine=runEngine;
+  runEngine=function(){
+    const input=$('bulkInput');const text=input?input.value:'';const parsed=parseInput(text);
+    if(parsed.errors.length&&parsed.records.length===0){$('result').innerHTML=`<div class="errorbox"><b>ไม่สามารถประมวลผลได้</b><br>${parsed.errors.map(esc).join('<br>')}</div>`;return;}
+    let history=loadHistory();
+    const incoming=parsed.records||[];
+    const beforeById={};incoming.forEach(r=>{beforeById[r.lotteryId]=(beforeById[r.lotteryId]||0)+1;});
+    let duplicateCount=0;
+    incoming.forEach(r=>{const c=canonicalizeRecord(r);const key=recordKey(c);const idx=history.findIndex(x=>recordKey(x)===key);if(idx>=0){duplicateCount++;const old=history[idx];const same=JSON.stringify(old)===JSON.stringify(c);if(!same)history[idx]=c;}else history.push(c);});
+    history.sort((a,b)=>safeNum(a.timestamp)-safeNum(b.timestamp));
+    saveHistory(history);updateIndicator();
+    const groups=groupHistory(history);
+    Object.keys(beforeById).forEach(id=>{
+      const allForId=groups[id]||[],numeric=numericRecords(allForId),count=beforeById[id];
+      const explicitCalibration=count>=V5.MIN_CALIBRATION || (!getLandmark(id)&&numeric.length>=V5.MIN_CALIBRATION);
+      if(explicitCalibration)calibrateLottery(id,numeric,count>=V5.MIN_CALIBRATION?'FULL_CALIBRATION':'INITIAL_CALIBRATION');
+      else monitorLottery(id,allForId);
+      const lm=getLandmark(id);
+      updateRecommendationForLottery(id,numeric,explicitCalibration?'CALIBRATION':'DAILY_UPDATE');
+      persistPairEvidence(id,numeric,lm);
+    });
+
+    const numericAll=history.filter(r=>r.status==='OK');
+    const backupText=input?input.value:'';
+    /* Legacy renderer remains the source of the frozen formula calculations. */
     try{
-      const raw=localStorage.getItem(STORAGE_KEY),records=raw?JSON.parse(raw):[];
-      const canon=canonicalizeStoredRecords(records); localStorage.setItem(STORAGE_KEY,JSON.stringify(canon));
-    }catch(e){}
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(numericAll));
+      if(input)input.value='';
+      legacyRunEngine();
+    }catch(e){console.error('Legacy renderer failed',e);}
+    finally{saveHistory(history);if(input)input.value=backupText;updateIndicator();}
+
+    const decisionMap={};const recStore=recommendationStore();const lmStore=loadLandmarks();
+    Object.keys(groups).forEach(id=>{
+      const numeric=numericRecords(groups[id]);if(!numeric.length)return;
+      const decision=buildDecisionObject(id,numeric,lmStore[id],recStore[id]);
+      if(decision){decisionMap[id]=decision;persistPrediction(id,decision);}
+    });
+    window.__MESTER_DECISIONS__=decisionMap;
+    renderDecisionLayer(decisionMap,groups,duplicateCount,parsed.errors);
+    showToast(duplicateCount?`✓ บันทึกแล้ว — ข้ามข้อมูลซ้ำ ${duplicateCount} รายการ`:'✓ ประมวลผลระบบสำเร็จ');
   };
 
-  /* Add a compact evidence legend to the result without altering the original formula cards. */
-  const __origRender = renderFullUI;
-  renderFullUI = function(globalAuditMap,auditDataMap,predictionDataMap){
-    __origRender.apply(this,arguments);
-    const result=$('result'); if(!result||result.querySelector('#v4EvidenceLegend'))return;
-    const box=document.createElement('div');box.id='v4EvidenceLegend';box.className='summary-table-container';
-    box.innerHTML='<div style="font-weight:900;font-size:.68rem;margin-bottom:6px;">📊 มาตรฐานการวัด V4</div><div style="display:flex;gap:6px;flex-wrap:wrap;font-size:.5rem;color:var(--muted);"><span>Hit = มีเลขตรงในตำแหน่งที่ใช้วัด</span><span>Exact Pair = ตรง 2 ตัวเต็ม</span><span>CI = Wilson 95%</span><span>Baseline = 59.04% สำหรับ metric แบบ digit-anywhere</span><span>Pair = backtest จริง ไม่ใช่ลำดับเลข</span></div>';
-    result.insertBefore(box,result.firstChild);
+  function pairText(list){return (list||[]).map(x=>`${x.pair} (${x.hits}/${x.tested}, ${x.hitRate}%)`).join(' · ')||'หลักฐานคู่ไม่พอ';}
+  function renderDecisionLayer(decisions,groups,duplicateCount,errors){
+    const result=$('result');if(!result)return;
+    result.querySelectorAll('.prediction-card').forEach(el=>el.classList.add('v5-legacy-hidden'));
+    result.querySelectorAll('.selected-recommendation-wrap').forEach(el=>el.classList.add('v5-advanced-hidden'));
+    const old=result.querySelector('#v5DecisionLayer');if(old)old.remove();
+    const box=document.createElement('div');box.id='v5DecisionLayer';
+    let html='<div class="section-title">🎯 Decision Layer — ผลลัพธ์พร้อมใช้งาน</div>';
+    const ids=Object.keys(decisions);
+    if(!ids.length)html+='<div class="errorbox">ยังไม่มีข้อมูลตัวเลขที่ใช้สร้างคำแนะนำได้</div>';
+    ids.forEach(id=>{
+      const d=decisions[id],p=d.recommendedPairs||{};
+      const ev=d.evidence||{};
+      const status=d.landmarkStatus==='LANDMARK'?'LANDMARK':d.landmarkStatus==='CHALLENGER WATCH'?'WATCH':'UNINITIALIZED';
+      html+=`<article class="v5-decision-card"><div class="v5-card-head"><div><div class="v5-lottery">${esc(getLotteryFlag(d.displayName))} ${esc(d.displayName)}</div><div class="v5-sub">งวดถัดไป ${esc(d.nextDate||'-')} · ID ${esc(d.lotteryId)}</div></div><span class="v5-status">${esc(status)}</span></div><div class="v5-formula"><span>สูตรที่ระบบเลือก</span><b>${esc(d.selectedFormula||'-')}</b></div><div class="v5-numbers"><div><small>เลขเด่น</small><strong>${String(d.recommendedNumbers[0])} / ${String(d.recommendedNumbers[1])}</strong></div><div><small>ความมั่นคง</small><strong>${ev.stability==null?'-':ev.stability}</strong></div><div><small>Evidence</small><strong>${ev.score==null?'-':ev.score}</strong></div></div><div class="v5-pairs"><div><b>${d.recommendedNumbers[0]}</b><span>${esc(pairText(p.d1))}</span></div><div><b>${d.recommendedNumbers[1]}</b><span>${esc(pairText(p.d2))}</span></div></div><div class="v5-evidence"><span>Validation ${safeNum(ev.validationRate)}%</span><span>Walk-forward ${safeNum(ev.walkForwardRate)}%</span><span>CI ${safeNum(ev.confidenceLow)}–${safeNum(ev.confidenceHigh)}%</span><span>Samples ${safeNum(ev.samples)}</span><span>Health ${esc(d.health||'WATCH')}</span></div><div class="v5-foot">อัปเดต ${new Date(d.updatedAt).toLocaleString('th-TH')}</div></article>`;
+    });
+    if(duplicateCount||errors?.length)html+=`<div class="summary-table-container v5-quality"><b>Data Quality</b><div>ข้ามข้อมูลซ้ำ: ${duplicateCount} รายการ · ข้อผิดพลาด: ${(errors||[]).length}</div>${(errors||[]).length?'<div>'+errors.map(esc).join('<br>')+'</div>':''}</div>`;
+    box.innerHTML=html;result.insertBefore(box,result.firstChild);
+    renderAdvancedPanel(result,groups);
+  }
+
+  function renderAdvancedPanel(result,groups){
+    const old=result.querySelector('#v5AdvancedPanel');if(old)old.remove();
+    const lm=loadLandmarks(),rec=recommendationStore(),fh=formulaHistoryStore(),ch=calibrationHistoryStore();
+    const ids=Object.keys(groups);
+    const details=document.createElement('details');details.id='v5AdvancedPanel';details.className='v5-advanced';
+    let html='<summary>⚙ Advanced / Audit — Landmark · Formula Recommendation · Calibration · Data Quality</summary><div class="v5-advanced-grid">';
+    ids.forEach(id=>{
+      const x=lm[id],r=rec[id],history=groups[id]||[];
+      const last=x?.lastUpdated||r?.updatedAt||0;
+      html+=`<div class="v5-audit-box"><h4>${esc(getDisplayName(id))}</h4><div class="v5-meta-line"><span>ID: ${esc(id)}</span><span>History: ${history.length}</span><span>Updated: ${last?new Date(last).toLocaleString('th-TH'):'-'}</span></div><div><b>Champion:</b> ${esc(x?.formula||'-')}</div><div><b>Challenger:</b> ${esc(x?.challenger||'-')}</div><div><b>Recommendation:</b> ${esc(r?.selected?.formula||r?.top?.[0]?.formula||'-')}</div><div><b>Calibration events:</b> ${(ch[id]||[]).length}</div><div><b>Formula history:</b> ${(fh[id]||[]).length}</div></div>`;
+    });
+    html+='</div><div class="v5-advanced-note">Identity ใช้ Lottery ID เป็น primary key · Raw Input ถูกเก็บแยก · งดออกผลไม่ถูกใช้เป็นตัวเลข · Historical archive ไม่ถูกตัดทิ้ง</div>';
+    details.innerHTML=html;result.appendChild(details);
+  }
+
+  /* Persistence migration / indicator / export compatibility. */
+  updateIndicator=function(){try{$('recordCountIndicator').textContent=`สะสมในระบบ: ${loadHistory().length} งวด`; }catch(e){$('recordCountIndicator').textContent='สะสมในระบบ: 0 งวด';}};
+
+  /* Main UI: remove manual recommendation/Landmark actions from normal workflow, keep engines stored. */
+  function v5DomInit(){
+    const style=document.createElement('style');style.id='v5-upgrade-style';style.textContent=`
+      .v5-legacy-hidden{display:none!important}.v5-advanced-hidden{display:none!important}
+      #v5DecisionLayer{margin-top:4px}.v5-decision-card{background:#fffdf9;border:1px solid rgba(184,148,74,.28);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 10px 28px rgba(73,54,29,.06)}
+      .v5-card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.v5-lottery{font-size:.82rem;font-weight:900;color:#403a31}.v5-sub{font-size:.43rem;color:#8b8173;margin-top:4px}.v5-status{padding:5px 9px;border-radius:999px;background:#faf6ed;border:1px solid #e3d7c2;color:#806329;font-size:.43rem;font-weight:900}
+      .v5-formula{margin-top:12px;padding:10px;border-radius:11px;background:#fcfaf6;border:1px solid #eee5d6;display:flex;justify-content:space-between;gap:10px;font-size:.48rem}.v5-formula span,.v5-numbers small{color:#8b8173}.v5-formula b{font-family:'IBM Plex Mono',monospace;font-size:.52rem}
+      .v5-numbers{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px;margin-top:9px}.v5-numbers>div{padding:10px;border:1px solid #eee5d6;border-radius:11px;background:#fff}.v5-numbers small{display:block;font-size:.4rem}.v5-numbers strong{display:block;margin-top:4px;font-family:'IBM Plex Mono',monospace;color:#806329;font-size:.7rem}
+      .v5-pairs{margin-top:9px;display:grid;gap:6px}.v5-pairs>div{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid #eee5d6;border-radius:10px}.v5-pairs b{min-width:28px;height:28px;border-radius:8px;background:#faf6ed;display:grid;place-items:center;color:#806329}.v5-pairs span{font-family:'IBM Plex Mono',monospace;font-size:.42rem;line-height:1.7}.v5-evidence{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.v5-evidence span{padding:4px 6px;border-radius:7px;background:#faf6ed;border:1px solid #e3d7c2;font-size:.38rem;color:#806329}.v5-foot{margin-top:8px;font-size:.39rem;color:#8b8173;text-align:right}
+      .v5-advanced{margin-top:14px;border:1px solid #e3d7c2;border-radius:16px;background:#fffdf9;padding:11px}.v5-advanced summary{cursor:pointer;font-size:.54rem;font-weight:900;color:#806329}.v5-advanced-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.v5-audit-box{border:1px solid #eee5d6;border-radius:11px;padding:10px;background:#fff;font-size:.45rem;line-height:1.7}.v5-audit-box h4{margin:0 0 4px;font-size:.55rem;color:#806329}.v5-meta-line{display:flex;flex-wrap:wrap;gap:5px;color:#8b8173}.v5-advanced-note{margin-top:10px;padding:9px;border-radius:10px;background:#faf6ed;color:#8b8173;font-size:.42rem;line-height:1.6}.v5-quality{font-size:.46rem;line-height:1.7}
+      #runFormulaLab,.add-recommend,.add-landmark-card,.clear-recommend,.clear-landmark{display:none!important}
+      @media(max-width:760px){.v5-numbers{grid-template-columns:1fr}.v5-advanced-grid{grid-template-columns:1fr}.v5-card-head{flex-direction:column}.v5-status{align-self:flex-start}}
+    `;document.head.appendChild(style);
+    const title=document.querySelector('.auto-title');if(title)title.textContent='✦ Formula Recommendation — Backend Intelligence';
+    const note=document.querySelector('.auto-note');if(note)note.textContent='ระบบยังเก็บ Formula Recommendation และประวัติไว้หลังบ้าน ไม่ต้องกดเพิ่มด้วยมือใน Workflow ปกติ';
+    const hero=document.querySelector('.hero p');if(hero)hero.textContent='ระบบรับชื่อหวยตามข้อมูลจริง แยก Lottery ID อัตโนมัติ เก็บ Raw Input และประวัติถาวร ใช้ Landmark/Formula Recommendation รายหวย และส่งผลรวมผ่าน Decision Layer โดยไม่แก้ Frozen Formula';
+  }
+
+  /* Prevent the legacy auto-lab button from being required; backend recommendation runs during Process. */
+  const oldAuto=runAutoFormulaLab;
+  runAutoFormulaLab=function(){
+    try{
+      const history=loadHistory(),groups=groupHistory(history);
+      Object.keys(groups).forEach(id=>updateRecommendationForLottery(id,numericRecords(groups[id]),'MANUAL_ADVANCED'));
+      showToast('✓ อัปเดต Formula Recommendation หลังบ้านแล้ว');
+      if(window.__MESTER_DECISIONS__)renderDecisionLayer(window.__MESTER_DECISIONS__,groups,0,[]);
+    }catch(e){console.error(e);if(typeof oldAuto==='function')oldAuto();}
   };
+
+  /* Clear action: retain the existing explicit destructive behavior, but include V5 stores. */
+  window.addEventListener('DOMContentLoaded',function(){
+    v5DomInit();updateIndicator();
+    const clear=$('clearGlobal');if(clear){clear.onclick=function(){
+      if(!confirm('ต้องการล้างข้อมูลสะสมทั้งหมด รวม History / Landmark / Recommendation / Calibration ของระบบนี้จริงหรือไม่?'))return;
+      [STORAGE_KEY,CUSTOM_FORMULA_KEY,LANDMARK_STORAGE_KEY,V5.REGISTRY_KEY,V5.RECOMMENDATION_KEY,V5.FORMULA_HISTORY_KEY,V5.CALIBRATION_HISTORY_KEY,V5.PREDICTION_HISTORY_KEY,V5.PAIR_EVIDENCE_KEY].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+      $('result').innerHTML='';updateIndicator();showToast('✓ ล้างข้อมูลทั้งหมดเรียบร้อย');
+    };}
+  });
+
+  /* Schema metadata + non-destructive migration marker. */
+  const meta=readJSON(V5.META_KEY,{});meta.schemaVersion=V5.SCHEMA_VERSION;meta.lastBoot=now();writeJSON(V5.META_KEY,meta);
+  window.__MESTER_TEST__={parseInput,resolveLotteryIdentity,canonicalizeRecord,loadHistory,saveHistory,groupHistory,numericRecords,formulaStatsForLottery,candidateEvidence,calibrateLottery,buildDecisionObject,registry};
+
 })();
+
+
 
 </script>
 </body>
