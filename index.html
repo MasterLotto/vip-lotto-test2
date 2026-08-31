@@ -908,6 +908,12 @@ table.audit-table tr:hover{background:#fffaf0;}
   .recommend-heading{align-items:flex-start;flex-direction:column;}
   .clear-recommend{width:100%;}
 }
+
+.landmark-single{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel2)}
+.landmark-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.48rem;color:var(--muted)}
+.landmark-meta span{padding:5px 8px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.add-landmark-card{border:1px solid var(--gold3);background:#fffaf0;color:var(--gold2);border-radius:9px;padding:7px 10px;font-size:.52rem;font-weight:800}
+.clear-landmark{border:1px solid #e2b9bd;background:#fff5f6;color:#9b2c2c;border-radius:9px;padding:7px 10px;font-size:.52rem;font-weight:800}
 </style>
 </head>
 <body>
@@ -1116,6 +1122,13 @@ table.audit-table tr:hover{background:#fffaf0;}
             type="button"
           >
             🗑 ล้างการ์ดสูตรแนะนำ
+          </button>
+          <button
+            id="clearLandmarkCards"
+            class="clear-landmark"
+            type="button"
+          >
+            🗑 ล้างการ์ดสูตร Landmark
           </button>
           <button
             id="runFormulaLab"
@@ -4050,8 +4063,7 @@ function renderFullUI(
                   ">
                     ${esc(p.nextDate)}
                   </div>
-                  <div style="margin-top:3px;font-size:.4rem;color:#a28a64;font-weight:800;">แกนเจาะ ${p.anchor} · ระยะ ±${p.pairRadius}</div>
-                </div>
+                                  </div>
               </div>
             </div>
             <div
@@ -4141,8 +4153,17 @@ function updateLandmarkForLottery(lotteryName,recs,audit,incomingCount){
   return old;
 }
 function buildLandmarkAndRecommendationHTML(auditDataMap){
-  const store=loadLandmarks(),names=Object.keys(auditDataMap||{}),all=buildAllFormulas();let h=`<div class="section-title">🏆 Landmark และคำแนะนำรายหวย</div>`;
-  names.forEach(function(name){const rows=Object.keys(auditDataMap[name]||{}).map(function(f){const a=auditDataMap[name][f];return {f,a};}).sort(function(x,y){return (y.a.hitRate||0)-(x.a.hitRate||0);});if(!rows.length)return;const top=rows.slice(0,5),lm=store[name];const votes={};top.forEach(function(x){(x.a.latestDigits||[]).forEach(function(d){votes[d]=(votes[d]||0)+1;});});const finalDigits=Object.keys(votes).map(Number).sort(function(a,b){return (votes[b]||0)-(votes[a]||0)||a-b;}).slice(0,2);h+=`<div class="summary-table-container"><h3 style="color:#806329;font-size:.75rem;margin:0 0 8px;">${esc(getLotteryFlag(name))} ${esc(name)} ${lm?`🏆 ${esc(lm.formula)} (${lm.score}%)`:`— ยังไม่มี Landmark`}</h3><table class="audit-table"><thead><tr><th>อันดับ</th><th>สูตร</th><th>คะแนน</th><th>ความแม่น</th><th>งวด</th><th>เข้า</th><th>หลุด</th><th>ล่าสุด</th></tr></thead><tbody>`;top.forEach(function(x,i){const a=x.a;const icon=i===0?"🥇":i===1?"🥈":i===2?"🥉":String(i+1);const status=a.lastHit===true?"🟢 เข้า":a.lastHit===false?"🔴 หลุด":"⚠️ เตือน";h+=`<tr><td>${icon} ${i+1}</td><td style="text-align:left;font-weight:bold;">${esc(x.f)} ${lm&&lm.formula===x.f?"🏆":""}</td><td>${Number(a.hitRate||0).toFixed(2)}%</td><td>${Number(a.hitRate||0).toFixed(2)}%</td><td>${a.totalTested||0}</td><td>${a.hits||0}</td><td>${a.misses||0}</td><td>${status} ${a.latestDigits?a.latestDigits.join(" • "):"-"}</td></tr>`;});h+=`</tbody></table><div style="margin-top:9px;font-size:.46rem;color:var(--muted);line-height:1.7;"><b>🎯 Final Recommendation:</b> ${finalDigits.length?finalDigits.join(" • "):"-"} — สนับสนุนจาก ${finalDigits.map(function(d){return (votes[d]||0)+" สูตร";}).join(" / ")||"0 สูตร"}${lm?` · Landmark: ${esc(lm.formula)} สนับสนุน`:""}. วิเคราะห์จากสูตรแนะนำ 5 อันดับแรกของหวยนี้ โดยไม่แก้สูตรเลขเด่นหรือสูตรเลขเจาะ</div></div>`;});
+  const store=loadLandmarks();
+  const names=Object.keys(auditDataMap||{});
+  let h=`<div class="section-title">🏆 Landmark สูตรที่ดีที่สุดรายหวย</div>`;
+  names.forEach(function(name){
+    const lm=store[name];
+    if(!lm)return;
+    const a=(auditDataMap[name]||{})[lm.formula]||{};
+    const status=a.lastHit===true?"🟢 เข้า":a.lastHit===false?"🔴 หลุด":"⚠️ เตือน";
+    h+=`<div class="summary-table-container"><h3 style="color:#806329;font-size:.75rem;margin:0 0 8px;">${esc(getLotteryFlag(name))} ${esc(name)}</h3><div class="landmark-single"><div><b>🏆 Landmark</b><div style="font-size:1rem;font-weight:900;margin-top:4px;">${esc(lm.formula)}</div></div><div class="landmark-meta"><span>คะแนน ${Number(lm.score||0).toFixed(2)}%</span><span>${status}</span><span>บันทึกจาก ${lm.samples||26} งวด</span></div><button class="add-landmark-card" data-add-landmark="${esc(name)}">＋ เพิ่มการ์ดสูตร Landmark</button></div></div>`;
+  });
+  if(!names.some(function(name){return !!store[name];}))h+=`<div class="summary-table-container" style="font-size:.55rem;color:var(--muted);">ยังไม่มี Landmark — ต้องมีข้อมูลอย่างน้อย 26 งวดเพื่อสร้างแชมป์ประจำหวย</div>`;
   return h;
 }
 /* =========================================================
@@ -4632,6 +4653,32 @@ function runEngine(){
    - Recommended pairs exclude doubles and main-digit collisions.
    - Selected recommendations become clean prediction cards.
 ========================================================= */
+const LANDMARK_CARD_STATE_KEY="mester_lotto_selected_landmark_cards_v1";
+function __loadSelectedLandmarkCards(){try{const x=JSON.parse(localStorage.getItem(LANDMARK_CARD_STATE_KEY)||"[]");return Array.isArray(x)?x:[];}catch(e){return [];}}
+function __saveSelectedLandmarkCards(x){try{localStorage.setItem(LANDMARK_CARD_STATE_KEY,JSON.stringify(x));return true;}catch(e){return false;}}
+function __landmarkCardForLottery(name,rec,lm,index){
+  const all=buildAllFormulas(),fn=all[lm.formula];
+  if(typeof fn!=="function"||!rec)return "";
+  const top=String(rec.n3||"").padStart(3,"0").slice(-3).split("").map(Number);
+  const bot=String(rec.n2||"").padStart(2,"0").slice(-2).split("").map(Number);
+  const digits=sanitizeFormulaResult(fn(top[0],top[1],top[2],bot[0],bot[1]));
+  const d1=digits[0],d2=digits[1],anchor=Math.abs(7-Number(top[0]))%10;
+  function pairs(main,other){const p2=[];for(let i=-2;i<=2;i++)p2.push(norm(anchor+i));const collision=p2.includes(Number(main))||p2.includes(Number(other));const radius=collision?3:2;const pool=[];for(let i=-radius;i<=radius;i++)pool.push(norm(anchor+i));return Array.from(new Set(pool)).filter(n=>n!==Number(main)&&n!==Number(other)).sort((a,b)=>a-b).slice(0,5).map((n,i)=>({pair:String(main)+String(n),score:0,color:i===0?"gold":i===1?"silver":i===2?"rose_gold":"default"}));}
+  const p1=pairs(d1,d2),p2=pairs(d2,d1),id="lm_card_"+Date.now()+"_"+Math.random().toString(36).slice(2,7)+"_"+index,date=getNextDateStr(rec.date),json1=JSON.stringify(p1).replace(/"/g,"&quot;"),json2=JSON.stringify(p2).replace(/"/g,"&quot;");
+  return `<div class="prediction-card landmark-prediction-card" id="${id}" style="position:relative;"><div class="card-btn-group"><button class="card-action-btn" onclick="copyCardText('${id}','${esc(name)}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button><button class="card-action-btn" onclick="captureCardImage('${id}','${esc(name)}')">📸 แคปภาพ</button></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;"><div style="display:flex;align-items:center;gap:8px;"><div style="font-size:1.1rem;">${getLotteryFlag(name)}</div><div><div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(name)}</div><div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(date)}</div></div></div></div><div class="card-badge-placeholder" style="display:none;position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div><div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;display:flex;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>${__pairCardHTML(d1,p1,true)}${__pairCardHTML(d2,p2,false)}</div>`;
+}
+function __appendLandmarkCards(){
+  const result=$("result");if(!result)return;
+  const selected=__loadSelectedLandmarkCards();if(!selected.length)return;
+  const groups=__formulaLabGroups||{};
+  const stored=localStorage.getItem(STORAGE_KEY);let records=[];try{records=stored?JSON.parse(stored):[];}catch(e){}
+  const latest={};(Array.isArray(records)?records:[]).forEach(function(r){latest[r.name]=r;});
+  const old=result.querySelector("#selectedLandmarkCards");if(old)old.remove();
+  let html=`<div id="selectedLandmarkCards" class="selected-recommendation-wrap"><div class="section-title">🏆 การ์ดสูตร Landmark</div>`;let n=0;
+  selected.forEach(function(name){const lm=getLandmark(name),rec=latest[name];if(lm&&rec)html+=__landmarkCardForLottery(name,rec,lm,n++);});
+  html+=`</div>`;if(n)result.insertAdjacentHTML("beforeend",html);
+}
+function clearLandmarkCards(showMessage){try{localStorage.removeItem(LANDMARK_CARD_STATE_KEY);}catch(e){}const result=$("result");if(result){const box=result.querySelector("#selectedLandmarkCards");if(box)box.remove();}if(showMessage!==false)showToast("✓ ล้างการ์ดสูตร Landmark เรียบร้อย");}
 const RECOMMENDATION_STATE_KEY = "mester_lotto_selected_recommendations_v323";
 let __formulaLabGroups = {};
 let __formulaLabAllFormulas = {};
@@ -4768,8 +4815,7 @@ function __recommendCardForLottery(lotteryName, rec, candidate, index, groups){
           <div>
             <div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(lotteryName)}</div>
             <div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(date)}</div>
-            <div style="margin-top:3px;font-size:.4rem;color:#a28a64;font-weight:800;">แกนเจาะ ${Math.abs(7-Number(top[0]))%10} · มาตรฐาน ±2/±3</div>
-          </div>
+                      </div>
         </div>
       </div>
       <div class="card-badge-placeholder" style="display:none;position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>
@@ -4805,6 +4851,8 @@ const __originalRenderFullUI_V323 = renderFullUI;
 renderFullUI = function(globalAuditMap,auditDataMap,predictionDataMap){
   __originalRenderFullUI_V323(globalAuditMap,auditDataMap,predictionDataMap);
   __appendSelectedRecommendationCards();
+  __appendSelectedLandmarkCards();
+  document.querySelectorAll("[data-add-landmark]").forEach(function(btn){btn.onclick=function(){const name=btn.dataset.addLandmark;const arr=__loadSelectedLandmarkCards();if(arr.indexOf(name)<0)arr.push(name);__saveSelectedLandmarkCards(arr);__appendSelectedLandmarkCards();showToast("✓ เพิ่มการ์ดสูตร Landmark แล้ว");};});
 };
 /* Preserve the original Formula Lab search, while exposing its groups/formulas to the new ranker. */
 const __originalRunAutoFormulaLab_V323 = runAutoFormulaLab;
@@ -5087,6 +5135,8 @@ window.addEventListener(
       autoLabBtn.onclick =
         runAutoFormulaLab;
     }
+    const clearLandmarkBtn=$("clearLandmarkCards");
+    if(clearLandmarkBtn){clearLandmarkBtn.onclick=function(){const selected=__loadSelectedLandmarkCards();if(!selected.length){showToast("ℹ ยังไม่มีการ์ดสูตร Landmark ให้ล้าง");return;}if(!confirm("ต้องการล้างการ์ดสูตร Landmark ทั้งหมดหรือไม่?\n\nLandmark ที่บันทึกไว้จะไม่ถูกลบ"))return;clearLandmarkCards(true);};}
     const clearRecommendationBtn = $("clearRecommendationCards");
     if(clearRecommendationBtn){
       clearRecommendationBtn.onclick = function(){
