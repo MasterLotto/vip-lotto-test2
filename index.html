@@ -4102,78 +4102,72 @@ function renderFullUI(
    original digit/pair formula logic remains untouched.
 ========================================================= */
 const LANDMARK_STORAGE_KEY="mester_lotto_persistent_landmarks_v1";
+/* Canonical lottery names for Landmark only. Normal/"ปกติ" aliases share one memory; VIP stays separate. */
+function normalizeLotteryName(name){
+  let n=String(name||"").trim().replace(/\s+/g," ");
+  const lower=n.toLowerCase();
+  const vip=lower.includes("vip")||n.includes("วีไอพี");
+  if(vip)return n;
+  const aliases=[
+    [/^(หุ้น\s*)?นิเคอิ(\s*ปกติ)?\s*เช้า$/i,"นิเคอิเช้า"],
+    [/^(หุ้น\s*)?นิเคอิ(\s*ปกติ)?\s*บ่าย$/i,"นิเคอิบ่าย"],
+    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*เช้า$/i,"จีนเช้า"],
+    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*บ่าย$/i,"จีนบ่าย"],
+    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*เช้า$/i,"ฮั่งเส็งเช้า"],
+    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*บ่าย$/i,"ฮั่งเส็งบ่าย"],
+    [/^(หุ้น\s*)?ไต้หวัน(\s*ปกติ)?$/i,"หุ้นไต้หวัน"],
+    [/^(หุ้น\s*)?เกาหลี(\s*ปกติ)?$/i,"หุ้นเกาหลี"],
+    [/^(หุ้น\s*)?สิงคโปร์(\s*ปกติ)?$/i,"หุ้นสิงคโปร์"]
+  ];
+  for(const [re,canonical] of aliases)if(re.test(n))return canonical;
+  return n;
+}
 function loadLandmarks(){try{const x=JSON.parse(localStorage.getItem(LANDMARK_STORAGE_KEY)||"{}");return x&&typeof x==="object"?x:{};}catch(e){return {};}}
 function saveLandmarks(x){try{localStorage.setItem(LANDMARK_STORAGE_KEY,JSON.stringify(x));return true;}catch(e){return false;}}
-function getLandmark(lotteryName){const x=loadLandmarks();return x[lotteryName]||null;}
+function getLandmark(lotteryName){const x=loadLandmarks(),key=normalizeLotteryName(lotteryName);return x[key]||null;}
 function resolveLandmarkFormula(lotteryName,allFormulas){const lm=getLandmark(lotteryName);if(!lm)return null;if(typeof allFormulas[lm.formula]==="function")return allFormulas[lm.formula];return null;}
-function __landmarkCandidateComparator(a,b){
-  if(Number(a.score)!==Number(b.score)) return Number(b.score)-Number(a.score);
-  if(Number(a.misses)!==Number(b.misses)) return Number(a.misses)-Number(b.misses);
-  if(Number(a.maxMissStreak)!==Number(b.maxMissStreak)) return Number(a.maxMissStreak)-Number(b.maxMissStreak);
-  if(Number(a.maxStreak)!==Number(b.maxStreak)) return Number(b.maxStreak)-Number(a.maxStreak);
-  if(Number(a.hits)!==Number(b.hits)) return Number(b.hits)-Number(a.hits);
-  return String(a.formula).localeCompare(String(b.formula),'th');
-}
-function __buildBestLandmarkCandidate(audit){
-  if(!audit||typeof audit!=="object") return null;
-  const candidates=[];
+function updateLandmarkForLottery(lotteryName,recs,audit,incomingCount){
+  const key=normalizeLotteryName(lotteryName);
+  const old=getLandmark(key);
+  const count=Number(incomingCount||0);
+  if(!Array.isArray(recs)||recs.length<26||count<26||!audit)return old;
+  let best=null;
   Object.keys(audit).forEach(function(name){
     const a=audit[name];
-    if(!a||Number(a.totalTested||0)<25)return;
-    const tested=Number(a.totalTested)||0;
-    const hits=Number(a.hits)||0;
-    candidates.push({
-      formula:String(name),
-      score:Number((tested>0?(hits/tested*100):0).toFixed(2)),
-      hits:hits,
+    if(!a||Number(a.totalTested||0)<26)return;
+    const candidate={
+      formula:name,
+      score:Number(a.hitRate)||0,
+      hits:Number(a.hits)||0,
       misses:Number(a.misses)||0,
       maxMissStreak:Number(a.maxMissStreak)||0,
       maxStreak:Number(a.maxStreak)||0,
-      samples:tested
-    });
-  });
-  candidates.sort(__landmarkCandidateComparator);
-  return candidates[0]||null;
-}
-function updateLandmarkForLottery(lotteryName,recs,audit,incomingCount){
-  const old=getLandmark(lotteryName);
-  const count=Number(incomingCount||0);
-  const total=Array.isArray(recs)?recs.length:0;
-  if(total<26||!audit)return old;
-
-  const best=__buildBestLandmarkCandidate(audit);
-  if(!best)return old;
-
-  /*
-    Landmark is the lottery's single #1 champion.
-    First-time calibration requires 26+ rounds entered in the run.
-    A legacy/invalid Landmark from an older build is repaired once
-    from the same 26+ historical audit so an old #3 can never survive.
-    After that, 1-25 new rounds never replace the stored champion.
-  */
-  const oldIsValid=old&&old.landmarkVersion===2&&old.formula===best.formula;
-  const needsLegacyRepair=old&&!old.landmarkVersion;
-  const shouldCalibrate=count>=26;
-  if(!old||shouldCalibrate||needsLegacyRepair){
-    const store=loadLandmarks();
-    store[lotteryName]={
-      ...best,
-      landmarkVersion:2,
-      calibrationRounds:total,
-      calibratedAt:Date.now()
+      samples:Number(a.totalTested)||0,
+      updatedAt:Date.now()
     };
-    saveLandmarks(store);
-    return store[lotteryName];
-  }
-  return oldIsValid?old:old;
+    if(!best||
+      candidate.score>best.score||
+      (candidate.score===best.score&&candidate.misses<best.misses)||
+      (candidate.score===best.score&&candidate.misses===best.misses&&candidate.maxMissStreak<best.maxMissStreak)||
+      (candidate.score===best.score&&candidate.misses===best.misses&&candidate.maxMissStreak===best.maxMissStreak&&candidate.maxStreak>best.maxStreak)||
+      (candidate.score===best.score&&candidate.misses===best.misses&&candidate.maxMissStreak===best.maxMissStreak&&candidate.maxStreak===best.maxStreak&&candidate.hits>best.hits)||
+      (candidate.score===best.score&&candidate.misses===best.misses&&candidate.maxMissStreak===best.maxMissStreak&&candidate.maxStreak===best.maxStreak&&candidate.hits===best.hits&&candidate.formula.localeCompare(best.formula,'th')<0)
+    )best=candidate;
+  });
+  if(!best)return old;
+  /* A fresh 26+ round is a calibration event: persist the current #1 audit formula.
+     It must not be blocked by an older, stale Landmark. */
+  const store=loadLandmarks();
+  store[key]=best;
+  saveLandmarks(store);
+  return best;
 }
-
 function buildLandmarkAndRecommendationHTML(auditDataMap){
   const store=loadLandmarks();
   const names=Object.keys(auditDataMap||{});
   let h=`<div class="section-title">🏆 Landmark สูตรที่ดีที่สุดรายหวย</div>`;
   names.forEach(function(name){
-    const lm=store[name];
+    const lm=store[normalizeLotteryName(name)]||getLandmark(name);
     if(!lm)return;
     const a=(auditDataMap[name]||{})[lm.formula]||{};
     const status=a.lastHit===true?"🟢 เข้า":a.lastHit===false?"🔴 หลุด":"⚠️ เตือน";
@@ -4718,7 +4712,7 @@ function __appendLandmarkCards(){
   }catch(e){}
   let html=`<div id="selectedLandmarkCards" class="selected-recommendation-wrap"><div class="section-title">🏆 การ์ดสูตร Landmark</div>`,n=0;
   selected.forEach(function(name){
-    const lm=getLandmark(name),rec=latest[name]||__latestStoredRecordForLottery(name);
+    const lm=getLandmark(name),rec=latest[name]||latest[normalizeLotteryName(name)]||__latestStoredRecordForLottery(name);
     const card=lm&&rec?__landmarkCardForLottery(name,rec,lm,n):"";
     if(card){html+=card;n++;}
   });
@@ -4899,7 +4893,8 @@ function __latestStoredRecordForLottery(name){
     const raw=localStorage.getItem(STORAGE_KEY);
     const records=raw?JSON.parse(raw):[];
     if(!Array.isArray(records))return null;
-    const matches=records.filter(function(r){return r&&r.name===name;});
+    const key=normalizeLotteryName(name);
+    const matches=records.filter(function(r){return r&&normalizeLotteryName(r.name)===key;});
     matches.sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);});
     return matches.length?matches[matches.length-1]:null;
   }catch(e){return null;}
