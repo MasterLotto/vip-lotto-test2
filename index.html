@@ -4644,8 +4644,11 @@ const LANDMARK_CARD_STATE_KEY="mester_lotto_selected_landmark_cards_v1";
 function __loadSelectedLandmarkCards(){try{const x=JSON.parse(localStorage.getItem(LANDMARK_CARD_STATE_KEY)||"[]");return Array.isArray(x)?x:[];}catch(e){return [];}}
 function __saveSelectedLandmarkCards(x){try{localStorage.setItem(LANDMARK_CARD_STATE_KEY,JSON.stringify(x));return true;}catch(e){return false;}}
 function __landmarkCardForLottery(name,rec,lm,index){
-  const all=buildAllFormulas(),fn=all[lm.formula];
-  if(typeof fn!=="function"||!rec)return "";
+  if(!rec||!lm)return "";
+  const all=buildAllFormulas();
+  let fn=all[lm.formula];
+  if(typeof fn!=="function" && formulas && typeof formulas[lm.formula]==="function") fn=formulas[lm.formula];
+  if(typeof fn!=="function") return "";
   const top=String(rec.n3||"").padStart(3,"0").slice(-3).split("").map(Number);
   const bot=String(rec.n2||"").padStart(2,"0").slice(-2).split("").map(Number);
   const digits=sanitizeFormulaResult(fn(top[0],top[1],top[2],bot[0],bot[1]));
@@ -4850,9 +4853,12 @@ function __latestStoredRecordForLottery(name){
   }catch(e){return null;}
 }
 function __addLandmarkCardNow(name){
+  name=String(name||"");
   const lm=getLandmark(name);
-  const rec=__latestStoredRecordForLottery(name);
-  if(!lm||!rec){showToast("❌ ยังไม่พบข้อมูลสำหรับสร้างการ์ด Landmark");return;}
+  let rec=__latestStoredRecordForLottery(name);
+  if(!rec && __formulaLabGroups[name] && __formulaLabGroups[name].length) rec=__formulaLabGroups[name][__formulaLabGroups[name].length-1];
+  if(!lm){showToast("❌ ยังไม่มี Landmark ของหวยนี้");return;}
+  if(!rec){showToast("❌ ยังไม่พบสถิติล่าสุดสำหรับสร้างการ์ด Landmark");return;}
   const result=$("result");
   if(!result)return;
   let box=result.querySelector("#selectedLandmarkCards");
@@ -4863,11 +4869,14 @@ function __addLandmarkCardNow(name){
     box.innerHTML='<div class="section-title">🏆 การ์ดสูตร Landmark</div>';
     result.appendChild(box);
   }
-  const existing=box.querySelector('[data-landmark-card-name="'+CSS.escape(name)+'"]');
+  const existing=Array.from(box.querySelectorAll("[data-landmark-card-name]")).some(function(el){return el.getAttribute("data-landmark-card-name")===name;});
   if(existing){showToast("✓ การ์ดสูตร Landmark นี้มีอยู่แล้ว");return;}
+  const cardHTML=__landmarkCardForLottery(name,rec,lm,Date.now());
+  if(!cardHTML){showToast("❌ ไม่สามารถสร้างการ์ดจากสูตร Landmark นี้ได้");return;}
   const holder=document.createElement("div");
   holder.setAttribute("data-landmark-card-name",name);
-  holder.innerHTML=__landmarkCardForLottery(name,rec,lm,Date.now());
+  holder.innerHTML=cardHTML;
+  if(!holder.firstElementChild){showToast("❌ ไม่สามารถสร้างการ์ดสูตร Landmark ได้");return;}
   box.appendChild(holder.firstElementChild);
   const arr=__loadSelectedLandmarkCards();
   if(arr.indexOf(name)<0){arr.push(name);__saveSelectedLandmarkCards(arr);}
@@ -4878,9 +4887,14 @@ renderFullUI = function(globalAuditMap,auditDataMap,predictionDataMap){
   __originalRenderFullUI_V323(globalAuditMap,auditDataMap,predictionDataMap);
   __appendSelectedRecommendationCards();
   __appendSelectedLandmarkCards();
-  document.querySelectorAll("[data-add-landmark]").forEach(function(btn){
-    btn.onclick=function(){__addLandmarkCardNow(btn.dataset.addLandmark);};
-  });
+  const resultEl=$("result");
+  if(resultEl&&!resultEl.__landmarkClickBound){
+    resultEl.addEventListener("click",function(ev){
+      const btn=ev.target.closest("[data-add-landmark]");
+      if(btn){ev.preventDefault();ev.stopPropagation();__addLandmarkCardNow(btn.getAttribute("data-add-landmark"));}
+    });
+    resultEl.__landmarkClickBound=true;
+  }
 };
 /* Preserve the original Formula Lab search, while exposing its groups/formulas to the new ranker. */
 const __originalRunAutoFormulaLab_V323 = runAutoFormulaLab;
