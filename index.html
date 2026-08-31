@@ -3690,7 +3690,7 @@ function renderFullUI(
               font-size:.75rem;
               margin:0 0 8px;
             ">
-              หวย: ${esc(displayLotteryName(lotteryName))}
+              หวย: ${esc(lotteryName)}
             </h3>
             <table class="audit-table">
               <thead>
@@ -4121,8 +4121,8 @@ function normalizeLotteryName(name){
   const vip=lower.includes("vip")||n.includes("วีไอพี");
   if(vip)return n;
   const aliases=[
-    [/^(หุ้น\s*)?(นิเคอิ|นิคเคอิ)(\s*ปกติ)?\s*เช้า$/i,"นิเคอิเช้า"],
-    [/^(หุ้น\s*)?(นิเคอิ|นิคเคอิ)(\s*ปกติ)?\s*บ่าย$/i,"นิเคอิบ่าย"],
+    [/^(หุ้น\s*)?นิเคอิ(\s*ปกติ)?\s*เช้า$/i,"นิเคอิเช้า"],
+    [/^(หุ้น\s*)?นิเคอิ(\s*ปกติ)?\s*บ่าย$/i,"นิเคอิบ่าย"],
     [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*เช้า$/i,"จีนเช้า"],
     [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*บ่าย$/i,"จีนบ่าย"],
     [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*เช้า$/i,"ฮั่งเส็งเช้า"],
@@ -4134,35 +4134,34 @@ function normalizeLotteryName(name){
   for(const [re,canonical] of aliases)if(re.test(n))return canonical;
   return n;
 }
+/* Display-only lottery name mapping. Input/statistics/storage names remain unchanged. */
 function displayLotteryName(name){
-  let n=String(name||"").trim().replace(/\s+/g," " );
-  if(!n)return n;
-  const lower=n.toLowerCase();
-  if(lower.includes("vip")||n.includes("วีไอพี"))return n;
+  const n=String(name||"").trim().replace(/\s+/g," ");
   const aliases=[
-    [/^(หุ้น\s*)?(นิเคอิ|นิคเคอิ)(\s*ปกติ)?\s*เช้า$/i,"นิเคอิ ปกติ เช้า"],
-    [/^(หุ้น\s*)?(นิเคอิ|นิคเคอิ)(\s*ปกติ)?\s*บ่าย$/i,"นิเคอิ ปกติ บ่าย"],
-    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*เช้า$/i,"จีน ปกติ เช้า"],
-    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*บ่าย$/i,"จีน ปกติ บ่าย"],
-    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*เช้า$/i,"ฮั่งเส็ง ปกติ เช้า"],
-    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*บ่าย$/i,"ฮั่งเส็ง ปกติ บ่าย"],
-    [/^(หุ้น\s*)?ไต้หวัน(\s*ปกติ)?$/i,"ไต้หวัน ปกติ"],
-    [/^(หุ้น\s*)?เกาหลี(\s*ปกติ)?$/i,"เกาหลี ปกติ"],
-    [/^(หุ้น\s*)?สิงคโปร์(\s*ปกติ)?$/i,"สิงคโปร์ ปกติ"],
-    [/^(หุ้น\s*)?ไทย(\s*ปกติ)?\s*(เปิด\s*เช้า|เช้า)$/i,"หุ้นไทย เปิดเช้า"],
-    [/^(หุ้น\s*)?ไทย(\s*ปกติ)?\s*(ปิด\s*เที่ยง|เที่ยง)$/i,"หุ้นไทย ปิดเที่ยง"],
-    [/^(หุ้น\s*)?ไทย(\s*ปกติ)?\s*(เปิด\s*บ่าย|บ่าย)$/i,"หุ้นไทย เปิดบ่าย"],
-    [/^(หุ้น\s*)?ไทย(\s*ปกติ)?\s*(ปิด\s*เย็น|เย็น)$/i,"หุ้นไทย ปิดเย็น"],
-    [/^(หุ้น\s*)?อินเดีย(\s*ปกติ)?$/i,"อินเดีย"],
-    [/^(หุ้น\s*)?อียิปต์(\s*ปกติ)?$/i,"อียิปต์"],
-    [/^(หุ้น\s*)?เยอรมัน(\s*ปกติ)?$/i,"เยอรมัน ปกติ"],
-    [/^(หุ้น\s*)?รัสเซีย(\s*ปกติ)?$/i,"รัสเซีย ปกติ"],
-    [/^(หุ้น\s*)?อังกฤษ(\s*ปกติ)?$/i,"อังกฤษ ปกติ"],
-    [/^(หุ้น\s*)?ดาวโจนส์(\s*ปกติ)?$/i,"ดาวโจนส์ ปกติ"]
+    [/^(หุ้น\s*)?นิคเคอิ(\s*ปกติ)?\s*เช้า(?:\s*\|.*)?$/i,"นิเคอิ ปกติ เช้า"],
+    [/^(หุ้น\s*)?นิคเคอิ(\s*ปกติ)?\s*บ่าย(?:\s*\|.*)?$/i,"นิเคอิ ปกติ บ่าย"],
+    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*เช้า(?:\s*\|.*)?$/i,"จีน ปกติ เช้า"],
+    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*บ่าย(?:\s*\|.*)?$/i,"จีน ปกติ บ่าย"],
+    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*เช้า(?:\s*\|.*)?$/i,"ฮั่งเส็ง ปกติ เช้า"],
+    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*บ่าย(?:\s*\|.*)?$/i,"ฮั่งเส็ง ปกติ บ่าย"],
+    [/^(หุ้น\s*)?ไต้หวัน(\s*ปกติ)?(?:\s*\|.*)?$/i,"ไต้หวัน ปกติ"],
+    [/^(หุ้น\s*)?เกาหลี(\s*ปกติ)?(?:\s*\|.*)?$/i,"เกาหลี ปกติ"],
+    [/^(หุ้น\s*)?สิงคโปร์(\s*ปกติ)?(?:\s*\|.*)?$/i,"สิงคโปร์ ปกติ"],
+    [/^(หุ้น\s*)?ไทย(?:แลนด์)?(\s*ปกติ)?\s*เปิดเช้า(?:\s*\|.*)?$/i,"หุ้นไทย เปิดเช้า"],
+    [/^(หุ้น\s*)?ไทย(?:แลนด์)?(\s*ปกติ)?\s*ปิดเที่ยง(?:\s*\|.*)?$/i,"หุ้นไทย ปิดเที่ยง"],
+    [/^(หุ้น\s*)?ไทย(?:แลนด์)?(\s*ปกติ)?\s*เปิดบ่าย(?:\s*\|.*)?$/i,"หุ้นไทย เปิดบ่าย"],
+    [/^(หุ้น\s*)?ไทย(?:แลนด์)?(\s*ปกติ)?\s*ปิดเย็น(?:\s*\|.*)?$/i,"หุ้นไทย ปิดเย็น"],
+    [/^(หุ้น\s*)?อินเดีย(\s*ปกติ)?(?:\s*\|.*)?$/i,"อินเดีย"],
+    [/^(หุ้น\s*)?อียิปต์(\s*ปกติ)?(?:\s*\|.*)?$/i,"อียิปต์"],
+    [/^(หุ้น\s*)?เยอรมัน(\s*ปกติ)?(?:\s*\|.*)?$/i,"เยอรมัน ปกติ"],
+    [/^(หุ้น\s*)?รัสเซีย(\s*ปกติ)?(?:\s*\|.*)?$/i,"รัสเซีย ปกติ"],
+    [/^(หุ้น\s*)?อังกฤษ(\s*ปกติ)?(?:\s*\|.*)?$/i,"อังกฤษ ปกติ"],
+    [/^(หุ้น\s*)?ดาวโจนส์(\s*ปกติ)?(?:\s*\|.*)?$/i,"ดาวโจนส์ ปกติ"]
   ];
-  for(const [re,label] of aliases)if(re.test(n))return label;
+  for(const [re,label] of aliases) if(re.test(n)) return label;
   return n;
 }
+
 function loadLandmarks(){try{const x=JSON.parse(localStorage.getItem(LANDMARK_STORAGE_KEY)||"{}");return x&&typeof x==="object"?x:{};}catch(e){return {};}}
 function saveLandmarks(x){try{localStorage.setItem(LANDMARK_STORAGE_KEY,JSON.stringify(x));return true;}catch(e){return false;}}
 function getLandmark(lotteryName){const x=loadLandmarks(),key=normalizeLotteryName(lotteryName);return x[key]||null;}
@@ -4212,7 +4211,7 @@ function buildLandmarkAndRecommendationHTML(auditDataMap){
     if(!lm)return;
     const a=(auditDataMap[name]||{})[lm.formula]||{};
     const status=a.lastHit===true?"🟢 เข้า":a.lastHit===false?"🔴 หลุด":"⚠️ เตือน";
-    h+=`<div class="summary-table-container"><h3 style="color:#806329;font-size:.75rem;margin:0 0 8px;">${esc(getLotteryFlag(name))} ${esc(displayLotteryName(name))}</h3><div class="landmark-single"><div><b>🏆 Landmark</b><div style="font-size:1rem;font-weight:900;margin-top:4px;">${esc(lm.formula)}</div></div><div class="landmark-meta"><span>คะแนน ${Number(lm.score||0).toFixed(2)}%</span><span>${status}</span><span>บันทึกจาก ${lm.samples||26} งวด</span></div><button class="add-landmark-card" data-add-landmark="${esc(name)}" onclick="window.__addLandmarkCardNow(this.getAttribute('data-add-landmark'));return false;">＋ เพิ่มการ์ดสูตร Landmark</button></div></div>`;
+    h+=`<div class="summary-table-container"><h3 style="color:#806329;font-size:.75rem;margin:0 0 8px;">${esc(getLotteryFlag(name))} ${esc(name)}</h3><div class="landmark-single"><div><b>🏆 Landmark</b><div style="font-size:1rem;font-weight:900;margin-top:4px;">${esc(lm.formula)}</div></div><div class="landmark-meta"><span>คะแนน ${Number(lm.score||0).toFixed(2)}%</span><span>${status}</span><span>บันทึกจาก ${lm.samples||26} งวด</span></div><button class="add-landmark-card" data-add-landmark="${esc(name)}" onclick="window.__addLandmarkCardNow(this.getAttribute('data-add-landmark'));return false;">＋ เพิ่มการ์ดสูตร Landmark</button></div></div>`;
   });
   if(!names.some(function(name){return !!store[name];}))h+=`<div class="summary-table-container" style="font-size:.55rem;color:var(--muted);">ยังไม่มี Landmark — ต้องมีข้อมูลอย่างน้อย 26 งวดเพื่อสร้างแชมป์ประจำหวย</div>`;
   return h;
@@ -4736,7 +4735,7 @@ function __landmarkCardForLottery(name,rec,lm,index){
   const date=getNextDateStr(rec.date);
   const json1=JSON.stringify(p1).replace(/"/g,"&quot;");
   const json2=JSON.stringify(p2).replace(/"/g,"&quot;");
-  return `<div class="prediction-card landmark-prediction-card" id="${id}" style="position:relative;"><div class="card-btn-group"><button class="card-action-btn" onclick="copyCardText('${id}','${esc(displayLotteryName(name))}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button><button class="card-action-btn" onclick="captureCardImage('${id}','${esc(displayLotteryName(name))}')">📸 แคปภาพ</button></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;"><div style="display:flex;align-items:center;gap:8px;"><div style="font-size:1.1rem;">${getLotteryFlag(name)}</div><div><div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(displayLotteryName(name))}</div><div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(date)}</div></div></div></div><div class="card-badge-placeholder" style="display:none;position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div><div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;display:flex;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>${__pairCardHTML(d1,p1,true)}${__pairCardHTML(d2,p2,false)}</div>`;
+  return `<div class="prediction-card landmark-prediction-card" id="${id}" style="position:relative;"><div class="card-btn-group"><button class="card-action-btn" onclick="copyCardText('${id}','${esc(name)}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button><button class="card-action-btn" onclick="captureCardImage('${id}','${esc(name)}')">📸 แคปภาพ</button></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;"><div style="display:flex;align-items:center;gap:8px;"><div style="font-size:1.1rem;">${getLotteryFlag(name)}</div><div><div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(name)}</div><div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(date)}</div></div></div></div><div class="card-badge-placeholder" style="display:none;position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div><div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;display:flex;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>${__pairCardHTML(d1,p1,true)}${__pairCardHTML(d2,p2,false)}</div>`;
   }catch(err){console.error("Landmark card build error",err);return "";}
 }
 function __appendLandmarkCards(){
@@ -4888,14 +4887,14 @@ function __recommendCardForLottery(lotteryName, rec, candidate, index, groups){
   return `
     <div class="prediction-card recommendation-prediction-card" id="${id}" style="position:relative;">
       <div class="card-btn-group">
-        <button class="card-action-btn" onclick="copyCardText('${id}','${esc(displayLotteryName(lotteryName))}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button>
-        <button class="card-action-btn" onclick="captureCardImage('${id}','${esc(displayLotteryName(lotteryName))}')">📸 แคปภาพ</button>
+        <button class="card-action-btn" onclick="copyCardText('${id}','${esc(lotteryName)}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button>
+        <button class="card-action-btn" onclick="captureCardImage('${id}','${esc(lotteryName)}')">📸 แคปภาพ</button>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="font-size:1.1rem;">${flag}</div>
           <div>
-            <div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(lotteryName)}</div>
+            <div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(displayLotteryName(lotteryName))}</div>
             <div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(date)}</div>
                       </div>
         </div>
@@ -5619,7 +5618,7 @@ window.addEventListener(
       const key=canonicalLottery(name),lm=store[key]||getLandmark(name); if(!lm)return; shown++;
       const a=(auditDataMap[name]||{})[lm.formula]||{};
       const status=a.lastHit===true?'🟢 เข้า':a.lastHit===false?'🔴 หลุด':'⚠️ เตือน';
-      h+=`<div class="summary-table-container"><h3 style="color:#806329;font-size:.75rem;margin:0 0 8px;">${esc(getLotteryFlag(name))} ${esc(displayLotteryName(name))}</h3><div class="landmark-single"><div><b>🏆 Landmark Champion</b><div style="font-size:1rem;font-weight:900;margin-top:4px;">${esc(lm.formula)}</div></div><div class="landmark-meta"><span>Score ${Number(lm.score||0).toFixed(2)}</span><span>Validation ${Number(lm.validationRate||0).toFixed(2)}%</span><span>Walk-forward ${Number(lm.walkForwardRate||0).toFixed(2)}%</span><span>CI ${Number(lm.confidenceLow||0).toFixed(1)}–${Number(lm.confidenceHigh||0).toFixed(1)}%</span><span>${status}</span><span>หลักฐาน ${lm.samples||0} งวด</span></div><button class="add-landmark-card" data-add-landmark="${esc(name)}" onclick="window.__addLandmarkCardNow(this.getAttribute('data-add-landmark'));return false;">＋ เพิ่มการ์ดสูตร Landmark</button></div></div>`;
+      h+=`<div class="summary-table-container"><h3 style="color:#806329;font-size:.75rem;margin:0 0 8px;">${esc(getLotteryFlag(name))} ${esc(name)}</h3><div class="landmark-single"><div><b>🏆 Landmark Champion</b><div style="font-size:1rem;font-weight:900;margin-top:4px;">${esc(lm.formula)}</div></div><div class="landmark-meta"><span>Score ${Number(lm.score||0).toFixed(2)}</span><span>Validation ${Number(lm.validationRate||0).toFixed(2)}%</span><span>Walk-forward ${Number(lm.walkForwardRate||0).toFixed(2)}%</span><span>CI ${Number(lm.confidenceLow||0).toFixed(1)}–${Number(lm.confidenceHigh||0).toFixed(1)}%</span><span>${status}</span><span>หลักฐาน ${lm.samples||0} งวด</span></div><button class="add-landmark-card" data-add-landmark="${esc(name)}" onclick="window.__addLandmarkCardNow(this.getAttribute('data-add-landmark'));return false;">＋ เพิ่มการ์ดสูตร Landmark</button></div></div>`;
     });
     if(!shown)h+='<div class="summary-table-container" style="font-size:.55rem;color:var(--muted);">ยังไม่มี Landmark ที่ผ่านเกณฑ์หลักฐาน — ต้องมีข้อมูลอย่างน้อย 26 งวด</div>';
     return h;
@@ -5710,7 +5709,7 @@ window.addEventListener(
     const fn=modelToFunction(candidate.m1,candidate.m2),top=safeDigits(rec.n3,3),bot=safeDigits(rec.n2,2),digits=sanitizeFormulaResult(fn(top[0],top[1],top[2],bot[0],bot[1])),d1=digits[0],d2=digits[1];
     const p1=__advancedPairEngine(d1,d2,groups[lotteryName]||[],fn),p2=__advancedPairEngine(d2,d1,groups[lotteryName]||[],fn); const date=getNextDateStr(rec.date),id='rec_card_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)+'_'+index;
     const json1=JSON.stringify(p1).replace(/"/g,'&quot;'),json2=JSON.stringify(p2).replace(/"/g,'&quot;');
-    return `<div class="prediction-card recommendation-prediction-card" id="${id}" style="position:relative;"><div class="card-btn-group"><button class="card-action-btn" onclick="copyCardText('${id}','${esc(displayLotteryName(lotteryName))}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button><button class="card-action-btn" onclick="captureCardImage('${id}','${esc(displayLotteryName(lotteryName))}')">📸 แคปภาพ</button></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;"><div style="display:flex;align-items:center;gap:8px;"><div style="font-size:1.1rem;">${getLotteryFlag(lotteryName)}</div><div><div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(displayLotteryName(lotteryName))}</div><div style="font-size:.48rem;font-weight:700;color:#8b8173;">งวดถัดไป ${esc(date)}</div></div></div></div><div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;">✦ บ้านกองเงิน ✦</div>${__pairCardHTML(d1,p1,true)}${__pairCardHTML(d2,p2,false)}</div>`;
+    return `<div class="prediction-card recommendation-prediction-card" id="${id}" style="position:relative;"><div class="card-btn-group"><button class="card-action-btn" onclick="copyCardText('${id}','${esc(lotteryName)}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button><button class="card-action-btn" onclick="captureCardImage('${id}','${esc(lotteryName)}')">📸 แคปภาพ</button></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;"><div style="display:flex;align-items:center;gap:8px;"><div style="font-size:1.1rem;">${getLotteryFlag(lotteryName)}</div><div><div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(displayLotteryName(lotteryName))}</div><div style="font-size:.48rem;font-weight:700;color:#8b8173;">งวดถัดไป ${esc(date)}</div></div></div></div><div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;">✦ บ้านกองเงิน ✦</div>${__pairCardHTML(d1,p1,true)}${__pairCardHTML(d2,p2,false)}</div>`;
   };
 
 
