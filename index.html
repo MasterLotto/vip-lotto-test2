@@ -26,7 +26,191 @@ PURE RAW ENGINE + CUSTOM FORMULA LAB + AUTO FORMULA RECOMMENDER
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+/* =========================================================
+   V34 DEEP WALK-FORWARD AUDIT / RECOMMENDATION LAYER
+   IMPORTANT: original `formulas` object is NOT modified.
+   This layer only studies historical behavior and controls
+   formula selection / pair selection.
+========================================================= */
+(function(){
+  "use strict";
+  const DEEP_MIN_TRAIN=6;
+  const DEEP_RECENT_WINDOW=8;
+  const DEEP_BLOCK=5;
+  const DEEP_LIMIT=180;
+
+  function __records(){
+    try{
+      const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+      return Array.isArray(x)?x:[];
+    }catch(e){return [];}
+  }
+  function __groups(){
+    const g={};
+    __records().forEach(function(r){
+      if(!r||!r.name||!/^\d{3}$/.test(String(r.n3||""))||!/^\d{2}$/.test(String(r.n2||"")))return;
+      (g[r.name]||(g[r.name]=[])).push(r);
+    });
+    Object.keys(g).forEach(function(k){g[k].sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);});});
+    return g;
+  }
+  function __predict(fn,r){
+    const t=String(r.n3).padStart(3,"0").slice(-3).split("").map(Number);
+    const b=String(r.n2).padStart(2,"0").slice(-2).split("").map(Number);
+    try{return sanitizeFormulaResult(fn(t[0],t[1],t[2],b[0],b[1]));}catch(e){return [0,1];}
+  }
+  function __hit(pred,next){return checkHitDetail(pred,String(next.n3),String(next.n2)).hitAny;}
+  function __mean(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:0;}
+  function __std(a){if(!a.length)return 100;const m=__mean(a);return Math.sqrt(__mean(a.map(function(x){return (x-m)*(x-m);})));}
+  function __rate(h,n){return n?100*h/n:0;}
+  function __shrink(h,n){return n?((h+2)/(n+4))*100:0;}
+
+  function __deepAudit(fn,recs){
+    const n=Math.max(0,recs.length-1);
+    if(n<DEEP_MIN_TRAIN)return {tested:0,hits:0,rate:0,shrunk:0,recentRate:0,worstWindow:0,blockStd:100,firstHalf:0,secondHalf:0,drift:0,maxMiss:0,hitSeries:[]};
+    let hits=0,maxMiss=0,curMiss=0;
+    const series=[];
+    for(let i=0;i<n;i++){
+      const ok=__hit(__predict(fn,recs[i]),recs[i+1]);
+      series.push(ok?1:0);
+      if(ok){hits++;curMiss=0;}else{curMiss++;if(curMiss>maxMiss)maxMiss=curMiss;}
+    }
+    const recent=series.slice(Math.max(0,series.length-DEEP_RECENT_WINDOW));
+    const windows=[];
+    for(let i=0;i<series.length;i+=DEEP_BLOCK){
+      const w=series.slice(i,i+DEEP_BLOCK);
+      if(w.length===DEEP_BLOCK)windows.push(__rate(w.reduce((a,b)=>a+b,0),w.length));
+    }
+    const mid=Math.floor(series.length/2);
+    const first=series.slice(0,mid),second=series.slice(mid);
+    const firstRate=__rate(first.reduce((a,b)=>a+b,0),first.length);
+    const secondRate=__rate(second.reduce((a,b)=>a+b,0),second.length);
+    return {
+      tested:n,hits,rate:Number(__rate(hits,n).toFixed(2)),shrunk:Number(__shrink(hits,n).toFixed(2)),
+      recentRate:Number(__rate(recent.reduce((a,b)=>a+b,0),recent.length).toFixed(2)),
+      worstWindow:Number((windows.length?Math.min.apply(null,windows):__rate(hits,n)).toFixed(2)),
+      blockStd:Number(__std(windows).toFixed(2)),firstHalf:Number(firstRate.toFixed(2)),secondHalf:Number(secondRate.toFixed(2)),
+      drift:Number((secondRate-firstRate).toFixed(2)),maxMiss,hitSeries:series
+    };
+  }
+
+  function __candidateModels(){
+    const bases=collectLinearBaseFormulas(buildAllFormulas());
+    const out=[],seen=new Set();
+    function add(source,m1,m2,mutation){
+      const sig=modelSignature(m1,m2);if(seen.has(sig)||out.length>=DEEP_LIMIT)return;seen.add(sig);out.push({source,m1:cloneModel(m1),m2:cloneModel(m2),mutation:mutation||0});
+    }
+    bases.forEach(function(b){add(b.name,b.m1,b.m2,0);});
+    const vars=["A","B","C","D","E"];
+    bases.forEach(function(b){
+      vars.forEach(function(v){
+        [-1,1].forEach(function(delta){
+          if(out.length>=DEEP_LIMIT)return;
+          const m1=cloneModel(b.m1);m1.coeff[v]+=delta;clampModel(m1);add(b.name+" · mutation d1 "+v+(delta>0?"+1":"-1"),m1,b.m2,1);
+          if(out.length>=DEEP_LIMIT)return;
+          const m2=cloneModel(b.m2);m2.coeff[v]+=delta;clampModel(m2);add(b.name+" · mutation d2 "+v+(delta>0?"+1":"-1"),b.m1,m2,1);
+        });
+      });
+    });
+    return out;
+  }
+
+  function __evaluateCandidate(c,groups){
+    const fn=modelToFunction(c.m1,c.m2), byLottery=[];
+    Object.keys(groups).forEach(function(name){
+      const recs=groups[name];if(recs.length<DEEP_MIN_TRAIN+1)return;
+      const a=__deepAudit(fn,recs);if(!a.tested)return;
+      const reliability=Math.min(1,a.tested/20);
+      const stabilityPenalty=Math.min(18,a.blockStd*.35);
+      const missPenalty=Math.min(12,Math.max(0,a.maxMiss-2)*1.2);
+      const score=Number((a.shrunk*.32+a.recentRate*.23+a.secondHalf*.20+a.worstWindow*.12+(100-Math.min(100,a.blockStd))*0.13*reliability-stabilityPenalty-missPenalty).toFixed(3));
+      byLottery.push({name, ...a, score});
+    });
+    if(!byLottery.length)return null;
+    const weights=byLottery.map(function(x){return Math.sqrt(x.tested);});
+    const ws=weights.reduce(function(a,b){return a+b;},0)||1;
+    const score=byLottery.reduce(function(a,x,i){return a+x.score*weights[i];},0)/ws;
+    const overall=byLottery.reduce(function(a,x,i){return a+x.rate*weights[i];},0)/ws;
+    const recent=byLottery.reduce(function(a,x,i){return a+x.recentRate*weights[i];},0)/ws;
+    const validation=byLottery.reduce(function(a,x,i){return a+x.secondHalf*weights[i];},0)/ws;
+    const std=byLottery.reduce(function(a,x,i){return a+x.blockStd*weights[i];},0)/ws;
+    return {score:Number(score.toFixed(3)),overallRate:Number(overall.toFixed(2)),recentRate:Number(recent.toFixed(2)),validationRate:Number(validation.toFixed(2)),stability:Number(std.toFixed(2)),groupStats:byLottery,validationTested:byLottery.reduce(function(a,x){return a+x.tested;},0)};
+  }
+
+  function __pairEngine(mainDigit,otherDigit,recs,fn){
+    const candidates=[];
+    for(let target=0;target<10;target++){
+      if(target===mainDigit||target===otherDigit)continue;
+      let opp=0,hits=0,ro=0,rh=0,coOpp=0,coHit=0;
+      const rs=Math.max(0,recs.length-DEEP_RECENT_WINDOW-1);
+      for(let i=0;i<recs.length-1;i++){
+        const pred=__predict(fn,recs[i]);
+        if(!pred.includes(mainDigit))continue;
+        opp++;
+        if(i>=rs)ro++;
+        const nd=(String(recs[i+1].n3)+String(recs[i+1].n2)).split("").map(Number);
+        if(nd.includes(target)){hits++;if(i>=rs)rh++;}
+        const cd=(String(recs[i].n3)+String(recs[i].n2)).split("").map(Number);
+        if(cd.includes(mainDigit)){coOpp++;if(nd.includes(target))coHit++;}
+      }
+      const raw=__rate(hits,opp),recent=__rate(rh,ro),co=__rate(coHit,coOpp);
+      const shrunk=__shrink(hits,opp);
+      const freq=recs.length>1?recs.slice(1).reduce(function(a,r){const d=(String(r.n3)+String(r.n2)).split("").map(Number);return a+(d.includes(target)?1:0);},0)/(recs.length-1)*100:0;
+      const reliability=Math.min(1,opp/12);
+      const score=shrunk*.48+recent*.22+co*.18+freq*.12;
+      candidates.push({pair:String(mainDigit)+String(target),score:Number(score.toFixed(3)),rawRate:Number(raw.toFixed(2)),recentRate:Number(recent.toFixed(2)),coRate:Number(co.toFixed(2)),opportunities:opp,reliability:Number(reliability.toFixed(2))});
+    }
+    candidates.sort(function(a,b){if(b.score!==a.score)return b.score-a.score;if(b.opportunities!==a.opportunities)return b.opportunities-a.opportunities;return a.pair.localeCompare(b.pair);});
+    return candidates.slice(0,5);
+  }
+  window.__advancedPairEngine=__pairEngine;
+
+  function __renderDeepAudit(groups,allFormulas){
+    const root=document.getElementById("deepAuditPanel");if(!root)return;
+    const lotteryNames=Object.keys(groups), totalRecords=lotteryNames.reduce(function(a,k){return a+groups[k].length;},0);
+    const validLottery=lotteryNames.filter(function(k){return groups[k].length>=DEEP_MIN_TRAIN+1;}).length;
+    let html='<div class="panel-head"><div><div class="panel-title">🔬 Deep Walk-Forward Backtest</div><div class="panel-sub">ศึกษาอดีต → ทดสอบงวดถัดไปทีละงวด โดยไม่ใช้ข้อมูลอนาคต</div></div><button class="auto-run" id="deepAuditRun">↻ ออดิตใหม่</button></div>';
+    html+='<div class="deep-audit-grid"><div class="deep-kpi"><b>หวยที่พบ</b><strong>'+lotteryNames.length+'</strong></div><div class="deep-kpi"><b>หวยที่มีข้อมูลพอ</b><strong>'+validLottery+'</strong></div><div class="deep-kpi"><b>งวดสะสมทั้งหมด</b><strong>'+totalRecords+'</strong></div><div class="deep-kpi"><b>สูตรในระบบ</b><strong>'+Object.keys(allFormulas).length+'</strong></div></div>';
+    if(!validLottery){html+='<div class="deep-note">ยังไม่มีข้อมูลย้อนหลังพอสำหรับ Deep Backtest: ต้องมีอย่างน้อย '+(DEEP_MIN_TRAIN+1)+' งวดต่อหวย ข้อมูลใน HTML รุ่นนี้ไม่ได้ฝังสถิติย้อนหลังไว้ แต่จะอ่านจากข้อมูลที่สะสมในเครื่องโดยตรง</div>';root.innerHTML=html;document.getElementById("deepAuditRun").onclick=window.__runDeepAudit;return;}
+    const formulaRows=[];
+    Object.keys(allFormulas).forEach(function(name){const fn=allFormulas[name],arr=[];lotteryNames.forEach(function(k){if(groups[k].length>=DEEP_MIN_TRAIN+1)arr.push(__deepAudit(fn,groups[k]));});if(!arr.length)return;const w=arr.map(function(x){return Math.sqrt(x.tested);}),ws=__mean(w)*w.length||1;const score=arr.reduce(function(a,x,i){return a+(x.shrunk*.32+x.recentRate*.23+x.secondHalf*.20+x.worstWindow*.12+(100-Math.min(100,x.blockStd))*.13)*w[i];},0)/ws;formulaRows.push({name,score,overall:arr.reduce(function(a,x,i){return a+x.rate*w[i];},0)/ws,recent:arr.reduce(function(a,x,i){return a+x.recentRate*w[i];},0)/ws,std:arr.reduce(function(a,x,i){return a+x.blockStd*w[i];},0)/ws,tested:arr.reduce(function(a,x){return a+x.tested;},0)});});
+    formulaRows.sort(function(a,b){return b.score-a.score;});
+    html+='<div class="deep-section-title">🏆 อันดับสูตรเดิมจาก Walk-Forward (ไม่แก้สูตรเดิม)</div><div class="deep-scroll"><table class="deep-table"><thead><tr><th>#</th><th>สูตร</th><th>Score</th><th>Overall</th><th>Recent</th><th>σ Block</th><th>Tests</th></tr></thead><tbody>'+formulaRows.slice(0,12).map(function(x,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(x.name)+'</td><td class="'+(x.score>=60?'deep-good':x.score>=50?'deep-warn':'deep-bad')+'">'+x.score.toFixed(2)+'</td><td>'+x.overall.toFixed(2)+'%</td><td>'+x.recent.toFixed(2)+'%</td><td>'+x.std.toFixed(2)+'</td><td>'+x.tested+'</td></tr>';}).join('')+'</tbody></table></div>';
+    html+='<div class="deep-section-title">🧠 วิธีใช้ผล Audit ใน V34</div><div class="deep-note">1) ไม่แตะสูตรเลขเด่นเดิม 2) ใช้ Walk-Forward เป็นหลักในการคัดสูตรแนะนำ 3) ลงโทษความผันผวนและ Miss Streak 4) ให้ความสำคัญกับช่วงล่าสุดแต่ไม่ปล่อยให้ข้อมูลล่าสุดครอบงำ 5) สูตรเจาะใช้เฉพาะหลักฐานที่เกิดหลังสูตรนั้นสร้างสัญญาณ 6) ลดน้ำหนักสัญญาณที่มีโอกาสย้อนหลังน้อยด้วย shrinkage/reliability</div>';
+    root.innerHTML=html;document.getElementById("deepAuditRun").onclick=window.__runDeepAudit;
+  }
+  window.__runDeepAudit=function(){
+    const groups=__groups();const all=buildAllFormulas();__renderDeepAudit(groups,all);
+    try{const status=document.getElementById("autoFormulaStatus");if(status)status.textContent='✓ Deep Walk-Forward Audit พร้อมใช้งาน';}catch(e){}
+  };
+
+  function __installPanel(){
+    const host=document.querySelector("#console")||document.body;if(document.getElementById("deepAuditPanel"))return;
+    const sec=document.createElement("section");sec.className="panel";sec.id="deepAuditPanel";host.insertBefore(sec,host.firstChild);window.__runDeepAudit();
+  }
+
+  /* Deterministic Formula Lab: original formulas remain immutable. */
+  window.runAutoFormulaLab=function(){
+    const status=document.getElementById("autoFormulaStatus"),list=document.getElementById("recommendList");
+    const groups=__groups();const eligible=Object.keys(groups).filter(function(k){return groups[k].length>=DEEP_MIN_TRAIN+1;});
+    if(!eligible.length){if(status)status.textContent='ต้องมีข้อมูลอย่างน้อย '+(DEEP_MIN_TRAIN+1)+' งวดต่อหวยก่อน Deep Formula Lab';if(list)list.innerHTML='';return;}
+    if(status)status.textContent='🧬 กำลังทำ Walk-Forward Backtest แบบเรียงเวลา...';
+    setTimeout(function(){
+      const candidates=__candidateModels(),results=[];
+      candidates.forEach(function(c){const st=__evaluateCandidate(c,groups);if(st)results.push({...c,stats:{overallRate:st.overallRate,validationRate:st.validationRate,recentRate:st.recentRate,stability:st.stability,score:st.score,validationTested:st.validationTested},temporal:{rate:st.recentRate,std:st.stability,tested:st.validationTested},finalRankScore:st.score,deepGroupStats:st.groupStats});});
+      results.sort(function(a,b){return b.finalRankScore-a.finalRankScore;});
+      const finalList=results.slice(0,5);if(!finalList.length){if(status)status.textContent='ยังไม่พบ Candidate ที่แข็งแรงพอ';if(list)list.innerHTML='';return;}
+      if(status)status.textContent='✓ Deep Walk-Forward ตรวจ '+results.length+' Candidate — คัด '+finalList.length+' สูตรแนะนำ โดยไม่แก้สูตรเดิม';
+      list.innerHTML=finalList.map(function(item,index){const d1=formatLinearExpression(item.m1),d2=formatLinearExpression(item.m2);const payload=encodeURIComponent(JSON.stringify({source:item.source,d1,d2,m1:item.m1,m2:item.m2,overallRate:item.stats.overallRate,validationRate:item.stats.validationRate,recentRate:item.stats.recentRate,improvement:0,finalRankScore:item.finalRankScore}));return '<div class="recommend-card recommend-card-v323"><div class="recommend-rank">#'+(index+1)+'</div><div class="recommend-main"><div class="recommend-name">'+(index===0?'🏆 ':'')+'สูตรแนะนำอันดับ '+(index+1)+'</div><div class="recommend-source">ฐาน: '+esc(item.source)+'</div><div class="recommend-expression">d1 = '+esc(d1)+'<br>d2 = '+esc(d2)+'</div><div class="recommend-stats"><span class="stat-chip">Walk-Forward '+item.stats.validationRate+'%</span><span class="stat-chip">ภาพรวม '+item.stats.overallRate+'%</span><span class="stat-chip">ล่าสุด '+item.stats.recentRate+'%</span><span class="stat-chip">σ '+item.stats.stability+'</span><span class="stat-chip">Score '+item.finalRankScore+'</span></div><div class="recommend-reason"><b>🧠 หลักการ:</b> คัดจากอดีตไปปัจจุบัน + ลงโทษความผันผวน/การหลุดยาว + shrinkage เมื่อ sample น้อย<br><span style="color:var(--muted)">สูตรเดิมในระบบไม่ได้ถูกแก้ไข</span></div></div><button class="add-recommend" data-add-recommend="'+payload+'">＋ ใช้สูตรนี้รอบถัดไป</button></div>';}).join('');
+      list.querySelectorAll('[data-add-recommend]').forEach(function(btn){btn.onclick=function(){try{addRecommendedFormula(JSON.parse(decodeURIComponent(btn.dataset.addRecommend)));}catch(e){showToast('❌ ไม่สามารถใช้สูตรแนะนำได้');}};});
+    },40);
+  };
+
+  document.addEventListener("DOMContentLoaded",function(){setTimeout(__installPanel,120);});
+})();
+
+</script>
 
 
 <title>Mester Lotto VIP+ — Formula Lab V32.0</title>
@@ -1339,6 +1523,12 @@ table.audit-table tr:nth-child(even){
   }
 }
 </style>
+
+<style id="deep-audit-upgrade-css">
+#deepAuditPanel{margin-top:14px}.deep-audit-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}.deep-kpi{background:#fffaf0;border:1px solid #e5d3a8;border-radius:10px;padding:10px}.deep-kpi b{display:block;font-size:.58rem;color:#7b6a4d}.deep-kpi strong{display:block;font-size:1.05rem;color:#3f382f;margin-top:3px}.deep-table{width:100%;border-collapse:collapse;font-size:.58rem}.deep-table th,.deep-table td{border-bottom:1px solid #eee5d7;padding:7px 5px;text-align:left}.deep-table th{color:#806329;background:#fffaf0}.deep-good{color:#217346;font-weight:800}.deep-warn{color:#a65a00;font-weight:800}.deep-bad{color:#b42318;font-weight:800}.deep-note{font-size:.55rem;color:#786f64;line-height:1.55}.deep-badge{display:inline-block;border:1px solid #dbc89e;border-radius:999px;padding:2px 7px;background:#fffdf7}.deep-scroll{overflow:auto}.deep-section-title{font-weight:900;color:#51442f;margin:12px 0 6px;font-size:.72rem}
+@media(max-width:800px){.deep-audit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.deep-table{min-width:720px}}
+</style>
+
 </head>
 
 
