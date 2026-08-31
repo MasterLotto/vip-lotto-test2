@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V32.1
+MESTER LOTTO VIP+ — V32.0
 ==================================================================
 PURE RAW ENGINE + CUSTOM FORMULA LAB + AUTO FORMULA RECOMMENDER
 ==================================================================
@@ -8,7 +8,7 @@ PURE RAW ENGINE + CUSTOM FORMULA LAB + AUTO FORMULA RECOMMENDER
 1. สูตรเดิมทั้งหมดคงไว้ 100%
 2. ไม่แก้ผลคำนวณของสูตรเดิม
 3. เพิ่มระบบเพิ่มสูตรเองผ่านหน้าเว็บ
-4. เพิ่มระบบ Auto Formula Lab สำหรับสร้างสูตรทดลองจากสูตรที่มีอยู่ พร้อมเทียบผลเดิมและแสดงเลขเด่น
+4. เพิ่มระบบ Auto Formula Lab สำหรับสร้างสูตรทดลองจากสูตรที่มีอยู่
 5. จำกัดจำนวน Candidate เพื่อป้องกัน Browser ค้าง
 6. ใช้ Train / Validation เพื่อลด Overfitting
 7. สูตรแนะนำจะไม่แทนสูตรเดิมอัตโนมัติ
@@ -29,7 +29,7 @@ PURE RAW ENGINE + CUSTOM FORMULA LAB + AUTO FORMULA RECOMMENDER
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 
-<title>Mester Lotto VIP+ — Formula Lab V32.1</title>
+<title>Mester Lotto VIP+ — Formula Lab V32.0</title>
 
 
 <style>
@@ -1275,32 +1275,6 @@ table.audit-table tr:nth-child(even){
 
 
 /* =========================================================
-   SELECTED RECOMMENDATION / NEXT-ROUND CARD
-========================================================= */
-.selected-recommend-wrap{margin-top:12px;padding-top:12px;border-top:1px dashed #d9bd79}
-.selected-recommend-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.selected-recommend-title{font-size:.62rem;font-weight:900;color:var(--gold2)}
-.selected-recommend-note{font-size:.42rem;color:var(--muted);line-height:1.5}
-.selected-formula-card{position:relative;margin-top:10px;padding:15px;border:1px solid #d9bd79;border-radius:18px;background:linear-gradient(145deg,#fffaf0,#fffdf9);box-shadow:var(--shadow2);overflow:hidden}
-.selected-card-actions{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:2}
-.selected-card-actions .card-action-btn{background:#fffdf9}
-.recommend-highlight{display:grid;grid-template-columns:1.15fr .85fr;gap:8px;margin-top:9px}
-.recommend-metric{padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:#fff}
-.recommend-metric b{display:block;font-size:.48rem;color:var(--muted);margin-bottom:3px}
-.recommend-metric strong{font-size:.82rem;color:var(--gold2)}
-.recommend-metric.good{background:var(--greenBg);border-color:#b9dfc4}
-.recommend-metric.good strong{color:var(--green)}
-.recommend-reason{margin-top:9px;padding:9px 10px;border-radius:11px;background:#faf6ed;border:1px solid var(--line);font-size:.46rem;line-height:1.65;color:#625a4f}
-.selected-number-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
-.selected-number-box{padding:10px;border:1px solid #d9bd79;border-radius:13px;background:#fff;text-align:center}
-.selected-number-box small{display:block;color:var(--muted);font-size:.42rem;font-weight:800;margin-bottom:5px}
-.selected-number-box strong{font-family:"IBM Plex Mono",monospace;font-size:1.35rem;letter-spacing:3px;color:var(--gold2)}
-.selected-pairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
-.selected-pair{min-width:40px;padding:7px 8px;border-radius:9px;border:1px solid var(--line);background:#fff;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:.52rem;font-weight:900;color:#403a31}
-.selected-pair:first-child{border-color:#d9bd79;background:#fffaf0;color:var(--gold2)}
-@media(max-width:760px){.recommend-highlight{grid-template-columns:1fr}}
-
-/* =========================================================
    MOBILE
 ========================================================= */
 
@@ -1714,7 +1688,7 @@ table.audit-table tr:nth-child(even){
 
 
           <div class="auto-title">
-            ✦ ระบบแนะนำสูตรอัตโนมัติ
+            ✦ Auto Formula Recommender
           </div>
 
 
@@ -1749,12 +1723,6 @@ table.audit-table tr:nth-child(even){
       <div
         id="recommendList"
         class="recommend-list"
-      ></div>
-
-      <div
-        id="selectedFormulaResults"
-        class="selected-recommend-wrap"
-        style="display:none;"
       ></div>
 
 
@@ -1812,11 +1780,6 @@ const STORAGE_KEY =
 
 const CUSTOM_FORMULA_KEY =
   "lottery_custom_formulas_v320";
-
-const SELECTED_FORMULA_KEY =
-  "lottery_selected_formula_v320";
-
-let selectedRecommendedFormula = null;
 
 
 /* =========================================================
@@ -5475,531 +5438,286 @@ function runAutoFormulaLab(){
 }
 
 
-function getMasterRecordsForRecommendation(){
-  try{
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  }catch(e){
-    return [];
-  }
-}
-
-
-function groupRecordsByLottery(records){
-  const groups = {};
-
-  records.forEach(function(r){
-    if(!groups[r.name]) groups[r.name] = [];
-    groups[r.name].push(r);
-  });
-
-  Object.keys(groups).forEach(function(name){
-    groups[name].sort(function(a,b){
-      return (a.timestamp||0) - (b.timestamp||0);
-    });
-  });
-
-  return groups;
-}
-
-
-function getRecommendationBaseline(groups){
-  const allFormulas = buildAllFormulas();
-  const baselineRates = [];
-
-  Object.keys(groups).forEach(function(name){
-    const recs = groups[name];
-    if(recs.length < 8) return;
-
-    const totalPossible = recs.length - 1;
-    const valStart = Math.max(0,Math.floor(totalPossible*.70));
-    const rates = [];
-
-    Object.keys(allFormulas).forEach(function(fName){
-      try{
-        const stats = auditFormulaOnRecords(
-          allFormulas[fName],
-          recs,
-          valStart,
-          totalPossible
-        );
-        if(stats.totalTested > 0) rates.push(stats.hitRate);
-      }catch(e){}
-    });
-
-    if(rates.length)
-      baselineRates.push(Math.max.apply(null,rates));
-  });
-
-  const baseline = baselineRates.length
-    ? baselineRates.reduce(function(a,b){return a+b;},0)/baselineRates.length
-    : 0;
-
-  return Number(baseline.toFixed(2));
-}
-
-
-function getRecommendationInsight(item,groups){
-  const baseline = getRecommendationBaseline(groups);
-  const improvement =
-    Number((item.stats.validationRate-baseline).toFixed(2));
-
-  const relativeImprovement =
-    baseline > 0
-      ? Number(((item.stats.validationRate-baseline)/baseline*100).toFixed(2))
-      : 0;
-
-  let label = "ใกล้เคียงฐานสูตรเดิม";
-  if(improvement > 0.01) label = "ดีขึ้นจากฐานสูตรเดิม";
-  if(improvement < -0.01) label = "ยังไม่เหนือฐานสูตรเดิม";
-
-  return {
-    baseline,
-    improvement,
-    relativeImprovement,
-    label
-  };
-}
-
-
-function getCandidateDigitPreview(item,groups){
-  const fn = modelToFunction(item.m1,item.m2);
-  const rows = [];
-
-  Object.keys(groups).forEach(function(lotteryName){
-    const recs = groups[lotteryName];
-    if(recs.length < 2) return;
-
-    const latest = recs[recs.length-1];
-    const top = latest.n3.split("").map(Number);
-    const bot = latest.n2.split("").map(Number);
-
-    try{
-      const digits = sanitizeFormulaResult(
-        fn(top[0],top[1],top[2],bot[0],bot[1])
-      );
-
-      rows.push({
-        name:lotteryName,
-        d1:digits[0],
-        d2:digits[1]
-      });
-    }catch(e){}
-  });
-
-  return rows.slice(0,6);
-}
-
-
 function finishFormulaLab(results){
-  const status = $("autoFormulaStatus");
-  const list = $("recommendList");
-  const groups =
-    groupRecordsByLottery(
-      getMasterRecordsForRecommendation()
-    );
+
+
+  const status =
+    $("autoFormulaStatus");
+
+
+  const list =
+    $("recommendList");
+
+
+  /*
+    Require validation evidence.
+  */
+
 
   const qualified =
     results
-      .filter(function(x){
-        return x.stats.validationTested >= 5;
-      })
-      .sort(function(a,b){
-        return b.stats.score-a.stats.score;
-      });
+      .filter(
+        function(x){
+
+
+          return (
+            x.stats.validationTested >= 5
+          );
+
+
+        }
+      )
+      .sort(
+        function(a,b){
+
+
+          return (
+            b.stats.score -
+            a.stats.score
+          );
+
+
+        }
+      );
+
+
+  /*
+    Keep only unique formulas.
+  */
+
 
   const finalList = [];
+
+
   const seen = new Set();
 
-  qualified.forEach(function(item){
-    const signature = modelSignature(item.m1,item.m2);
-    if(!seen.has(signature) && finalList.length<5){
-      seen.add(signature);
-      finalList.push(item);
+
+  qualified.forEach(
+    function(item){
+
+
+      const signature =
+        modelSignature(
+          item.m1,
+          item.m2
+        );
+
+
+      if(
+        !seen.has(signature) &&
+        finalList.length < 5
+      ){
+
+
+        seen.add(signature);
+
+
+        finalList.push(item);
+
+
+      }
+
+
     }
-  });
+  );
+
 
   if(!finalList.length){
+
+
     status.textContent =
       `ตรวจแล้ว ${results.length} Candidate แต่ยังไม่มีสูตรที่ผ่านเกณฑ์ Validation`;
+
+
     list.innerHTML = "";
+
+
     return;
+
+
   }
+
 
   status.textContent =
     `✓ ตรวจสอบ ${results.length} Candidate เสร็จแล้ว — แสดงสูตรที่ดีที่สุด ${finalList.length} สูตร`;
 
+
   list.innerHTML =
-    finalList.map(function(item,index){
-      const d1 = formatLinearExpression(item.m1);
-      const d2 = formatLinearExpression(item.m2);
-      const insight = getRecommendationInsight(item,groups);
-      const scoreClass =
-        item.stats.validationRate>=60 ? "good" : "warn";
+    finalList.map(
+      function(item,index){
 
-      const improvementText =
-        insight.improvement>0
-          ? `+${insight.improvement.toFixed(2)} จุด`
-          : `${insight.improvement.toFixed(2)} จุด`;
 
-      const payload =
-        encodeURIComponent(JSON.stringify({
-          source:item.source,
-          d1,
-          d2,
-          overallRate:item.stats.overallRate,
-          validationRate:item.stats.validationRate,
-          recentRate:item.stats.recentRate,
-          stability:item.stats.stability,
-          score:item.stats.score,
-          baselineValidation:insight.baseline,
-          improvement:insight.improvement,
-          relativeImprovement:insight.relativeImprovement
-        }));
+        const d1 =
+          formatLinearExpression(
+            item.m1
+          );
 
-      return `
-        <div class="recommend-card">
-          <div class="recommend-main">
 
-            <div class="recommend-name">
-              ${index===0 ? "🏆 " : ""}
-              สูตรแนะนำ #${index+1}
-              — ต่อยอดจาก ${esc(item.source)}
-            </div>
+        const d2 =
+          formatLinearExpression(
+            item.m2
+          );
 
-            <div class="recommend-expression">
-              สูตรตัวที่ 1 (d1) = ${esc(d1)}
-              <br>
-              สูตรตัวที่ 2 (d2) = ${esc(d2)}
-            </div>
 
-            <div class="recommend-highlight">
-              <div class="recommend-metric good">
-                <b>ความแม่นจาก Validation</b>
-                <strong>${item.stats.validationRate}%</strong>
+        const scoreClass =
+          item.stats.validationRate >= 60
+            ? "good"
+            : "warn";
+
+
+        /*
+          Store the candidate in a JSON-safe form
+          for Add button.
+        */
+
+
+        const payload =
+          encodeURIComponent(
+            JSON.stringify({
+              source:item.source,
+              d1,
+              d2,
+              overallRate:
+                item.stats.overallRate,
+              validationRate:
+                item.stats.validationRate,
+              recentRate:
+                item.stats.recentRate
+            })
+          );
+
+
+        return `
+
+
+          <div class="recommend-card">
+
+
+            <div class="recommend-main">
+
+
+              <div class="recommend-name">
+
+
+                ${index === 0 ? "🏆 " : ""}
+                Candidate #${index+1}
+                — จาก ${esc(item.source)}
+
+
               </div>
-              <div class="recommend-metric">
-                <b>เทียบฐานสูตรเดิมที่ดีที่สุด</b>
-                <strong>${improvementText}</strong>
+
+
+              <div class="recommend-expression">
+
+
+                d1 = ${esc(d1)}
+                <br>
+
+
+                d2 = ${esc(d2)}
+
+
               </div>
+
+
+              <div class="recommend-stats">
+
+
+                <span class="stat-chip ${scoreClass}">
+                  Validation ${item.stats.validationRate}%
+                </span>
+
+
+                <span class="stat-chip">
+                  Overall ${item.stats.overallRate}%
+                </span>
+
+
+                <span class="stat-chip">
+                  ล่าสุด ${item.stats.recentRate}%
+                </span>
+
+
+                <span class="stat-chip">
+                  Stability σ ${item.stats.stability}
+                </span>
+
+
+                <span class="stat-chip">
+                  Score ${item.stats.score}
+                </span>
+
+
+              </div>
+
+
             </div>
 
-            <div class="recommend-stats">
-              <span class="stat-chip ${scoreClass}">
-                Validation ${item.stats.validationRate}%
-              </span>
-              <span class="stat-chip">
-                ภาพรวม ${item.stats.overallRate}%
-              </span>
-              <span class="stat-chip">
-                ล่าสุด ${item.stats.recentRate}%
-              </span>
-              <span class="stat-chip">
-                ความสม่ำเสมอ σ ${item.stats.stability}
-              </span>
-              <span class="stat-chip">
-                คะแนนรวม ${item.stats.score}
-              </span>
-            </div>
-
-            <div class="recommend-reason">
-              <b>🧠 สรุป:</b>
-              ${esc(insight.label)}
-              — สูตรนี้ได้ ${item.stats.validationRate}%
-              เทียบฐานเดิม ${insight.baseline}%
-              (${improvementText}
-              · ≈ ${insight.relativeImprovement>=0?"+":""}${insight.relativeImprovement.toFixed(2)}% จากฐาน)
-              <br>
-              <b>🎯 เลขเด่นจากสูตรนี้:</b>
-              ${getCandidateDigitPreview(item,groups).map(function(x){
-                return `<span class="stat-chip">${esc(x.name)} → ${x.d1}-${x.d2}</span>`;
-              }).join(" ")}
-              <br>
-              <span style="color:var(--muted);">
-                เป็นผลคำนวณจากข้อมูลล่าสุด ไม่ใช่การรับประกันผลรางวัล
-              </span>
-            </div>
-
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:6px;align-self:center;">
-            <button
-              class="add-recommend"
-              data-use-recommend="${payload}"
-            >
-              🎯 เลือกใช้รอบถัดไป
-            </button>
 
             <button
               class="add-recommend"
               data-add-recommend="${payload}"
-              style="background:linear-gradient(135deg,#fffaf0,#f4ead4);color:#806329;border:1px solid #d9bd79;"
             >
               ＋ เพิ่มสูตร
             </button>
+
+
           </div>
-        </div>
-      `;
-    }).join("");
 
-  list.querySelectorAll("[data-add-recommend]").forEach(function(btn){
-    btn.onclick = function(){
-      try{
-        addRecommendedFormula(
-          JSON.parse(decodeURIComponent(btn.dataset.addRecommend))
-        );
-      }catch(e){
-        showToast("❌ ไม่สามารถเพิ่มสูตรแนะนำได้");
+
+        `;
+
+
       }
-    };
-  });
+    ).join("");
 
-  list.querySelectorAll("[data-use-recommend]").forEach(function(btn){
-    btn.onclick = function(){
-      try{
-        selectRecommendedFormula(
-          JSON.parse(decodeURIComponent(btn.dataset.useRecommend))
-        );
-      }catch(e){
-        console.error(e);
-        showToast("❌ ไม่สามารถใช้สูตรแนะนำได้");
+
+  list
+    .querySelectorAll(
+      "[data-add-recommend]"
+    )
+    .forEach(
+      function(btn){
+
+
+        btn.onclick =
+          function(){
+
+
+            try{
+
+
+              const data =
+                JSON.parse(
+                  decodeURIComponent(
+                    btn.dataset.addRecommend
+                  )
+                );
+
+
+              addRecommendedFormula(
+                data
+              );
+
+
+            }catch(e){
+
+
+              showToast(
+                "❌ ไม่สามารถเพิ่มสูตรแนะนำได้"
+              );
+
+
+            }
+
+
+          };
+
+
       }
-    };
-  });
-}
-
-
-function buildSelectedPairs(recs,mainDigit){
-  const rawPairs = [];
-
-  for(let target=0;target<=9;target++){
-    if(target===mainDigit) continue;
-
-    let cooccurrenceBonus = 0;
-
-    for(let idx=0;idx<recs.length-1;idx++){
-      const cur=recs[idx];
-      const next=recs[idx+1];
-
-      const curN3=cur.n3.split("").map(Number);
-      const nextN3=next.n3.split("").map(Number);
-      const nextN2=next.n2.split("").map(Number);
-
-      if(
-        curN3.includes(mainDigit) &&
-        (nextN3.includes(target)||nextN2.includes(target))
-      ){
-        cooccurrenceBonus+=6;
-      }
-    }
-
-    rawPairs.push({
-      pair:`${mainDigit}${target}`,
-      score:cooccurrenceBonus
-    });
-  }
-
-  rawPairs.sort(function(a,b){return b.score-a.score;});
-  return rawPairs.slice(0,5);
-}
-
-
-function selectRecommendedFormula(data){
-  const m1=parseLinearExpression(data.d1);
-  const m2=parseLinearExpression(data.d2);
-
-  if(!m1||!m2){
-    showToast("❌ สูตรแนะนำนี้ไม่สามารถแปลงเพื่อคำนวณได้");
-    return;
-  }
-
-  selectedRecommendedFormula={...data,m1,m2};
-
-  try{
-    localStorage.setItem(
-      SELECTED_FORMULA_KEY,
-      JSON.stringify(data)
-    );
-  }catch(e){}
-
-  renderSelectedFormulaCards();
-
-  showToast(
-    "✓ เลือกสูตรรอบถัดไปแล้ว — สร้างการ์ดเลขเด่นให้เรียบร้อย"
-  );
-
-  const el=$("selectedFormulaResults");
-  if(el){
-    el.scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
-  }
-}
-
-
-function renderSelectedFormulaCards(){
-  const wrap=$("selectedFormulaResults");
-  if(!wrap) return;
-
-  const data=selectedRecommendedFormula;
-
-  if(!data){
-    wrap.style.display="none";
-    wrap.innerHTML="";
-    return;
-  }
-
-  const groups=
-    groupRecordsByLottery(
-      getMasterRecordsForRecommendation()
     );
 
-  const fn=modelToFunction(data.m1,data.m2);
 
-  let html=`
-    <div class="selected-recommend-head">
-      <div>
-        <div class="selected-recommend-title">
-          🎯 การ์ดหลัก — สูตรที่เลือกสำหรับรอบถัดไป
-        </div>
-        <div class="selected-recommend-note">
-          ${esc(data.source||"สูตรแนะนำ")}
-          · Validation ${data.validationRate}%
-          · ${data.improvement>=0?"+":""}${Number(data.improvement||0).toFixed(2)} จุด
-          · ≈ ${data.relativeImprovement>=0?"+":""}${Number(data.relativeImprovement||0).toFixed(2)}% จากฐาน
-        </div>
-      </div>
-    </div>
-  `;
-
-  let cardIndex=0;
-
-  Object.keys(groups).forEach(function(lotteryName){
-    const recs=groups[lotteryName];
-    if(recs.length<2) return;
-
-    const latest=recs[recs.length-1];
-    const top=latest.n3.split("").map(Number);
-    const bot=latest.n2.split("").map(Number);
-
-    let digits;
-
-    try{
-      digits=sanitizeFormulaResult(
-        fn(top[0],top[1],top[2],bot[0],bot[1])
-      );
-    }catch(e){
-      digits=[0,1];
-    }
-
-    const d1Pairs=buildSelectedPairs(recs,digits[0]);
-    const d2Pairs=buildSelectedPairs(recs,digits[1]);
-
-    const cardId=`selected_formula_card_${cardIndex++}`;
-    const jsonD1=JSON.stringify(d1Pairs).replace(/"/g,"&quot;");
-    const jsonD2=JSON.stringify(d2Pairs).replace(/"/g,"&quot;");
-    const allPairs=[...d1Pairs,...d2Pairs].map(function(x){return x.pair;});
-
-    html+=`
-      <div class="selected-formula-card prediction-card" id="${cardId}">
-
-        <div class="selected-card-actions">
-          <button
-            class="card-action-btn"
-            onclick="
-              copyCardText(
-                '${cardId}',
-                '${esc(lotteryName)} — สูตรแนะนำ',
-                '${esc(getNextDateStr(latest.date))}',
-                ${jsonD1},
-                ${jsonD2}
-              )
-            "
-          >
-            📋 คัดลอก
-          </button>
-
-          <button
-            class="card-action-btn"
-            onclick="
-              captureCardImage(
-                '${cardId}',
-                '${esc(lotteryName)} — สูตรแนะนำ'
-              )
-            "
-          >
-            📸 แคปภาพ
-          </button>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:8px;padding-right:145px;">
-          <div style="font-size:1.1rem;">
-            ${getLotteryFlag(lotteryName)}
-          </div>
-          <div>
-            <div style="font-size:.82rem;font-weight:900;color:#403a31;">
-              ${esc(lotteryName)}
-            </div>
-            <div style="font-size:.48rem;color:#8b8173;font-weight:700;">
-              รอบถัดไป: ${esc(getNextDateStr(latest.date))}
-            </div>
-          </div>
-        </div>
-
-        <div class="recommend-highlight">
-          <div class="recommend-metric good">
-            <b>สูตรที่เลือก</b>
-            <strong>Validation ${data.validationRate}%</strong>
-          </div>
-          <div class="recommend-metric">
-            <b>ต่างจากฐานเดิม</b>
-            <strong>
-              ${data.improvement>=0?"+":""}${Number(data.improvement||0).toFixed(2)} จุด
-              <br>
-              <span style="font-size:.52rem;">
-                ≈ ${data.relativeImprovement>=0?"+":""}${Number(data.relativeImprovement||0).toFixed(2)}% จากฐาน
-              </span>
-            </strong>
-          </div>
-        </div>
-
-        <div class="recommend-expression" style="margin-top:9px;">
-          d1 = ${esc(data.d1)}
-          <br>
-          d2 = ${esc(data.d2)}
-        </div>
-
-        <div class="selected-number-grid">
-          <div class="selected-number-box">
-            <small>🔥 เลขเด่นตัวที่ 1</small>
-            <strong>${digits[0]}</strong>
-          </div>
-          <div class="selected-number-box">
-            <small>🔥 เลขเด่นตัวที่ 2</small>
-            <strong>${digits[1]}</strong>
-          </div>
-        </div>
-
-        <div class="recommend-reason">
-          <b>🎯 ชุดเจาะจากสูตรนี้</b>
-          <div class="selected-pairs">
-            ${allPairs.map(function(pair){
-              return `<span class="selected-pair">${esc(pair)}</span>`;
-            }).join("")}
-          </div>
-          <div style="margin-top:6px;">
-            ระบบคำนวณจากข้อมูลล่าสุดของ ${esc(lotteryName)}
-            และใช้สูตรที่คุณเลือก โดยไม่แทนที่สูตรเดิม
-          </div>
-        </div>
-
-      </div>
-    `;
-  });
-
-  wrap.innerHTML=html;
-  wrap.style.display=cardIndex?"block":"none";
 }
 
 
@@ -6011,7 +5729,7 @@ function addRecommendedFormula(data){
 
 
   let baseName =
-    "สูตรอัตโนมัติ";
+    "AUTO Formula";
 
 
   let counter = 1;
@@ -6059,15 +5777,6 @@ function addRecommendedFormula(data){
 
     d1:data.d1,
     d2:data.d2,
-
-    recommendationBaseline:
-      data.baselineValidation,
-    recommendationImprovement:
-      data.improvement,
-    recommendationRelativeImprovement:
-      data.relativeImprovement,
-    recommendationScore:
-      data.score,
 
 
     source:
@@ -8252,10 +7961,6 @@ function runEngine(){
     predictionDataMap
   );
 
-  if(selectedRecommendedFormula){
-    renderSelectedFormulaCards();
-  }
-
 
   /*
     Auto Lab ไม่รันทันทีทุกครั้ง
@@ -8274,6 +7979,475 @@ function runEngine(){
 
 
 }
+
+
+
+/* =========================================================
+   V32.3 ADVANCED RECOMMENDATION + PAIR ENGINE
+   - Keeps the original digit engine untouched.
+   - Improves Formula Lab ranking with temporal stability.
+   - Adds direct pair backtesting for recommended formulas.
+   - 1 main digit => exactly 5 pairs.
+   - Recommended pairs exclude doubles and main-digit collisions.
+   - Selected recommendations become clean prediction cards.
+========================================================= */
+
+const RECOMMENDATION_STATE_KEY = "mester_lotto_selected_recommendations_v323";
+let __formulaLabGroups = {};
+let __formulaLabAllFormulas = {};
+
+function __safeNumber(v, fallback){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function __loadSelectedRecommendations(){
+  try{
+    const raw = localStorage.getItem(RECOMMENDATION_STATE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  }catch(e){ return []; }
+}
+
+function __saveSelectedRecommendations(arr){
+  try{
+    localStorage.setItem(RECOMMENDATION_STATE_KEY, JSON.stringify(arr));
+    return true;
+  }catch(e){ return false; }
+}
+
+/* Temporal robustness: measure the formula across chronological windows.
+   This does not alter the original digit formula; it only ranks candidates. */
+function __temporalFormulaStats(fn, groups){
+  const foldRates = [];
+  let total = 0, hits = 0;
+
+  Object.keys(groups || {}).forEach(function(name){
+    const recs = groups[name];
+    if(!Array.isArray(recs) || recs.length < 9) return;
+    const possible = recs.length - 1;
+    const folds = Math.min(4, Math.max(2, Math.floor(possible / 5)));
+    const foldSize = Math.max(2, Math.floor(possible / folds));
+    let start = 0;
+    let usedFolds = 0;
+
+    while(start < possible && usedFolds < folds){
+      const end = Math.min(possible, start + foldSize);
+      const st = auditFormulaOnRecords(fn, recs, start, end);
+      if(st.totalTested > 0){
+        foldRates.push(st.hitRate);
+        total += st.totalTested;
+        hits += st.hits;
+      }
+      start = end;
+      usedFolds++;
+    }
+  });
+
+  if(!foldRates.length){
+    return { rate:0, std:100, tested:0, hits:0 };
+  }
+  const mean = foldRates.reduce(function(a,b){return a+b;},0) / foldRates.length;
+  const variance = foldRates.reduce(function(a,b){return a + Math.pow(b-mean,2);},0) / foldRates.length;
+  return {
+    rate:Number(mean.toFixed(2)),
+    std:Number(Math.sqrt(variance).toFixed(2)),
+    tested:total,
+    hits:hits
+  };
+}
+
+/* Direct pair backtest. The main digit is supplied by the selected formula.
+   A pair earns a hit when the target digit appears in the following draw.
+   The main digit itself is only the conditioning context, not an extra hit.
+*/
+function __advancedPairEngine(mainDigit, otherDigit, recs, formulaFn){
+  const pool = [0,1,2,3,4,5,6,7,8,9];
+  const candidates = [];
+
+  pool.forEach(function(target){
+    if(target === mainDigit) return;       // no doubles
+    if(target === otherDigit) return;      // no main-digit collision
+
+    let opportunities = 0;
+    let hits = 0;
+    let recentOpp = 0;
+    let recentHits = 0;
+    let coHits = 0;
+    let coOpportunities = 0;
+    const recentStart = Math.max(0, recs.length - 8);
+
+    for(let i=0; i<recs.length-1; i++){
+      const cur = recs[i];
+      const next = recs[i+1];
+      if(!cur || !next) continue;
+
+      let predicted;
+      try{
+        const top = String(cur.n3 || "").padStart(3,"0").slice(-3).split("").map(Number);
+        const bot = String(cur.n2 || "").padStart(2,"0").slice(-2).split("").map(Number);
+        predicted = sanitizeFormulaResult(formulaFn(top[0],top[1],top[2],bot[0],bot[1]));
+      }catch(e){
+        predicted = [0,1];
+      }
+
+      if(!predicted.includes(mainDigit)) continue;
+      opportunities++;
+      if(i >= recentStart) recentOpp++;
+
+      const nextDigits = (String(next.n3 || "") + String(next.n2 || "")).split("").map(Number);
+      if(nextDigits.includes(target)){
+        hits++;
+        if(i >= recentStart) recentHits++;
+      }
+
+      const curDigits = (String(cur.n3 || "") + String(cur.n2 || "")).split("").map(Number);
+      if(curDigits.includes(mainDigit)){
+        coOpportunities++;
+        if(nextDigits.includes(target)) coHits++;
+      }
+    }
+
+    const rawRate = opportunities ? hits/opportunities*100 : 0;
+    const recentRate = recentOpp ? recentHits/recentOpp*100 : rawRate;
+    const coRate = coOpportunities ? coHits/coOpportunities*100 : 0;
+    const shrunkRate = ((hits + 5) / (opportunities + 10)) * 100;
+
+    const targetFrequency = recs.length > 1
+      ? recs.slice(1).reduce(function(acc,r){
+          const ds=(String(r.n3||"")+String(r.n2||"")).split("").map(Number);
+          return acc + (ds.includes(target) ? 1 : 0);
+        },0) / (recs.length-1) * 100
+      : 0;
+
+    const score =
+      shrunkRate * 0.55 +
+      coRate * 0.20 +
+      recentRate * 0.15 +
+      targetFrequency * 0.10;
+
+    candidates.push({
+      pair:String(mainDigit)+String(target),
+      score:Number(score.toFixed(3)),
+      rawRate:Number(rawRate.toFixed(2)),
+      opportunities,
+      recentRate:Number(recentRate.toFixed(2)),
+      coRate:Number(coRate.toFixed(2))
+    });
+  });
+
+  candidates.sort(function(a,b){
+    if(b.score !== a.score) return b.score-a.score;
+    if(b.rawRate !== a.rawRate) return b.rawRate-a.rawRate;
+    return parseInt(a.pair,10)-parseInt(b.pair,10);
+  });
+
+  const selected = candidates.slice(0,5).map(function(item,idx){
+    return {
+      pair:item.pair,
+      score:item.score,
+      rawRate:item.rawRate,
+      opportunities:item.opportunities,
+      recentRate:item.recentRate,
+      coRate:item.coRate,
+      color:idx===0 ? "gold" : idx===1 ? "silver" : idx===2 ? "rose_gold" : "default"
+    };
+  });
+
+  /* Keep card display order numeric while preserving rank color. */
+  selected.sort(function(a,b){
+    return parseInt(a.pair,10)-parseInt(b.pair,10);
+  });
+  return selected;
+}
+
+function __pairCardHTML(mainDigit, pairsList, isFirstRow){
+  const mainBg = isFirstRow ? "linear-gradient(135deg,#f9f3e3,#edd5a6)" : "linear-gradient(135deg,#f3f4f6,#e5e7eb)";
+  const mainBorder = isFirstRow ? "#d9bd79" : "#9ca3af";
+  const mainColor = isFirstRow ? "#806329" : "#374151";
+  return `
+    <div style="display:flex;align-items:center;gap:10px;margin:10px 0;padding-bottom:10px;border-bottom:1px solid #f0e6d6;">
+      <div style="width:38px;height:38px;border-radius:10px;background:${mainBg};border:1px solid ${mainBorder};color:${mainColor};display:grid;place-items:center;font-size:.85rem;font-weight:900;">${mainDigit}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${pairsList.map(function(item){
+          let border="#e8dfcf", bg="#ffffff", color="#403a31";
+          if(item.color==="gold"){border="#d9bd79";bg="#fffaf0";color="#806329";}
+          else if(item.color==="silver"){border="#b0b8c4";bg="#f8fafc";color="#475569";}
+          else if(item.color==="rose_gold"){border="#e0a1a1";bg="#fff5f5";color="#9b2c2c";}
+          return `<div style="width:38px;height:34px;border-radius:9px;border:1px solid ${border};background:${bg};color:${color};display:grid;place-items:center;font-size:.58rem;font-weight:800;font-family:'IBM Plex Mono',monospace;">${item.pair}</div>`;
+        }).join("")}
+      </div>
+    </div>`;
+}
+
+function __recommendCardForLottery(lotteryName, rec, candidate, index, groups){
+  const fn = modelToFunction(candidate.m1,candidate.m2);
+  const top = String(rec.n3||"").padStart(3,"0").slice(-3).split("").map(Number);
+  const bot = String(rec.n2||"").padStart(2,"0").slice(-2).split("").map(Number);
+  const digits = sanitizeFormulaResult(fn(top[0],top[1],top[2],bot[0],bot[1]));
+  const d1=digits[0], d2=digits[1];
+  const d1Pairs=__advancedPairEngine(d1,d2,groups[lotteryName]||[],fn);
+  const d2Pairs=__advancedPairEngine(d2,d1,groups[lotteryName]||[],fn);
+  const flag=getLotteryFlag(lotteryName);
+  const id="rec_card_"+Date.now()+"_"+Math.random().toString(36).slice(2,7)+"_"+index;
+  const json1=JSON.stringify(d1Pairs).replace(/"/g,"&quot;");
+  const json2=JSON.stringify(d2Pairs).replace(/"/g,"&quot;");
+  const date=getNextDateStr(rec.date);
+  return `
+    <div class="prediction-card recommendation-prediction-card" id="${id}" style="position:relative;">
+      <div class="card-btn-group">
+        <button class="card-action-btn" onclick="copyCardText('${id}','${esc(lotteryName)}','${esc(date)}',${json1},${json2})">📋 คัดลอก</button>
+        <button class="card-action-btn" onclick="captureCardImage('${id}','${esc(lotteryName)}')">📸 แคปภาพ</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-size:1.1rem;">${flag}</div>
+          <div>
+            <div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(lotteryName)}</div>
+            <div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(date)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-badge-placeholder" style="display:none;position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>
+      <div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;display:flex;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>
+      ${__pairCardHTML(d1,d1Pairs,true)}
+      ${__pairCardHTML(d2,d2Pairs,false)}
+    </div>`;
+}
+
+function __appendSelectedRecommendationCards(){
+  const result = $("result");
+  if(!result || !Object.keys(__formulaLabGroups).length) return;
+
+  const selected=__loadSelectedRecommendations();
+  if(!selected.length) return;
+
+  const old=result.querySelector("#selectedRecommendationCards");
+  if(old) old.remove();
+
+  const latestByLottery={};
+  Object.keys(__formulaLabGroups).forEach(function(name){
+    const arr=__formulaLabGroups[name]||[];
+    if(arr.length) latestByLottery[name]=arr[arr.length-1];
+  });
+
+  let html=`<div id="selectedRecommendationCards"><div class="section-title">🧬 การ์ดสูตรแนะนำที่เลือก</div>`;
+  let cardCount=0;
+  selected.forEach(function(candidate,selIndex){
+    Object.keys(latestByLottery).forEach(function(name){
+      html+=__recommendCardForLottery(name,latestByLottery[name],candidate,cardCount++,__formulaLabGroups);
+    });
+  });
+  html+=`</div>`;
+  result.insertAdjacentHTML("beforeend",html);
+}
+
+/* Preserve the original main render and only append selected recommendation cards. */
+const __originalRenderFullUI_V323 = renderFullUI;
+renderFullUI = function(globalAuditMap,auditDataMap,predictionDataMap){
+  __originalRenderFullUI_V323(globalAuditMap,auditDataMap,predictionDataMap);
+  __appendSelectedRecommendationCards();
+};
+
+/* Preserve the original Formula Lab search, while exposing its groups/formulas to the new ranker. */
+const __originalRunAutoFormulaLab_V323 = runAutoFormulaLab;
+runAutoFormulaLab = function(){
+  try{
+    const stored=localStorage.getItem(STORAGE_KEY);
+    const records=stored?JSON.parse(stored):[];
+    const groups={};
+    (Array.isArray(records)?records:[]).forEach(function(r){
+      if(!groups[r.name]) groups[r.name]=[];
+      groups[r.name].push(r);
+    });
+    Object.keys(groups).forEach(function(name){
+      groups[name].sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);});
+    });
+    __formulaLabGroups=groups;
+    __formulaLabAllFormulas=buildAllFormulas();
+  }catch(e){ __formulaLabGroups={}; __formulaLabAllFormulas={}; }
+  return __originalRunAutoFormulaLab_V323.apply(this,arguments);
+};
+
+/* Replace only the recommendation presentation/ranking stage. */
+finishFormulaLab = function(results){
+  const status=$("autoFormulaStatus");
+  const list=$("recommendList");
+  const groups=__formulaLabGroups||{};
+  const all=__formulaLabAllFormulas||buildAllFormulas();
+
+  const enriched=results.map(function(item){
+    const fn=modelToFunction(item.m1,item.m2);
+    const temporal=__temporalFormulaStats(fn,groups);
+    let baseStats=null;
+    try{
+      const baseFn=all[item.source];
+      if(typeof baseFn==="function") baseStats=evaluateCandidateAcrossGroups(baseFn,groups);
+    }catch(e){}
+
+    const baseValidation=baseStats?baseStats.validationRate:0;
+    const baseOverall=baseStats?baseStats.overallRate:0;
+    const improvement=Number((item.stats.validationRate-baseValidation).toFixed(2));
+    const temporalBonus=temporal.rate*0.18;
+    const temporalPenalty=temporal.std*0.06;
+    const finalRankScore=Number((item.stats.score + temporalBonus - temporalPenalty).toFixed(3));
+
+    return {...item, temporal, baseStats, improvement, finalRankScore};
+  });
+
+  const qualified=enriched.filter(function(x){
+    return x.stats.validationTested>=5 && x.temporal.tested>=5;
+  }).sort(function(a,b){
+    if(b.finalRankScore!==a.finalRankScore) return b.finalRankScore-a.finalRankScore;
+    return b.stats.validationRate-a.stats.validationRate;
+  });
+
+  const finalList=[];
+  const seen=new Set();
+  qualified.forEach(function(item){
+    const sig=modelSignature(item.m1,item.m2);
+    if(!seen.has(sig) && finalList.length<5){seen.add(sig);finalList.push(item);}
+  });
+
+  if(!finalList.length){
+    status.textContent=`ตรวจแล้ว ${results.length} Candidate แต่ยังไม่มีสูตรที่ผ่านเกณฑ์ความแข็งแรง`;
+    list.innerHTML="";
+    return;
+  }
+
+  status.textContent=`✓ ตรวจสอบ ${results.length} Candidate เสร็จแล้ว — คัดสูตรแนะนำที่แข็งแรงที่สุด ${finalList.length} สูตร`;
+
+  list.innerHTML=finalList.map(function(item,index){
+    const d1=formatLinearExpression(item.m1);
+    const d2=formatLinearExpression(item.m2);
+    const source=esc(item.source);
+    const validation=item.stats.validationRate;
+    const improvement=item.improvement;
+    const improvementText=improvement>0
+      ? `ดีขึ้นจากสูตรฐาน ${improvement} จุดเปอร์เซ็นต์`
+      : improvement<0
+        ? `ต่ำกว่าสูตรฐาน ${Math.abs(improvement)} จุดเปอร์เซ็นต์`
+        : `เท่ากับสูตรฐาน`;
+
+    let preview="";
+    const firstLottery=Object.keys(groups)[0];
+    if(firstLottery && groups[firstLottery] && groups[firstLottery].length){
+      try{
+        const latest=groups[firstLottery][groups[firstLottery].length-1];
+        const fn=modelToFunction(item.m1,item.m2);
+        const top=String(latest.n3||"").padStart(3,"0").slice(-3).split("").map(Number);
+        const bot=String(latest.n2||"").padStart(2,"0").slice(-2).split("").map(Number);
+        const ds=sanitizeFormulaResult(fn(top[0],top[1],top[2],bot[0],bot[1]));
+        const p1=__advancedPairEngine(ds[0],ds[1],groups[firstLottery],fn);
+        const p2=__advancedPairEngine(ds[1],ds[0],groups[firstLottery],fn);
+        preview=`
+          <div class="recommend-preview">
+            <div><span>เลขเด่นแนะนำ</span><strong>${ds[0]} / ${ds[1]}</strong></div>
+            <div><span>เลขเจาะแนะนำ</span><strong>${p1.concat(p2).map(function(x){return x.pair;}).join(" ")}</strong></div>
+          </div>`;
+      }catch(e){}
+    }
+
+    const payload=encodeURIComponent(JSON.stringify({
+      source:item.source,
+      d1,d2,
+      m1:item.m1,m2:item.m2,
+      overallRate:item.stats.overallRate,
+      validationRate:item.stats.validationRate,
+      recentRate:item.stats.recentRate,
+      improvement,
+      finalRankScore:item.finalRankScore
+    }));
+
+    return `
+      <div class="recommend-card recommend-card-v323">
+        <div class="recommend-rank">#${index+1}</div>
+        <div class="recommend-main">
+          <div class="recommend-name">${index===0?"🏆 ":""}สูตรแนะนำอันดับ ${index+1}</div>
+          <div class="recommend-source">ต่อยอดจาก: ${source}</div>
+          <div class="recommend-expression">d1 = ${esc(d1)}<br>d2 = ${esc(d2)}</div>
+          <div class="recommend-stats">
+            <span class="stat-chip ${validation>=60?"good":"warn"}">Validation ${validation}%</span>
+            <span class="stat-chip">${improvementText}</span>
+            <span class="stat-chip">ช่วงเวลาเฉลี่ย ${item.temporal.rate}%</span>
+            <span class="stat-chip">ความสม่ำเสมอ σ ${item.temporal.std}</span>
+          </div>
+          ${preview}
+        </div>
+        <button class="add-recommend" data-add-recommend="${payload}">＋ ใช้สูตรนี้รอบถัดไป</button>
+      </div>`;
+  }).join("");
+
+  list.querySelectorAll("[data-add-recommend]").forEach(function(btn){
+    btn.onclick=function(){
+      try{
+        const data=JSON.parse(decodeURIComponent(btn.dataset.addRecommend));
+        addRecommendedFormula(data);
+      }catch(e){showToast("❌ ไม่สามารถใช้สูตรแนะนำได้");}
+    };
+  });
+};
+
+/* Add formula + immediately create clean prediction cards. */
+addRecommendedFormula = function(data){
+  const arr=loadCustomFormulas();
+  let counter=1;
+  let name=`AUTO Formula #${counter}`;
+  while(arr.some(function(x){return x.name===name;}) || Object.prototype.hasOwnProperty.call(formulas,name)){
+    counter++; name=`AUTO Formula #${counter}`;
+  }
+
+  arr.push({
+    id:"auto_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
+    name,
+    d1:data.d1,d2:data.d2,
+    source:data.source,
+    autoGenerated:true,
+    validationRate:data.validationRate,
+    overallRate:data.overallRate,
+    recentRate:data.recentRate,
+    improvement:data.improvement,
+    createdAt:Date.now()
+  });
+
+  if(!saveCustomFormulas(arr)){
+    showToast("❌ บันทึกสูตรแนะนำไม่สำเร็จ");
+    return;
+  }
+
+  const selected=__loadSelectedRecommendations();
+  const signature=modelSignature(data.m1,data.m2);
+  const exists=selected.some(function(x){return modelSignature(x.m1,x.m2)===signature;});
+  if(!exists){
+    selected.push({
+      source:data.source,
+      m1:data.m1,m2:data.m2,
+      validationRate:data.validationRate,
+      improvement:data.improvement,
+      finalRankScore:data.finalRankScore,
+      selectedAt:Date.now()
+    });
+    __saveSelectedRecommendations(selected);
+  }
+
+  renderCustomFormulaList();
+  __appendSelectedRecommendationCards();
+  showToast(`✓ เพิ่มสูตรแนะนำและสร้างการ์ดเลขเด่น/เลขเจาะแล้ว`);
+};
+
+/* Clear selected recommendation cards together with the user's global clear action. */
+window.addEventListener("DOMContentLoaded",function(){
+  const clearGlobal=$("clearGlobal");
+  if(clearGlobal){
+    const original=clearGlobal.onclick;
+    clearGlobal.onclick=function(){
+      if(typeof original==="function") original();
+      try{localStorage.removeItem(RECOMMENDATION_STATE_KEY);}catch(e){}
+      const result=$("result");
+      if(result){const box=result.querySelector("#selectedRecommendationCards"); if(box) box.remove();}
+    };
+  }
+});
 
 
 /* =========================================================
@@ -8404,22 +8578,6 @@ window.addEventListener(
           $("recommendList")
             .innerHTML = "";
 
-          selectedRecommendedFormula = null;
-
-          try{
-            localStorage.removeItem(
-              SELECTED_FORMULA_KEY
-            );
-          }catch(e){}
-
-          const selectedWrap =
-            $("selectedFormulaResults");
-
-          if(selectedWrap){
-            selectedWrap.innerHTML = "";
-            selectedWrap.style.display = "none";
-          }
-
 
           $("autoFormulaStatus")
             .textContent =
@@ -8481,35 +8639,11 @@ window.addEventListener(
 
 
     }
-    try{
-      const selectedStored =
-        localStorage.getItem(
-          SELECTED_FORMULA_KEY
-        );
 
-      if(selectedStored){
-        const data =
-          JSON.parse(selectedStored);
-
-        const m1 =
-          parseLinearExpression(data.d1);
-
-        const m2 =
-          parseLinearExpression(data.d2);
-
-        if(m1 && m2){
-          selectedRecommendedFormula = {
-            ...data,
-            m1,
-            m2
-          };
-        }
-      }
-    }catch(e){
-      selectedRecommendedFormula = null;
-    }
 
     renderCustomFormulaList();
+
+
     updateIndicator();
 
 
@@ -8560,128 +8694,5 @@ window.addEventListener(
 </script>
 
 
-
-<!-- =========================================================
-     V35 ISOLATED DEEP AUDIT
-     IMPORTANT: this panel is diagnostic only.
-     It does NOT modify formulas, recommendation ranking,
-     digit selection, or pair selection.
-========================================================= -->
-<style>
-#v35DeepAuditPanel{margin:18px 0;padding:16px;border:1px solid #d9bd79;border-radius:16px;background:#fffdf8;box-shadow:0 8px 24px rgba(80,60,20,.06)}
-#v35DeepAuditPanel .v35-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-#v35DeepAuditPanel .v35-title{font-size:1rem;font-weight:900;color:#806329}
-#v35DeepAuditPanel .v35-sub{font-size:.58rem;color:#7d7467;margin-top:3px;line-height:1.6}
-#v35DeepAuditPanel .v35-run{border:1px solid #d9bd79;background:linear-gradient(135deg,#fffaf0,#f4ead4);color:#806329;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
-#v35DeepAuditPanel .v35-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:#faf7ef;color:#6d6458;font-size:.56rem;line-height:1.65}
-#v35DeepAuditPanel .v35-table-wrap{overflow:auto;margin-top:12px}
-#v35DeepAuditPanel table{width:100%;border-collapse:collapse;font-size:.56rem;min-width:760px}
-#v35DeepAuditPanel th,#v35DeepAuditPanel td{padding:7px 8px;border-bottom:1px solid #eee5d5;text-align:center;white-space:nowrap}
-#v35DeepAuditPanel th{text-align:center;color:#806329;background:#fffaf0}
-#v35DeepAuditPanel td:first-child{text-align:left;font-weight:800}
-#v35DeepAuditPanel .v35-good{font-weight:900;color:#2e7d32}
-#v35DeepAuditPanel .v35-warn{font-weight:900;color:#b26a00}
-#v35DeepAuditPanel .v35-bad{font-weight:900;color:#b4232d}
-#v35DeepAuditPanel .v35-section{margin-top:16px;font-size:.72rem;font-weight:900;color:#403a31}
-</style>
-<script>
-(function(){
-  "use strict";
-  function v35Esc(x){
-    return String(x==null?"":x).replace(/[&<>"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});
-  }
-  function v35Groups(){
-    var raw=[];
-    try{raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");}catch(e){raw=[];}
-    var g={};
-    if(!Array.isArray(raw)) return g;
-    raw.forEach(function(r){
-      if(!r || !r.name) return;
-      if(!g[r.name]) g[r.name]=[];
-      g[r.name].push(r);
-    });
-    Object.keys(g).forEach(function(k){
-      g[k].sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);});
-    });
-    return g;
-  }
-  function v35Digits(r,fn){
-    var t=String(r.n3||"").padStart(3,"0").slice(-3).split("").map(Number);
-    var b=String(r.n2||"").padStart(2,"0").slice(-2).split("").map(Number);
-    return sanitizeFormulaResult(fn(t[0],t[1],t[2],b[0],b[1]));
-  }
-  function v35NextDigits(r){
-    return (String(r.n3||"")+String(r.n2||"")).split("").map(Number);
-  }
-  function v35AuditFormula(fn,recs,minTrain){
-    var tested=0,hits=0,foldRates=[],missStreak=0,maxMiss=0,lastHit=null;
-    if(recs.length<=minTrain) return {tested:0,hits:0,rate:0,std:0,maxMiss:0,lastHit:null};
-    for(var i=minTrain-1;i<recs.length-1;i++){
-      var pred;
-      try{pred=v35Digits(recs[i],fn);}catch(e){continue;}
-      var next=v35NextDigits(recs[i+1]);
-      var hit=pred.some(function(d){return next.includes(d);});
-      tested++;
-      if(hit){hits++;missStreak=0;}else{missStreak++;maxMiss=Math.max(maxMiss,missStreak);}
-      lastHit=hit;
-      if(tested%5===0) foldRates.push((hits/tested)*100);
-    }
-    if(tested%5!==0) foldRates.push((hits/tested)*100);
-    var rate=tested?hits/tested*100:0;
-    var mean=foldRates.length?foldRates.reduce(function(a,b){return a+b;},0)/foldRates.length:0;
-    var variance=foldRates.length?foldRates.reduce(function(a,b){return a+Math.pow(b-mean,2);},0)/foldRates.length:0;
-    return {tested,hits,rate,std:Math.sqrt(variance),maxMiss,lastHit};
-  }
-  function v35Render(){
-    var root=document.getElementById("v35DeepAuditPanel");
-    if(!root) return;
-    var groups=v35Groups(), names=Object.keys(groups), all;
-    try{all=buildAllFormulas();}catch(e){all={};}
-    var formulaNames=Object.keys(all||{});
-    var rows=[];
-    names.forEach(function(name){
-      var recs=groups[name];
-      if(recs.length<8) return;
-      formulaNames.forEach(function(fname){
-        try{
-          var st=v35AuditFormula(all[fname],recs,Math.min(5,recs.length-1));
-          if(st.tested) rows.push({lottery:name,formula:fname,st:st});
-        }catch(e){}
-      });
-    });
-    var agg={};
-    rows.forEach(function(x){
-      var k=x.formula;
-      if(!agg[k]) agg[k]={tested:0,hits:0,folds:[],maxMiss:0};
-      agg[k].tested+=x.st.tested; agg[k].hits+=x.st.hits; agg[k].maxMiss=Math.max(agg[k].maxMiss,x.st.maxMiss);
-      agg[k].folds.push(x.st.rate);
-    });
-    var ranked=Object.keys(agg).map(function(k){
-      var a=agg[k], rate=a.tested?a.hits/a.tested*100:0;
-      var mean=a.folds.length?a.folds.reduce(function(s,v){return s+v;},0)/a.folds.length:0;
-      var variance=a.folds.length?a.folds.reduce(function(s,v){return s+Math.pow(v-mean,2);},0)/a.folds.length:0;
-      var score=rate-Math.sqrt(variance)*0.25-Math.max(0,a.maxMiss-3)*0.5;
-      return {formula:k,tested:a.tested,hits:a.hits,rate:rate,std:Math.sqrt(variance),maxMiss:a.maxMiss,score:score};
-    }).sort(function(a,b){return b.score-a.score;});
-
-    var html='<div class="v35-head"><div><div class="v35-title">🔬 Deep Walk-Forward Audit — แยกออกจากสูตรแนะนำ</div><div class="v35-sub">ใช้เพื่อศึกษาอดีต → ปัจจุบันเท่านั้น และไม่มีสิทธิ์เปลี่ยนเลขเด่น/เลขเจาะของระบบหลัก</div></div><button class="v35-run" id="v35DeepRun">↻ ออดิตใหม่</button></div>';
-    html+='<div class="v35-note">สถานะ V35: <b>Rollback กลไก Recommendation/Prediction กลับเป็น V32.1</b> เพื่อหยุด regression ที่เกิดจากการอัปเกรดก่อนหน้า ส่วน Deep Audit ทำงานเป็นชั้นวิเคราะห์แยกต่างหากเท่านั้น — ไม่เขียนทับ <code>finishFormulaLab</code>, ไม่เขียนทับ digit selection และไม่เปลี่ยน pair selection เดิม</div>';
-    if(!names.length){html+='<div class="v35-note">ยังไม่มีข้อมูลย้อนหลังใน localStorage</div>';root.innerHTML=html;document.getElementById("v35DeepRun").onclick=v35Render;return;}
-    if(!ranked.length){html+='<div class="v35-note">ต้องมีอย่างน้อย 8 งวดต่อหวยเพื่อทำ Walk-Forward Audit</div>';root.innerHTML=html;document.getElementById("v35DeepRun").onclick=v35Render;return;}
-    html+='<div class="v35-section">🏆 ภาพรวมสูตรเดิมจาก Walk-Forward</div><div class="v35-table-wrap"><table><thead><tr><th>สูตร</th><th>Tests</th><th>Hits</th><th>Rate</th><th>σ Block</th><th>Max Miss</th><th>Audit Score</th></tr></thead><tbody>';
-    ranked.slice(0,12).forEach(function(x){
-      var cls=x.score>=55?'v35-good':x.score>=45?'v35-warn':'v35-bad';
-      html+='<tr><td>'+v35Esc(x.formula)+'</td><td>'+x.tested+'</td><td>'+x.hits+'</td><td class="'+cls+'">'+x.rate.toFixed(2)+'%</td><td>'+x.std.toFixed(2)+'</td><td>'+x.maxMiss+'</td><td class="'+cls+'">'+x.score.toFixed(2)+'</td></tr>';
-    });
-    html+='</tbody></table></div>';
-    html+='<div class="v35-section">📌 หลักการใช้ผล Audit</div><div class="v35-note">Audit นี้ใช้สำหรับ <b>เรียนรู้และคัดกรองสูตร</b> เท่านั้น ไม่ใช้ผลย้อนหลังเพื่อยัดเลขใหม่เข้าไปแทนเลขเด่นเดิม และไม่ให้สูตรที่ฟลุกช่วงสั้น ๆ มีอำนาจครอบงำระบบหลัก</div>';
-    root.innerHTML=html;document.getElementById("v35DeepRun").onclick=v35Render;
-  }
-  document.addEventListener("DOMContentLoaded",function(){
-    var host=document.querySelector(".inner")||document.querySelector(".app")||document.body;
-    var panel=document.createElement("section");panel.id="v35DeepAuditPanel";host.appendChild(panel);v35Render();
-  });
-})();
-</script>
 </body>
-   </html>
+  </html>
