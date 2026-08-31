@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V31.6 (KING OF 100 FORMULAS & SUPREME RANKING ENGINE)
+MESTER LOTTO VIP+ — V31.3 (PURE RAW AUDIT & ZERO-OFFSET ENGINE)
 ==================================================================
 -->
 <html lang="th">
@@ -11,7 +11,7 @@ MESTER LOTTO VIP+ — V31.6 (KING OF 100 FORMULAS & SUPREME RANKING ENGINE)
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Kong Ngern V31.6 (100 Formulas)</title>
+<title>Mester Lotto VIP+ — Ban Kong Ngern V31.3</title>
 
 <style>
 :root{
@@ -340,16 +340,16 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <div class="logo">AI</div>
           <div>
             <b>Mester Lotto VIP+</b>
-            <small>Ban Kong Ngern V31.6 King of 100 Formulas</small>
+            <small>Ban Kong Ngern V31.3 Pure Raw</small>
           </div>
         </div>
-        <div class="pill">● V31.6 100 FORMULAS SUPREME</div>
+        <div class="pill">● V31.3 PURE RAW (100 Formulas)</div>
       </div>
 
       <section class="hero">
-        <span class="hero-tag">BAN KONG NGERN ULTIMATE PRECISION V31.6</span>
-        <h1>Master Audit & <em>บ้านกองเงิน V31.6</em></h1>
-        <p>อัปเกรดระบบเต็มรูปแบบด้วย **ชุดสูตรคำนวณมาตรฐาน 100 สูตร** ครบถ้วนทุกมิติทางคณิตศาสตร์ พร้อมระบบวิเคราะห์เจาะลึกชื่อหวยที่เหมาะสมและหวยที่ควรหลีกเลี่ยง</p>
+        <span class="hero-tag">BAN KONG NGERN ULTIMATE PRECISION V31.3</span>
+        <h1>Master Audit & <em>บ้านกองเงิน V31.3 (100 สูตร)</em></h1>
+        <p>อัปเกรดระบบรวม 100 สูตรสมบูรณ์แบบตามต้นฉบับ ตัด Offset ออกทั้งหมด 100% แสดงผลลัพธ์ค่าดิบจากสูตรคณิตศาสตร์แท้จริง</p>
       </section>
 
       <div id="console">
@@ -367,7 +367,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผลระบบ V31.6 (100 สูตร)</button>
+            <button id="run" class="run">⚡ ประมวลผลระบบ V31.3 (Raw)</button>
             <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
             <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
           </div>
@@ -384,7 +384,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v316';
+  const STORAGE_KEY = 'lottery_audit_master_records_v313_100f';
 
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
@@ -467,7 +467,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       };
       const mIndex = monthsMap[monthStr] !== undefined ? monthsMap[monthStr] : 0;
       const d = new Date(year - 543, mIndex, day + 1);
-      const thaiMonths = ['ม.ค.', 'ก.ค.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
       return `${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear() + 543}`;
     }
     return dateStr;
@@ -512,132 +512,136 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     return { records, errors };
   }
 
-  // สร้าง 100 สูตรมาตรฐานอัตโนมัติจาก Arguments (A:ร้อยบน, B:สิบบบน, C:หน่วยบน, D:สิบล่าง, E:หน่วยล่าง)
+  // 100 สูตรต้นฉบับสมบูรณ์ (Pure Raw Formulas)
   const formulas = {};
-  
-  function addFormulaDef(index, formulaFunc) {
-    formulas[`สูตรที่ ${index}`] = formulaFunc;
+  function registerFormula(index, fn){
+    formulas[`สูตรที่ ${index}`] = (h_top, t_top, u_top, t_bot, u_bot) => {
+      const val = fn(h_top, t_top, u_top, t_bot, u_bot);
+      const d1 = norm(val);
+      const d2 = norm(d1 + 1);
+      return [d1, d2];
+    };
   }
 
-  // 1-10: ชุดบวกพื้นฐาน
-  addFormulaDef(1, (A,B,C,D,E) => [A + B, (A + B) + 1]);
-  addFormulaDef(2, (A,B,C,D,E) => [A + C, (A + C) + 1]);
-  addFormulaDef(3, (A,B,C,D,E) => [B + C, (B + C) + 1]);
-  addFormulaDef(4, (A,B,C,D,E) => [A + D, (A + D) + 1]);
-  addFormulaDef(5, (A,B,C,D,E) => [A + E, (A + E) + 1]);
-  addFormulaDef(6, (A,B,C,D,E) => [B + D, (B + D) + 1]);
-  addFormulaDef(7, (A,B,C,D,E) => [B + E, (B + E) + 1]);
-  addFormulaDef(8, (A,B,C,D,E) => [C + D, (C + D) + 1]);
-  addFormulaDef(9, (A,B,C,D,E) => [C + E, (C + E) + 1]);
-  addFormulaDef(10, (A,B,C,D,E) => [D + E, (D + E) + 1]);
+  // ชุดที่ 1 - 10: สูตรการบวกพื้นฐานระหว่างหลักต่างๆ บนและล่าง
+  registerFormula(1, (h,t,u,tb,ub) => h + t);
+  registerFormula(2, (h,t,u,tb,ub) => h + u);
+  registerFormula(3, (h,t,u,tb,ub) => t + u);
+  registerFormula(4, (h,t,u,tb,ub) => h + tb);
+  registerFormula(5, (h,t,u,tb,ub) => h + ub);
+  registerFormula(6, (h,t,u,tb,ub) => t + tb);
+  registerFormula(7, (h,t,u,tb,ub) => t + ub);
+  registerFormula(8, (h,t,u,tb,ub) => u + tb);
+  registerFormula(9, (h,t,u,tb,ub) => u + ub);
+  registerFormula(10, (h,t,u,tb,ub) => tb + ub);
 
-  // 11-20: ผลรวม 3 ตัวบน และฐาน 10 ลบแต่ละหลัก
-  addFormulaDef(11, (A,B,C,D,E) => { const s = A+B+C; return [s + D, s + D + 1]; });
-  addFormulaDef(12, (A,B,C,D,E) => { const s = A+B+C; return [s + E, s + E + 1]; });
-  addFormulaDef(13, (A,B,C,D,E) => { const s = A+B+C; return [s + A, s + A + 1]; });
-  addFormulaDef(14, (A,B,C,D,E) => { const s = A+B+C; return [s + B, s + B + 1]; });
-  addFormulaDef(15, (A,B,C,D,E) => { const s = A+B+C; return [s + C, s + C + 1]; });
-  addFormulaDef(16, (A,B,C,D,E) => [10 - A, (10 - A) + 1]);
-  addFormulaDef(17, (A,B,C,D,E) => [10 - B, (10 - B) + 1]);
-  addFormulaDef(18, (A,B,C,D,E) => [10 - C, (10 - C) + 1]);
-  addFormulaDef(19, (A,B,C,D,E) => [10 - D, (10 - D) + 1]);
-  addFormulaDef(20, (A,B,C,D,E) => [10 - E, (10 - E) + 1]);
+  // ชุดที่ 11 - 20: สูตรผลรวม 3 ตัวบน และฐานคงที่ 10 ลบด้วยแต่ละหลัก
+  registerFormula(11, (h,t,u,tb,ub) => (h + t + u) + tb);
+  registerFormula(12, (h,t,u,tb,ub) => (h + t + u) + ub);
+  registerFormula(13, (h,t,u,tb,ub) => (h + t + u) + h);
+  registerFormula(14, (h,t,u,tb,ub) => (h + t + u) + t);
+  registerFormula(15, (h,t,u,tb,ub) => (h + t + u) + u);
+  registerFormula(16, (h,t,u,tb,ub) => 10 - h);
+  registerFormula(17, (h,t,u,tb,ub) => 10 - t);
+  registerFormula(18, (h,t,u,tb,ub) => 10 - u);
+  registerFormula(19, (h,t,u,tb,ub) => 10 - tb);
+  registerFormula(20, (h,t,u,tb,ub) => 10 - ub);
 
-  // 21-30: สูตรผสม 3 ตัวร่วม และผลรวมชุดตัวเลข
-  addFormulaDef(21, (A,B,C,D,E) => [A + B + D, A + B + D + 1]);
-  addFormulaDef(22, (A,B,C,D,E) => [A + C + E, A + C + E + 1]);
-  addFormulaDef(23, (A,B,C,D,E) => [B + C + D, B + C + D + 1]);
-  addFormulaDef(24, (A,B,C,D,E) => [B + C + E, B + C + E + 1]);
-  addFormulaDef(25, (A,B,C,D,E) => [A + D + E, A + D + E + 1]);
-  addFormulaDef(26, (A,B,C,D,E) => [B + D + E, B + D + E + 1]);
-  addFormulaDef(27, (A,B,C,D,E) => { const s = A+B+C; return [s - D, s - D + 1]; });
-  addFormulaDef(28, (A,B,C,D,E) => { const s = A+B+C; return [s - E, s - E + 1]; });
-  addFormulaDef(29, (A,B,C,D,E) => { const sTop = A+B+C; const sBot = D+E; return [sTop + sBot, sTop + sBot + 1]; });
-  addFormulaDef(30, (A,B,C,D,E) => { const sTop = A+B+C; const sBot = D+E; return [sTop - sBot, sTop - sBot + 1]; });
+  // ชุดที่ 21 - 30: สูตรผสม 3 ตัวร่วม และผลรวมชุดตัวเลข
+  registerFormula(21, (h,t,u,tb,ub) => h + t + tb);
+  registerFormula(22, (h,t,u,tb,ub) => h + u + ub);
+  registerFormula(23, (h,t,u,tb,ub) => t + u + tb);
+  registerFormula(24, (h,t,u,tb,ub) => t + u + ub);
+  registerFormula(25, (h,t,u,tb,ub) => h + tb + ub);
+  registerFormula(26, (h,t,u,tb,ub) => t + tb + ub);
+  registerFormula(27, (h,t,u,tb,ub) => (h + t + u) - tb);
+  registerFormula(28, (h,t,u,tb,ub) => (h + t + u) - ub);
+  registerFormula(29, (h,t,u,tb,ub) => (h + t + u) + (tb + ub));
+  registerFormula(30, (h,t,u,tb,ub) => (h + t + u) - (tb + ub));
 
-  // 31-40: สูตรวงเล็บและการหักลบผสมฐาน 10 / 20
-  addFormulaDef(31, (A,B,C,D,E) => [(A + B) - E, (A + B) - E + 1]);
-  addFormulaDef(32, (A,B,C,D,E) => [(B + C) - D, (B + C) - D + 1]);
-  addFormulaDef(33, (A,B,C,D,E) => [(A + C) - D, (A + C) - D + 1]);
-  addFormulaDef(34, (A,B,C,D,E) => [20 - (B + D), 20 - (B + D) + 1]);
-  addFormulaDef(35, (A,B,C,D,E) => [20 - (C + E), 20 - (C + E) + 1]);
-  addFormulaDef(36, (A,B,C,D,E) => { const s = A+B+C; return [s - D, s - D + 1]; });
-  addFormulaDef(37, (A,B,C,D,E) => { const s = A+B+C; return [s - E, s - E + 1]; });
-  addFormulaDef(38, (A,B,C,D,E) => [10 + B - E, 10 + B - E + 1]);
-  addFormulaDef(39, (A,B,C,D,E) => [10 + C - D, 10 + C - D + 1]);
-  addFormulaDef(40, (A,B,C,D,E) => { const s = A+B+C; return [s + 10 - E, s + 10 - E + 1]; });
+  // ชุดที่ 31 - 40: สูตรวงเล็บและการหักลบผสมฐาน 10 / 20
+  registerFormula(31, (h,t,u,tb,ub) => (h + t) - ub);
+  registerFormula(32, (h,t,u,tb,ub) => (t + u) - tb);
+  registerFormula(33, (h,t,u,tb,ub) => (h + u) - tb);
+  registerFormula(34, (h,t,u,tb,ub) => 20 - (t + tb));
+  registerFormula(35, (h,t,u,tb,ub) => 20 - (u + ub));
+  registerFormula(36, (h,t,u,tb,ub) => (h + t + u) - tb);
+  registerFormula(37, (h,t,u,tb,ub) => (h + t + u) - ub);
+  registerFormula(38, (h,t,u,tb,ub) => 10 + t - ub);
+  registerFormula(39, (h,t,u,tb,ub) => 10 + u - tb);
+  registerFormula(40, (h,t,u,tb,ub) => (h + t + u) + 10 - ub);
 
-  // 41-50: สูตรสลับตำแหน่งและผสมผลรวม 2 ตัวล่าง
-  addFormulaDef(41, (A,B,C,D,E) => [A + E - B, A + E - B + 1]);
-  addFormulaDef(42, (A,B,C,D,E) => [B + E - A, B + E - A + 1]);
-  addFormulaDef(43, (A,B,C,D,E) => [C + D - A, C + D - A + 1]);
-  addFormulaDef(44, (A,B,C,D,E) => { const sBot = D+E; return [sBot + A - B, sBot + A - B + 1]; });
-  addFormulaDef(45, (A,B,C,D,E) => { const sBot = D+E; return [sBot + A - C, sBot + A - C + 1]; });
-  addFormulaDef(46, (A,B,C,D,E) => { const sBot = D+E; return [A + sBot - B, A + sBot - B + 1]; });
-  addFormulaDef(47, (A,B,C,D,E) => { const sBot = D+E; return [A + sBot - C, A + sBot - C + 1]; });
-  addFormulaDef(48, (A,B,C,D,E) => { const sBot = D+E; return [B + sBot - A, B + sBot - A + 1]; });
-  addFormulaDef(49, (A,B,C,D,E) => { const sBot = D+E; return [B + sBot - C, B + sBot - C + 1]; });
-  addFormulaDef(50, (A,B,C,D,E) => { const sBot = D+E; return [C + sBot - A, C + sBot - A + 1]; });
+  // ชุดที่ 41 - 50: สูตรสลับตำแหน่งและผสมผลรวม 2 ตัวล่าง
+  registerFormula(41, (h,t,u,tb,ub) => h + ub - t);
+  registerFormula(42, (h,t,u,tb,ub) => t + ub - h);
+  registerFormula(43, (h,t,u,tb,ub) => u + tb - h);
+  registerFormula(44, (h,t,u,tb,ub) => (tb + ub) + h - t);
+  registerFormula(45, (h,t,u,tb,ub) => (tb + ub) + h - u);
+  registerFormula(46, (h,t,u,tb,ub) => h + (tb + ub) - t);
+  registerFormula(47, (h,t,u,tb,ub) => h + (tb + ub) - u);
+  registerFormula(48, (h,t,u,tb,ub) => t + (tb + ub) - h);
+  registerFormula(49, (h,t,u,tb,ub) => t + (tb + ub) - u);
+  registerFormula(50, (h,t,u,tb,ub) => u + (tb + ub) - h);
 
-  // 51-60: สูตรฐาน 30 คงที่ และการบวก-ลบสลับกลุ่ม
-  addFormulaDef(51, (A,B,C,D,E) => { const sBot = D+E; return [C + sBot - B, C + sBot - B + 1]; });
-  addFormulaDef(52, (A,B,C,D,E) => [30 - (A + B + D), 30 - (A + B + D) + 1]);
-  addFormulaDef(53, (A,B,C,D,E) => [30 - (A + C + E), 30 - (A + C + E) + 1]);
-  addFormulaDef(54, (A,B,C,D,E) => [30 - (B + C + D), 30 - (B + C + D) + 1]);
-  addFormulaDef(55, (A,B,C,D,E) => [30 - (A + D + E), 30 - (A + D + E) + 1]);
-  addFormulaDef(56, (A,B,C,D,E) => [(A + B) + D - E, (A + B) + D - E + 1]);
-  addFormulaDef(57, (A,B,C,D,E) => [(A + C) + E - D, (A + C) + E - D + 1]);
-  addFormulaDef(58, (A,B,C,D,E) => [(B + C) + D - A, (B + C) + D - A + 1]);
-  addFormulaDef(59, (A,B,C,D,E) => { const s = A+B+C; return [s + D - E, s + D - E + 1]; });
-  addFormulaDef(60, (A,B,C,D,E) => { const s = A+B+C; return [s + E - D, s + E - D + 1]; });
+  // ชุดที่ 51 - 60: สูตรฐาน 30 คงที่ และการบวก-ลบสลับกลุ่ม
+  registerFormula(51, (h,t,u,tb,ub) => u + (tb + ub) - t);
+  registerFormula(52, (h,t,u,tb,ub) => 30 - (h + t + tb));
+  registerFormula(53, (h,t,u,tb,ub) => 30 - (h + u + ub));
+  registerFormula(54, (h,t,u,tb,ub) => 30 - (t + u + tb));
+  registerFormula(55, (h,t,u,tb,ub) => 30 - (h + tb + ub));
+  registerFormula(56, (h,t,u,tb,ub) => (h + t) + tb - ub);
+  registerFormula(57, (h,t,u,tb,ub) => (h + u) + ub - tb);
+  registerFormula(58, (h,t,u,tb,ub) => (t + u) + tb - h);
+  registerFormula(59, (h,t,u,tb,ub) => (h + t + u) + tb - ub);
+  registerFormula(60, (h,t,u,tb,ub) => (h + t + u) + ub - tb);
 
-  // 61-70: สูตรผสมผลรวมกลุ่มบนและล่าง
-  addFormulaDef(61, (A,B,C,D,E) => { const sBot = D+E; return [A + B + sBot, A + B + sBot + 1]; });
-  addFormulaDef(62, (A,B,C,D,E) => { const sBot = D+E; return [A + C + sBot, A + C + sBot + 1]; });
-  addFormulaDef(63, (A,B,C,D,E) => { const sBot = D+E; return [B + C + sBot, B + C + sBot + 1]; });
-  addFormulaDef(64, (A,B,C,D,E) => { const sTop = A+B+C; return [A + D + sTop, A + D + sTop + 1]; });
-  addFormulaDef(65, (A,B,C,D,E) => { const sTop = A+B+C; return [A + E + sTop, A + E + sTop + 1]; });
-  addFormulaDef(66, (A,B,C,D,E) => { const sTop = A+B+C; return [B + D + sTop, B + D + sTop + 1]; });
-  addFormulaDef(67, (A,B,C,D,E) => { const sTop = A+B+C; return [B + E + sTop, B + E + sTop + 1]; });
-  addFormulaDef(68, (A,B,C,D,E) => { const sTop = A+B+C; return [C + D + sTop, C + D + sTop + 1]; });
-  addFormulaDef(69, (A,B,C,D,E) => { const sTop = A+B+C; return [C + E + sTop, C + E + sTop + 1]; });
-  addFormulaDef(70, (A,B,C,D,E) => { const sTop = A+B+C; return [D + E + sTop, D + E + sTop + 1]; });
+  // ชุดที่ 61 - 70: สูตรผสมผลรวมกลุ่มบนและล่าง
+  registerFormula(61, (h,t,u,tb,ub) => h + t + (tb + ub));
+  registerFormula(62, (h,t,u,tb,ub) => h + u + (tb + ub));
+  registerFormula(63, (h,t,u,tb,ub) => t + u + (tb + ub));
+  registerFormula(64, (h,t,u,tb,ub) => h + tb + (h + t + u));
+  registerFormula(65, (h,t,u,tb,ub) => h + ub + (h + t + u));
+  registerFormula(66, (h,t,u,tb,ub) => t + tb + (h + t + u));
+  registerFormula(67, (h,t,u,tb,ub) => t + ub + (h + t + u));
+  registerFormula(68, (h,t,u,tb,ub) => u + tb + (h + t + u));
+  registerFormula(69, (h,t,u,tb,ub) => u + ub + (h + t + u));
+  registerFormula(70, (h,t,u,tb,ub) => tb + ub + (h + t + u));
 
-  // 71-80: สูตรฐาน 10 คงที่บวกเพิ่มตัวเลขต่างๆ
-  addFormulaDef(71, (A,B,C,D,E) => [10 + A + B, 10 + A + B + 1]);
-  addFormulaDef(72, (A,B,C,D,E) => [10 + A + C, 10 + A + C + 1]);
-  addFormulaDef(73, (A,B,C,D,E) => [10 + B + C, 10 + B + C + 1]);
-  addFormulaDef(74, (A,B,C,D,E) => [10 + D + E, 10 + D + E + 1]);
-  addFormulaDef(75, (A,B,C,D,E) => [10 + A + D, 10 + A + D + 1]);
-  addFormulaDef(76, (A,B,C,D,E) => [10 + A + E, 10 + A + E + 1]);
-  addFormulaDef(77, (A,B,C,D,E) => [10 + B + D, 10 + B + D + 1]);
-  addFormulaDef(78, (A,B,C,D,E) => [10 + B + E, 10 + B + E + 1]);
-  addFormulaDef(79, (A,B,C,D,E) => [10 + C + D, 10 + C + D + 1]);
-  addFormulaDef(80, (A,B,C,D,E) => [10 + C + E, 10 + C + E + 1]);
+  // ชุดที่ 71 - 80: สูตรฐาน 10 คงที่บวกเพิ่มตัวเลขต่างๆ
+  registerFormula(71, (h,t,u,tb,ub) => 10 + h + t);
+  registerFormula(72, (h,t,u,tb,ub) => 10 + h + u);
+  registerFormula(73, (h,t,u,tb,ub) => 10 + t + u);
+  registerFormula(74, (h,t,u,tb,ub) => 10 + tb + ub);
+  registerFormula(75, (h,t,u,tb,ub) => 10 + h + tb);
+  registerFormula(76, (h,t,u,tb,ub) => 10 + h + ub);
+  registerFormula(77, (h,t,u,tb,ub) => 10 + t + tb);
+  registerFormula(78, (h,t,u,tb,ub) => 10 + t + ub);
+  registerFormula(79, (h,t,u,tb,ub) => 10 + u + tb);
+  registerFormula(80, (h,t,u,tb,ub) => 10 + u + ub);
 
-  // 81-90: สูตรผลต่างในวงเล็บและฐาน 20 คงที่ลบหลักเดี่ยว
-  addFormulaDef(81, (A,B,C,D,E) => [(A - B) + E, (A - B) + E + 1]);
-  addFormulaDef(82, (A,B,C,D,E) => [(A - C) + D, (A - C) + D + 1]);
-  addFormulaDef(83, (A,B,C,D,E) => [(B - C) + E, (B - C) + E + 1]);
-  addFormulaDef(84, (A,B,C,D,E) => [(D - E) + A, (D - E) + A + 1]);
-  addFormulaDef(85, (A,B,C,D,E) => [(D - E) + B, (D - E) + B + 1]);
-  addFormulaDef(86, (A,B,C,D,E) => [(D - E) + C, (D - E) + C + 1]);
-  addFormulaDef(87, (A,B,C,D,E) => [20 - A - B, 20 - A - B + 1]);
-  addFormulaDef(88, (A,B,C,D,E) => [20 - A - C, 20 - A - C + 1]);
-  addFormulaDef(89, (A,B,C,D,E) => [20 - B - C, 20 - B - C + 1]);
-  addFormulaDef(90, (A,B,C,D,E) => [20 - D - E, 20 - D - E + 1]);
+  // ชุดที่ 81 - 90: สูตรผลต่างในวงเล็บและฐาน 20 คงที่ลบหลักเดี่ยว
+  registerFormula(81, (h,t,u,tb,ub) => (h - t) + ub);
+  registerFormula(82, (h,t,u,tb,ub) => (h - u) + tb);
+  registerFormula(83, (h,t,u,tb,ub) => (t - u) + ub);
+  registerFormula(84, (h,t,u,tb,ub) => (tb - ub) + h);
+  registerFormula(85, (h,t,u,tb,ub) => (tb - ub) + t);
+  registerFormula(86, (h,t,u,tb,ub) => (tb - ub) + u);
+  registerFormula(87, (h,t,u,tb,ub) => 20 - h - t);
+  registerFormula(88, (h,t,u,tb,ub) => 20 - h - u);
+  registerFormula(89, (h,t,u,tb,ub) => 20 - t - u);
+  registerFormula(90, (h,t,u,tb,ub) => 20 - tb - ub);
 
-  // 91-100: สูตรเติมเต็มครบชุด 100 สูตรสมบูรณ์แบบ
-  addFormulaDef(91, (A,B,C,D,E) => [20 - A - D, 20 - A - D + 1]);
-  addFormulaDef(92, (A,B,C,D,E) => [20 - A - E, 20 - A - E + 1]);
-  addFormulaDef(93, (A,B,C,D,E) => [20 - B - D, 20 - B - D + 1]);
-  addFormulaDef(94, (A,B,C,D,E) => [20 - B - E, 20 - B - E + 1]);
-  addFormulaDef(95, (A,B,C,D,E) => [20 - C - D, 20 - C - D + 1]);
-  addFormulaDef(96, (A,B,C,D,E) => [20 - C - E, 20 - C - E + 1]);
-  addFormulaDef(97, (A,B,C,D,E) => { const sTop = A+B+C; return [30 - sTop - D, 30 - sTop - D + 1]; });
-  addFormulaDef(98, (A,B,C,D,E) => { const sTop = A+B+C; return [30 - sTop - E, 30 - sTop - E + 1]; });
-  addFormulaDef(99, (A,B,C,D,E) => { const sBot = D+E; return [10 + sBot - A, 10 + sBot - A + 1]; });
-  addFormulaDef(100, (A,B,C,D,E) => { const sBot = D+E; return [10 + sBot - B, 10 + sBot - B + 1]; });
+  // ชุดที่ 91 - 100: สูตรเติมเต็มครบชุด 100 สูตรสมบูรณ์แบบไร้รอยต่อ
+  registerFormula(91, (h,t,u,tb,ub) => 20 - h - tb);
+  registerFormula(92, (h,t,u,tb,ub) => 20 - h - ub);
+  registerFormula(93, (h,t,u,tb,ub) => 20 - t - tb);
+  registerFormula(94, (h,t,u,tb,ub) => 20 - t - ub);
+  registerFormula(95, (h,t,u,tb,ub) => 20 - u - tb);
+  registerFormula(96, (h,t,u,tb,ub) => 20 - u - ub);
+  registerFormula(97, (h,t,u,tb,ub) => 30 - (h + t + u) - tb);
+  registerFormula(98, (h,t,u,tb,ub) => 30 - (h + t + u) - ub);
+  registerFormula(99, (h,t,u,tb,ub) => 10 + (tb + ub) - h);
+  registerFormula(100, (h,t,u,tb,ub) => 10 + (tb + ub) - t);
 
   function sanitizeFormulaResult(rawRes) {
     let d1 = norm(rawRes[0]);
@@ -701,7 +705,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
   window.copyCardText = function(cardId, lotteryTitle, dateStr, d1Pairs, d2Pairs){
     const allPairs = [...d1Pairs, ...d2Pairs].map(p => p.pair).join(', ');
-    const textToCopy = `🎯 ${lotteryTitle} (${dateStr}) | บ้านกองเงิน V31.6\nชุดเจาะเน้น: ${allPairs}`;
+    const textToCopy = `🎯 ${lotteryTitle} (${dateStr}) | บ้านกองเงิน\nชุดเจาะเน้น: ${allPairs}`;
     navigator.clipboard.writeText(textToCopy).then(() => {
       showToast(`✓ คัดลอกเลขเด่น ${lotteryTitle} เรียบร้อย`);
     }).catch(() => {
@@ -740,28 +744,24 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     let html = '';
 
     const sortedGlobalFormulas = Object.keys(globalAuditMap).sort((a, b) => {
-      if(globalAuditMap[b].hitRate !== globalAuditMap[a].hitRate){
-        return globalAuditMap[b].hitRate - globalAuditMap[a].hitRate;
-      }
-      return globalAuditMap[a].maxMissStreak - globalAuditMap[b].maxMissStreak;
+      return globalAuditMap[b].hitRate - globalAuditMap[a].hitRate;
     });
 
-    html += `<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย 100 สูตร (Supreme Global Audit)</div>`;
+    html += `<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย & จัดอันดับความแม่นยำ (ครบ 100 สูตร)</div>`;
     html += `
       <div class="summary-table-container">
-        <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">ภาพรวมความแม่นยำครบทั้ง 100 สูตร ข้ามทุกหวย</h3>
+        <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (ค่าดิบแท้ 100% ไม่ปรับ Offset)</h3>
         <table class="audit-table">
           <thead>
             <tr>
-              <th>อันดับ</th>
+              <th>อันดับ (Rank)</th>
               <th>ชื่อสูตร</th>
-              <th>เลขเด่นล่าสุด</th>
-              <th>งวดรวม</th>
+              <th>เลขเด่นงวดล่าสุด (ค่าดิบ)</th>
+              <th>งวดทดสอบรวม</th>
               <th>เข้า / หลุด</th>
-              <th>ร้อยเดี่ยว</th>
-              <th>Hit Rate</th>
-              <th>หลุดสูงสุด (Max Miss)</th>
-              <th>สถานะ & ความสม่ำเสมอ</th>
+              <th>ออกหลักร้อยเดี่ยว</th>
+              <th>Hit Rate (%)</th>
+              <th>สถานะภาพรวม</th>
             </tr>
           </thead>
           <tbody>
@@ -777,17 +777,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
       const latestDigitsText = g.latestDigits ? `<b style="color:#806329; font-size:.55rem; background:#fffaf0; padding:2px 8px; border:1px solid #d9bd79; border-radius:6px;">${g.latestDigits[0]}-${g.latestDigits[1]}</b>` : `-`;
 
-      let stabilityBadge = '';
-      if(g.hitRate >= 70 && g.maxMissStreak <= 1){
-        stabilityBadge = '<span class="badge-status status-hot">🟢 เสถียรสูงสุด (แนะนำใช้)</span>';
-      } else if(g.maxMissStreak >= 3){
-        stabilityBadge = `<span class="badge-status status-danger">🔴 แกว่งสูง (หลุดสุด ${g.maxMissStreak} งวด)</span>`;
-      } else if(g.hitRate >= 50){
-        stabilityBadge = '<span class="badge-status status-cooling">🟡 ปานกลาง (เฝ้าระวัง)</span>';
-      } else {
-        stabilityBadge = '<span class="badge-status status-warning">⚠️ ความแม่นยำต่ำ</span>';
-      }
-
       html += `
         <tr>
           <td>${rankBadge}</td>
@@ -795,10 +784,9 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           <td>${latestDigitsText}</td>
           <td>${g.totalTested}</td>
           <td><span style="color:#2e7d32; font-weight:bold;">${g.hits}</span> / <span style="color:#c62828;">${g.misses}</span></td>
-          <td style="color:#ef6c00; font-weight:bold;">${g.hundredsOnlyCount || 0}</td>
+          <td style="color:#ef6c00; font-weight:bold;">${g.hundredsOnlyCount || 0} งวด</td>
           <td style="font-weight:bold; color:${g.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${g.hitRate}%</td>
-          <td style="font-weight:bold; color:#c62828; background:#fff5f5;">⚡ ${g.maxMissStreak} งวดติด</td>
-          <td>${stabilityBadge}</td>
+          <td>${g.hitRate >= 60 ? '<span class="badge-status status-hot">ยอดเยี่ยม</span>' : '<span class="badge-status status-cooling">ปานกลาง</span>'}</td>
         </tr>
       `;
     });
@@ -809,44 +797,29 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       </div>
     `;
 
-    html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย (ครบ 100 สูตร)</div>`;
+    html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย & จัดอันดับ Ranking 1-100</div>`;
     
     Object.keys(auditDataMap).forEach(lotteryName => {
       const formulasResult = auditDataMap[lotteryName];
       const sortedFormulas = Object.keys(formulasResult).sort((a, b) => {
-        if(formulasResult[b].hitRate !== formulasResult[a].hitRate){
-          return formulasResult[b].hitRate - formulasResult[a].hitRate;
-        }
-        return formulasResult[a].maxMissStreak - formulasResult[b].maxMissStreak;
+        return formulasResult[b].hitRate - formulasResult[a].hitRate;
       });
-
-      const bestFormula = sortedFormulas[0];
-      const worstFormula = sortedFormulas[sortedFormulas.length - 1];
-      const bestStats = formulasResult[bestFormula];
-      const worstStats = formulasResult[worstFormula];
 
       html += `
         <div class="summary-table-container">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
-            <h3 style="color:#806329; font-size:.75rem; margin:0;">หวย: ${esc(lotteryName)}</h3>
-            <div style="font-size:.48rem; display:flex; gap:10px;">
-              <span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:6px; font-weight:800; border:1px solid #a5d6a7;">✅ สูตรแนะนำ: ${esc(bestFormula)} (${bestStats.hitRate}%)</span>
-              <span style="background:#ffebee; color:#c62828; padding:3px 8px; border-radius:6px; font-weight:800; border:1px solid #ef9a9a;">❌ ควรหลีกเลี่ยง: ${esc(worstFormula)} (${worstStats.hitRate}%)</span>
-            </div>
-          </div>
+          <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">หวย: ${esc(lotteryName)} (ครบ 100 สูตร)</h3>
           <table class="audit-table">
             <thead>
               <tr>
-                <th>อันดับ</th>
+                <th>อันดับ (Rank)</th>
                 <th>ชื่อสูตร</th>
-                <th>เลขเด่นล่าสุด</th>
+                <th>เลขเด่นงวดล่าสุด (ค่าดิบ)</th>
                 <th>งวดทดสอบ</th>
                 <th>เข้า / หลุด</th>
-                <th>ออกร้อยเดี่ยว</th>
+                <th>ออกหลักร้อยเดี่ยว</th>
                 <th>Hit Rate (%)</th>
-                <th>หลุดสูงสุด (Max Miss)</th>
                 <th>สถานะงวดล่าสุด</th>
-                <th>ติดต่อกัน</th>
+                <th>เข้า/หลุดติดต่อกัน</th>
               </tr>
             </thead>
             <tbody>
@@ -865,7 +838,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         let badgeHTML = '<span class="badge-status status-hot">🟢 เข้า</span>';
         if(f.lastHit === false){
           if(f.hitHundredsOnly){
-            badgeHTML = '<span class="badge-status status-warning">⚠️ หลุด (หลักร้อย)</span>';
+            badgeHTML = '<span class="badge-status status-warning">⚠️ หลุด (ออกหลักร้อย)</span>';
           } else if(f.curMissStreak >= 2){
             badgeHTML = `<span class="badge-status status-danger">🔴 หลุด ${f.curMissStreak} งวดติด</span>`;
           } else {
@@ -880,9 +853,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             <td>${latestDigitsText}</td>
             <td>${f.totalTested}</td>
             <td style="font-weight:bold;"><span style="color:#2e7d32;">${f.hits}</span> / <span style="color:#c62828;">${f.misses}</span></td>
-            <td style="color:#ef6c00; font-weight:bold;">${f.hundredsOnlyCount || 0}</td>
+            <td style="color:#ef6c00; font-weight:bold;">${f.hundredsOnlyCount || 0} งวด</td>
             <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
-            <td style="color:#c62828; font-weight:bold;">${f.maxMissStreak} งวดติด</td>
             <td>${badgeHTML}</td>
             <td><span style="color:#2e7d32;">${f.curStreak} ติด</span> / <span style="color:#c62828;">${f.curMissStreak} หลุด</span></td>
           </tr>
@@ -896,7 +868,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V31.6 King 100 Formulas)</div>`;
+    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V31.3 Pure Raw Precision)</div>`;
 
     let cardIdx = 0;
     Object.keys(predictionDataMap).forEach(lotteryName => {
@@ -954,11 +926,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           </div>
 
           <div class="card-badge-placeholder" style="display:none; position:absolute; top:14px; right:14px; font-size:.48rem; font-weight:900; color:#b8944a; letter-spacing:.5px; align-items:center; gap:3px;">
-            ✦ บ้านกองเงิน V31.6 ✦
+            ✦ บ้านกองเงิน V31.3 ✦
           </div>
           
           <div style="position:absolute; top:14px; right:14px; font-size:.48rem; font-weight:900; color:#b8944a; letter-spacing:.5px; display:flex; align-items:center; gap:3px;">
-            ✦ บ้านกองเงิน V31.6 ✦
+            ✦ บ้านกองเงิน V31.3 ✦
           </div>
 
           ${renderPairRow(p.d1, p.d1Pairs, true)}
@@ -973,7 +945,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     html += `
       <div class="brand-footer">
         <span class="brand-star">✦</span>
-        <span>ระบบบ้านกองเงิน V31.6 King of 100 Formulas (Supreme Precision) สมบูรณ์แบบ 100%</span>
+        <span>ระบบบ้านกองเงิน V31.3 Pure Raw Calculation (ครบ 100 สูตรสมบูรณ์แบบ)</span>
         <span class="brand-star">✦</span>
       </div>
     `;
@@ -1028,18 +1000,10 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
     const auditDataMap = {};
     const predictionDataMap = {};
-    
-    const globalFormulaStats = {};
+    const globalAccumulator = {};
+
     Object.keys(formulas).forEach(fName => {
-      globalFormulaStats[fName] = {
-        totalTested: 0,
-        hits: 0,
-        misses: 0,
-        hundredsOnlyCount: 0,
-        maxMissStreak: 0,
-        currentMissStreak: 0,
-        latestDigits: null
-      };
+      globalAccumulator[fName] = { totalTested: 0, hits: 0, misses: 0, hundredsOnlyCount: 0, latestDigits: null };
     });
 
     Object.keys(groups).forEach(lotteryName => {
@@ -1062,8 +1026,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
           const top = curr.n3.split('').map(Number);
           const bot = curr.n2.split('').map(Number);
           
-          const rawPred = formulas[fName](top[0], top[1], top[2], bot[0], bot[1]);
-          const predicted = sanitizeFormulaResult(rawPred);
+          const predicted = formulas[fName](top[0], top[1], top[2], bot[0], bot[1]);
           const check = checkHitDetail(predicted, next.n3, next.n2);
 
           totalTested++;
@@ -1071,34 +1034,23 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
             hundredsOnlyCount++;
           }
 
-          const gStat = globalFormulaStats[fName];
-          gStat.totalTested++;
-
           if(check.hitAny){
             hits++; currentStreak++; currentMissStreak = 0; lastHitResult = true; lastHitHundredsOnly = false;
             if(currentStreak > maxStreak) maxStreak = currentStreak;
-
-            gStat.hits++;
-            gStat.currentMissStreak = 0;
           } else {
             misses++; currentMissStreak++; currentStreak = 0; lastHitResult = false;
             lastHitHundredsOnly = check.hitHundredsOnly;
             if(currentMissStreak > maxMissStreak) maxMissStreak = currentMissStreak;
-
-            gStat.misses++;
-            gStat.currentMissStreak++;
-            if(gStat.currentMissStreak > gStat.maxMissStreak) {
-              gStat.maxMissStreak = gStat.currentMissStreak;
-            }
-          }
-          if(check.hitHundredsOnly){
-            gStat.hundredsOnlyCount++;
           }
         }
 
-        const rawLatestPred = formulas[fName](lTop[0], lTop[1], lTop[2], lBot[0], lBot[1]);
-        const latestDigits = sanitizeFormulaResult(rawLatestPred);
-        globalFormulaStats[fName].latestDigits = latestDigits;
+        const latestDigits = formulas[fName](lTop[0], lTop[1], lTop[2], lBot[0], lBot[1]);
+
+        globalAccumulator[fName].totalTested += totalTested;
+        globalAccumulator[fName].hits += hits;
+        globalAccumulator[fName].misses += misses;
+        globalAccumulator[fName].hundredsOnlyCount += hundredsOnlyCount;
+        globalAccumulator[fName].latestDigits = latestDigits;
 
         const hitRate = totalTested > 0 ? Number(((hits / totalTested) * 100).toFixed(2)) : 0;
         auditDataMap[lotteryName][fName] = {
@@ -1117,6 +1069,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         const predicted = auditStats.latestDigits;
 
         let formulaWeight = auditStats.hitRate;
+
         if(auditStats.lastHit === true && auditStats.curStreak >= 2){
           formulaWeight += (auditStats.curStreak * 8);
         }
@@ -1214,8 +1167,8 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     const globalAuditMap = {};
-    Object.keys(globalFormulaStats).forEach(fName => {
-      const g = globalFormulaStats[fName];
+    Object.keys(globalAccumulator).forEach(fName => {
+      const g = globalAccumulator[fName];
       const hitRate = g.totalTested > 0 ? Number(((g.hits / g.totalTested) * 100).toFixed(2)) : 0;
       globalAuditMap[fName] = {
         totalTested: g.totalTested,
@@ -1223,13 +1176,12 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         misses: g.misses,
         hundredsOnlyCount: g.hundredsOnlyCount,
         hitRate,
-        maxMissStreak: g.maxMissStreak,
         latestDigits: g.latestDigits
       };
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V31.6 (100 สูตร) สำเร็จ');
+    showToast('✓ ประมวลผลระบบ V31.3 (100 สูตร) สำเร็จ');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1249,9 +1201,10 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
         if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
           try { 
             localStorage.removeItem(STORAGE_KEY);
-            localStorage.removeItem('lottery_audit_master_records_v315');
-            localStorage.removeItem('lottery_audit_master_records_v314');
             localStorage.removeItem('lottery_audit_master_records_v313');
+            localStorage.removeItem('lottery_audit_master_records_v312');
+            localStorage.removeItem('lottery_audit_master_records_v311');
+            localStorage.removeItem('lottery_audit_master_records_v310');
           } catch(e){}
           $('result').innerHTML = '';
           updateIndicator();
