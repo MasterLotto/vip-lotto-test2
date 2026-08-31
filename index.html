@@ -4106,41 +4106,68 @@ function loadLandmarks(){try{const x=JSON.parse(localStorage.getItem(LANDMARK_ST
 function saveLandmarks(x){try{localStorage.setItem(LANDMARK_STORAGE_KEY,JSON.stringify(x));return true;}catch(e){return false;}}
 function getLandmark(lotteryName){const x=loadLandmarks();return x[lotteryName]||null;}
 function resolveLandmarkFormula(lotteryName,allFormulas){const lm=getLandmark(lotteryName);if(!lm)return null;if(typeof allFormulas[lm.formula]==="function")return allFormulas[lm.formula];return null;}
-function updateLandmarkForLottery(lotteryName,recs,audit,incomingCount){
-  const old=getLandmark(lotteryName);
-  const count=Number(incomingCount||0);
-  if(!Array.isArray(recs)||recs.length<26||count<26||!audit)return old;
-  let best=null;
+function __landmarkCandidateComparator(a,b){
+  if(Number(a.score)!==Number(b.score)) return Number(b.score)-Number(a.score);
+  if(Number(a.misses)!==Number(b.misses)) return Number(a.misses)-Number(b.misses);
+  if(Number(a.maxMissStreak)!==Number(b.maxMissStreak)) return Number(a.maxMissStreak)-Number(b.maxMissStreak);
+  if(Number(a.maxStreak)!==Number(b.maxStreak)) return Number(b.maxStreak)-Number(a.maxStreak);
+  if(Number(a.hits)!==Number(b.hits)) return Number(b.hits)-Number(a.hits);
+  return String(a.formula).localeCompare(String(b.formula),'th');
+}
+function __buildBestLandmarkCandidate(audit){
+  if(!audit||typeof audit!=="object") return null;
+  const candidates=[];
   Object.keys(audit).forEach(function(name){
     const a=audit[name];
     if(!a||Number(a.totalTested||0)<25)return;
-    const candidate={
-      formula:name,
-      score:Number(a.hitRate)||0,
-      hits:Number(a.hits)||0,
+    const tested=Number(a.totalTested)||0;
+    const hits=Number(a.hits)||0;
+    candidates.push({
+      formula:String(name),
+      score:Number((tested>0?(hits/tested*100):0).toFixed(2)),
+      hits:hits,
       misses:Number(a.misses)||0,
       maxMissStreak:Number(a.maxMissStreak)||0,
       maxStreak:Number(a.maxStreak)||0,
-      samples:Number(a.totalTested)||0,
-      updatedAt:Date.now()
-    };
-    if(!best||
-      candidate.score>best.score||
-      (candidate.score===best.score&&candidate.misses<best.misses)||
-      (candidate.score===best.score&&candidate.misses===best.misses&&candidate.maxMissStreak<best.maxMissStreak)||
-      (candidate.score===best.score&&candidate.misses===best.misses&&candidate.maxMissStreak===best.maxMissStreak&&candidate.maxStreak>best.maxStreak)||
-      (candidate.score===best.score&&candidate.misses===best.misses&&candidate.maxMissStreak===best.maxMissStreak&&candidate.maxStreak===best.maxStreak&&candidate.hits>best.hits)||
-      (candidate.score===best.score&&candidate.misses===best.misses&&candidate.maxMissStreak===best.maxMissStreak&&candidate.maxStreak===best.maxStreak&&candidate.hits===best.hits&&candidate.formula.localeCompare(best.formula,'th')<0)
-    )best=candidate;
+      samples:tested
+    });
   });
-  if(!best)return old;
-  /* A fresh 26+ round is a calibration event: persist the current #1 audit formula.
-     It must not be blocked by an older, stale Landmark. */
-  const store=loadLandmarks();
-  store[lotteryName]=best;
-  saveLandmarks(store);
-  return best;
+  candidates.sort(__landmarkCandidateComparator);
+  return candidates[0]||null;
 }
+function updateLandmarkForLottery(lotteryName,recs,audit,incomingCount){
+  const old=getLandmark(lotteryName);
+  const count=Number(incomingCount||0);
+  const total=Array.isArray(recs)?recs.length:0;
+  if(total<26||!audit)return old;
+
+  const best=__buildBestLandmarkCandidate(audit);
+  if(!best)return old;
+
+  /*
+    Landmark is the lottery's single #1 champion.
+    First-time calibration requires 26+ rounds entered in the run.
+    A legacy/invalid Landmark from an older build is repaired once
+    from the same 26+ historical audit so an old #3 can never survive.
+    After that, 1-25 new rounds never replace the stored champion.
+  */
+  const oldIsValid=old&&old.landmarkVersion===2&&old.formula===best.formula;
+  const needsLegacyRepair=old&&!old.landmarkVersion;
+  const shouldCalibrate=count>=26;
+  if(!old||shouldCalibrate||needsLegacyRepair){
+    const store=loadLandmarks();
+    store[lotteryName]={
+      ...best,
+      landmarkVersion:2,
+      calibrationRounds:total,
+      calibratedAt:Date.now()
+    };
+    saveLandmarks(store);
+    return store[lotteryName];
+  }
+  return oldIsValid?old:old;
+}
+
 function buildLandmarkAndRecommendationHTML(auditDataMap){
   const store=loadLandmarks();
   const names=Object.keys(auditDataMap||{});
