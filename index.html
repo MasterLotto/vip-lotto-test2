@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V32.0
+MESTER LOTTO VIP+ — V32.4
 ==================================================================
 PURE RAW ENGINE + CUSTOM FORMULA LAB + AUTO FORMULA RECOMMENDER
 ==================================================================
@@ -35,7 +35,7 @@ PURE RAW ENGINE + CUSTOM FORMULA LAB + AUTO FORMULA RECOMMENDER
 
 
 
-<title>Mester Lotto VIP+ — Formula Lab V32.0</title>
+<title>Mester Lotto VIP+ — Formula Lab V32.4</title>
 
 
 
@@ -1820,128 +1820,61 @@ table.audit-table tr:nth-child(even){
     padding:13px;
   }
 }
-</style>
 
-<!-- AUDIT UPGRADE: persistent recommendation clearing, deterministic ranking,
-     lottery-specific landmark memory, multi-dimensional metrics, final recommendation -->
-<style id="audit-upgrade-premium">
-.audit-upgrade-wrap{margin:18px 0;display:grid;gap:14px}
-.audit-reco-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.audit-clear-btn{cursor:pointer;border:1px solid rgba(255,100,100,.35);border-radius:12px;padding:9px 14px;font-weight:800;background:rgba(255,80,80,.08)}
-.audit-reco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.audit-reco-card{border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:16px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.015));box-shadow:0 12px 30px rgba(0,0,0,.12)}
-.audit-digit-lines{display:flex;flex-direction:column;gap:5px}
-.audit-landmark{border-radius:999px;padding:5px 10px;font-size:.78rem;font-weight:900}
-.audit-final{border-radius:18px;padding:18px;border:1px solid rgba(255,255,255,.12)}
-@media(max-width:700px){.audit-reco-grid{grid-template-columns:1fr}}
-</style>
-<script id="audit-upgrade-logic">
-(function(){
-"use strict";
-const LANDMARK_KEY="mester_lotto_vip_landmarks_v2";
-const RECO_KEYS=["selectedRecommendationCards","recommendationCards","formulaRecommendationCards"];
-
-function read(k,d){try{const x=localStorage.getItem(k);return x?JSON.parse(x):d}catch(e){return d}}
-function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
-
-window.AuditUpgrade={
-  clearRecommendationCards:function(){
-    RECO_KEYS.forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
-    document.querySelectorAll('[data-recommendation-card],.recommendation-card,.formula-recommendation-card,.selected-recommendation-card').forEach(e=>e.remove());
-    try{document.dispatchEvent(new CustomEvent("recommendationCardsCleared"))}catch(e){}
-  },
-
-  /* Stable ranking: higher accuracy, then recent form, then consistency,
-     then sample size, then deterministic Thai/name order. */
-  compareFormula:function(a,b){
-    a=a||{};b=b||{};
-    const A={acc:+(a.accuracy??a.hitRate??a.rate??0)||0,
-             recent:+(a.recentForm??a.recent??0)||0,
-             cons:+(a.consistency??a.stability??0)||0,
-             sample:+(a.sampleSize??a.samples??a.count??0)||0,
-             name:String(a.name??a.formula??a.id??"")};
-    const B={acc:+(b.accuracy??b.hitRate??b.rate??0)||0,
-             recent:+(b.recentForm??b.recent??0)||0,
-             cons:+(b.consistency??b.stability??0)||0,
-             sample:+(b.sampleSize??b.samples??b.count??0)||0,
-             name:String(b.name??b.formula??b.id??"")};
-    return B.acc-A.acc||B.recent-A.recent||B.cons-A.cons||B.sample-A.sample||A.name.localeCompare(B.name,"th");
-  },
-
-  getLandmarks:function(){return read(LANDMARK_KEY,{})},
-  getLandmark:function(lottery){return lottery?this.getLandmarks()[String(lottery)]||null:null},
-
-  /* A Landmark can be created/replaced only when sample > 25.
-     A new candidate must strictly beat the current Landmark on accuracy;
-     ties use deterministic secondary evidence. */
-  considerLandmark:function(lottery,candidate,sampleSize){
-    const n=Number(sampleSize)||0;
-    const key=String(lottery||"");
-    if(!key||!candidate||n<=25)return this.getLandmark(key);
-    const all=this.getLandmarks(),old=all[key];
-    if(!old){
-      all[key]=Object.assign({},candidate,{sampleSize:n,updatedAt:new Date().toISOString()});
-      write(LANDMARK_KEY,all);return all[key];
-    }
-    const score=x=>({acc:+(x.accuracy??x.hitRate??x.rate??0)||0,
-                     recent:+(x.recentForm??x.recent??0)||0,
-                     cons:+(x.consistency??x.stability??0)||0});
-    const A=score(candidate),B=score(old);
-    const wins=A.acc>B.acc || (A.acc===B.acc&&A.recent>B.recent) ||
-      (A.acc===B.acc&&A.recent===B.recent&&A.cons>B.cons);
-    if(wins){
-      all[key]=Object.assign({},candidate,{sampleSize:n,updatedAt:new Date().toISOString(),replaced:old});
-      write(LANDMARK_KEY,all);
-    }
-    return all[key];
-  },
-
-  /* Multi-dimensional evidence profile. */
-  profile:function(x){
-    x=x||{};
-    return {
-      accuracy:+(x.accuracy??x.hitRate??x.rate??0)||0,
-      recentForm:+(x.recentForm??x.recent??0)||0,
-      consistency:+(x.consistency??x.stability??0)||0,
-      sampleSize:+(x.sampleSize??x.samples??x.count??0)||0,
-      rankStability:+(x.rankStability??0)||0,
-      lotteryFit:+(x.lotteryFit??0)||0
-    };
-  },
-
-  /* Second-pass recommendation from all recommended formulas.
-     It ranks digit evidence without modifying locked digit/penetration formulas. */
-  finalRecommendation:function(formulas){
-    const scores={};
-    (Array.isArray(formulas)?formulas:[]).forEach(f=>{
-      const p=this.profile(f);
-      const weight=p.accuracy + p.recentForm*.25 + p.consistency*.25 + p.lotteryFit*.25;
-      const digits=[...(f.digits||f.luckyNumbers||f.recommendedDigits||[])].map(Number)
-        .filter(n=>Number.isInteger(n)&&n>=0&&n<=9);
-      digits.forEach(d=>scores[d]=(scores[d]||0)+weight);
-    });
-    return Object.entries(scores).map(([digit,score])=>({digit:+digit,score}))
-      .sort((a,b)=>b.score-a.score||a.digit-b.digit).slice(0,2);
-  }
-};
-
-function addClearButton(){
-  if(document.getElementById("audit-clear-reco-btn"))return;
-  const els=[...document.querySelectorAll("h1,h2,h3,h4,.section-title,.card-title")];
-  const h=els.find(e=>/สูตรแนะนำ|recommendation/i.test(e.textContent||""));
-  if(!h||!h.parentElement)return;
-  const b=document.createElement("button");
-  b.id="audit-clear-reco-btn";b.className="audit-clear-btn";b.type="button";
-  b.textContent="ล้างการ์ดสูตรแนะนำ";
-  b.title="ล้างเฉพาะการ์ดสูตรแนะนำ ไม่ล้างสถิติ สูตรหลัก หรือ Landmark";
-  b.onclick=AuditUpgrade.clearRecommendationCards;
-  h.parentElement.appendChild(b);
+/* =========================================================
+   PREMIUM V32.4 UI REFINEMENT
+   - High-end / minimal / clean information hierarchy
+   - Clear separation of audit, recommendation and prediction
+========================================================= */
+.shell{padding:22px 14px 40px;}
+.app{max-width:1180px;border:1px solid rgba(184,148,74,.24);box-shadow:0 28px 80px rgba(73,54,29,.11),0 8px 24px rgba(73,54,29,.05);}
+.inner{padding:24px 24px 30px;}
+.top{padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid rgba(184,148,74,.18);}
+.hero{padding:24px 26px;border-radius:22px;border:1px solid rgba(184,148,74,.24);box-shadow:0 12px 34px rgba(73,54,29,.06);}
+.panel{border-radius:20px;border:1px solid rgba(184,148,74,.18);box-shadow:0 10px 28px rgba(73,54,29,.05);}
+.section-title{margin:28px 0 12px;font-size:.72rem;letter-spacing:.35px;border-left:3px solid var(--gold);padding-left:10px;}
+.summary-table-container{margin-bottom:16px;padding:16px 16px 12px;border-radius:18px;box-shadow:0 8px 24px rgba(73,54,29,.055);}
+.summary-table-container h3{font-size:.64rem!important;letter-spacing:.25px;margin:0 0 12px!important;}
+table.audit-table{font-size:.46rem;}
+table.audit-table th,table.audit-table td{padding:8px 7px;border-color:#eee5d6;}
+table.audit-table th{background:#faf7f0;position:sticky;top:0;z-index:1;}
+table.audit-table tr:hover{background:#fffaf0;}
+.recommend-list{padding:12px 0 2px;gap:12px;}
+.recommend-card{grid-template-columns:38px minmax(0,1fr) auto;gap:14px;padding:15px;border-radius:16px;border-color:rgba(184,148,74,.2);box-shadow:0 8px 24px rgba(73,54,29,.055);}
+.recommend-rank{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#faf6ed;border:1px solid var(--line);color:var(--gold2);font-size:.55rem;font-weight:900;}
+.recommend-name{font-size:.58rem;letter-spacing:.15px;}
+.recommend-source{margin-top:3px;font-size:.42rem;color:var(--muted);}
+.recommend-expression{padding:8px 10px;margin-top:8px;border:1px solid #eee5d6;border-radius:10px;background:#fcfaf6;}
+.recommend-stats{margin-top:9px;gap:6px;}
+.stat-chip{padding:5px 7px;border-radius:8px;font-size:.39rem;}
+.recommend-preview{margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid #eee5d6;background:#fffdf9;display:grid;grid-template-columns:160px minmax(0,1fr);gap:10px;}
+.recommend-preview>div{display:flex;flex-direction:column;gap:3px;}
+.recommend-preview span{font-size:.38rem;color:var(--muted);font-weight:700;}
+.recommend-preview strong{font-family:"IBM Plex Mono",monospace;font-size:.52rem;color:var(--gold2);line-height:1.6;}
+.add-recommend{padding:8px 11px;border-radius:10px;box-shadow:0 5px 14px rgba(128,99,41,.14);}
+.recommend-actions{display:flex;align-items:center;gap:8px;}
+.clear-recommend{padding:8px 11px;border:1px solid #decfc0;border-radius:10px;background:#fff;color:#7b5d32;font-size:.43rem;font-weight:900;white-space:nowrap;}
+.clear-recommend:hover{background:#faf6ed;}
+.recommend-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 10px;border-bottom:1px solid #eee5d6;}
+.recommend-heading-title{font-size:.58rem;font-weight:900;color:var(--gold2);}
+.recommend-heading-note{font-size:.4rem;color:var(--muted);margin-top:3px;}
+.selected-recommendation-wrap{margin-top:22px;padding-top:4px;}
+.selected-recommendation-wrap .section-title{margin-top:0;}
+.recommendation-prediction-card{border-color:rgba(184,148,74,.24)!important;box-shadow:0 10px 30px rgba(73,54,29,.07)!important;}
+.recommendation-prediction-card .card-action-btn,.prediction-card .card-action-btn{border-radius:9px;}
+.prediction-card{border-radius:18px;box-shadow:0 10px 28px rgba(73,54,29,.06);}
+.audit-table-wrap{overflow:auto;max-width:100%;}
+@media(max-width:760px){
+  .inner{padding:17px 14px 24px;}
+  .shell{padding:10px 7px 24px;}
+  .recommend-card{grid-template-columns:32px minmax(0,1fr);}
+  .recommend-card .add-recommend{grid-column:1/-1;width:100%;}
+  .recommend-preview{grid-template-columns:1fr;}
+  .recommend-heading{align-items:flex-start;flex-direction:column;}
+  .clear-recommend{width:100%;}
 }
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",addClearButton);
-else addClearButton();
-})();
-</script>
 
+</style>
 </head>
 
 
@@ -2466,12 +2399,21 @@ else addClearButton();
 
 
 
-        <button
-          id="runFormulaLab"
-          class="auto-run"
-        >
-          🧬 ค้นหาสูตรแนะนำ
-        </button>
+        <div class="recommend-actions">
+          <button
+            id="clearRecommendationCards"
+            class="clear-recommend"
+            type="button"
+          >
+            🗑 ล้างการ์ดสูตรแนะนำ
+          </button>
+          <button
+            id="runFormulaLab"
+            class="auto-run"
+          >
+            🧬 ค้นหาสูตรแนะนำ
+          </button>
+        </div>
 
 
 
@@ -4989,7 +4931,7 @@ function renderCustomFormulaList(){
 
 
 
-            renderCustomFormulaList();
+    renderCustomFormulaList();
 
 
 
@@ -9945,6 +9887,7 @@ function renderFullUI(
                   ">
                     ${esc(p.nextDate)}
                   </div>
+                  <div style="margin-top:3px;font-size:.4rem;color:#a28a64;font-weight:800;">แกนเจาะ ${p.anchor} · ระยะ ±${p.pairRadius}</div>
 
 
 
@@ -11016,318 +10959,72 @@ function runEngine(){
 
 
 
-        const makePairsForDigitStrict =
-          function(
-            mainDigit,
-            otherDigit
-          ){
-
-
-
-
-            const candidatePool =
-              [0,1,2,3,4,5,6,7,8,9];
-
-
-
-
-            const validPool =
-              candidatePool.filter(
-                function(n){
-
-
-
-
-                  return n !== mainDigit;
-
-
-
-
-                }
-              );
-
-
-
-
-            const rawPairs = [];
-
-
-
-
-            for(
-              let targetIndex=0;
-              targetIndex<validPool.length;
-              targetIndex++
-            ){
-
-
-
-
-              const target =
-                validPool[
-                  targetIndex
-                ];
-
-
-
-
-              let cooccurrenceBonus =
-                0;
-
-
-
-
-              /*
-                จำกัดการวนซ้ำ
-                เพื่อไม่ให้เกิด performance issue
-              */
-
-
-
-
-              for(
-                let idx=0;
-                idx<recs.length-1;
-                idx++
-              ){
-
-
-
-
-                const cur =
-                  recs[idx];
-
-
-
-
-                const next =
-                  recs[idx+1];
-
-
-
-
-                const curN3 =
-                  cur.n3
-                    .split("")
-                    .map(Number);
-
-
-
-
-                const nextN3 =
-                  next.n3
-                    .split("")
-                    .map(Number);
-
-
-
-
-                const nextN2 =
-                  next.n2
-                    .split("")
-                    .map(Number);
-
-
-
-
-                if(
-                  curN3.includes(
-                    mainDigit
-                  ) &&
-                  (
-                    nextN3.includes(
-                      target
-                    ) ||
-                    nextN2.includes(
-                      target
-                    )
-                  )
-                ){
-
-
-
-
-                  cooccurrenceBonus += 6;
-
-
-
-
-                }
-
-
-
-
-              }
-
-
-
-
-              /*
-                ระยะห่างไม่ควรมีน้ำหนัก
-                จนทำให้เลขที่ score ต่ำ
-                กลายเป็นอันดับหนึ่ง
-              */
-
-
-
-
-              const score =
-                (digitScores[target]||0) +
-                cooccurrenceBonus;
-
-
-
-
-              rawPairs.push({
-
-
-
-
-                pair:
-                  `${mainDigit}${target}`,
-
-
-
-
-                score
-
-
-
-
-              });
-
-
-
-
+        /*
+          =====================================================
+          STANDARD PAIR ENGINE
+          =====================================================
+          Every formula uses the same pair logic:
+          1) Anchor = |7 - hundreds digit| % 10
+          2) Start with +/-2 around the anchor (5-digit pool)
+          3) If the pool collides with either main digit, expand to +/-3
+          4) Remove both main digits and all doubles
+          5) Keep exactly 5 pairs per main digit
+          6) Always sort pairs from low to high
+        */
+        const anchor = Math.abs(7 - Number(lTop[0])) % 10;
+
+        const buildStandardPairPool =
+          function(center, radius){
+            const pool = [];
+            for(let step=-radius; step<=radius; step++){
+              pool.push(norm(center + step));
             }
-
-
-
-
-            rawPairs.sort(
-              function(a,b){
-
-
-
-
-                return b.score-a.score;
-
-
-
-
-              }
-            );
-
-
-
-
-            const selectedPairs =
-              rawPairs.slice(0,5);
-
-
-
-
-            const rankedPairs =
-              selectedPairs.map(
-                function(item,idx){
-
-
-
-
-                  let colorType =
-                    "default";
-
-
-
-
-                  if(idx === 0)
-                    colorType = "gold";
-
-
-
-
-                  else if(idx === 1)
-                    colorType = "silver";
-
-
-
-
-                  else if(idx === 2)
-                    colorType = "rose_gold";
-
-
-
-
-                  return {
-
-
-
-
-                    pair:item.pair,
-                    color:colorType,
-                    score:item.score
-
-
-
-
-                  };
-
-
-
-
-                }
-              );
-
-
-
-
-            rankedPairs.sort(
-              function(a,b){
-
-
-
-
-                return (
-                  parseInt(a.pair,10) -
-                  parseInt(b.pair,10)
-                );
-
-
-
-
-              }
-            );
-
-
-
-
-            return rankedPairs;
-
-
-
-
+            return Array.from(new Set(pool));
           };
 
+        const makeStandardPairs =
+          function(mainDigit, otherDigit){
+            const pool2 = buildStandardPairPool(anchor, 2);
+            const collision =
+              pool2.includes(Number(mainDigit)) ||
+              pool2.includes(Number(otherDigit));
+            const radius = collision ? 3 : 2;
+            const pool = buildStandardPairPool(anchor, radius);
 
+            let targets = pool.filter(function(n){
+              return n !== Number(mainDigit) &&
+                     n !== Number(otherDigit);
+            });
 
+            /* In a collision case there can be one extra candidate.
+               Deterministically keep the lowest five targets. */
+            targets = targets
+              .slice()
+              .sort(function(a,b){ return a-b; })
+              .slice(0,5);
 
-        const d1Pairs =
-          makePairsForDigitStrict(
-            d1,
-            d2
-          );
+            return targets
+              .map(function(target){
+                return {
+                  pair: String(mainDigit) + String(target),
+                  score: 0,
+                  color: "default"
+                };
+              })
+              .sort(function(a,b){
+                return parseInt(a.pair,10) - parseInt(b.pair,10);
+              })
+              .map(function(item,idx){
+                return {
+                  pair:item.pair,
+                  score:0,
+                  color:idx===0 ? "gold" : idx===1 ? "silver" : idx===2 ? "rose_gold" : "default"
+                };
+              });
+          };
 
-
-
-
-        const d2Pairs =
-          makePairsForDigitStrict(
-            d2,
-            d1
-          );
-
-
-
+        const d1Pairs = makeStandardPairs(d1,d2);
+        const d2Pairs = makeStandardPairs(d2,d1);
 
         predictionDataMap[
           lotteryName
@@ -11579,119 +11276,40 @@ function __temporalFormulaStats(fn, groups){
    The main digit itself is only the conditioning context, not an extra hit.
 */
 function __advancedPairEngine(mainDigit, otherDigit, recs, formulaFn){
-  const pool = [0,1,2,3,4,5,6,7,8,9];
-  const candidates = [];
+  /*
+    Compatibility wrapper: all formula types now use the single
+    deterministic standard pair engine. The historical backtest
+    parameters remain accepted so existing callers do not break.
+  */
+  let anchor = 0;
+  try{
+    const latest = Array.isArray(recs) && recs.length ? recs[recs.length-1] : null;
+    const h = latest ? Number(String(latest.n3||"").padStart(3,"0")[0]) : 0;
+    anchor = Math.abs(7-h) % 10;
+  }catch(e){ anchor=0; }
 
+  function pool(center,radius){
+    const out=[];
+    for(let step=-radius; step<=radius; step++) out.push(norm(center+step));
+    return Array.from(new Set(out));
+  }
 
-  pool.forEach(function(target){
-    if(target === mainDigit) return;       // no doubles
-    if(target === otherDigit) return;      // no main-digit collision
+  const pool2=pool(anchor,2);
+  const collision=pool2.includes(Number(mainDigit)) || pool2.includes(Number(otherDigit));
+  const radius=collision ? 3 : 2;
+  const targets=pool(anchor,radius)
+    .filter(function(n){return n!==Number(mainDigit) && n!==Number(otherDigit);})
+    .sort(function(a,b){return a-b;})
+    .slice(0,5);
 
-
-    let opportunities = 0;
-    let hits = 0;
-    let recentOpp = 0;
-    let recentHits = 0;
-    let coHits = 0;
-    let coOpportunities = 0;
-    const recentStart = Math.max(0, recs.length - 8);
-
-
-    for(let i=0; i<recs.length-1; i++){
-      const cur = recs[i];
-      const next = recs[i+1];
-      if(!cur || !next) continue;
-
-
-      let predicted;
-      try{
-        const top = String(cur.n3 || "").padStart(3,"0").slice(-3).split("").map(Number);
-        const bot = String(cur.n2 || "").padStart(2,"0").slice(-2).split("").map(Number);
-        predicted = sanitizeFormulaResult(formulaFn(top[0],top[1],top[2],bot[0],bot[1]));
-      }catch(e){
-        predicted = [0,1];
-      }
-
-
-      if(!predicted.includes(mainDigit)) continue;
-      opportunities++;
-      if(i >= recentStart) recentOpp++;
-
-
-      const nextDigits = (String(next.n3 || "") + String(next.n2 || "")).split("").map(Number);
-      if(nextDigits.includes(target)){
-        hits++;
-        if(i >= recentStart) recentHits++;
-      }
-
-
-      const curDigits = (String(cur.n3 || "") + String(cur.n2 || "")).split("").map(Number);
-      if(curDigits.includes(mainDigit)){
-        coOpportunities++;
-        if(nextDigits.includes(target)) coHits++;
-      }
-    }
-
-
-    const rawRate = opportunities ? hits/opportunities*100 : 0;
-    const recentRate = recentOpp ? recentHits/recentOpp*100 : rawRate;
-    const coRate = coOpportunities ? coHits/coOpportunities*100 : 0;
-    const shrunkRate = ((hits + 5) / (opportunities + 10)) * 100;
-
-
-    const targetFrequency = recs.length > 1
-      ? recs.slice(1).reduce(function(acc,r){
-          const ds=(String(r.n3||"")+String(r.n2||"")).split("").map(Number);
-          return acc + (ds.includes(target) ? 1 : 0);
-        },0) / (recs.length-1) * 100
-      : 0;
-
-
-    const score =
-      shrunkRate * 0.55 +
-      coRate * 0.20 +
-      recentRate * 0.15 +
-      targetFrequency * 0.10;
-
-
-    candidates.push({
-      pair:String(mainDigit)+String(target),
-      score:Number(score.toFixed(3)),
-      rawRate:Number(rawRate.toFixed(2)),
-      opportunities,
-      recentRate:Number(recentRate.toFixed(2)),
-      coRate:Number(coRate.toFixed(2))
-    });
-  });
-
-
-  candidates.sort(function(a,b){
-    if(b.score !== a.score) return b.score-a.score;
-    if(b.rawRate !== a.rawRate) return b.rawRate-a.rawRate;
-    return parseInt(a.pair,10)-parseInt(b.pair,10);
-  });
-
-
-  const selected = candidates.slice(0,5).map(function(item,idx){
+  return targets.map(function(target,idx){
     return {
-      pair:item.pair,
-      score:item.score,
-      rawRate:item.rawRate,
-      opportunities:item.opportunities,
-      recentRate:item.recentRate,
-      coRate:item.coRate,
+      pair:String(mainDigit)+String(target),
+      score:0,
       color:idx===0 ? "gold" : idx===1 ? "silver" : idx===2 ? "rose_gold" : "default"
     };
   });
-
-
-  /* Keep card display order numeric while preserving rank color. */
-  selected.sort(function(a,b){
-    return parseInt(a.pair,10)-parseInt(b.pair,10);
-  });
-  return selected;
 }
-
 
 function __pairCardHTML(mainDigit, pairsList, isFirstRow){
   const mainBg = isFirstRow ? "linear-gradient(135deg,#f9f3e3,#edd5a6)" : "linear-gradient(135deg,#f3f4f6,#e5e7eb)";
@@ -11738,6 +11356,7 @@ function __recommendCardForLottery(lotteryName, rec, candidate, index, groups){
           <div>
             <div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(lotteryName)}</div>
             <div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(date)}</div>
+            <div style="margin-top:3px;font-size:.4rem;color:#a28a64;font-weight:800;">แกนเจาะ ${Math.abs(7-Number(top[0]))%10} · มาตรฐาน ±2/±3</div>
           </div>
         </div>
       </div>
@@ -11769,7 +11388,7 @@ function __appendSelectedRecommendationCards(){
   });
 
 
-  let html=`<div id="selectedRecommendationCards"><div class="section-title">🧬 การ์ดสูตรแนะนำที่เลือก</div>`;
+  let html=`<div id="selectedRecommendationCards" class="selected-recommendation-wrap"><div class="section-title">🧬 การ์ดสูตรแนะนำที่เลือก</div>`;
   let cardCount=0;
   selected.forEach(function(candidate,selIndex){
     Object.keys(latestByLottery).forEach(function(name){
@@ -11993,6 +11612,17 @@ addRecommendedFormula = function(data){
   showToast(`✓ เพิ่มสูตรแนะนำและสร้างการ์ดเลขเด่น/เลขเจาะแล้ว`);
 };
 
+
+/* Clear only selected recommendation cards; preserve formulas and audit data. */
+function clearRecommendationCards(showMessage){
+  try{ localStorage.removeItem(RECOMMENDATION_STATE_KEY); }catch(e){}
+  const result = $("result");
+  if(result){
+    const box = result.querySelector("#selectedRecommendationCards");
+    if(box) box.remove();
+  }
+  if(showMessage !== false) showToast("✓ ล้างการ์ดสูตรแนะนำเรียบร้อย");
+}
 
 /* Clear selected recommendation cards together with the user's global clear action. */
 window.addEventListener("DOMContentLoaded",function(){
@@ -12302,6 +11932,21 @@ window.addEventListener(
 
 
 
+    const clearRecommendationBtn = $("clearRecommendationCards");
+    if(clearRecommendationBtn){
+      clearRecommendationBtn.onclick = function(){
+        const selected = __loadSelectedRecommendations();
+        if(!selected.length){
+          showToast("ℹ ยังไม่มีการ์ดสูตรแนะนำให้ล้าง");
+          return;
+        }
+        if(!confirm("ต้องการล้างการ์ดสูตรแนะนำทั้งหมดหรือไม่?\n\nการล้างนี้จะไม่ลบสูตร ไม่ลบข้อมูลสะสม และไม่กระทบตารางออดิต")) return;
+        clearRecommendationCards(true);
+      };
+    }
+
+
+
     renderCustomFormulaList();
 
 
@@ -12380,25 +12025,6 @@ window.addEventListener(
 
 
 
-
-
-<section id="audit-upgrade-panel" class="audit-upgrade-wrap">
-  <div class="audit-reco-card">
-    <div class="audit-reco-toolbar">
-      <div>
-        <div style="font-weight:900;font-size:1.08rem">Formula Intelligence & Landmark</div>
-        <div style="opacity:.72;font-size:.86rem;margin-top:4px">Landmark แยกตามหวย • ข้อมูลไม่เกิน 25 งวดไม่มีผลต่อ Landmark</div>
-      </div>
-      <button class="audit-clear-btn" type="button" onclick="AuditUpgrade.clearRecommendationCards()">ล้างการ์ดสูตรแนะนำ</button>
-    </div>
-    <div class="audit-reco-grid" style="margin-top:14px">
-      <div><strong>Locked Core</strong><br><span style="opacity:.72">สูตรเลขเด่นและสูตรเลขเจาะไม่ถูกแก้โดยระบบวิเคราะห์</span></div>
-      <div><strong>Stable Ranking</strong><br><span style="opacity:.72">คะแนนเท่ากันใช้เกณฑ์ตัดสินแบบ Deterministic</span></div>
-      <div><strong>Landmark Memory</strong><br><span style="opacity:.72">สร้าง/เปลี่ยนได้เมื่อข้อมูลมากกว่า 25 งวดและมีผู้ชนะใหม่</span></div>
-      <div><strong>Final Recommendation</strong><br><span style="opacity:.72">คัดกรองจากสูตรแนะนำอีกชั้นหนึ่ง โดยไม่แก้ Core Formula</span></div>
-    </div>
-  </div>
-</section>
 
 </body>
   </html>
