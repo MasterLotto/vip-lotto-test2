@@ -8,7 +8,7 @@ PURE RAW ENGINE + CUSTOM FORMULA LAB + AUTO FORMULA RECOMMENDER
 1. สูตรเดิมทั้งหมดคงไว้ 100%
 2. ไม่แก้ผลคำนวณของสูตรเดิม
 3. เพิ่มระบบเพิ่มสูตรเองผ่านหน้าเว็บ
-4. เพิ่มระบบ Auto Formula Lab สำหรับสร้างสูตรทดลองจากสูตรที่มีอยู่ พร้อมเทียบผลเดิมและแสดงเลขเด่น
+4. เพิ่มระบบ Auto Formula Lab สำหรับสร้างสูตรทดลองจากสูตรที่มีอยู่
 5. จำกัดจำนวน Candidate เพื่อป้องกัน Browser ค้าง
 6. ใช้ Train / Validation เพื่อลด Overfitting
 7. สูตรแนะนำจะไม่แทนสูตรเดิมอัตโนมัติ
@@ -822,66 +822,80 @@ button{
   padding:10px;
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:10px;
 }
-
 
 .recommend-card{
-  padding:11px;
-
-
+  padding:12px;
   border:1px solid var(--line);
-  border-radius:12px;
-
-
+  border-radius:14px;
   background:#fff;
-
-
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  gap:10px;
-
-
-  box-shadow:
-    0 4px 12px rgba(79,58,31,.04);
+  display:block;
+  box-shadow:0 4px 12px rgba(79,58,31,.04);
 }
 
+.recommend-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
 
-.recommend-main{
+.recommend-rank{
+  min-width:42px;
+  height:28px;
+  padding:0 9px;
+  border-radius:9px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#f9f3e3,#edd5a6);
+  border:1px solid #d9bd79;
+  color:#806329;
+  font-size:.46rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.recommend-title{
+  flex:1;
   min-width:0;
 }
 
-
 .recommend-name{
-  font-size:.54rem;
+  font-size:.55rem;
   font-weight:900;
   color:var(--text);
 }
 
+.recommend-source{
+  margin-top:3px;
+  font-size:.42rem;
+  color:var(--muted);
+}
 
 .recommend-expression{
-  margin-top:4px;
+  margin-top:8px;
+  padding:8px 9px;
+  border-radius:9px;
+  background:#faf6ed;
+  border:1px solid var(--line);
   font-family:"IBM Plex Mono",monospace;
   font-size:.42rem;
   line-height:1.55;
-  color:var(--muted);
+  color:var(--gold2);
   word-break:break-word;
 }
 
-
 .recommend-stats{
-  margin-top:7px;
-
-
-  display:flex;
-  flex-wrap:wrap;
-  gap:5px;
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
 }
 
-
 .stat-chip{
-  padding:4px 6px;
-  border-radius:7px;
+  padding:6px 7px;
+  border-radius:8px;
   background:#faf6ed;
   border:1px solid var(--line);
   font-size:.4rem;
@@ -889,13 +903,11 @@ button{
   font-weight:800;
 }
 
-
 .stat-chip.good{
   background:var(--greenBg);
   border-color:#b9dfc4;
   color:var(--green);
 }
-
 
 .stat-chip.warn{
   background:#fff7e7;
@@ -903,36 +915,30 @@ button{
   color:#a06f13;
 }
 
+.recommend-action-row{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  margin-top:9px;
+}
 
 .add-recommend{
-  align-self:center;
-
-
-  padding:7px 9px;
-
-
+  padding:8px 11px;
   border:0;
   border-radius:9px;
-
-
-  background:
-    linear-gradient(
-      135deg,
-      #c7a55d,
-      #806329
-    );
-
-
+  background:linear-gradient(135deg,#c7a55d,#806329);
   color:#fff;
-
-
   font-size:.43rem;
   font-weight:900;
-
-
   white-space:nowrap;
 }
 
+.recommend-empty-note{
+  padding:10px;
+  font-size:.43rem;
+  color:var(--muted);
+  text-align:center;
+}
 
 /* =========================================================
    RESULT
@@ -1273,32 +1279,6 @@ table.audit-table tr:nth-child(even){
   font-size:.58rem;
 }
 
-
-/* =========================================================
-   SELECTED RECOMMENDATION / NEXT-ROUND CARD
-========================================================= */
-.selected-recommend-wrap{margin-top:12px;padding-top:12px;border-top:1px dashed #d9bd79}
-.selected-recommend-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.selected-recommend-title{font-size:.62rem;font-weight:900;color:var(--gold2)}
-.selected-recommend-note{font-size:.42rem;color:var(--muted);line-height:1.5}
-.selected-formula-card{position:relative;margin-top:10px;padding:15px;border:1px solid #d9bd79;border-radius:18px;background:linear-gradient(145deg,#fffaf0,#fffdf9);box-shadow:var(--shadow2);overflow:hidden}
-.selected-card-actions{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:2}
-.selected-card-actions .card-action-btn{background:#fffdf9}
-.recommend-highlight{display:grid;grid-template-columns:1.15fr .85fr;gap:8px;margin-top:9px}
-.recommend-metric{padding:9px 10px;border:1px solid var(--line);border-radius:11px;background:#fff}
-.recommend-metric b{display:block;font-size:.48rem;color:var(--muted);margin-bottom:3px}
-.recommend-metric strong{font-size:.82rem;color:var(--gold2)}
-.recommend-metric.good{background:var(--greenBg);border-color:#b9dfc4}
-.recommend-metric.good strong{color:var(--green)}
-.recommend-reason{margin-top:9px;padding:9px 10px;border-radius:11px;background:#faf6ed;border:1px solid var(--line);font-size:.46rem;line-height:1.65;color:#625a4f}
-.selected-number-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
-.selected-number-box{padding:10px;border:1px solid #d9bd79;border-radius:13px;background:#fff;text-align:center}
-.selected-number-box small{display:block;color:var(--muted);font-size:.42rem;font-weight:800;margin-bottom:5px}
-.selected-number-box strong{font-family:"IBM Plex Mono",monospace;font-size:1.35rem;letter-spacing:3px;color:var(--gold2)}
-.selected-pairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
-.selected-pair{min-width:40px;padding:7px 8px;border-radius:9px;border:1px solid var(--line);background:#fff;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:.52rem;font-weight:900;color:#403a31}
-.selected-pair:first-child{border-color:#d9bd79;background:#fffaf0;color:var(--gold2)}
-@media(max-width:760px){.recommend-highlight{grid-template-columns:1fr}}
 
 /* =========================================================
    MOBILE
@@ -1714,7 +1694,7 @@ table.audit-table tr:nth-child(even){
 
 
           <div class="auto-title">
-            ✦ ระบบแนะนำสูตรอัตโนมัติ
+            ✦ Auto Formula Recommender
           </div>
 
 
@@ -1749,12 +1729,6 @@ table.audit-table tr:nth-child(even){
       <div
         id="recommendList"
         class="recommend-list"
-      ></div>
-
-      <div
-        id="selectedFormulaResults"
-        class="selected-recommend-wrap"
-        style="display:none;"
       ></div>
 
 
@@ -1812,11 +1786,6 @@ const STORAGE_KEY =
 
 const CUSTOM_FORMULA_KEY =
   "lottery_custom_formulas_v320";
-
-const SELECTED_FORMULA_KEY =
-  "lottery_selected_formula_v320";
-
-let selectedRecommendedFormula = null;
 
 
 /* =========================================================
@@ -4003,6 +3972,9 @@ const FORMULA_LAB_LIMITS = {
 
 };
 
+let selectedRecommendationCards = [];
+
+
 
 /*
   แปลง expression ง่าย ๆ ให้อยู่ใน coefficient vector
@@ -5475,96 +5447,326 @@ function runAutoFormulaLab(){
 }
 
 
-function getMasterRecordsForRecommendation(){
-  try{
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  }catch(e){
-    return [];
+function finishFormulaLab(results){
+
+
+  const status =
+    $("autoFormulaStatus");
+
+
+  const list =
+    $("recommendList");
+
+
+  /*
+    Require validation evidence.
+  */
+
+
+  const qualified =
+    results
+      .filter(
+        function(x){
+
+
+          return (
+            x.stats.validationTested >= 5
+          );
+
+
+        }
+      )
+      .sort(
+        function(a,b){
+
+
+          return (
+            b.stats.score -
+            a.stats.score
+          );
+
+
+        }
+      );
+
+
+  /*
+    Keep only unique formulas.
+  */
+
+
+  const finalList = [];
+
+
+  const seen = new Set();
+
+
+  qualified.forEach(
+    function(item){
+
+
+      const signature =
+        modelSignature(
+          item.m1,
+          item.m2
+        );
+
+
+      if(
+        !seen.has(signature) &&
+        finalList.length < 5
+      ){
+
+
+        seen.add(signature);
+
+
+        finalList.push(item);
+
+
+      }
+
+
+    }
+  );
+
+
+  if(!finalList.length){
+
+
+    status.textContent =
+      `ตรวจแล้ว ${results.length} Candidate แต่ยังไม่มีสูตรที่ผ่านเกณฑ์ Validation`;
+
+
+    list.innerHTML = "";
+
+
+    return;
+
+
   }
+
+
+  status.textContent =
+    `✓ ตรวจสอบ ${results.length} Candidate เสร็จแล้ว — แสดงสูตรที่ดีที่สุด ${finalList.length} สูตร`;
+
+
+  /*
+    Build a Thai-first recommendation list.
+    The recommendation engine itself is unchanged;
+    this layer only makes the result easier to read and use.
+  */
+  const groupsForLab = getFormulaLabGroups();
+  const allCurrentFormulas = buildAllFormulas();
+  const baselineCache = {};
+
+  function getBaselineStats(source){
+    if(Object.prototype.hasOwnProperty.call(baselineCache,source))
+      return baselineCache[source];
+
+    const baseFn = allCurrentFormulas[source];
+    if(!baseFn){
+      baselineCache[source] = null;
+      return null;
+    }
+
+    baselineCache[source] = evaluateCandidateAcrossGroups(
+      baseFn,
+      groupsForLab
+    );
+    return baselineCache[source];
+  }
+
+  const latestLabDigits = function(item){
+    const names = Object.keys(groupsForLab);
+    if(!names.length) return [0,1];
+    const recs = groupsForLab[names[0]] || [];
+    if(!recs.length) return [0,1];
+    const latest = recs[recs.length-1];
+    const top = latest.n3.split("").map(Number);
+    const bot = latest.n2.split("").map(Number);
+    try{
+      return sanitizeFormulaResult(
+        modelToFunction(item.m1,item.m2)(top[0],top[1],top[2],bot[0],bot[1])
+      );
+    }catch(e){
+      return [0,1];
+    }
+  };
+
+  status.textContent =
+    `✓ ตรวจสอบ ${results.length} Candidate เสร็จแล้ว — แสดงสูตรแนะนำที่ดีที่สุด ${finalList.length} สูตร`;
+
+  list.innerHTML =
+    finalList.map(
+      function(item,index){
+        const d1 = formatLinearExpression(item.m1);
+        const d2 = formatLinearExpression(item.m2);
+        const digits = latestLabDigits(item);
+        const base = getBaselineStats(item.source);
+        const improvement = base
+          ? Number((item.stats.validationRate - base.validationRate).toFixed(2))
+          : null;
+        const scoreClass = item.stats.validationRate >= 60 ? "good" : "warn";
+        const payload = encodeURIComponent(JSON.stringify({
+          source:item.source,
+          d1,
+          d2,
+          m1:item.m1,
+          m2:item.m2,
+          overallRate:item.stats.overallRate,
+          validationRate:item.stats.validationRate,
+          recentRate:item.stats.recentRate,
+          score:item.stats.score,
+          improvement
+        }));
+
+        const rankLabel = index === 0 ? "🏆 อันดับ 1" : `อันดับ ${index+1}`;
+        const improvementText = improvement === null
+          ? "เทียบฐานไม่ได้"
+          : improvement > 0
+            ? `ดีขึ้นจากสูตรเดิม +${improvement} จุดเปอร์เซ็นต์`
+            : improvement < 0
+              ? `ต่ำกว่าสูตรเดิม ${Math.abs(improvement)} จุดเปอร์เซ็นต์`
+              : "ผลใกล้เคียงสูตรเดิม";
+
+        return `
+          <div class="recommend-card">
+            <div class="recommend-head">
+              <div class="recommend-rank">${rankLabel}</div>
+              <div class="recommend-title">
+                <div class="recommend-name">สูตรแนะนำสำหรับรอบถัดไป</div>
+                <div class="recommend-source">ต่อยอดจาก ${esc(item.source)}</div>
+              </div>
+            </div>
+
+            <div class="recommend-expression">
+              สูตรคำนวณ: d1 = ${esc(d1)}<br>
+              d2 = ${esc(d2)}
+            </div>
+
+            <div class="recommend-stats">
+              <span class="stat-chip ${scoreClass}">Validation ${item.stats.validationRate}%</span>
+              <span class="stat-chip ${improvement !== null && improvement > 0 ? "good" : ""}">${improvementText}</span>
+              <span class="stat-chip">เลขเด่นล่าสุด ${digits[0]} / ${digits[1]}</span>
+              <span class="stat-chip">คะแนนสูตร ${item.stats.score}</span>
+            </div>
+
+            <div class="recommend-action-row">
+              <button class="add-recommend" data-add-recommend="${payload}">
+                ＋ ใช้สูตรนี้รอบถัดไป
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    ).join("");
+
+  list.querySelectorAll("[data-add-recommend]").forEach(function(btn){
+    btn.onclick = function(){
+      try{
+        const data = JSON.parse(decodeURIComponent(btn.dataset.addRecommend));
+        addRecommendedFormula(data);
+      }catch(e){
+        showToast("❌ ไม่สามารถใช้สูตรแนะนำได้");
+      }
+    };
+  });
+
+
 }
 
 
-function groupRecordsByLottery(records){
-  const groups = {};
+function getFormulaLabGroups(){
+  let masterRecords = [];
+  try{
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if(stored) masterRecords = JSON.parse(stored);
+  }catch(e){
+    masterRecords = [];
+  }
 
-  records.forEach(function(r){
+  const groups = {};
+  masterRecords.forEach(function(r){
     if(!groups[r.name]) groups[r.name] = [];
     groups[r.name].push(r);
   });
 
   Object.keys(groups).forEach(function(name){
     groups[name].sort(function(a,b){
-      return (a.timestamp||0) - (b.timestamp||0);
+      return (a.timestamp||0)-(b.timestamp||0);
     });
   });
-
   return groups;
 }
 
-
-function getRecommendationBaseline(groups){
-  const allFormulas = buildAllFormulas();
-  const baselineRates = [];
-
-  Object.keys(groups).forEach(function(name){
-    const recs = groups[name];
-    if(recs.length < 8) return;
-
-    const totalPossible = recs.length - 1;
-    const valStart = Math.max(0,Math.floor(totalPossible*.70));
-    const rates = [];
-
-    Object.keys(allFormulas).forEach(function(fName){
-      try{
-        const stats = auditFormulaOnRecords(
-          allFormulas[fName],
-          recs,
-          valStart,
-          totalPossible
-        );
-        if(stats.totalTested > 0) rates.push(stats.hitRate);
-      }catch(e){}
-    });
-
-    if(rates.length)
-      baselineRates.push(Math.max.apply(null,rates));
+function buildRecommendedPairList(mainDigit, otherDigit, recs, formulaFn){
+  const candidates = [0,1,2,3,4,5,6,7,8,9].filter(function(n){
+    return n !== mainDigit && n !== otherDigit;
   });
 
-  const baseline = baselineRates.length
-    ? baselineRates.reduce(function(a,b){return a+b;},0)/baselineRates.length
-    : 0;
+  const raw = candidates.map(function(target){
+    let score = 0;
+    let evidence = 0;
 
-  return Number(baseline.toFixed(2));
+    for(let i=0;i<recs.length-1;i++){
+      const cur = recs[i];
+      const next = recs[i+1];
+      const top = cur.n3.split("").map(Number);
+      const bot = cur.n2.split("").map(Number);
+      let predicted;
+      try{
+        predicted = sanitizeFormulaResult(
+          formulaFn(top[0],top[1],top[2],bot[0],bot[1])
+        );
+      }catch(e){
+        continue;
+      }
+
+      if(predicted.indexOf(mainDigit) === -1) continue;
+
+      const nextDigits = (next.n3 + next.n2).split("").map(Number);
+      const occurrences = nextDigits.filter(function(d){ return d === target; }).length;
+      if(occurrences > 0){
+        const recency = 1 + (i / Math.max(1,recs.length-1));
+        score += occurrences * (4 + recency*3);
+        evidence += occurrences;
+      }
+    }
+
+    /* Recent actual frequency is a secondary tie-breaker. */
+    const recent = recs.slice(-5);
+    recent.forEach(function(r,idx){
+      const ds = (r.n3+r.n2).split("").map(Number);
+      ds.forEach(function(d){
+        if(d === target) score += (idx+1)*0.75;
+      });
+    });
+
+    return {pair:`${mainDigit}${target}`,score,evidence};
+  });
+
+  raw.sort(function(a,b){
+    if(b.score !== a.score) return b.score-a.score;
+    if(b.evidence !== a.evidence) return b.evidence-a.evidence;
+    return parseInt(a.pair,10)-parseInt(b.pair,10);
+  });
+
+  return raw.slice(0,5).map(function(item,idx){
+    let color = "default";
+    if(idx===0) color="gold";
+    else if(idx===1) color="silver";
+    else if(idx===2) color="rose_gold";
+    return {pair:item.pair,color,score:Number(item.score.toFixed(2))};
+  }).sort(function(a,b){
+    return parseInt(a.pair,10)-parseInt(b.pair,10);
+  });
 }
 
-
-function getRecommendationInsight(item,groups){
-  const baseline = getRecommendationBaseline(groups);
-  const improvement =
-    Number((item.stats.validationRate-baseline).toFixed(2));
-
-  const relativeImprovement =
-    baseline > 0
-      ? Number(((item.stats.validationRate-baseline)/baseline*100).toFixed(2))
-      : 0;
-
-  let label = "ใกล้เคียงฐานสูตรเดิม";
-  if(improvement > 0.01) label = "ดีขึ้นจากฐานสูตรเดิม";
-  if(improvement < -0.01) label = "ยังไม่เหนือฐานสูตรเดิม";
-
-  return {
-    baseline,
-    improvement,
-    relativeImprovement,
-    label
-  };
-}
-
-
-function getCandidateDigitPreview(item,groups){
-  const fn = modelToFunction(item.m1,item.m2);
-  const rows = [];
+function buildRecommendedPredictionCards(data){
+  const groups = getFormulaLabGroups();
+  const fn = modelToFunction(data.m1,data.m2);
+  const cards = [];
 
   Object.keys(groups).forEach(function(lotteryName){
     const recs = groups[lotteryName];
@@ -5573,555 +5775,154 @@ function getCandidateDigitPreview(item,groups){
     const latest = recs[recs.length-1];
     const top = latest.n3.split("").map(Number);
     const bot = latest.n2.split("").map(Number);
-
-    try{
-      const digits = sanitizeFormulaResult(
-        fn(top[0],top[1],top[2],bot[0],bot[1])
-      );
-
-      rows.push({
-        name:lotteryName,
-        d1:digits[0],
-        d2:digits[1]
-      });
-    }catch(e){}
-  });
-
-  return rows.slice(0,6);
-}
-
-
-function finishFormulaLab(results){
-  const status = $("autoFormulaStatus");
-  const list = $("recommendList");
-  const groups =
-    groupRecordsByLottery(
-      getMasterRecordsForRecommendation()
+    const digits = sanitizeFormulaResult(
+      fn(top[0],top[1],top[2],bot[0],bot[1])
     );
 
-  const qualified =
-    results
-      .filter(function(x){
-        return x.stats.validationTested >= 5;
-      })
-      .sort(function(a,b){
-        return b.stats.score-a.stats.score;
-      });
+    const d1Pairs = buildRecommendedPairList(digits[0],digits[1],recs,fn);
+    const d2Pairs = buildRecommendedPairList(digits[1],digits[0],recs,fn);
 
-  const finalList = [];
-  const seen = new Set();
-
-  qualified.forEach(function(item){
-    const signature = modelSignature(item.m1,item.m2);
-    if(!seen.has(signature) && finalList.length<5){
-      seen.add(signature);
-      finalList.push(item);
-    }
-  });
-
-  if(!finalList.length){
-    status.textContent =
-      `ตรวจแล้ว ${results.length} Candidate แต่ยังไม่มีสูตรที่ผ่านเกณฑ์ Validation`;
-    list.innerHTML = "";
-    return;
-  }
-
-  status.textContent =
-    `✓ ตรวจสอบ ${results.length} Candidate เสร็จแล้ว — แสดงสูตรที่ดีที่สุด ${finalList.length} สูตร`;
-
-  list.innerHTML =
-    finalList.map(function(item,index){
-      const d1 = formatLinearExpression(item.m1);
-      const d2 = formatLinearExpression(item.m2);
-      const insight = getRecommendationInsight(item,groups);
-      const scoreClass =
-        item.stats.validationRate>=60 ? "good" : "warn";
-
-      const improvementText =
-        insight.improvement>0
-          ? `+${insight.improvement.toFixed(2)} จุด`
-          : `${insight.improvement.toFixed(2)} จุด`;
-
-      const payload =
-        encodeURIComponent(JSON.stringify({
-          source:item.source,
-          d1,
-          d2,
-          overallRate:item.stats.overallRate,
-          validationRate:item.stats.validationRate,
-          recentRate:item.stats.recentRate,
-          stability:item.stats.stability,
-          score:item.stats.score,
-          baselineValidation:insight.baseline,
-          improvement:insight.improvement,
-          relativeImprovement:insight.relativeImprovement
-        }));
-
-      return `
-        <div class="recommend-card">
-          <div class="recommend-main">
-
-            <div class="recommend-name">
-              ${index===0 ? "🏆 " : ""}
-              สูตรแนะนำ #${index+1}
-              — ต่อยอดจาก ${esc(item.source)}
-            </div>
-
-            <div class="recommend-expression">
-              สูตรตัวที่ 1 (d1) = ${esc(d1)}
-              <br>
-              สูตรตัวที่ 2 (d2) = ${esc(d2)}
-            </div>
-
-            <div class="recommend-highlight">
-              <div class="recommend-metric good">
-                <b>ความแม่นจาก Validation</b>
-                <strong>${item.stats.validationRate}%</strong>
-              </div>
-              <div class="recommend-metric">
-                <b>เทียบฐานสูตรเดิมที่ดีที่สุด</b>
-                <strong>${improvementText}</strong>
-              </div>
-            </div>
-
-            <div class="recommend-stats">
-              <span class="stat-chip ${scoreClass}">
-                Validation ${item.stats.validationRate}%
-              </span>
-              <span class="stat-chip">
-                ภาพรวม ${item.stats.overallRate}%
-              </span>
-              <span class="stat-chip">
-                ล่าสุด ${item.stats.recentRate}%
-              </span>
-              <span class="stat-chip">
-                ความสม่ำเสมอ σ ${item.stats.stability}
-              </span>
-              <span class="stat-chip">
-                คะแนนรวม ${item.stats.score}
-              </span>
-            </div>
-
-            <div class="recommend-reason">
-              <b>🧠 สรุป:</b>
-              ${esc(insight.label)}
-              — สูตรนี้ได้ ${item.stats.validationRate}%
-              เทียบฐานเดิม ${insight.baseline}%
-              (${improvementText}
-              · ≈ ${insight.relativeImprovement>=0?"+":""}${insight.relativeImprovement.toFixed(2)}% จากฐาน)
-              <br>
-              <b>🎯 เลขเด่นจากสูตรนี้:</b>
-              ${getCandidateDigitPreview(item,groups).map(function(x){
-                return `<span class="stat-chip">${esc(x.name)} → ${x.d1}-${x.d2}</span>`;
-              }).join(" ")}
-              <br>
-              <span style="color:var(--muted);">
-                เป็นผลคำนวณจากข้อมูลล่าสุด ไม่ใช่การรับประกันผลรางวัล
-              </span>
-            </div>
-
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:6px;align-self:center;">
-            <button
-              class="add-recommend"
-              data-use-recommend="${payload}"
-            >
-              🎯 เลือกใช้รอบถัดไป
-            </button>
-
-            <button
-              class="add-recommend"
-              data-add-recommend="${payload}"
-              style="background:linear-gradient(135deg,#fffaf0,#f4ead4);color:#806329;border:1px solid #d9bd79;"
-            >
-              ＋ เพิ่มสูตร
-            </button>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-  list.querySelectorAll("[data-add-recommend]").forEach(function(btn){
-    btn.onclick = function(){
-      try{
-        addRecommendedFormula(
-          JSON.parse(decodeURIComponent(btn.dataset.addRecommend))
-        );
-      }catch(e){
-        showToast("❌ ไม่สามารถเพิ่มสูตรแนะนำได้");
-      }
-    };
-  });
-
-  list.querySelectorAll("[data-use-recommend]").forEach(function(btn){
-    btn.onclick = function(){
-      try{
-        selectRecommendedFormula(
-          JSON.parse(decodeURIComponent(btn.dataset.useRecommend))
-        );
-      }catch(e){
-        console.error(e);
-        showToast("❌ ไม่สามารถใช้สูตรแนะนำได้");
-      }
-    };
-  });
-}
-
-
-function buildSelectedPairs(recs,mainDigit){
-  const rawPairs = [];
-
-  for(let target=0;target<=9;target++){
-    if(target===mainDigit) continue;
-
-    let cooccurrenceBonus = 0;
-
-    for(let idx=0;idx<recs.length-1;idx++){
-      const cur=recs[idx];
-      const next=recs[idx+1];
-
-      const curN3=cur.n3.split("").map(Number);
-      const nextN3=next.n3.split("").map(Number);
-      const nextN2=next.n2.split("").map(Number);
-
-      if(
-        curN3.includes(mainDigit) &&
-        (nextN3.includes(target)||nextN2.includes(target))
-      ){
-        cooccurrenceBonus+=6;
-      }
-    }
-
-    rawPairs.push({
-      pair:`${mainDigit}${target}`,
-      score:cooccurrenceBonus
+    cards.push({
+      lotteryName,
+      nextDate:getNextDateStr(latest.date),
+      d1:digits[0],
+      d2:digits[1],
+      d1Pairs,
+      d2Pairs,
+      signature:modelSignature(data.m1,data.m2),
+      source:data.source
     });
-  }
+  });
 
-  rawPairs.sort(function(a,b){return b.score-a.score;});
-  return rawPairs.slice(0,5);
+  return cards;
 }
 
+function renderCleanPairRow(mainDigit,pairsList,isFirstRow){
+  const mainBg = isFirstRow
+    ? "linear-gradient(135deg,#f9f3e3,#edd5a6)"
+    : "linear-gradient(135deg,#f3f4f6,#e5e7eb)";
+  const mainBorder = isFirstRow ? "#d9bd79" : "#9ca3af";
+  const mainColor = isFirstRow ? "#806329" : "#374151";
 
-function selectRecommendedFormula(data){
-  const m1=parseLinearExpression(data.d1);
-  const m2=parseLinearExpression(data.d2);
-
-  if(!m1||!m2){
-    showToast("❌ สูตรแนะนำนี้ไม่สามารถแปลงเพื่อคำนวณได้");
-    return;
-  }
-
-  selectedRecommendedFormula={...data,m1,m2};
-
-  try{
-    localStorage.setItem(
-      SELECTED_FORMULA_KEY,
-      JSON.stringify(data)
-    );
-  }catch(e){}
-
-  renderSelectedFormulaCards();
-
-  showToast(
-    "✓ เลือกสูตรรอบถัดไปแล้ว — สร้างการ์ดเลขเด่นให้เรียบร้อย"
-  );
-
-  const el=$("selectedFormulaResults");
-  if(el){
-    el.scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
-  }
-}
-
-
-function renderSelectedFormulaCards(){
-  const wrap=$("selectedFormulaResults");
-  if(!wrap) return;
-
-  const data=selectedRecommendedFormula;
-
-  if(!data){
-    wrap.style.display="none";
-    wrap.innerHTML="";
-    return;
-  }
-
-  const groups=
-    groupRecordsByLottery(
-      getMasterRecordsForRecommendation()
-    );
-
-  const fn=modelToFunction(data.m1,data.m2);
-
-  let html=`
-    <div class="selected-recommend-head">
-      <div>
-        <div class="selected-recommend-title">
-          🎯 การ์ดหลัก — สูตรที่เลือกสำหรับรอบถัดไป
-        </div>
-        <div class="selected-recommend-note">
-          ${esc(data.source||"สูตรแนะนำ")}
-          · Validation ${data.validationRate}%
-          · ${data.improvement>=0?"+":""}${Number(data.improvement||0).toFixed(2)} จุด
-          · ≈ ${data.relativeImprovement>=0?"+":""}${Number(data.relativeImprovement||0).toFixed(2)}% จากฐาน
-        </div>
+  return `
+    <div style="display:flex;align-items:center;gap:10px;margin:10px 0;padding-bottom:10px;border-bottom:1px solid #f0e6d6;">
+      <div style="width:38px;height:38px;border-radius:10px;background:${mainBg};border:1px solid ${mainBorder};color:${mainColor};display:grid;place-items:center;font-size:.85rem;font-weight:900;">
+        ${mainDigit}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${pairsList.map(function(item){
+          let borderCol="#e8dfcf", bgCol="#ffffff", textCol="#403a31";
+          if(item.color==="gold"){
+            borderCol="#d9bd79"; bgCol="#fffaf0"; textCol="#806329";
+          }else if(item.color==="silver"){
+            borderCol="#b0b8c4"; bgCol="#f8fafc"; textCol="#475569";
+          }else if(item.color==="rose_gold"){
+            borderCol="#e0a1a1"; bgCol="#fff5f5"; textCol="#9b2c2c";
+          }
+          return `<div style="width:38px;height:34px;border-radius:9px;border:1px solid ${borderCol};background:${bgCol};color:${textCol};display:grid;place-items:center;font-size:.58rem;font-weight:800;font-family:'IBM Plex Mono',monospace;">${item.pair}</div>`;
+        }).join("")}
       </div>
     </div>
   `;
-
-  let cardIndex=0;
-
-  Object.keys(groups).forEach(function(lotteryName){
-    const recs=groups[lotteryName];
-    if(recs.length<2) return;
-
-    const latest=recs[recs.length-1];
-    const top=latest.n3.split("").map(Number);
-    const bot=latest.n2.split("").map(Number);
-
-    let digits;
-
-    try{
-      digits=sanitizeFormulaResult(
-        fn(top[0],top[1],top[2],bot[0],bot[1])
-      );
-    }catch(e){
-      digits=[0,1];
-    }
-
-    const d1Pairs=buildSelectedPairs(recs,digits[0]);
-    const d2Pairs=buildSelectedPairs(recs,digits[1]);
-
-    const cardId=`selected_formula_card_${cardIndex++}`;
-    const jsonD1=JSON.stringify(d1Pairs).replace(/"/g,"&quot;");
-    const jsonD2=JSON.stringify(d2Pairs).replace(/"/g,"&quot;");
-    const allPairs=[...d1Pairs,...d2Pairs].map(function(x){return x.pair;});
-
-    html+=`
-      <div class="selected-formula-card prediction-card" id="${cardId}">
-
-        <div class="selected-card-actions">
-          <button
-            class="card-action-btn"
-            onclick="
-              copyCardText(
-                '${cardId}',
-                '${esc(lotteryName)} — สูตรแนะนำ',
-                '${esc(getNextDateStr(latest.date))}',
-                ${jsonD1},
-                ${jsonD2}
-              )
-            "
-          >
-            📋 คัดลอก
-          </button>
-
-          <button
-            class="card-action-btn"
-            onclick="
-              captureCardImage(
-                '${cardId}',
-                '${esc(lotteryName)} — สูตรแนะนำ'
-              )
-            "
-          >
-            📸 แคปภาพ
-          </button>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:8px;padding-right:145px;">
-          <div style="font-size:1.1rem;">
-            ${getLotteryFlag(lotteryName)}
-          </div>
-          <div>
-            <div style="font-size:.82rem;font-weight:900;color:#403a31;">
-              ${esc(lotteryName)}
-            </div>
-            <div style="font-size:.48rem;color:#8b8173;font-weight:700;">
-              รอบถัดไป: ${esc(getNextDateStr(latest.date))}
-            </div>
-          </div>
-        </div>
-
-        <div class="recommend-highlight">
-          <div class="recommend-metric good">
-            <b>สูตรที่เลือก</b>
-            <strong>Validation ${data.validationRate}%</strong>
-          </div>
-          <div class="recommend-metric">
-            <b>ต่างจากฐานเดิม</b>
-            <strong>
-              ${data.improvement>=0?"+":""}${Number(data.improvement||0).toFixed(2)} จุด
-              <br>
-              <span style="font-size:.52rem;">
-                ≈ ${data.relativeImprovement>=0?"+":""}${Number(data.relativeImprovement||0).toFixed(2)}% จากฐาน
-              </span>
-            </strong>
-          </div>
-        </div>
-
-        <div class="recommend-expression" style="margin-top:9px;">
-          d1 = ${esc(data.d1)}
-          <br>
-          d2 = ${esc(data.d2)}
-        </div>
-
-        <div class="selected-number-grid">
-          <div class="selected-number-box">
-            <small>🔥 เลขเด่นตัวที่ 1</small>
-            <strong>${digits[0]}</strong>
-          </div>
-          <div class="selected-number-box">
-            <small>🔥 เลขเด่นตัวที่ 2</small>
-            <strong>${digits[1]}</strong>
-          </div>
-        </div>
-
-        <div class="recommend-reason">
-          <b>🎯 ชุดเจาะจากสูตรนี้</b>
-          <div class="selected-pairs">
-            ${allPairs.map(function(pair){
-              return `<span class="selected-pair">${esc(pair)}</span>`;
-            }).join("")}
-          </div>
-          <div style="margin-top:6px;">
-            ระบบคำนวณจากข้อมูลล่าสุดของ ${esc(lotteryName)}
-            และใช้สูตรที่คุณเลือก โดยไม่แทนที่สูตรเดิม
-          </div>
-        </div>
-
-      </div>
-    `;
-  });
-
-  wrap.innerHTML=html;
-  wrap.style.display=cardIndex?"block":"none";
 }
 
+function renderRecommendedPredictionCard(card,index){
+  const cId = `recommend_prediction_${index}_${Date.now()}`;
+  const flagIcon = getLotteryFlag(card.lotteryName);
+  const jsonD1 = JSON.stringify(card.d1Pairs).replace(/"/g,"&quot;");
+  const jsonD2 = JSON.stringify(card.d2Pairs).replace(/"/g,"&quot;");
+
+  return `
+    <div class="prediction-card" id="${cId}">
+      <div class="card-btn-group">
+        <button class="card-action-btn" onclick="copyCardText('${cId}','${esc(card.lotteryName)}','${esc(card.nextDate)}',${jsonD1},${jsonD2})">📋 คัดลอก</button>
+        <button class="card-action-btn" onclick="captureCardImage('${cId}','${esc(card.lotteryName)}')">📸 แคปภาพ</button>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-right:130px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-size:1.1rem;">${flagIcon}</div>
+          <div>
+            <div style="font-size:.82rem;font-weight:900;color:#403a31;">${esc(card.lotteryName)}</div>
+            <div style="font-size:.48rem;font-weight:700;color:#8b8173;">${esc(card.nextDate)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-badge-placeholder" style="display:none;position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>
+      <div style="position:absolute;top:14px;right:14px;font-size:.48rem;font-weight:900;color:#b8944a;letter-spacing:.5px;display:flex;align-items:center;gap:3px;">✦ บ้านกองเงิน ✦</div>
+
+      ${renderCleanPairRow(card.d1,card.d1Pairs,true)}
+      <div style="margin-top:10px;">
+        ${renderCleanPairRow(card.d2,card.d2Pairs,false).replace("border-bottom:1px solid #f0e6d6;","border-bottom:1px solid #f0e6d6;")}
+      </div>
+    </div>
+  `;
+}
+
+function renderSelectedRecommendationCards(){
+  const result = $("result");
+  if(!result || !selectedRecommendationCards.length) return;
+
+  const footer = result.querySelector(".brand-footer");
+  const section = document.createElement("div");
+  section.innerHTML = `
+    <div class="section-title">🎯 สูตรที่เลือก — ตัวเลือกเลขเด่นงวดถัดไป</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${selectedRecommendationCards.map(function(card,index){
+        return renderRecommendedPredictionCard(card,index);
+      }).join("")}
+    </div>
+  `;
+
+  if(footer) result.insertBefore(section,footer);
+  else result.appendChild(section);
+}
 
 function addRecommendedFormula(data){
-
-
-  const arr =
-    loadCustomFormulas();
-
-
-  let baseName =
-    "สูตรอัตโนมัติ";
-
-
+  const arr = loadCustomFormulas();
+  let baseName = "AUTO Formula";
   let counter = 1;
-
-
-  let name =
-    `${baseName} #${counter}`;
-
+  let name = `${baseName} #${counter}`;
 
   while(
-    arr.some(
-      function(x){
-        return x.name === name;
-      }
-    ) ||
-    Object.prototype.hasOwnProperty.call(
-      formulas,
-      name
-    )
+    arr.some(function(x){return x.name===name;}) ||
+    Object.prototype.hasOwnProperty.call(formulas,name)
   ){
-
-
     counter++;
-    name =
-      `${baseName} #${counter}`;
-
-
+    name = `${baseName} #${counter}`;
   }
-
 
   arr.push({
-
-
-    id:
-      "auto_" +
-      Date.now() +
-      "_" +
-      Math.random()
-        .toString(36)
-        .slice(2,7),
-
-
+    id:"auto_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
     name,
-
-
     d1:data.d1,
     d2:data.d2,
-
-    recommendationBaseline:
-      data.baselineValidation,
-    recommendationImprovement:
-      data.improvement,
-    recommendationRelativeImprovement:
-      data.relativeImprovement,
-    recommendationScore:
-      data.score,
-
-
-    source:
-      data.source,
-
-
+    source:data.source,
     autoGenerated:true,
-
-
-    validationRate:
-      data.validationRate,
-
-
-    overallRate:
-      data.overallRate,
-
-
-    recentRate:
-      data.recentRate,
-
-
-    createdAt:
-      Date.now()
-
-
+    validationRate:data.validationRate,
+    overallRate:data.overallRate,
+    recentRate:data.recentRate,
+    createdAt:Date.now()
   });
 
-
-  if(
-    !saveCustomFormulas(arr)
-  ){
-
-
-    showToast(
-      "❌ บันทึกสูตรแนะนำไม่สำเร็จ"
-    );
-
-
+  if(!saveCustomFormulas(arr)){
+    showToast("❌ บันทึกสูตรแนะนำไม่สำเร็จ");
     return;
-
-
   }
 
+  const newCards = buildRecommendedPredictionCards(data);
+  newCards.forEach(function(card){
+    const exists = selectedRecommendationCards.some(function(x){
+      return x.lotteryName===card.lotteryName && x.signature===card.signature;
+    });
+    if(!exists) selectedRecommendationCards.push(card);
+  });
 
   renderCustomFormulaList();
-
-
-  showToast(
-    `✓ เพิ่ม ${name} เข้าระบบแล้ว`
-  );
-
-
+  renderSelectedRecommendationCards();
+  showToast(`✓ ใช้สูตรแนะนำแล้ว — สร้างการ์ดเลขเด่น/เลขเจาะพร้อมใช้ ${newCards.length} ใบ`);
 }
-
 
 /* =========================================================
    INDICATOR
@@ -7305,6 +7106,7 @@ function renderFullUI(
   $("result").innerHTML =
     html;
 
+  renderSelectedRecommendationCards();
 
 }
 
@@ -7316,6 +7118,7 @@ function renderFullUI(
 
 function runEngine(){
 
+  selectedRecommendationCards = [];
 
   const textVal =
     $("bulkInput")
@@ -8252,10 +8055,6 @@ function runEngine(){
     predictionDataMap
   );
 
-  if(selectedRecommendedFormula){
-    renderSelectedFormulaCards();
-  }
-
 
   /*
     Auto Lab ไม่รันทันทีทุกครั้ง
@@ -8398,27 +8197,13 @@ window.addEventListener(
           }catch(e){}
 
 
+          selectedRecommendationCards = [];
+
           $("result").innerHTML = "";
 
 
           $("recommendList")
             .innerHTML = "";
-
-          selectedRecommendedFormula = null;
-
-          try{
-            localStorage.removeItem(
-              SELECTED_FORMULA_KEY
-            );
-          }catch(e){}
-
-          const selectedWrap =
-            $("selectedFormulaResults");
-
-          if(selectedWrap){
-            selectedWrap.innerHTML = "";
-            selectedWrap.style.display = "none";
-          }
 
 
           $("autoFormulaStatus")
@@ -8481,35 +8266,11 @@ window.addEventListener(
 
 
     }
-    try{
-      const selectedStored =
-        localStorage.getItem(
-          SELECTED_FORMULA_KEY
-        );
 
-      if(selectedStored){
-        const data =
-          JSON.parse(selectedStored);
-
-        const m1 =
-          parseLinearExpression(data.d1);
-
-        const m2 =
-          parseLinearExpression(data.d2);
-
-        if(m1 && m2){
-          selectedRecommendedFormula = {
-            ...data,
-            m1,
-            m2
-          };
-        }
-      }
-    }catch(e){
-      selectedRecommendedFormula = null;
-    }
 
     renderCustomFormulaList();
+
+
     updateIndicator();
 
 
@@ -8561,4 +8322,4 @@ window.addEventListener(
 
 
 </body>
-        </html>
+  </html>
