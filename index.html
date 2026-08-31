@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <!--
-MESTER LOTTO VIP+ — V31.3 (PURE RAW AUDIT & ZERO-OFFSET ENGINE)
+MESTER LOTTO VIP+ — V32.4
+==================================================================
+PURE RAW ENGINE + 15 FORMULAS + CALIBRATION MEMORY
+==================================================================
+หลักการ:
+1. สูตรเดิมทั้งหมดคงไว้ 100%
+2. ไม่แก้ผลคำนวณของสูตรเดิม
+3. คงสูตรเดิม 15 สูตรและระบบเลขเจาะเดิม
+4. จำสูตรอันดับ 1 รายหวยด้วยระบบ Calibration ที่ผู้ใช้สั่งบันทึกเอง
+5. Calibration ใหม่ได้ตามรอบที่ผู้ใช้ต้องการ
+6. มีปุ่มล้างความจำสูตรหลักทั้งหมด โดยไม่ลบสูตรเดิมหรือข้อมูลสถิติ
 ==================================================================
 -->
 <html lang="th">
@@ -9,36 +19,76 @@ MESTER LOTTO VIP+ — V31.3 (PURE RAW AUDIT & ZERO-OFFSET ENGINE)
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Kong Ngern V31.3</title>
-
+<title>Mester Lotto VIP+ — Calibration Engine V32.4</title>
 <style>
 :root{
-  --bg:#f8f5ef;
+  --bg:#f5f0e7;
   --panel:#fffdf9;
-  --line:#e8dfcf;
-  --text:#403a31;
+  --panel2:#fbf7ef;
+  --line:#e3d7c2;
+  --line2:#d4c3a4;
+  --text:#342f28;
   --muted:#8b8173;
   --gold:#b8944a;
   --gold2:#806329;
-  --rose:#b98279;
-  --shadow:0 14px 40px rgba(79,58,31,.08);
+  --gold3:#d8bd78;
+  --green:#2f7d55;
+  --greenBg:#edf8f0;
+  --red:#a83d46;
+  --redBg:#fff0f1;
+  --silver:#647080;
+  --silverBg:#f1f3f5;
+  --shadow:
+    0 18px 55px rgba(73,54,29,.09),
+    0 3px 12px rgba(73,54,29,.04);
+  --shadow2:
+    0 12px 32px rgba(73,54,29,.10);
+  --radius:18px;
 }
-
-*{ box-sizing:border-box; }
-html{ scroll-behavior:smooth; }
+*{
+  box-sizing:border-box;
+}
+html{
+  scroll-behavior:smooth;
+}
 body{
   margin:0;
-  background:
-    radial-gradient(circle at 15% 10%,rgba(195,154,67,.08),transparent 25%),
-    radial-gradient(circle at 85% 20%,rgba(185,130,121,.06),transparent 25%),
-    var(--bg);
   color:var(--text);
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgba(190,151,74,.11),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(173,117,108,.08),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      rgba(195,154,67,.06),
+      transparent 30%
+    ),
+    var(--bg);
 }
-button, input, textarea{ font:inherit; }
-button{ cursor:pointer; }
+button,
+input,
+textarea,
+select{
+  font:inherit;
+}
+button{
+  cursor:pointer;
+}
 #snow{
   position:fixed;
   inset:0;
@@ -51,19 +101,24 @@ button{ cursor:pointer; }
   position:relative;
   z-index:1;
   min-height:100vh;
-  padding:18px 12px 40px;
+  padding:18px 12px 45px;
 }
 .app{
-  width:min(1150px,100%);
-  margin:0 auto;
+  width:min(1180px,100%);
+  margin:auto;
 }
-.inner{ padding:12px; }
+.inner{
+  padding:10px;
+}
+/* =========================================================
+   HEADER
+========================================================= */
 .top{
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:center;
   gap:12px;
-  margin-bottom:14px;
+  margin-bottom:15px;
 }
 .brand{
   display:flex;
@@ -71,112 +126,514 @@ button{ cursor:pointer; }
   gap:10px;
 }
 .logo{
-  width:37px;
-  height:37px;
-  border-radius:12px;
+  width:40px;
+  height:40px;
+  border-radius:13px;
   display:grid;
   place-items:center;
-  background:linear-gradient(135deg,#d3b16d,#806329);
+  background:
+    linear-gradient(
+      135deg,
+      #d8bd78,
+      #b8944a 48%,
+      #806329
+    );
   color:#fff;
   font-weight:900;
   font-size:.72rem;
-  box-shadow:0 8px 18px rgba(128,99,41,.18);
+  box-shadow:
+    0 9px 24px rgba(128,99,41,.22),
+    inset 0 1px 0 rgba(255,255,255,.35);
 }
-.brand b{ display:block; font-size:.78rem; letter-spacing:.1px; }
-.brand small{ display:block; margin-top:2px; font-size:.48rem; color:var(--muted); font-weight:600; }
+.brand b{
+  display:block;
+  font-size:.82rem;
+  letter-spacing:.15px;
+}
+.brand small{
+  display:block;
+  margin-top:3px;
+  font-size:.47rem;
+  color:var(--muted);
+  font-weight:700;
+}
 .pill{
-  padding:6px 9px;
-  border:1px solid var(--line);
+  padding:7px 10px;
+  border:
+    1px solid var(--line);
   border-radius:99px;
-  background:#fffaf0;
-  color:#806329;
-  font-size:.45rem;
-  font-weight:800;
+  background:
+    linear-gradient(
+      135deg,
+      #fffdf7,
+      #f8f0df
+    );
+  color:var(--gold2);
+  font-size:.46rem;
+  font-weight:900;
   white-space:nowrap;
+  box-shadow:
+    0 4px 12px rgba(79,58,31,.04);
 }
+/* =========================================================
+   HERO
+========================================================= */
 .hero{
-  padding:18px;
-  margin-bottom:14px;
+  padding:21px;
+  margin-bottom:15px;
   border:1px solid var(--line);
-  border-radius:18px;
-  background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(250,245,235,.96));
+  border-radius:20px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.97),
+      rgba(250,244,232,.96)
+    );
   box-shadow:var(--shadow);
+  position:relative;
+  overflow:hidden;
 }
-.hero-tag{ font-size:.43rem; font-weight:900; letter-spacing:1.2px; color:var(--gold2); }
-.hero h1{ margin:7px 0 5px; font-size:1.55rem; line-height:1.15; }
-.hero h1 em{ font-style:normal; color:var(--gold2); }
-.hero p{ margin:0; font-size:.55rem; line-height:1.65; color:var(--muted); }
+.hero:after{
+  content:"";
+  position:absolute;
+  width:180px;
+  height:180px;
+  right:-75px;
+  top:-90px;
+  border-radius:50%;
+  background:
+    radial-gradient(
+      circle,
+      rgba(216,189,120,.22),
+      transparent 68%
+    );
+  pointer-events:none;
+}
+.hero-tag{
+  font-size:.43rem;
+  font-weight:900;
+  letter-spacing:1.4px;
+  color:var(--gold2);
+}
+.hero h1{
+  margin:8px 0 6px;
+  font-family:"Playfair Display",serif;
+  font-size:1.65rem;
+  line-height:1.16;
+}
+.hero h1 em{
+  font-style:normal;
+  color:var(--gold2);
+}
+.hero p{
+  margin:0;
+  font-size:.56rem;
+  line-height:1.7;
+  color:var(--muted);
+}
+/* =========================================================
+   PANELS
+========================================================= */
 .panel{
-  background:rgba(255,253,249,.96);
+  background:rgba(255,253,249,.97);
   border:1px solid var(--line);
-  border-radius:18px;
+  border-radius:var(--radius);
   box-shadow:var(--shadow);
-  margin-bottom:14px;
+  margin-bottom:15px;
 }
-.bulkbox{ padding:14px; }
-.bulkbox label{ display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; font-size:.55rem; font-weight:900; color:#806329; }
+.panel-head{
+  padding:15px 15px 8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.panel-title{
+  font-size:.68rem;
+  font-weight:900;
+  color:var(--gold2);
+}
+.panel-sub{
+  font-size:.45rem;
+  color:var(--muted);
+  line-height:1.5;
+}
+.bulkbox{
+  padding:15px;
+}
+.bulkbox label{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  margin-bottom:8px;
+  font-size:.56rem;
+  font-weight:900;
+  color:var(--gold2);
+}
 .bulk{
   display:block;
   width:100%;
   min-height:160px;
   resize:vertical;
-  padding:12px;
+  padding:13px;
   border:1px solid var(--line);
-  border-radius:13px;
+  border-radius:14px;
   background:#fff;
   color:var(--text);
   outline:none;
   font-family:"IBM Plex Mono",monospace;
   font-size:.58rem;
   line-height:1.65;
+  transition:.18s;
 }
-.bulk:focus{ border-color:#c6a762; box-shadow:0 0 0 3px rgba(195,154,67,.10); }
+.bulk:focus{
+  border-color:#c6a762;
+  box-shadow:
+    0 0 0 3px rgba(195,154,67,.10),
+    0 5px 18px rgba(79,58,31,.04);
+}
+/* =========================================================
+   ACTIONS
+========================================================= */
 .actions{
-  padding:0 14px 14px;
+  padding:0 15px 15px;
   display:grid;
-  grid-template-columns:1fr 1fr 1fr;
+  grid-template-columns:
+    minmax(0,1.3fr)
+    minmax(0,1fr)
+    minmax(0,1fr);
   gap:8px;
 }
-.run{
-  height:43px;
-  border:0;
+.run,
+.clear,
+.clear-global,
+.gold-btn,
+.secondary-btn,
+.danger-btn{
+  min-height:43px;
   border-radius:12px;
-  background:linear-gradient(135deg,#b8944a,#806329);
-  color:#fff;
-  font-size:.59rem;
+  font-size:.57rem;
   font-weight:900;
+  transition:.16s;
+}
+.run{
+  border:0;
+  background:
+    linear-gradient(
+      135deg,
+      #c7a55d,
+      #a77e31 55%,
+      #806329
+    );
+  color:#fff;
+  box-shadow:
+    0 8px 18px rgba(128,99,41,.16);
+}
+.run:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    0 11px 24px rgba(128,99,41,.21);
 }
 .clear{
-  height:43px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--muted);
+}
+.clear:hover{
+  background:#faf6ed;
+}
+.clear-global{
+  border:1px solid #efc7cb;
+  background:var(--redBg);
+  color:var(--red);
+}
+.clear-global:hover{
+  background:#ffe6e8;
+}
+/* =========================================================
+   CUSTOM FORMULA LIST
+========================================================= */
+.custom-list{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.custom-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:9px 10px;
+  border:
+    1px solid var(--line);
+  border-radius:10px;
+  background:#fff;
+}
+.custom-item-main{
+  min-width:0;
+}
+.custom-item-name{
+  font-size:.53rem;
+  font-weight:900;
+  color:var(--text);
+}
+.custom-item-exp{
+  margin-top:3px;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.41rem;
+  color:var(--muted);
+  word-break:break-word;
+}
+.small-delete{
+  flex:0 0 auto;
+  padding:6px 8px;
+  border:1px solid #efc7cb;
+  border-radius:8px;
+  background:var(--redBg);
+  color:var(--red);
+  font-size:.43rem;
+  font-weight:900;
+}
+/* =========================================================
+   AUTO LAB
+========================================================= */
+.auto-lab{
+  padding:0 15px 15px;
+}
+.auto-panel{
+  border:
+    1px solid #d9bd79;
+  border-radius:16px;
+  background:
+    linear-gradient(
+      135deg,
+      #fffaf0,
+      #fffdf9
+    );
+  overflow:hidden;
+}
+.auto-head{
+  padding:12px 13px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid #ead9b7;
+}
+.auto-title{
+  font-size:.62rem;
+  font-weight:900;
+  color:var(--gold2);
+}
+.auto-note{
+  font-size:.43rem;
+  color:var(--muted);
+  line-height:1.55;
+}
+.auto-run{
+  border:0;
+  border-radius:10px;
+  padding:8px 11px;
+  background:
+    linear-gradient(
+      135deg,
+      #c7a55d,
+      #806329
+    );
+  color:#fff;
+  font-size:.46rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+.auto-status{
+  padding:9px 13px;
+  font-size:.46rem;
+  color:var(--muted);
+  border-bottom:1px solid #eee2ca;
+}
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+  padding:11px;
   border:1px solid var(--line);
   border-radius:12px;
   background:#fff;
-  color:#8b8173;
-  font-size:.59rem;
-  font-weight:900;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  box-shadow:
+    0 4px 12px rgba(79,58,31,.04);
 }
-.clear-global{
-  height:43px;
-  border:1px solid #f0c9cd;
-  border-radius:12px;
-  background:#fff0f1;
-  color:#a83d46;
-  font-size:.59rem;
-  font-weight:900;
+  min-width:0;
 }
-.result{ margin-top:14px; }
-
+  font-size:.54rem;
+  font-weight:900;
+  color:var(--text);
+}
+  margin-top:4px;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.42rem;
+  line-height:1.55;
+  color:var(--muted);
+  word-break:break-word;
+}
+  margin-top:7px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.stat-chip{
+  padding:4px 6px;
+  border-radius:7px;
+  background:#faf6ed;
+  border:1px solid var(--line);
+  font-size:.4rem;
+  color:var(--gold2);
+  font-weight:800;
+}
+.stat-chip.good{
+  background:var(--greenBg);
+  border-color:#b9dfc4;
+  color:var(--green);
+}
+.stat-chip.warn{
+  background:#fff7e7;
+  border-color:#ecd59d;
+  color:#a06f13;
+}
+  align-self:center;
+  padding:7px 9px;
+  border:0;
+  border-radius:9px;
+  background:
+    linear-gradient(
+      135deg,
+      #c7a55d,
+      #806329
+    );
+  color:#fff;
+  font-size:.43rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+/* =========================================================
+   RESULT
+========================================================= */
+.result{
+  margin-top:15px;
+}
 .section-title{
-  font-size:.8rem;
+  font-size:.78rem;
   font-weight:900;
-  color:#806329;
+  color:var(--gold2);
   margin:20px 0 10px;
   display:flex;
   align-items:center;
-  gap:6px;
-  border-left:4px solid #b8944a;
-  padding-left:8px;
+  gap:7px;
+  border-left:4px solid var(--gold);
+  padding-left:9px;
 }
+/* =========================================================
+   TABLE
+========================================================= */
+.summary-table-container{
+  overflow-x:auto;
+  margin-bottom:14px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  padding:14px;
+  box-shadow:var(--shadow);
+}
+table.audit-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.49rem;
+  font-family:"IBM Plex Mono",monospace;
+}
+table.audit-table th,
+table.audit-table td{
+  border:1px solid var(--line);
+  padding:6px 5px;
+  text-align:center;
+}
+table.audit-table th{
+  background:#fbf7ed;
+  color:var(--gold2);
+  font-weight:800;
+  white-space:nowrap;
+}
+table.audit-table tr:nth-child(even){
+  background:#fdfbf7;
+}
+/* =========================================================
+   RANK BADGES
+========================================================= */
+.badge-rank-1,
+.badge-rank-2,
+.badge-rank-3,
+.badge-rank-other{
+  padding:3px 8px;
+  border-radius:8px;
+  font-weight:900;
+  display:inline-block;
+}
+.badge-rank-1{
+  background:linear-gradient(135deg,#fff3cd,#ffe69c);
+  color:#856404;
+  border:1px solid #ffeeba;
+}
+.badge-rank-2{
+  background:linear-gradient(135deg,#e2e3e5,#d6d8db);
+  color:#383d41;
+  border:1px solid #c6c8ca;
+}
+.badge-rank-3{
+  background:linear-gradient(135deg,#f8d7da,#f5c6cb);
+  color:#721c24;
+  border:1px solid #f5c6cb;
+}
+.badge-rank-other{
+  background:#f8f9fa;
+  color:#6c757d;
+  border:1px solid #dee2e6;
+}
+/* =========================================================
+   STATUS
+========================================================= */
+.badge-status{
+  padding:2px 6px;
+  border-radius:6px;
+  font-weight:700;
+  display:inline-block;
+  font-size:.45rem;
+}
+.status-hot{
+  background:#e8f5e9;
+  color:#2e7d32;
+  border:1px solid #a5d6a7;
+}
+.status-cooling{
+  background:#fffde7;
+  color:#f57f17;
+  border:1px solid #ffe082;
+}
+.status-danger{
+  background:#ffebee;
+  color:#c62828;
+  border:1px solid #ef9a9a;
+}
+.status-warning{
+  background:#fff3e0;
+  color:#ef6c00;
+  border:1px solid #ffe0b2;
+}
+/* =========================================================
+   PREDICTION CARD
+========================================================= */
 .prediction-card{
   margin-bottom:14px;
   padding:16px;
@@ -202,91 +659,15 @@ button{ cursor:pointer; }
   color:var(--gold2);
   font-size:.44rem;
   font-weight:800;
-  transition:.15s;
   box-shadow:0 2px 6px rgba(0,0,0,.03);
 }
 .card-action-btn:hover{
   background:#fffaf0;
   border-color:#d9bd79;
 }
-.summary-table-container{
-  overflow-x:auto;
-  margin-bottom:14px;
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:#fff;
-  padding:14px;
-  box-shadow:var(--shadow);
-}
-table.audit-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:.49rem;
-  font-family:"IBM Plex Mono",monospace;
-}
-table.audit-table th, table.audit-table td{
-  border:1px solid var(--line);
-  padding:6px 5px;
-  text-align:center;
-}
-table.audit-table th{
-  background:#fbf7ed;
-  color:#806329;
-  font-weight:800;
-  white-space:nowrap;
-}
-table.audit-table tr:nth-child(even){ background:#fdfbf7; }
-
-.badge-rank-1{
-  background:linear-gradient(135deg,#fff3cd,#ffe69c);
-  color:#856404;
-  border:1px solid #ffeeba;
-  padding:3px 8px;
-  border-radius:8px;
-  font-weight:900;
-  display:inline-block;
-  box-shadow:0 2px 5px rgba(255,193,7,.2);
-}
-.badge-rank-2{
-  background:linear-gradient(135deg,#e2e3e5,#d6d8db);
-  color:#383d41;
-  border:1px solid #c6c8ca;
-  padding:3px 8px;
-  border-radius:8px;
-  font-weight:900;
-  display:inline-block;
-}
-.badge-rank-3{
-  background:linear-gradient(135deg,#f8d7da,#f5c6cb);
-  color:#721c24;
-  border:1px solid #f5c6cb;
-  padding:3px 8px;
-  border-radius:8px;
-  font-weight:900;
-  display:inline-block;
-}
-.badge-rank-other{
-  background:#f8f9fa;
-  color:#6c757d;
-  border:1px solid #dee2e6;
-  padding:3px 8px;
-  border-radius:8px;
-  font-weight:700;
-  display:inline-block;
-}
-
-.badge-status{
-  padding:2px 6px;
-  border-radius:6px;
-  font-weight:700;
-  display:inline-block;
-  font-size:.45rem;
-}
-.status-hot{ background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
-.status-cooling{ background:#fffde7; color:#f57f17; border:1px solid #ffe082; }
-.status-danger{ background:#ffebee; color:#c62828; border:1px solid #ef9a9a; }
-.status-warning{ background:#fff3e0; color:#ef6c00; border:1px solid #ffe0b2; }
-
+/* =========================================================
+   TOAST / ERROR
+========================================================= */
 .toast{
   position:fixed;
   left:50%;
@@ -303,7 +684,10 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
   transition:.2s;
   pointer-events:none;
 }
-.toast.show{ opacity:1; transform:translate(-50%,0); }
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
 .errorbox{
   padding:12px;
   border-radius:14px;
@@ -313,804 +697,2238 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
   font-size:.6rem;
   line-height:1.7;
 }
+/* =========================================================
+   FOOTER
+========================================================= */
 .brand-footer{
   display:flex;
   justify-content:center;
   align-items:center;
   gap:7px;
-  padding:9px 0;
+  padding:12px 0;
   color:#80652b;
   font-size:.44rem;
   font-weight:800;
+  text-align:center;
 }
-.brand-star{ color:#c39a43; font-size:.58rem; }
+.brand-star{
+  color:#c39a43;
+  font-size:.58rem;
+}
+/* =========================================================
+   MOBILE
+========================================================= */
+@media(max-width:760px){
+  .top{
+    align-items:flex-start;
+  }
+  .pill{
+    font-size:.4rem;
+    padding:6px 8px;
+  }
+  .hero{
+    padding:17px;
+  }
+  .hero h1{
+    font-size:1.38rem;
+  }
+  .lab-grid{
+    grid-template-columns:1fr;
+  }
+  .lab-box.full{
+    grid-column:auto;
+  }
+  .actions{
+    grid-template-columns:1fr;
+  }
+    grid-template-columns:1fr;
+  }
+    width:100%;
+  }
+  .card-btn-group{
+    position:static;
+    margin-bottom:10px;
+  }
+  .prediction-card{
+    padding:13px;
+  }
+}
+/* =========================================================
+   PREMIUM V32.4 UI REFINEMENT
+   - High-end / minimal / clean information hierarchy
+   - Clear separation of audit, calibration and prediction
+========================================================= */
+.shell{padding:22px 14px 40px;}
+.app{max-width:1180px;border:1px solid rgba(184,148,74,.24);box-shadow:0 28px 80px rgba(73,54,29,.11),0 8px 24px rgba(73,54,29,.05);}
+.inner{padding:24px 24px 30px;}
+.top{padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid rgba(184,148,74,.18);}
+.hero{padding:24px 26px;border-radius:22px;border:1px solid rgba(184,148,74,.24);box-shadow:0 12px 34px rgba(73,54,29,.06);}
+.panel{border-radius:20px;border:1px solid rgba(184,148,74,.18);box-shadow:0 10px 28px rgba(73,54,29,.05);}
+.section-title{margin:28px 0 12px;font-size:.72rem;letter-spacing:.35px;border-left:3px solid var(--gold);padding-left:10px;}
+.summary-table-container{margin-bottom:16px;padding:16px 16px 12px;border-radius:18px;box-shadow:0 8px 24px rgba(73,54,29,.055);}
+.summary-table-container h3{font-size:.64rem!important;letter-spacing:.25px;margin:0 0 12px!important;}
+table.audit-table{font-size:.46rem;}
+table.audit-table th,table.audit-table td{padding:8px 7px;border-color:#eee5d6;}
+table.audit-table th{background:#faf7f0;position:sticky;top:0;z-index:1;}
+table.audit-table tr:hover{background:#fffaf0;}
+.stat-chip{padding:5px 7px;border-radius:8px;font-size:.39rem;}
+.prediction-card{border-radius:18px;box-shadow:0 10px 28px rgba(73,54,29,.06);}
+.audit-table-wrap{overflow:auto;max-width:100%;}
+@media(max-width:760px){
+  .inner{padding:17px 14px 24px;}
+  .shell{padding:10px 7px 24px;}
+}
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   CALIBRATION MEMORY UI
+========================================================= */
+.calibration-panel .danger-btn{padding:10px 12px;border-radius:10px;font-weight:900;}
+@media(max-width:700px){.calibration-panel [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important;}}
+
+</style>
+
+
+
+
+<style id="v4-hardening-style">
+  #v4EvidenceLegend{margin-bottom:10px}
+  #v4EvidenceLegend span{padding:4px 7px;border:1px solid #eadfce;border-radius:999px;background:#fffdf8}
 </style>
 </head>
-
 <body>
-
 <canvas id="snow"></canvas>
-
 <div class="shell">
-  <div class="app">
-    <div class="inner">
-
-      <div class="top">
-        <div class="brand">
-          <div class="logo">AI</div>
-          <div>
-            <b>Mester Lotto VIP+</b>
-            <small>Ban Kong Ngern V31.3 Pure Raw</small>
-          </div>
-        </div>
-        <div class="pill">● V31.3 PURE RAW</div>
-      </div>
-
-      <section class="hero">
-        <span class="hero-tag">BAN KONG NGERN ULTIMATE PRECISION V31.3</span>
-        <h1>Master Audit & <em>บ้านกองเงิน V31.3</em></h1>
-        <p>อัปเกรดระบบตัด Offset ออกทั้งหมด 100% แสดงผลลัพธ์ค่าดิบจากสูตรคณิตศาสตร์แท้จริง ไม่มีการบวกชดเชยค่าใดๆ ทั้งสิ้น เพื่อความแม่นยำตรงตามสูตรต้นฉบับ</p>
-      </section>
-
-      <div id="console">
-        <section class="panel">
-          <div class="bulkbox">
-            <label>
-              <span>📥 ข้อมูลสถิติย้อนหลัง (กรอกตามลำดับเวลา)</span>
-              <span id="recordCountIndicator" style="color:var(--gold2); font-weight:800;">สะสมในระบบ: 0 งวด</span>
-            </label>
-            <textarea
-              id="bulkInput"
-              class="bulk"
-              placeholder="นิคเคอิ VIP เช้า | 30 ส.ค. 69&#10;244&#10;43&#10;&#10;นิคเคอิ VIP เช้า | 29 ส.ค. 69&#10;276&#10;87"
-            ></textarea>
-          </div>
-
-          <div class="actions">
-            <button id="run" class="run">⚡ ประมวลผลระบบ V31.3 (Raw)</button>
-            <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
-            <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
-          </div>
-        </section>
-
-        <div id="result" class="result"></div>
-      </div>
-
-      <div id="toast" class="toast">ดำเนินการเรียบร้อย</div>
-
+<div class="app">
+<div class="inner">
+<!-- =====================================================
+     HEADER
+===================================================== -->
+<div class="top">
+  <div class="brand">
+    <div class="logo">AI</div>
+    <div>
+      <b>Mester Lotto VIP+</b>
+      <small>Ban Kong Ngern — Calibration Intelligence Engine</small>
     </div>
   </div>
+  <div class="pill">
+    ● CALIBRATION ENGINE ONLINE
+  </div>
 </div>
-
+<!-- =====================================================
+     HERO
+===================================================== -->
+<section class="hero">
+  <span class="hero-tag">
+    BAN KONG NGERN — PURE RAW INTELLIGENCE ENGINE
+  </span>
+  <h1>
+    Master Audit &
+    <em>Calibration Engine</em>
+  </h1>
+  <p>
+    ระบบวิเคราะห์สูตรเดิมแบบ Raw 100% พร้อมระบบ Calibration สำหรับจดจำสูตรอันดับ 1 ประจำหวยตามที่ผู้ใช้สั่งบันทึก
+  </p>
+</section>
+<!-- =====================================================
+     HISTORICAL INPUT
+===================================================== -->
+<div id="console">
+<section class="panel">
+  <div class="bulkbox">
+    <label>
+      <span>
+        📥 ข้อมูลสถิติย้อนหลัง
+      </span>
+      <span
+        id="recordCountIndicator"
+        style="color:var(--gold2);font-weight:800;"
+      >
+        สะสมในระบบ: 0 งวด
+      </span>
+    </label>
+    <textarea
+      id="bulkInput"
+      class="bulk"
+      placeholder="นิคเคอิ VIP เช้า | 30 ส.ค. 69&#10;244&#10;43&#10;&#10;นิคเคอิ VIP เช้า | 29 ส.ค. 69&#10;276&#10;87"
+    ></textarea>
+  </div>
+  <div class="actions">
+    <button
+      id="run"
+      class="run"
+    >
+      ⚡ ประมวลผลระบบ
+    </button>
+    <button
+      id="clearInput"
+      class="clear"
+    >
+      ล้างกล่องกรอกข้อมูล
+    </button>
+    <button
+      id="clearGlobal"
+      class="clear-global"
+    >
+      ล้างข้อมูลสะสมทั้งหมด
+    </button>
+  </div>
+</section>
+<!-- =====================================================
+     CALIBRATION MEMORY
+===================================================== -->
+<section class="panel calibration-panel">
+  <div class="panel-head">
+    <div>
+      <div class="panel-title">🧠 Calibration สูตรหลักประจำหวย</div>
+      <div class="panel-sub">บันทึกสูตรอันดับ 1 จากผลประมวลผลไว้ในเครื่อง และใช้ต่อครั้งถัดไป</div>
+    </div>
+    <div id="calibrationCount" class="stat-chip">จำไว้: 0 หวย</div>
+  </div>
+  <div style="padding:0 15px 15px;display:grid;gap:9px;">
+    <div id="calibrationStatus" class="auto-status" style="margin:0;">ยังไม่มีการ Calibration</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button id="saveCalibration" class="gold-btn" type="button">💾 บันทึกสูตรหลักจากอันดับ 1</button>
+      <button id="clearCalibration" class="danger-btn" type="button">🗑 ล้างสูตรหลักทั้งหมด</button>
+    </div>
+    <div id="calibrationList" class="custom-list"></div>
+  </div>
+</section>
+<!-- =====================================================
+     RESULTS
+===================================================== -->
+<div
+  id="result"
+  class="result"
+></div>
+</div>
+<div
+  id="toast"
+  class="toast"
+>
+  ดำเนินการเรียบร้อย
+</div>
+</div>
+</div>
+</div>
 <script>
-(function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v313';
-
-  const canvas = document.getElementById('snow');
-  const ctx = canvas.getContext('2d');
-  let width = canvas.width = innerWidth;
-  let height = canvas.height = innerHeight;
-  window.addEventListener('resize', () => { width = canvas.width = innerWidth; height = canvas.height = innerHeight; });
-
-  const particles = Array.from({length:30}, () => ({
-    x:Math.random()*width, y:Math.random()*height, r:.7+Math.random()*1.5, s:.15+Math.random()*.4, a:.15+Math.random()*.3
-  }));
-
-  (function drawSnow(){
-    ctx.clearRect(0,0,width,height);
-    particles.forEach(p => {
-      p.y += p.s;
-      if(p.y > height+5){ p.y = -5; p.x = Math.random()*width; }
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle = `rgba(195,154,67,${p.a})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(drawSnow);
-  })();
-
-  function $(id){ return document.getElementById(id); }
-  function esc(val){ return String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function norm(v){ return (v % 10 + 10) % 10; }
-
-  function getLotteryFlag(name){
-    const n = String(name || '').toLowerCase();
-    if(n.includes('นิคเคอิ') || n.includes('ญี่ปุ่น')) return '🇯🇵';
-    if(n.includes('จีน')) return '🇨🇳';
-    if(n.includes('ฮั่งเส็ง') || n.includes('ฮ่องกง')) return '🇭🇰';
-    if(n.includes('ดาวโจนส์') || n.includes('อเมริกา') || n.includes('usa') || n.includes('ดาว')) return '🇺🇸';
-    if(n.includes('ไต้หวัน')) return '🇹🇼';
-    if(n.includes('เกาหลี')) return '🇰🇷';
-    if(n.includes('สิงคโปร์')) return '🇸🇬';
-    if(n.includes('รัสเซีย')) return '🇷🇺';
-    if(n.includes('เยอรมัน')) return '🇩🇪';
-    if(n.includes('อังกฤษ')) return '🇬🇧';
-    if(n.includes('อินเดีย')) return '🇮🇳';
-    if(n.includes('อียิปต์')) return '🇪🇬';
-    if(n.includes('ลาว')) return '🇱🇦';
-    if(n.includes('ฮานอย') || n.includes('เวียดนาม')) return '🇻🇳';
-    if(n.includes('ไทย') || n.includes('รัฐบาล') || n.includes('ออมสิน') || n.includes('ธกส')) return '🇹🇭';
-    if(n.includes('มาเลย์')) return '🇲🇾';
-    return '🌐';
+(function(){
+"use strict";
+/* =========================================================
+   STORAGE
+========================================================= */
+const STORAGE_KEY =
+  "lottery_audit_master_records_v320";
+/* =========================================================
+   CANVAS
+========================================================= */
+const canvas =
+  document.getElementById("snow");
+const ctx =
+  canvas.getContext("2d");
+let width =
+  canvas.width = innerWidth;
+let height =
+  canvas.height = innerHeight;
+window.addEventListener(
+  "resize",
+  function(){
+    width =
+      canvas.width = innerWidth;
+    height =
+      canvas.height = innerHeight;
   }
-
-  function parseThaiDate(dateStr){
-    const months = {
-      'ม.ค.':1, 'ก.พ.':2, 'มี.ค.':3, 'เม.ย.':4, 'พ.ค.':5, 'มิ.ย.':6,
-      'ก.ค.':7, 'ส.ค.':8, 'ก.ย.':9, 'ต.ค.':10, 'พ.ย.':11, 'ธ.ค.':12,
-      'กราคม':1, 'กุมภาพันธ์':2, 'มีนาคม':3, 'เมษายน':4, 'พฤษภาคม':5, 'มิถุนายน':6,
-      'กรกฎาคม':7, 'สิงหาคม':8, 'กันยายน':9, 'ตุลาคม':10, 'พฤศจิกายน':11, 'ธันวาคม':12
-    };
-    const cleaned = String(dateStr || '').trim();
-    const parts = cleaned.split(/\s+/);
-    if(parts.length >= 3){
-      const day = parseInt(parts[0], 10) || 1;
-      const monthStr = parts[1];
-      const month = months[monthStr] || 1;
-      let year = parseInt(parts[2], 10) || 2569;
-      if(year < 2500) year += 2543;
-      return new Date(year - 543, month - 1, day).getTime();
-    }
-    return 0;
-  }
-
-  function getNextDateStr(dateStr){
-    const cleaned = String(dateStr || '').trim();
-    const parts = cleaned.split(/\s+/);
-    if(parts.length >= 3){
-      const day = parseInt(parts[0], 10) || 1;
-      const monthStr = parts[1];
-      let year = parseInt(parts[2], 10) || 2569;
-      const monthsMap = {
-        'ม.ค.':0, 'ก.พ.':1, 'มี.ค.':2, 'เม.ย.':3, 'พ.ค.':4, 'มิ.ย.':5,
-        'ก.ค.':6, 'ส.ค.':7, 'ก.ย.':8, 'ต.ค.':9, 'พ.ย.':10, 'ธ.ค.':11
+);
+const particles =
+  Array.from(
+    {length:30},
+    function(){
+      return {
+        x:Math.random()*width,
+        y:Math.random()*height,
+        r:.7+Math.random()*1.5,
+        s:.15+Math.random()*.4,
+        a:.15+Math.random()*.3
       };
-      const mIndex = monthsMap[monthStr] !== undefined ? monthsMap[monthStr] : 0;
-      const d = new Date(year - 543, mIndex, day + 1);
-      const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-      return `${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear() + 543}`;
     }
-    return dateStr;
-  }
-
-  function parseInput(text){
-    const raw = String(text || '').replace(/\r/g,'').trim();
-    if(!raw) return { records:[], errors:[] };
-    const lines = raw.split('\n').map(v => v.trim()).filter(v => v !== '');
-    const records = [];
-    const errors = [];
-    let i = 0;
-    while(i < lines.length){
-      const headerLine = lines[i];
-      const header = headerLine.match(/^(.+?)\s*\|\s*(.+?)$/);
-      if(!header){ 
-        errors.push(`บรรทัดที่ ${i+1}: รูปแบบหัวข้อไม่ถูกต้อง (${headerLine})`); 
-        i++; 
-        continue; 
+  );
+(function drawSnow(){
+  ctx.clearRect(
+    0,
+    0,
+    width,
+    height
+  );
+  particles.forEach(
+    function(p){
+      p.y += p.s;
+      if(p.y > height+5){
+        p.y = -5;
+        p.x = Math.random()*width;
       }
-      const name = header[1].trim();
-      const date = header[2].trim();
-      
-      if(i + 2 >= lines.length){
-        errors.push(`${name} | ${date}: ข้อมูลผลรางวัลไม่ครบถ้วน`);
-        break;
-      }
-      
-      const n3 = lines[i+1];
-      const n2 = lines[i+2];
-      
-      if(!/^\d{3}$/.test(n3) || !/^\d{2}$/.test(n2)){
-        errors.push(`${name} | ${date}: เลข 3 ตัวบน (${n3}) หรือ 2 ตัวล่าง (${n2}) ไม่ถูกต้องตามรูปแบบตัวเลข`);
-        i += 3; 
-        continue;
-      }
-      
-      const timestamp = parseThaiDate(date);
-      records.push({ name, date, n3, n2, timestamp });
-      i += 3;
+      ctx.beginPath();
+      ctx.arc(
+        p.x,
+        p.y,
+        p.r,
+        0,
+        Math.PI*2
+      );
+      ctx.fillStyle =
+        `rgba(195,154,67,${p.a})`;
+      ctx.fill();
     }
-    return { records, errors };
-  }
-
-  // สูตรทั้งหมดที่ถอดรหัสตามต้นฉบับ 100% (Pure Raw Formulas)
-  const formulas = {
-    "อันดับ 1 — สูตร 2 N1": (A, B, C, D, E) => [norm(-2*A - 2*B + C + D - 2*E + 9), norm(-2*B + C + 3)],
-    "N2 — สูตรใหม่": (A, B, C, D, E) => [norm(-A + B - C + 2*D + E + 4), norm(A - 2*C - 2*E + 7)],
-    "N3 — สูตรเด่นชุดเดียวจบ": (A, B, C, D, E) => [norm(2*A - B + C + 2*D - E + 3), norm(A + 2*B - 2*C + D + 2*E + 6)],
-    "N4 — สูตรหลัก": (A, B, C, D, E) => [norm(-2*A - B - C - 2*D - 2*E + 5), norm(-2*A + B + 2*C - 2*D + E + 9)],
-    "N5 — สูตรคำนวณเด่น": (A, B, C, D, E) => [norm(-2*A - 2*B - C - D - 2*E + 7), norm(-A + B + 2*C - 2*D + E + 6)],
-    "N6 — Master Formula": (A, B, C, D, E) => [norm(-A - 2*B + C - E + 1), norm(A - C - D - 2*E)],
-    "N1+ — สูตรเสริม": (A, B, C, D, E) => [norm(2*A - 3*C - D - 2*E + 8), norm(-3*A - 2*C - D + E + 2)],
-    "N1+ V2 — สูตรเสริมตัวที่ 2": (A, B, C, D, E) => [norm(A + 3*B + C + 3*D + 3*E + 6), norm(-A - B - C + D - 3*E + 1)],
-    "Hybrid — สิบบบน + หน่วยล่าง + 2": (A, B, C, D, E) => { const d1 = norm(B + E + 2); return [d1, norm(d1 + 2)]; },
-    "สูตร 1 — สิบบบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(B + D); return [d1, norm(d1 + 1)]; },
-    "สูตร 2 — ผลรวม 3 ตัวบน": (A, B, C, D, E) => { const d1 = norm(A + B + C); return [d1, norm(d1 + 1)]; },
-    "สูตร 3 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; },
-    "สูตร 4 — หน่วยบน + หน่วยล่าง": (A, B, C, D, E) => { const d1 = norm(C + E); return [d1, norm(d1 + 1)]; },
-    "สูตร 5 — ฐาน 10 - หน่วยล่าง": (A, B, C, D, E) => { const d1 = norm(10 - E); return [d1, norm(d1 + 1)]; },
-    "สูตร 6 — ร้อยบน + สิบล่าง": (A, B, C, D, E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; }
+  );
+  requestAnimationFrame(drawSnow);
+})();
+/* =========================================================
+   HELPERS
+========================================================= */
+function $(id){
+  return document.getElementById(id);
+}
+function esc(val){
+  return String(val || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+function norm(v){
+  return ((Number(v) % 10) + 10) % 10;
+}
+function clamp(v,min,max){
+  return Math.max(
+    min,
+    Math.min(max,v)
+  );
+}
+function showToast(msg){
+  const toast =
+    $("toast");
+  toast.textContent =
+    msg || "ดำเนินการเรียบร้อย";
+  toast.classList.add("show");
+  setTimeout(
+    function(){
+      toast.classList.remove("show");
+    },
+    1700
+  );
+}
+/* =========================================================
+   LOTTERY FLAG
+========================================================= */
+function getLotteryFlag(name){
+  const n =
+    String(name || "")
+      .toLowerCase();
+  if(
+    n.includes("นิคเคอิ") ||
+    n.includes("ญี่ปุ่น")
+  ) return "🇯🇵";
+  if(n.includes("จีน"))
+    return "🇨🇳";
+  if(
+    n.includes("ฮั่งเส็ง") ||
+    n.includes("ฮ่องกง")
+  ) return "🇭🇰";
+  if(
+    n.includes("ดาวโจนส์") ||
+    n.includes("อเมริกา") ||
+    n.includes("usa") ||
+    n.includes("ดาว")
+  ) return "🇺🇸";
+  if(n.includes("ไต้หวัน"))
+    return "🇹🇼";
+  if(n.includes("เกาหลี"))
+    return "🇰🇷";
+  if(n.includes("สิงคโปร์"))
+    return "🇸🇬";
+  if(n.includes("รัสเซีย"))
+    return "🇷🇺";
+  if(n.includes("เยอรมัน"))
+    return "🇩🇪";
+  if(n.includes("อังกฤษ"))
+    return "🇬🇧";
+  if(n.includes("อินเดีย"))
+    return "🇮🇳";
+  if(n.includes("อียิปต์"))
+    return "🇪🇬";
+  if(n.includes("ลาว"))
+    return "🇱🇦";
+  if(
+    n.includes("ฮานอย") ||
+    n.includes("เวียดนาม")
+  ) return "🇻🇳";
+  if(
+    n.includes("ไทย") ||
+    n.includes("รัฐบาล") ||
+    n.includes("ออมสิน") ||
+    n.includes("ธกส")
+  ) return "🇹🇭";
+  if(n.includes("มาเลย์"))
+    return "🇲🇾";
+  return "🌐";
+}
+/* =========================================================
+   DATE
+========================================================= */
+function parseThaiDate(dateStr){
+  const months = {
+    "ม.ค.":1,
+    "ก.พ.":2,
+    "มี.ค.":3,
+    "เม.ย.":4,
+    "พ.ค.":5,
+    "มิ.ย.":6,
+    "ก.ค.":7,
+    "ส.ค.":8,
+    "ก.ย.":9,
+    "ต.ค.":10,
+    "พ.ย.":11,
+    "ธ.ค.":12,
+    "มกราคม":1,
+    "กุมภาพันธ์":2,
+    "มีนาคม":3,
+    "เมษายน":4,
+    "พฤษภาคม":5,
+    "มิถุนายน":6,
+    "กรกฎาคม":7,
+    "สิงหาคม":8,
+    "กันยายน":9,
+    "ตุลาคม":10,
+    "พฤศจิกายน":11,
+    "ธันวาคม":12
   };
-
-  function sanitizeFormulaResult(rawRes) {
-    let d1 = norm(rawRes[0]);
-    let d2 = norm(rawRes[1]);
-    if (d1 === d2) {
-      d2 = norm(d2 + 1);
-    }
-    return [d1, d2];
+  const cleaned =
+    String(dateStr || "").trim();
+  const parts =
+    cleaned.split(/\s+/);
+  if(parts.length >= 3){
+    const day =
+      parseInt(parts[0],10) || 1;
+    const month =
+      months[parts[1]] || 1;
+    let year =
+      parseInt(parts[2],10) || 2569;
+    if(year < 2500)
+      year += 2543;
+    return new Date(
+      year-543,
+      month-1,
+      day
+    ).getTime();
   }
-
-  function checkHitDetail(predictedDigits, actualN3, actualN2){
-    const topDigits = actualN3.split('').map(Number);
-    const bottomDigits = actualN2.split('').map(Number);
-    const hundredsDigit = topDigits[0];
-    const tensAndUnits = topDigits.slice(1);
-    
-    let hitAny = false;
-    let hitHundredsOnly = false;
-    let matchedInValidPos = false;
-
-    predictedDigits.forEach(d => {
-      const inBottom = bottomDigits.includes(d);
-      const inTensOrUnits = tensAndUnits.includes(d);
-      const inHundreds = (hundredsDigit === d);
-
-      if(inBottom || inTensOrUnits){
+  return 0;
+}
+function getNextDateStr(dateStr){
+  const cleaned =
+    String(dateStr || "").trim();
+  const parts =
+    cleaned.split(/\s+/);
+  if(parts.length >= 3){
+    const day =
+      parseInt(parts[0],10) || 1;
+    const monthStr =
+      parts[1];
+    let year =
+      parseInt(parts[2],10) || 2569;
+    const monthsMap = {
+      "ม.ค.":0,
+      "ก.พ.":1,
+      "มี.ค.":2,
+      "เม.ย.":3,
+      "พ.ค.":4,
+      "มิ.ย.":5,
+      "ก.ค.":6,
+      "ส.ค.":7,
+      "ก.ย.":8,
+      "ต.ค.":9,
+      "พ.ย.":10,
+      "ธ.ค.":11
+    };
+    const mIndex =
+      monthsMap[monthStr] !== undefined
+        ? monthsMap[monthStr]
+        : 0;
+    const d =
+      new Date(
+        year-543,
+        mIndex,
+        day+1
+      );
+    const thaiMonths = [
+      "ม.ค.",
+      "ก.พ.",
+      "มี.ค.",
+      "เม.ย.",
+      "พ.ค.",
+      "มิ.ย.",
+      "ก.ค.",
+      "ส.ค.",
+      "ก.ย.",
+      "ต.ค.",
+      "พ.ย.",
+      "ธ.ค."
+    ];
+    return (
+      d.getDate() +
+      " " +
+      thaiMonths[d.getMonth()] +
+      " " +
+      (d.getFullYear()+543)
+    );
+  }
+  return dateStr;
+}
+/* =========================================================
+   INPUT PARSER
+========================================================= */
+function parseInput(text){
+  const raw =
+    String(text || "")
+      .replace(/\r/g,"")
+      .trim();
+  if(!raw){
+    return {
+      records:[],
+      errors:[]
+    };
+  }
+  const lines =
+    raw
+      .split("\n")
+      .map(function(v){
+        return v.trim();
+      })
+      .filter(function(v){
+        return v !== "";
+      });
+  const records = [];
+  const errors = [];
+  let i = 0;
+  while(i < lines.length){
+    const headerLine =
+      lines[i];
+    const header =
+      headerLine.match(
+        /^(.+?)\s*\|\s*(.+?)$/
+      );
+    if(!header){
+      errors.push(
+        `บรรทัดที่ ${i+1}: รูปแบบหัวข้อไม่ถูกต้อง (${headerLine})`
+      );
+      i++;
+      continue;
+    }
+    const name =
+      header[1].trim();
+    const date =
+      header[2].trim();
+    if(i+2 >= lines.length){
+      errors.push(
+        `${name} | ${date}: ข้อมูลผลรางวัลไม่ครบถ้วน`
+      );
+      break;
+    }
+    const n3 =
+      lines[i+1];
+    const n2 =
+      lines[i+2];
+    if(
+      !/^\d{3}$/.test(n3) ||
+      !/^\d{2}$/.test(n2)
+    ){
+      errors.push(
+        `${name} | ${date}: เลข 3 ตัวบน (${n3}) หรือ 2 ตัวล่าง (${n2}) ไม่ถูกต้อง`
+      );
+      i += 3;
+      continue;
+    }
+    const timestamp =
+      parseThaiDate(date);
+    records.push({
+      name,
+      date,
+      n3,
+      n2,
+      timestamp
+    });
+    i += 3;
+  }
+  return {
+    records,
+    errors
+  };
+}
+/* =========================================================
+   ORIGINAL FORMULAS
+   =========================================================
+   ห้ามแก้ไขสูตรเดิม
+========================================================= */
+const formulas = {
+  "อันดับ 1 — สูตร 2 N1":
+    function(A,B,C,D,E){
+      return [
+        norm(-2*A-2*B+C+D-2*E+9),
+        norm(-2*B+C+3)
+      ];
+    },
+  "N2 — สูตรใหม่":
+    function(A,B,C,D,E){
+      return [
+        norm(-A+B-C+2*D+E+4),
+        norm(A-2*C-2*E+7)
+      ];
+    },
+  "N3 — สูตรเด่นชุดเดียวจบ":
+    function(A,B,C,D,E){
+      return [
+        norm(2*A-B+C+2*D-E+3),
+        norm(A+2*B-2*C+D+2*E+6)
+      ];
+    },
+  "N4 — สูตรหลัก":
+    function(A,B,C,D,E){
+      return [
+        norm(-2*A-B-C-2*D-2*E+5),
+        norm(-2*A+B+2*C-2*D+E+9)
+      ];
+    },
+  "N5 — สูตรคำนวณเด่น":
+    function(A,B,C,D,E){
+      return [
+        norm(-2*A-2*B-C-D-2*E+7),
+        norm(-A+B+2*C-2*D+E+6)
+      ];
+    },
+  "N6 — Master Formula":
+    function(A,B,C,D,E){
+      return [
+        norm(-A-2*B+C-E+1),
+        norm(A-C-D-2*E)
+      ];
+    },
+  "N1+ — สูตรเสริม":
+    function(A,B,C,D,E){
+      return [
+        norm(2*A-3*C-D-2*E+8),
+        norm(-3*A-2*C-D+E+2)
+      ];
+    },
+  "N1+ V2 — สูตรเสริมตัวที่ 2":
+    function(A,B,C,D,E){
+      return [
+        norm(A+3*B+C+3*D+3*E+6),
+        norm(-A-B-C+D-3*E+1)
+      ];
+    },
+  "Hybrid — สิบบบน + หน่วยล่าง + 2":
+    function(A,B,C,D,E){
+      const d1 =
+        norm(B+E+2);
+      return [
+        d1,
+        norm(d1+2)
+      ];
+    },
+  "สูตร 1 — สิบบบน + สิบล่าง":
+    function(A,B,C,D,E){
+      const d1 =
+        norm(B+D);
+      return [
+        d1,
+        norm(d1+1)
+      ];
+    },
+  "สูตร 2 — ผลรวม 3 ตัวบน":
+    function(A,B,C,D,E){
+      const d1 =
+        norm(A+B+C);
+      return [
+        d1,
+        norm(d1+1)
+      ];
+    },
+  "สูตร 3 — ร้อยบน + สิบล่าง":
+    function(A,B,C,D,E){
+      const d1 =
+        norm(A+D);
+      return [
+        d1,
+        norm(d1+1)
+      ];
+    },
+  "สูตร 4 — หน่วยบน + หน่วยล่าง":
+    function(A,B,C,D,E){
+      const d1 =
+        norm(C+E);
+      return [
+        d1,
+        norm(d1+1)
+      ];
+    },
+  "สูตร 5 — ฐาน 10 - หน่วยล่าง":
+    function(A,B,C,D,E){
+      const d1 =
+        norm(10-E);
+      return [
+        d1,
+        norm(d1+1)
+      ];
+    },
+  "สูตร 6 — ร้อยบน + สิบล่าง":
+    function(A,B,C,D,E){
+      const d1 =
+        norm(A+D);
+      return [
+        d1,
+        norm(d1+1)
+      ];
+    }
+};
+/* =========================================================
+   FORMULA POOL
+   Locked to the original 15 built-in formulas only.
+========================================================= */
+function buildAllFormulas(){
+  const all={};
+  Object.keys(formulas).forEach(function(name){all[name]=formulas[name];});
+  return all;
+}
+/* =========================================================
+   HIT CHECK
+   =========================================================
+   คง logic เดิม
+========================================================= */
+function checkHitDetail(
+  predictedDigits,
+  actualN3,
+  actualN2
+){
+  const topDigits =
+    actualN3
+      .split("")
+      .map(Number);
+  const bottomDigits =
+    actualN2
+      .split("")
+      .map(Number);
+  const hundredsDigit =
+    topDigits[0];
+  const tensAndUnits =
+    topDigits.slice(1);
+  let hitAny = false;
+  let hitHundredsOnly = false;
+  let matchedInValidPos = false;
+  predictedDigits.forEach(
+    function(d){
+      const inBottom =
+        bottomDigits.includes(d);
+      const inTensOrUnits =
+        tensAndUnits.includes(d);
+      const inHundreds =
+        hundredsDigit === d;
+      if(
+        inBottom ||
+        inTensOrUnits
+      ){
         hitAny = true;
         matchedInValidPos = true;
-      } else if(inHundreds && !inBottom && !inTensOrUnits){
+      }else if(
+        inHundreds &&
+        !inBottom &&
+        !inTensOrUnits
+      ){
         hitHundredsOnly = true;
       }
-    });
-
-    if(!matchedInValidPos && hitHundredsOnly){
-      hitAny = false;
     }
-
-    return { hitAny, hitHundredsOnly };
+  );
+  if(
+    !matchedInValidPos &&
+    hitHundredsOnly
+  ){
+    hitAny = false;
   }
-
-  function showToast(msg){
-    const toast = $('toast');
-    if(msg) toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 1500);
-  }
-
-  function updateIndicator(){
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if(stored){
-        const arr = JSON.parse(stored);
-        $('recordCountIndicator').textContent = `สะสมในระบบ: ${arr.length} งวด`;
-      } else {
-        $('recordCountIndicator').textContent = `สะสมในระบบ: 0 งวด`;
+  return {
+    hitAny,
+    hitHundredsOnly
+  };
+}
+/* =========================================================
+   CORE AUDIT
+========================================================= */
+function auditFormulaOnRecords(
+  formulaFn,
+  recs,
+  startIndex,
+  endIndex
+){
+  let hits = 0;
+  let misses = 0;
+  let hundredsOnlyCount = 0;
+  let currentStreak = 0;
+  let currentMissStreak = 0;
+  let maxStreak = 0;
+  let maxMissStreak = 0;
+  let lastHit = true;
+  let lastHundredsOnly = false;
+  const total =
+    Math.max(
+      0,
+      endIndex-startIndex
+    );
+  for(
+    let i=startIndex;
+    i<endIndex;
+    i++
+  ){
+    const curr =
+      recs[i];
+    const next =
+      recs[i+1];
+    if(!curr || !next)
+      continue;
+    const top =
+      curr.n3
+        .split("")
+        .map(Number);
+    const bot =
+      curr.n2
+        .split("")
+        .map(Number);
+    let predicted;
+    try{
+      predicted =
+        sanitizeFormulaResult(
+          formulaFn(
+            top[0],
+            top[1],
+            top[2],
+            bot[0],
+            bot[1]
+          )
+        );
+    }catch(e){
+      predicted =
+        [0,1];
+    }
+    const check =
+      checkHitDetail(
+        predicted,
+        next.n3,
+        next.n2
+      );
+    if(check.hitHundredsOnly)
+      hundredsOnlyCount++;
+    if(check.hitAny){
+      hits++;
+      currentStreak++;
+      currentMissStreak = 0;
+      lastHit = true;
+      lastHundredsOnly = false;
+      if(
+        currentStreak >
+        maxStreak
+      ){
+        maxStreak =
+          currentStreak;
       }
-    } catch(e){
-      $('recordCountIndicator').textContent = `สะสมในระบบ: 0 งวด`;
+    }else{
+      misses++;
+      currentMissStreak++;
+      currentStreak = 0;
+      lastHit = false;
+      lastHundredsOnly =
+        check.hitHundredsOnly;
+      if(
+        currentMissStreak >
+        maxMissStreak
+      ){
+        maxMissStreak =
+          currentMissStreak;
+      }
     }
   }
-
-  window.copyCardText = function(cardId, lotteryTitle, dateStr, d1Pairs, d2Pairs){
-    const allPairs = [...d1Pairs, ...d2Pairs].map(p => p.pair).join(', ');
-    const textToCopy = `🎯 ${lotteryTitle} (${dateStr}) | บ้านกองเงิน\nชุดเจาะเน้น: ${allPairs}`;
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      showToast(`✓ คัดลอกเลขเด่น ${lotteryTitle} เรียบร้อย`);
-    }).catch(() => {
-      showToast('❌ คัดลอกไม่สำเร็จ');
-    });
+  const tested =
+    hits+misses;
+  const hitRate =
+    tested > 0
+      ? Number(
+          (
+            hits/tested*100
+          ).toFixed(2)
+        )
+      : 0;
+  return {
+    totalTested:tested,
+    hits,
+    misses,
+    hundredsOnlyCount,
+    hitRate,
+    curStreak:currentStreak,
+    curMissStreak:currentMissStreak,
+    maxStreak,
+    maxMissStreak,
+    lastHit,
+    hitHundredsOnly:
+      lastHundredsOnly
   };
-
-  window.captureCardImage = function(cardId, lotteryTitle){
-    const cardEl = $(cardId);
-    if(!cardEl) return;
-    showToast('📸 กำลังประมวลผลจับภาพการ์ด...');
-    
-    const btnGroup = cardEl.querySelector('.card-btn-group');
-    const badgePlaceholder = cardEl.querySelector('.card-badge-placeholder');
-    if(btnGroup) btnGroup.style.display = 'none';
-    if(badgePlaceholder) badgePlaceholder.style.display = 'flex';
-
-    html2canvas(cardEl, { scale: 2, backgroundColor: '#fffdf9' }).then(canvas => {
-      if(btnGroup) btnGroup.style.display = 'flex';
-      if(badgePlaceholder) badgePlaceholder.style.display = 'none';
-
-      const link = document.createElement('a');
-      link.download = `BanKongNgern_${lotteryTitle.replace(/\s+/g, '_')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      showToast('✓ บันทึกภาพการ์ดสำเร็จ');
-    }).catch(err => {
-      if(btnGroup) btnGroup.style.display = 'flex';
-      if(badgePlaceholder) badgePlaceholder.style.display = 'none';
-      console.error(err);
-      showToast('❌ ไม่สามารถจับภาพได้');
-    });
-  };
-
-  function renderFullUI(globalAuditMap, auditDataMap, predictionDataMap){
-    let html = '';
-
-    const sortedGlobalFormulas = Object.keys(globalAuditMap).sort((a, b) => {
-      return globalAuditMap[b].hitRate - globalAuditMap[a].hitRate;
-    });
-
-    html += `<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย & จัดอันดับความแม่นยำ (Ranking 1, 2, 3...)</div>`;
-    html += `
-      <div class="summary-table-container">
-        <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (ค่าดิบแท้ 100% ไม่ปรับ Offset)</h3>
-        <table class="audit-table">
-          <thead>
-            <tr>
-              <th>อันดับ (Rank)</th>
-              <th>ชื่อสูตร</th>
-              <th>เลขเด่นงวดล่าสุด (ค่าดิบ)</th>
-              <th>งวดทดสอบรวม</th>
-              <th>เข้า / หลุด</th>
-              <th>ออกหลักร้อยเดี่ยว</th>
-              <th>Hit Rate (%)</th>
-              <th>สถานะภาพรวม</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    sortedGlobalFormulas.forEach((fName, index) => {
-      const g = globalAuditMap[fName];
-      const rank = index + 1;
-      let rankBadge = `<span class="badge-rank-other">อันดับ ${rank}</span>`;
-      if(rank === 1) rankBadge = `<span class="badge-rank-1">🥇 อันดับ 1 (ทอง)</span>`;
-      else if(rank === 2) rankBadge = `<span class="badge-rank-2">🥈 อันดับ 2 (เงิน)</span>`;
-      else if(rank === 3) rankBadge = `<span class="badge-rank-3">🥉 อันดับ 3 (ทองแดง)</span>`;
-
-      const latestDigitsText = g.latestDigits ? `<b style="color:#806329; font-size:.55rem; background:#fffaf0; padding:2px 8px; border:1px solid #d9bd79; border-radius:6px;">${g.latestDigits[0]}-${g.latestDigits[1]}</b>` : `-`;
-
-      html += `
-        <tr>
-          <td>${rankBadge}</td>
-          <td style="font-weight:bold; text-align:left;">${esc(fName)}</td>
-          <td>${latestDigitsText}</td>
-          <td>${g.totalTested}</td>
-          <td><span style="color:#2e7d32; font-weight:bold;">${g.hits}</span> / <span style="color:#c62828;">${g.misses}</span></td>
-          <td style="color:#ef6c00; font-weight:bold;">${g.hundredsOnlyCount || 0} งวด</td>
-          <td style="font-weight:bold; color:${g.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${g.hitRate}%</td>
-          <td>${g.hitRate >= 60 ? '<span class="badge-status status-hot">ยอดเยี่ยม</span>' : '<span class="badge-status status-cooling">ปานกลาง</span>'}</td>
-        </tr>
-      `;
-    });
-
-    html += `
-          </tbody>
-        </table>
-      </div>
-    `;
-
-    html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย & จัดอันดับ Ranking 1-3 ตามเปอร์เซ็นต์</div>`;
-    
-    Object.keys(auditDataMap).forEach(lotteryName => {
-      const formulasResult = auditDataMap[lotteryName];
-      const sortedFormulas = Object.keys(formulasResult).sort((a, b) => {
-        return formulasResult[b].hitRate - formulasResult[a].hitRate;
-      });
-
-      html += `
-        <div class="summary-table-container">
-          <h3 style="color:#806329; font-size:.75rem; margin:0 0 8px;">หวย: ${esc(lotteryName)} (ค่าดิบตามสูตรต้นฉบับ 100%)</h3>
-          <table class="audit-table">
-            <thead>
-              <tr>
-                <th>อันดับ (Rank)</th>
-                <th>ชื่อสูตร</th>
-                <th>เลขเด่นงวดล่าสุด (ค่าดิบ)</th>
-                <th>งวดทดสอบ</th>
-                <th>เข้า / หลุด</th>
-                <th>ออกหลักร้อยเดี่ยว</th>
-                <th>Hit Rate (%)</th>
-                <th>สถานะงวดล่าสุด</th>
-                <th>เข้า/หลุดติดต่อกัน</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
-
-      sortedFormulas.forEach((fName, index) => {
-        const f = formulasResult[fName];
-        const rank = index + 1;
-        let rankBadge = `<span class="badge-rank-other">อันดับ ${rank}</span>`;
-        if(rank === 1) rankBadge = `<span class="badge-rank-1">🥇 อันดับ 1 (ทอง)</span>`;
-        else if(rank === 2) rankBadge = `<span class="badge-rank-2">🥈 อันดับ 2 (เงิน)</span>`;
-        else if(rank === 3) rankBadge = `<span class="badge-rank-3">🥉 อันดับ 3 (ทองแดง)</span>`;
-
-        const latestDigitsText = f.latestDigits ? `<b style="color:#806329; font-size:.55rem; background:#fffaf0; padding:2px 8px; border:1px solid #d9bd79; border-radius:6px;">${f.latestDigits[0]}-${f.latestDigits[1]}</b>` : `-`;
-
-        let badgeHTML = '<span class="badge-status status-hot">🟢 เข้า</span>';
-        if(f.lastHit === false){
-          if(f.hitHundredsOnly){
-            badgeHTML = '<span class="badge-status status-warning">⚠️ หลุด (ออกหลักร้อย)</span>';
-          } else if(f.curMissStreak >= 2){
-            badgeHTML = `<span class="badge-status status-danger">🔴 หลุด ${f.curMissStreak} งวดติด</span>`;
-          } else {
-            badgeHTML = '<span class="badge-status status-cooling">🟡 หลุด 1 งวด</span>';
-          }
+}
+/* =========================================================
+   INDICATOR
+========================================================= */
+function updateIndicator(){
+  try{
+    const stored =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+    if(stored){
+      const arr =
+        JSON.parse(stored);
+      $("recordCountIndicator")
+        .textContent =
+        `สะสมในระบบ: ${arr.length} งวด`;
+    }else{
+      $("recordCountIndicator")
+        .textContent =
+        "สะสมในระบบ: 0 งวด";
+    }
+  }catch(e){
+    $("recordCountIndicator")
+      .textContent =
+      "สะสมในระบบ: 0 งวด";
+  }
+}
+/* =========================================================
+   COPY / CAPTURE
+========================================================= */
+window.copyCardText =
+function(
+  cardId,
+  lotteryTitle,
+  dateStr,
+  d1Pairs,
+  d2Pairs
+){
+  const allPairs =
+    [
+      ...d1Pairs,
+      ...d2Pairs
+    ]
+      .map(
+        function(p){
+          return p.pair;
         }
-
+      )
+      .join(", ");
+  const textToCopy =
+    `🎯 ${lotteryTitle} (${dateStr}) | บ้านกองเงิน\nชุดเจาะเน้น: ${allPairs}`;
+  if(
+    navigator.clipboard &&
+    navigator.clipboard.writeText
+  ){
+    navigator.clipboard.writeText(
+      textToCopy
+    )
+    .then(
+      function(){
+        showToast(
+          `✓ คัดลอกเลขเด่น ${lotteryTitle} เรียบร้อย`
+        );
+      }
+    )
+    .catch(
+      function(){
+        showToast(
+          "❌ คัดลอกไม่สำเร็จ"
+        );
+      }
+    );
+  }
+};
+window.captureCardImage =
+function(
+  cardId,
+  lotteryTitle
+){
+  const cardEl =
+    $(cardId);
+  if(!cardEl)
+    return;
+  showToast(
+    "📸 กำลังจับภาพ..."
+  );
+  const btnGroup =
+    cardEl.querySelector(
+      ".card-btn-group"
+    );
+  const badgePlaceholder =
+    cardEl.querySelector(
+      ".card-badge-placeholder"
+    );
+  if(btnGroup)
+    btnGroup.style.display =
+      "none";
+  if(badgePlaceholder)
+    badgePlaceholder.style.display =
+      "flex";
+  html2canvas(
+    cardEl,
+    {
+      scale:2,
+      backgroundColor:"#fffdf9"
+    }
+  )
+  .then(
+    function(canvas){
+      if(btnGroup)
+        btnGroup.style.display =
+          "flex";
+      if(badgePlaceholder)
+        badgePlaceholder.style.display =
+          "none";
+      const link =
+        document.createElement("a");
+      link.download =
+        `BanKongNgern_${lotteryTitle.replace(/\s+/g,"_")}.png`;
+      link.href =
+        canvas.toDataURL("image/png");
+      link.click();
+      showToast(
+        "✓ บันทึกภาพการ์ดสำเร็จ"
+      );
+    }
+  )
+  .catch(
+    function(err){
+      if(btnGroup)
+        btnGroup.style.display =
+          "flex";
+      if(badgePlaceholder)
+        badgePlaceholder.style.display =
+          "none";
+      console.error(err);
+      showToast(
+        "❌ ไม่สามารถจับภาพได้"
+      );
+    }
+  );
+};
+/* =========================================================
+   RENDER FULL UI
+========================================================= */
+function renderFullUI(
+  globalAuditMap,
+  auditDataMap,
+  predictionDataMap
+){
+  let html = "";
+  const sortedGlobalFormulas =
+    Object.keys(
+      globalAuditMap
+    )
+    .sort(
+      function(a,b){
+        return (
+          globalAuditMap[b].hitRate -
+          globalAuditMap[a].hitRate
+        );
+      }
+    );
+  html += `
+    <div class="section-title">
+      🌐 0. ตารางออดิตสะสมรวมทุกหวย
+    </div>
+  `;
+  html += `
+    <div class="summary-table-container">
+      <h3 style="
+        color:#806329;
+        font-size:.75rem;
+        margin:0 0 8px;
+      ">
+        ภาพรวมความแม่นยำของทุกสูตร
+      </h3>
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>อันดับ</th>
+            <th>ชื่อสูตร</th>
+            <th>เลขเด่นล่าสุด</th>
+            <th>งวดทดสอบ</th>
+            <th>เข้า / หลุด</th>
+            <th>หลักร้อยเดี่ยว</th>
+            <th>Hit Rate</th>
+            <th>สถานะ</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  sortedGlobalFormulas
+    .forEach(
+      function(fName,index){
+        const g =
+          globalAuditMap[fName];
+        const rank =
+          index+1;
+        let rankBadge =
+          `<span class="badge-rank-other">อันดับ ${rank}</span>`;
+        if(rank === 1){
+          rankBadge =
+            `<span class="badge-rank-1">🥇 อันดับ 1</span>`;
+        }else if(rank === 2){
+          rankBadge =
+            `<span class="badge-rank-2">🥈 อันดับ 2</span>`;
+        }else if(rank === 3){
+          rankBadge =
+            `<span class="badge-rank-3">🥉 อันดับ 3</span>`;
+        }
+        const latestDigitsText =
+          g.latestDigits
+            ? `
+              <b style="
+                color:#806329;
+                font-size:.55rem;
+                background:#fffaf0;
+                padding:2px 8px;
+                border:1px solid #d9bd79;
+                border-radius:6px;
+              ">
+                ${g.latestDigits[0]}-${g.latestDigits[1]}
+              </b>
+            `
+            : "-";
         html += `
           <tr>
-            <td>${rankBadge}</td>
-            <td style="font-weight:bold; text-align:left;">${esc(fName)}</td>
-            <td>${latestDigitsText}</td>
-            <td>${f.totalTested}</td>
-            <td style="font-weight:bold;"><span style="color:#2e7d32;">${f.hits}</span> / <span style="color:#c62828;">${f.misses}</span></td>
-            <td style="color:#ef6c00; font-weight:bold;">${f.hundredsOnlyCount || 0} งวด</td>
-            <td style="font-weight:bold; color:${f.hitRate >= 50 ? '#2e7d32' : '#c62828'};">${f.hitRate}%</td>
-            <td>${badgeHTML}</td>
-            <td><span style="color:#2e7d32;">${f.curStreak} ติด</span> / <span style="color:#c62828;">${f.curMissStreak} หลุด</span></td>
+            <td>
+              ${rankBadge}
+            </td>
+            <td style="
+              font-weight:bold;
+              text-align:left;
+            ">
+              ${esc(fName)}
+            </td>
+            <td>
+              ${latestDigitsText}
+            </td>
+            <td>
+              ${g.totalTested}
+            </td>
+            <td>
+              <span style="
+                color:#2e7d32;
+                font-weight:bold;
+              ">
+                ${g.hits}
+              </span>
+              /
+              <span style="
+                color:#c62828;
+              ">
+                ${g.misses}
+              </span>
+            </td>
+            <td style="
+              color:#ef6c00;
+              font-weight:bold;
+            ">
+              ${g.hundredsOnlyCount || 0} งวด
+            </td>
+            <td style="
+              font-weight:bold;
+              color:
+              ${g.hitRate >= 50
+                ? "#2e7d32"
+                : "#c62828"};
+            ">
+              ${g.hitRate}%
+            </td>
+            <td>
+              ${
+                g.hitRate >= 60
+                ? '<span class="badge-status status-hot">ยอดเยี่ยม</span>'
+                : '<span class="badge-status status-cooling">ปานกลาง</span>'
+              }
+            </td>
           </tr>
         `;
-      });
-
-      html += `
-            </tbody>
-          </table>
-        </div>
-      `;
-    });
-
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านกองเงิน V31.3 Pure Raw Precision)</div>`;
-
-    let cardIdx = 0;
-    Object.keys(predictionDataMap).forEach(lotteryName => {
-      const p = predictionDataMap[lotteryName];
-      const flagIcon = getLotteryFlag(lotteryName);
-      const cId = `card_${cardIdx++}`;
-
-      const jsonD1 = JSON.stringify(p.d1Pairs).replace(/"/g, '&quot;');
-      const jsonD2 = JSON.stringify(p.d2Pairs).replace(/"/g, '&quot;');
-
-      const renderPairRow = (mainDigit, pairsList, isFirstRow) => {
-        let mainBg = isFirstRow ? 'linear-gradient(135deg,#f9f3e3,#edd5a6)' : 'linear-gradient(135deg,#f3f4f6,#e5e7eb)';
-        let mainBorder = isFirstRow ? '#d9bd79' : '#9ca3af';
-        let mainColor = isFirstRow ? '#806329' : '#374151';
-
-        return `
-          <div style="display:flex; align-items:center; gap:10px; margin:10px 0; padding-bottom:10px; border-bottom:1px solid #f0e6d6;">
-            <div style="width:38px; height:38px; border-radius:10px; background:${mainBg}; border:1px solid ${mainBorder}; color:${mainColor}; display:grid; place-items:center; font-size:.85rem; font-weight:900;">${mainDigit}</div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${pairsList.map((item) => {
-                let borderCol = '#e8dfcf';
-                let bgCol = '#ffffff';
-                let textCol = '#403a31';
-                
-                if(item.color === 'gold'){
-                  borderCol = '#d9bd79'; bgCol = '#fffaf0'; textCol = '#806329';
-                } else if(item.color === 'silver'){
-                  borderCol = '#b0b8c4'; bgCol = '#f8fafc'; textCol = '#475569';
-                } else if(item.color === 'rose_gold'){
-                  borderCol = '#e0a1a1'; bgCol = '#fff5f5'; textCol = '#9b2c2c';
+      }
+    );
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+  html += `
+    <div class="section-title">
+      📊 1. ตารางออดิตย้อนหลังรายหวย
+    </div>
+  `;
+  Object.keys(auditDataMap)
+    .forEach(
+      function(lotteryName){
+        const formulasResult =
+          auditDataMap[lotteryName];
+        const sortedFormulas =
+          Object.keys(
+            formulasResult
+          )
+          .sort(
+            function(a,b){
+              return (
+                formulasResult[b].hitRate -
+                formulasResult[a].hitRate
+              );
+            }
+          );
+        html += `
+          <div class="summary-table-container">
+            <h3 style="
+              color:#806329;
+              font-size:.75rem;
+              margin:0 0 8px;
+            ">
+              หวย: ${esc(displayLotteryName(lotteryName))}
+            </h3>
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>อันดับ</th>
+                  <th>ชื่อสูตร</th>
+                  <th>เลขเด่นล่าสุด</th>
+                  <th>งวดทดสอบ</th>
+                  <th>เข้า / หลุด</th>
+                  <th>หลักร้อยเดี่ยว</th>
+                  <th>Hit Rate</th>
+                  <th>สถานะล่าสุด</th>
+                  <th>Streak</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+        sortedFormulas
+          .forEach(
+            function(fName,index){
+              const f =
+                formulasResult[fName];
+              const rank =
+                index+1;
+              let rankBadge =
+                `<span class="badge-rank-other">อันดับ ${rank}</span>`;
+              if(rank === 1)
+                rankBadge =
+                  `<span class="badge-rank-1">🥇 อันดับ 1</span>`;
+              else if(rank === 2)
+                rankBadge =
+                  `<span class="badge-rank-2">🥈 อันดับ 2</span>`;
+              else if(rank === 3)
+                rankBadge =
+                  `<span class="badge-rank-3">🥉 อันดับ 3</span>`;
+              const latestDigitsText =
+                f.latestDigits
+                  ? `
+                    <b style="
+                      color:#806329;
+                      font-size:.55rem;
+                      background:#fffaf0;
+                      padding:2px 8px;
+                      border:1px solid #d9bd79;
+                      border-radius:6px;
+                    ">
+                      ${f.latestDigits[0]}-${f.latestDigits[1]}
+                    </b>
+                  `
+                  : "-";
+              let badgeHTML =
+                '<span class="badge-status status-hot">🟢 เข้า</span>';
+              if(f.lastHit === false){
+                if(f.hitHundredsOnly){
+                  badgeHTML =
+                    '<span class="badge-status status-warning">⚠️ หลุดหลักร้อย</span>';
+                }else if(
+                  f.curMissStreak >= 2
+                ){
+                  badgeHTML =
+                    `<span class="badge-status status-danger">🔴 หลุด ${f.curMissStreak} งวดติด</span>`;
+                }else{
+                  badgeHTML =
+                    '<span class="badge-status status-cooling">🟡 หลุด 1 งวด</span>';
                 }
-
-                return `<div style="width:38px; height:34px; border-radius:9px; border:1px solid ${borderCol}; background:${bgCol}; color:${textCol}; display:grid; place-items:center; font-size:.58rem; font-weight:800; font-family:'IBM Plex Mono',monospace;">${item.pair}</div>`;
-              }).join('')}
+              }
+              html += `
+                <tr>
+                  <td>
+                    ${rankBadge}
+                  </td>
+                  <td style="
+                    font-weight:bold;
+                    text-align:left;
+                  ">
+                    ${esc(fName)}
+                  </td>
+                  <td>
+                    ${latestDigitsText}
+                  </td>
+                  <td>
+                    ${f.totalTested}
+                  </td>
+                  <td style="font-weight:bold;">
+                    <span style="
+                      color:#2e7d32;
+                    ">
+                      ${f.hits}
+                    </span>
+                    /
+                    <span style="
+                      color:#c62828;
+                    ">
+                      ${f.misses}
+                    </span>
+                  </td>
+                  <td style="
+                    color:#ef6c00;
+                    font-weight:bold;
+                  ">
+                    ${f.hundredsOnlyCount || 0}
+                  </td>
+                  <td style="
+                    font-weight:bold;
+                    color:
+                    ${f.hitRate >= 50
+                      ? "#2e7d32"
+                      : "#c62828"};
+                  ">
+                    ${f.hitRate}%
+                  </td>
+                  <td>
+                    ${badgeHTML}
+                  </td>
+                  <td>
+                    <span style="
+                      color:#2e7d32;
+                    ">
+                      ${f.curStreak} เข้า
+                    </span>
+                    /
+                    <span style="
+                      color:#c62828;
+                    ">
+                      ${f.curMissStreak} หลุด
+                    </span>
+                  </td>
+                </tr>
+              `;
+            }
+          );
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+    );
+  html += buildCalibrationHTML(auditDataMap);
+  html += `
+    <div class="section-title">
+      🎯 2. เลขเด่นงวดถัดไป
+    </div>
+  `;
+  let cardIdx = 0;
+  Object.keys(predictionDataMap)
+    .forEach(
+      function(lotteryName){
+        const p =
+          predictionDataMap[lotteryName];
+        const flagIcon =
+          getLotteryFlag(
+            lotteryName
+          );
+        const cId =
+          `card_${cardIdx++}`;
+        const jsonD1 =
+          JSON.stringify(
+            p.d1Pairs
+          )
+          .replace(
+            /"/g,
+            "&quot;"
+          );
+        const jsonD2 =
+          JSON.stringify(
+            p.d2Pairs
+          )
+          .replace(
+            /"/g,
+            "&quot;"
+          );
+        const renderPairRow =
+          function(
+            mainDigit,
+            pairsList,
+            isFirstRow
+          ){
+            let mainBg =
+              isFirstRow
+                ? "linear-gradient(135deg,#f9f3e3,#edd5a6)"
+                : "linear-gradient(135deg,#f3f4f6,#e5e7eb)";
+            let mainBorder =
+              isFirstRow
+                ? "#d9bd79"
+                : "#9ca3af";
+            let mainColor =
+              isFirstRow
+                ? "#806329"
+                : "#374151";
+            return `
+              <div style="
+                display:flex;
+                align-items:center;
+                gap:10px;
+                margin:10px 0;
+                padding-bottom:10px;
+                border-bottom:1px solid #f0e6d6;
+              ">
+                <div style="
+                  width:38px;
+                  height:38px;
+                  border-radius:10px;
+                  background:${mainBg};
+                  border:1px solid ${mainBorder};
+                  color:${mainColor};
+                  display:grid;
+                  place-items:center;
+                  font-size:.85rem;
+                  font-weight:900;
+                ">
+                  ${mainDigit}
+                </div>
+                <div style="
+                  display:flex;
+                  gap:6px;
+                  flex-wrap:wrap;
+                ">
+                  ${
+                    pairsList
+                      .map(
+                        function(item){
+                          let borderCol =
+                            "#e8dfcf";
+                          let bgCol =
+                            "#ffffff";
+                          let textCol =
+                            "#403a31";
+                          if(
+                            item.color ===
+                            "gold"
+                          ){
+                            borderCol =
+                              "#d9bd79";
+                            bgCol =
+                              "#fffaf0";
+                            textCol =
+                              "#806329";
+                          }else if(
+                            item.color ===
+                            "silver"
+                          ){
+                            borderCol =
+                              "#b0b8c4";
+                            bgCol =
+                              "#f8fafc";
+                            textCol =
+                              "#475569";
+                          }else if(
+                            item.color ===
+                            "rose_gold"
+                          ){
+                            borderCol =
+                              "#e0a1a1";
+                            bgCol =
+                              "#fff5f5";
+                            textCol =
+                              "#9b2c2c";
+                          }
+                          return `
+                            <div style="
+                              width:38px;
+                              height:34px;
+                              border-radius:9px;
+                              border:1px solid ${borderCol};
+                              background:${bgCol};
+                              color:${textCol};
+                              display:grid;
+                              place-items:center;
+                              font-size:.58rem;
+                              font-weight:800;
+                              font-family:'IBM Plex Mono',monospace;
+                            ">
+                              ${item.pair}
+                            </div>
+                          `;
+                        }
+                      )
+                      .join("")
+                  }
+                </div>
+              </div>
+            `;
+          };
+        html += `
+          <div
+            class="prediction-card"
+            id="${cId}"
+          >
+            <div class="card-btn-group">
+              <button
+                class="card-action-btn"
+                onclick="
+                  copyCardText(
+                    '${cId}',
+                    '${esc(displayLotteryName(lotteryName))}',
+                    '${esc(p.nextDate)}',
+                    ${jsonD1},
+                    ${jsonD2}
+                  )
+                "
+              >
+                📋 คัดลอก
+              </button>
+              <button
+                class="card-action-btn"
+                onclick="
+                  captureCardImage(
+                    '${cId}',
+                    '${esc(displayLotteryName(lotteryName))}'
+                  )
+                "
+              >
+                📸 แคปภาพ
+              </button>
+            </div>
+            <div style="
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              margin-bottom:8px;
+              padding-right:130px;
+            ">
+              <div style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+              ">
+                <div style="
+                  font-size:1.1rem;
+                ">
+                  ${flagIcon}
+                </div>
+                <div>
+                  <div style="
+                    font-size:.82rem;
+                    font-weight:900;
+                    color:#403a31;
+                  ">
+                    ${esc(displayLotteryName(lotteryName))}
+                  </div>
+                  <div style="
+                    font-size:.48rem;
+                    font-weight:700;
+                    color:#8b8173;
+                  ">
+                    ${esc(p.nextDate)}
+                  </div>
+                                  </div>
+              </div>
+            </div>
+            <div
+              class="card-badge-placeholder"
+              style="
+                display:none;
+                position:absolute;
+                top:14px;
+                right:14px;
+                font-size:.48rem;
+                font-weight:900;
+                color:#b8944a;
+                letter-spacing:.5px;
+                align-items:center;
+                gap:3px;
+              "
+            >
+              ✦ บ้านกองเงิน ✦
+            </div>
+            <div style="
+              position:absolute;
+              top:14px;
+              right:14px;
+              font-size:.48rem;
+              font-weight:900;
+              color:#b8944a;
+              letter-spacing:.5px;
+              display:flex;
+              align-items:center;
+              gap:3px;
+            ">
+              ✦ บ้านกองเงิน ✦
+            </div>
+            ${renderPairRow(
+              p.d1,
+              p.d1Pairs,
+              true
+            )}
+            <div style="
+              margin-top:10px;
+            ">
+              ${renderPairRow(
+                p.d2,
+                p.d2Pairs,
+                false
+              )
+              .replace(
+                "border-bottom:1px solid #f0e6d6; padding-bottom:10px;",
+                ""
+              )}
             </div>
           </div>
         `;
-      };
-
-      html += `
-        <div class="prediction-card" id="${cId}">
-          <div class="card-btn-group">
-            <button class="card-action-btn" onclick="copyCardText('${cId}', '${esc(lotteryName)}', '${esc(p.nextDate)}', ${jsonD1}, ${jsonD2})">📋 คัดลอก</button>
-            <button class="card-action-btn" onclick="captureCardImage('${cId}', '${esc(lotteryName)}')">📸 แคปภาพ</button>
-          </div>
-          
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; padding-right:130px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <div style="font-size:1.1rem;">${flagIcon}</div>
-              <div>
-                <div style="font-size:.82rem; font-weight:900; color:#403a31;">${esc(lotteryName)}</div>
-                <div style="font-size:.48rem; font-weight:700; color:#8b8173;">${esc(p.nextDate)}</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card-badge-placeholder" style="display:none; position:absolute; top:14px; right:14px; font-size:.48rem; font-weight:900; color:#b8944a; letter-spacing:.5px; align-items:center; gap:3px;">
-            ✦ บ้านกองเงิน V31.3 ✦
-          </div>
-          
-          <div style="position:absolute; top:14px; right:14px; font-size:.48rem; font-weight:900; color:#b8944a; letter-spacing:.5px; display:flex; align-items:center; gap:3px;">
-            ✦ บ้านกองเงิน V31.3 ✦
-          </div>
-
-          ${renderPairRow(p.d1, p.d1Pairs, true)}
-
-          <div style="margin-top:10px;">
-            ${renderPairRow(p.d2, p.d2Pairs, false).replace('border-bottom:1px solid #f0e6d6; padding-bottom:10px;', '')}
-          </div>
-        </div>
-      `;
-    });
-
-    html += `
-      <div class="brand-footer">
-        <span class="brand-star">✦</span>
-        <span>ระบบบ้านกองเงิน V31.3 Pure Raw Calculation (ไม่ปรับแต่ง Offset) สมบูรณ์แบบ 100%</span>
-        <span class="brand-star">✦</span>
-      </div>
-    `;
-
-    $('result').innerHTML = html;
-    updateIndicator();
-  }
-
-  function runEngine(){
-    const textVal = $('bulkInput').value.trim();
-    let newRecords = [];
-    
-    if(textVal){
-      const parsed = parseInput(textVal);
-      if(parsed.errors.length > 0 && parsed.records.length === 0){
-        $('result').innerHTML = `<div class="errorbox"><b>ไม่สามารถประมวลผลได้เนื่องจากรูปแบบข้อมูลไม่ถูกต้อง:</b><br>${parsed.errors.join('<br>')}</div>`;
-        return;
       }
-      newRecords = parsed.records;
-    }
+    );
+  html += `
+    <div class="brand-footer">
+      <span class="brand-star">✦</span>
+      <span>
+        ระบบบ้านกองเงิน — Pure Raw Calculation
+      </span>
+      <span class="brand-star">✦</span>
+    </div>
+  `;
+  $("result").innerHTML =
+    html;
+}
+/* =========================================================
+   LOTTERY NAME NORMALIZATION / DISPLAY
+   Input names remain untouched. Only the displayed result/card name
+   is normalized for the specified normal-market aliases. VIP names
+   remain exactly as entered.
+========================================================= */
+function normalizeLotteryName(name){
+  let n=String(name||"").trim().replace(/\s+/g," ");
+  const lower=n.toLowerCase();
+  const vip=lower.includes("vip")||n.includes("วีไอพี");
+  if(vip)return n;
+  const aliases=[
+    [/^(หุ้น\s*)?(นิเคอิ|นิคเคอิ)(\s*ปกติ)?\s*เช้า$/i,"นิเคอิเช้า"],
+    [/^(หุ้น\s*)?(นิเคอิ|นิคเคอิ)(\s*ปกติ)?\s*บ่าย$/i,"นิเคอิบ่าย"],
+    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*เช้า$/i,"จีนเช้า"],
+    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*บ่าย$/i,"จีนบ่าย"],
+    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*เช้า$/i,"ฮั่งเส็งเช้า"],
+    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*บ่าย$/i,"ฮั่งเส็งบ่าย"],
+    [/^(หุ้น\s*)?ไต้หวัน(\s*ปกติ)?$/i,"หุ้นไต้หวัน"],
+    [/^(หุ้น\s*)?เกาหลี(\s*ปกติ)?$/i,"หุ้นเกาหลี"],
+    [/^(หุ้น\s*)?สิงคโปร์(\s*ปกติ)?$/i,"หุ้นสิงคโปร์"]
+  ];
+  for(const [re,canonical] of aliases)if(re.test(n))return canonical;
+  return n;
+}
+function displayLotteryName(name){
+  let n=String(name||"").trim().replace(/\s+/g," ");
+  if(!n)return n;
+  const lower=n.toLowerCase();
+  if(lower.includes("vip")||n.includes("วีไอพี"))return n;
+  const aliases=[
+    [/^(หุ้น\s*)?(นิเคอิ|นิคเคอิ)(\s*ปกติ)?\s*เช้า$/i,"นิเคอิ ปกติ เช้า"],
+    [/^(หุ้น\s*)?(นิเคอิ|นิคเคอิ)(\s*ปกติ)?\s*บ่าย$/i,"นิเคอิ ปกติ บ่าย"],
+    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*เช้า$/i,"จีน ปกติ เช้า"],
+    [/^(หุ้น\s*)?จีน(\s*ปกติ)?\s*บ่าย$/i,"จีน ปกติ บ่าย"],
+    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*เช้า$/i,"ฮั่งเส็ง ปกติ เช้า"],
+    [/^(หุ้น\s*)?ฮั่งเส็ง(\s*ปกติ)?\s*บ่าย$/i,"ฮั่งเส็ง ปกติ บ่าย"],
+    [/^(หุ้น\s*)?ไต้หวัน(\s*ปกติ)?$/i,"ไต้หวัน ปกติ"],
+    [/^(หุ้น\s*)?เกาหลี(\s*ปกติ)?$/i,"เกาหลี ปกติ"],
+    [/^(หุ้น\s*)?สิงคโปร์(\s*ปกติ)?$/i,"สิงคโปร์ ปกติ"],
+    [/^(หุ้น\s*)?ไทย(\s*ปกติ)?\s*(เปิด\s*เช้า|เช้า)$/i,"หุ้นไทย เปิดเช้า"],
+    [/^(หุ้น\s*)?ไทย(\s*ปกติ)?\s*(ปิด\s*เที่ยง|เที่ยง)$/i,"หุ้นไทย ปิดเที่ยง"],
+    [/^(หุ้น\s*)?ไทย(\s*ปกติ)?\s*(เปิด\s*บ่าย|บ่าย)$/i,"หุ้นไทย เปิดบ่าย"],
+    [/^(หุ้น\s*)?ไทย(\s*ปกติ)?\s*(ปิด\s*เย็น|เย็น)$/i,"หุ้นไทย ปิดเย็น"],
+    [/^(หุ้น\s*)?อินเดีย(\s*ปกติ)?$/i,"อินเดีย"],
+    [/^(หุ้น\s*)?อียิปต์(\s*ปกติ)?$/i,"อียิปต์"],
+    [/^(หุ้น\s*)?เยอรมัน(\s*ปกติ)?$/i,"เยอรมัน ปกติ"],
+    [/^(หุ้น\s*)?รัสเซีย(\s*ปกติ)?$/i,"รัสเซีย ปกติ"],
+    [/^(หุ้น\s*)?อังกฤษ(\s*ปกติ)?$/i,"อังกฤษ ปกติ"],
+    [/^(หุ้น\s*)?ดาวโจนส์(\s*ปกติ)?$/i,"ดาวโจนส์ ปกติ"]
+  ];
+  for(const [re,label] of aliases)if(re.test(n))return label;
+  return n;
+}
 
-    let masterRecords = [];
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if(stored) masterRecords = JSON.parse(stored);
-    } catch(e) {}
-
-    if(newRecords.length > 0){
-      newRecords.forEach(nr => {
-        const idx = masterRecords.findIndex(r => r.name === nr.name && r.date === nr.date);
-        if(idx >= 0) masterRecords[idx] = nr;
-        else masterRecords.push(nr);
-      });
-    }
-
-    masterRecords.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(masterRecords));
-    } catch(e) {}
-
-    if(masterRecords.length === 0){
-      $('result').innerHTML = '<div class="errorbox">ยังไม่มีข้อมูลในระบบ กรุณากรอกข้อมูลสถิติย้อนหลังในกล่องข้อความด้านบน</div>';
+/* =========================================================
+   CALIBRATION MEMORY
+   Stores only the manually confirmed #1 formula for each lottery.
+   It never changes the 15 formula definitions or pair engine.
+========================================================= */
+const CALIBRATION_STORAGE_KEY="mester_lotto_formula_calibration_v1";
+function loadCalibrations(){try{const x=JSON.parse(localStorage.getItem(CALIBRATION_STORAGE_KEY)||"{}");return x&&typeof x==="object"&&!Array.isArray(x)?x:{};}catch(e){return {};}}
+function saveCalibrations(store){try{localStorage.setItem(CALIBRATION_STORAGE_KEY,JSON.stringify(store));return true;}catch(e){return false;}}
+function getCalibration(name){const store=loadCalibrations();return store[normalizeLotteryName(name)]||null;}
+function clearAllCalibrations(){try{localStorage.removeItem(CALIBRATION_STORAGE_KEY);return true;}catch(e){return false;}}
+function calibrationRankOne(audit){
+  const names=Object.keys(audit||{});
+  names.sort(function(a,b){return Number((audit[b]||{}).hitRate||0)-Number((audit[a]||{}).hitRate||0);});
+  if(!names.length)return null;
+  const name=names[0],a=audit[name]||{};
+  if(Number(a.totalTested||0)<=0)return null;
+  return {formula:name,hitRate:Number(a.hitRate||0),hits:Number(a.hits||0),misses:Number(a.misses||0),samples:Number(a.totalTested||0),savedAt:Date.now()};
+}
+function renderCalibrationList(){
+  const count=$("calibrationCount"),list=$("calibrationList");if(!count||!list)return;
+  const store=loadCalibrations(),keys=Object.keys(store);count.textContent=`จำไว้: ${keys.length} หวย`;
+  if(!keys.length){list.innerHTML='<div style="padding:10px;border:1px dashed var(--line2);border-radius:10px;color:var(--muted);font-size:.45rem;text-align:center;">ยังไม่มีสูตรหลักที่บันทึก</div>';return;}
+  list.innerHTML=keys.sort().map(function(key){const x=store[key]||{};return `<div class="custom-item"><div class="custom-item-main"><div class="custom-item-name">${esc(displayLotteryName(key))}</div><div class="custom-item-exp">${esc(x.formula||"-")} · ${Number(x.hitRate||0).toFixed(2)}% · ${Number(x.samples||0)} งวด</div></div></div>`;}).join("");
+}
+function buildCalibrationHTML(auditDataMap){
+  const store=loadCalibrations(),names=Object.keys(auditDataMap||{});
+  let h='<div class="summary-table-container"><h3 style="color:#806329;font-size:.75rem;margin:0 0 8px;">🧠 สูตรหลักที่ Calibration ไว้</h3>';
+  if(!names.length)h+='<div style="font-size:.5rem;color:var(--muted);">ยังไม่มีผลการประมวลผลสำหรับ Calibration</div>';
+  else{
+    h+='<div style="display:grid;gap:6px;">';
+    names.forEach(function(name){
+      const best=calibrationRankOne(auditDataMap[name]),saved=store[normalizeLotteryName(name)],formula=saved?saved.formula:(best?best.formula:"-"),meta=saved?`บันทึกแล้ว · ${Number(saved.hitRate||0).toFixed(2)}% · ${Number(saved.samples||0)} งวด`:(best?`อันดับ 1 รอบนี้ · ${Number(best.hitRate||0).toFixed(2)}% · ${Number(best.samples||0)} งวด`:"หลักฐานยังไม่พอ");
+      h+=`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;"><div><b style="font-size:.52rem;">${esc(displayLotteryName(name))}</b><div style="font-size:.42rem;color:var(--muted);margin-top:3px;">${esc(formula)}</div></div><span style="font-size:.4rem;color:var(--muted);text-align:right;">${esc(meta)}</span></div>`;
+    });
+    h+='</div>';
+  }
+  return h+'</div>';
+}
+function saveCalibrationFromCurrentAudit(auditDataMap){
+  const store=loadCalibrations();let saved=0,skipped=0;
+  Object.keys(auditDataMap||{}).forEach(function(name){const best=calibrationRankOne(auditDataMap[name]);if(!best){skipped++;return;}const key=normalizeLotteryName(name);store[key]={formula:best.formula,hitRate:best.hitRate,hits:best.hits,misses:best.misses,samples:best.samples,savedAt:Date.now(),sourceName:name};saved++;});
+  if(!saveCalibrations(store))return {saved:0,skipped,ok:false};
+  renderCalibrationList();return {saved,skipped,ok:true};
+}
+/* =========================================================
+   MAIN ENGINE
+========================================================= */
+function runEngine(){
+  const textVal =
+    $("bulkInput")
+      .value
+      .trim();
+  let newRecords = [];
+  if(textVal){
+    const parsed =
+      parseInput(textVal);
+    if(
+      parsed.errors.length > 0 &&
+      parsed.records.length === 0
+    ){
+      $("result").innerHTML =
+        `
+        <div class="errorbox">
+          <b>
+            ไม่สามารถประมวลผลได้
+          </b>
+          <br>
+          ${parsed.errors.join("<br>")}
+        </div>
+        `;
       return;
     }
-
-    const groups = {};
-    masterRecords.forEach(r => {
-      if(!groups[r.name]) groups[r.name] = [];
-      groups[r.name].push(r);
-    });
-
-    const auditDataMap = {};
-    const predictionDataMap = {};
-    const globalAccumulator = {};
-
-    Object.keys(formulas).forEach(fName => {
-      globalAccumulator[fName] = { totalTested: 0, hits: 0, misses: 0, hundredsOnlyCount: 0, latestDigits: null };
-    });
-
-    Object.keys(groups).forEach(lotteryName => {
-      const recs = groups[lotteryName];
-      if(recs.length < 2) return;
-
-      auditDataMap[lotteryName] = {};
-      const formulaNames = Object.keys(formulas);
-
-      const latestRec = recs[recs.length - 1];
-      const lTop = latestRec.n3.split('').map(Number);
-      const lBot = latestRec.n2.split('').map(Number);
-
-      formulaNames.forEach(fName => {
-        let hits = 0, misses = 0, hundredsOnlyCount = 0, currentStreak = 0, maxStreak = 0, currentMissStreak = 0, maxMissStreak = 0, totalTested = 0, lastHitResult = true, lastHitHundredsOnly = false;
-
-        // วนลูปตรวจสถิติด้วยค่าดิบ (Raw Values) 100% ไม่มี Offset
-        for(let i = 0; i < recs.length - 1; i++){
-          const curr = recs[i];
-          const next = recs[i+1];
-          const top = curr.n3.split('').map(Number);
-          const bot = curr.n2.split('').map(Number);
-          
-          const rawPred = formulas[fName](top[0], top[1], top[2], bot[0], bot[1]);
-          const predicted = sanitizeFormulaResult(rawPred);
-          const check = checkHitDetail(predicted, next.n3, next.n2);
-
-          totalTested++;
-          if(check.hitHundredsOnly){
-            hundredsOnlyCount++;
-          }
-
-          if(check.hitAny){
-            hits++; currentStreak++; currentMissStreak = 0; lastHitResult = true; lastHitHundredsOnly = false;
-            if(currentStreak > maxStreak) maxStreak = currentStreak;
-          } else {
-            misses++; currentMissStreak++; currentStreak = 0; lastHitResult = false;
-            lastHitHundredsOnly = check.hitHundredsOnly;
-            if(currentMissStreak > maxMissStreak) maxMissStreak = currentMissStreak;
-          }
-        }
-
-        const rawLatestPred = formulas[fName](lTop[0], lTop[1], lTop[2], lBot[0], lBot[1]);
-        const latestDigits = sanitizeFormulaResult(rawLatestPred);
-
-        globalAccumulator[fName].totalTested += totalTested;
-        globalAccumulator[fName].hits += hits;
-        globalAccumulator[fName].misses += misses;
-        globalAccumulator[fName].hundredsOnlyCount += hundredsOnlyCount;
-        globalAccumulator[fName].latestDigits = latestDigits;
-
-        const hitRate = totalTested > 0 ? Number(((hits / totalTested) * 100).toFixed(2)) : 0;
-        auditDataMap[lotteryName][fName] = {
-          totalTested, hits, misses, hundredsOnlyCount, hitRate, maxStreak, maxMissStreak, 
-          curStreak: currentStreak, curMissStreak: currentMissStreak, lastHit: lastHitResult, hitHundredsOnly: lastHitHundredsOnly,
-          latestDigits
-        };
-      });
-
-      const digitScores = {};
-      const digitVoteCounts = {};
-
-      formulaNames.forEach(fName => {
-        const auditStats = auditDataMap[lotteryName][fName];
-        if(!auditStats) return;
-        const predicted = auditStats.latestDigits;
-
-        let formulaWeight = auditStats.hitRate;
-
-        if(auditStats.lastHit === true && auditStats.curStreak >= 2){
-          formulaWeight += (auditStats.curStreak * 8);
-        }
-
-        if(auditStats.lastHit === false){
-          if(auditStats.curMissStreak >= 2){
-            formulaWeight += (auditStats.curMissStreak * 18);
-          } else {
-            formulaWeight += 6;
-          }
-        }
-
-        predicted.forEach(d => {
-          if(!digitScores[d]) { digitScores[d] = 0; digitVoteCounts[d] = 0; }
-          digitScores[d] += formulaWeight;
-          digitVoteCounts[d] += 1;
-        });
-      });
-
-      const recentRecs = recs.slice(-3);
-      recentRecs.forEach((r, idx) => {
-        const weightFactor = (idx + 1) * 4;
-        const digits = (r.n3 + r.n2).split('').map(Number);
-        digits.forEach(d => {
-          if(!digitScores[d]) { digitScores[d] = 0; digitVoteCounts[d] = 0; }
-          digitScores[d] += weightFactor;
-        });
-      });
-
-      const sortedDigits = Object.keys(digitScores).map(Number).sort((a,b) => {
-        if(digitScores[b] !== digitScores[a]) {
-          return digitScores[b] - digitScores[a];
-        }
-        return (digitVoteCounts[b] || 0) - (digitVoteCounts[b] || 0);
-      });
-
-      let d1 = sortedDigits[0] !== undefined ? sortedDigits[0] : 4;
-      let d2 = sortedDigits[1] !== undefined ? sortedDigits[1] : 1;
-      
-      if(d1 === d2){
-        d2 = norm(d1 + 1);
-      }
-
-      const makePairsForDigitStrict = (mainDigit, otherDigit) => {
-        const candidatePool = [0,1,2,3,4,5,6,7,8,9];
-        const validPool = candidatePool.filter(n => n !== mainDigit);
-
-        const rawPairs = [];
-        for(let target of validPool){
-          const pairStr = `${mainDigit}${target}`;
-          
-          let cooccurrenceBonus = 0;
-          recs.forEach((r, idx) => {
-            if(idx < recs.length - 1) {
-              const curN3 = r.n3.split('').map(Number);
-              const nextN3 = recs[idx+1].n3.split('').map(Number);
-              const nextN2 = recs[idx+1].n2.split('').map(Number);
-              if(curN3.includes(mainDigit) && (nextN3.includes(target) || nextN2.includes(target))) {
-                cooccurrenceBonus += 10;
-              }
-            }
-          });
-
-          const score = Math.abs(mainDigit - target) + (digitScores[target] || 0) + cooccurrenceBonus;
-          rawPairs.push({ pair: pairStr, score });
-        }
-
-        rawPairs.sort((a, b) => b.score - a.score);
-        const selectedPairs = rawPairs.slice(0, 5);
-
-        const rankedPairs = selectedPairs.map((item, idx) => {
-          let colorType = 'default';
-          if(idx === 0) colorType = 'gold';
-          else if(idx === 1) colorType = 'silver';
-          else if(idx === 2) colorType = 'rose_gold';
-          else colorType = 'default';
-
-          return { pair: item.pair, color: colorType, score: item.score };
-        });
-
-        rankedPairs.sort((a, b) => parseInt(a.pair, 10) - parseInt(b.pair, 10));
-
-        return rankedPairs;
-      };
-
-      const d1Pairs = makePairsForDigitStrict(d1, d2);
-      const d2Pairs = makePairsForDigitStrict(d2, d1);
-
-      predictionDataMap[lotteryName] = {
-        nextDate: getNextDateStr(latestRec.date),
-        d1, d2,
-        d1Pairs,
-        d2Pairs
-      };
-    });
-
-    const globalAuditMap = {};
-    Object.keys(globalAccumulator).forEach(fName => {
-      const g = globalAccumulator[fName];
-      const hitRate = g.totalTested > 0 ? Number(((g.hits / g.totalTested) * 100).toFixed(2)) : 0;
-      globalAuditMap[fName] = {
-        totalTested: g.totalTested,
-        hits: g.hits,
-        misses: g.misses,
-        hundredsOnlyCount: g.hundredsOnlyCount,
-        hitRate,
-        latestDigits: g.latestDigits
-      };
-    });
-
-    renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V31.3 (Pure Raw) สำเร็จ');
+    newRecords =
+      parsed.records;
   }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const runBtn = $('run');
-    const clearBtn = $('clearInput');
-    const clearGlobalBtn = $('clearGlobal');
-
-    if(runBtn) runBtn.onclick = runEngine;
-    if(clearBtn){
-      clearBtn.onclick = () => {
-        $('bulkInput').value = '';
-        showToast('✓ ล้างกล่องกรอกข้อมูลแล้ว');
-      };
-    }
-    if(clearGlobalBtn){
-      clearGlobalBtn.onclick = () => {
-        if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
-          try { 
-            localStorage.removeItem(STORAGE_KEY);
-            localStorage.removeItem('lottery_audit_master_records_v312');
-            localStorage.removeItem('lottery_audit_master_records_v311');
-            localStorage.removeItem('lottery_audit_master_records_v310');
-          } catch(e){}
-          $('result').innerHTML = '';
-          updateIndicator();
-          showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย');
+  let masterRecords = [];
+  try{
+    const stored =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+    if(stored)
+      masterRecords =
+        JSON.parse(stored);
+  }catch(e){
+    masterRecords = [];
+  }
+  if(newRecords.length > 0){
+    newRecords.forEach(
+      function(nr){
+        const idx =
+          masterRecords.findIndex(
+            function(r){
+              return (
+                r.name === nr.name &&
+                r.date === nr.date
+              );
+            }
+          );
+        if(idx >= 0){
+          masterRecords[idx] =
+            nr;
+        }else{
+          masterRecords.push(nr);
         }
+      }
+    );
+  }
+  masterRecords.sort(
+    function(a,b){
+      return (
+        a.timestamp||0
+      ) -
+      (
+        b.timestamp||0
+      );
+    }
+  );
+  try{
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(
+        masterRecords
+      )
+    );
+  }catch(e){}
+  updateIndicator();
+  if(masterRecords.length === 0){
+    $("result").innerHTML =
+      `
+      <div class="errorbox">
+        ยังไม่มีข้อมูลในระบบ
+      </div>
+      `;
+    return;
+  }
+  const groups = {};
+  masterRecords.forEach(
+    function(r){
+      if(!groups[r.name])
+        groups[r.name] = [];
+      groups[r.name].push(r);
+    }
+  );
+  Object.keys(groups)
+    .forEach(
+      function(name){
+        groups[name].sort(
+          function(a,b){
+            return (
+              a.timestamp||0
+            ) -
+            (
+              b.timestamp||0
+            );
+          }
+        );
+      }
+    );
+  const allFormulas =
+    buildAllFormulas();
+  const auditDataMap = {};
+  const predictionDataMap = {};
+  const globalAccumulator = {};
+  Object.keys(allFormulas)
+    .forEach(
+      function(fName){
+        globalAccumulator[fName] = {
+          totalTested:0,
+          hits:0,
+          misses:0,
+          hundredsOnlyCount:0,
+          latestDigits:null
+        };
+      }
+    );
+  Object.keys(groups)
+    .forEach(
+      function(lotteryName){
+        const recs =
+          groups[lotteryName];
+        if(recs.length < 1)
+          return;
+        auditDataMap[lotteryName] = {};
+        const latestRec =
+          recs[
+            recs.length-1
+          ];
+        const lTop =
+          latestRec.n3
+            .split("")
+            .map(Number);
+        const lBot =
+          latestRec.n2
+            .split("")
+            .map(Number);
+        Object.keys(allFormulas)
+          .forEach(
+            function(fName){
+              const f =
+                allFormulas[fName];
+              const stats =
+                auditFormulaOnRecords(
+                  f,
+                  recs,
+                  0,
+                  recs.length-1
+                );
+              let latestDigits;
+              try{
+                latestDigits =
+                  sanitizeFormulaResult(
+                    f(
+                      lTop[0],
+                      lTop[1],
+                      lTop[2],
+                      lBot[0],
+                      lBot[1]
+                    )
+                  );
+              }catch(e){
+                latestDigits =
+                  [0,1];
+              }
+              globalAccumulator[fName]
+                .totalTested +=
+                stats.totalTested;
+              globalAccumulator[fName]
+                .hits +=
+                stats.hits;
+              globalAccumulator[fName]
+                .misses +=
+                stats.misses;
+              globalAccumulator[fName]
+                .hundredsOnlyCount +=
+                stats.hundredsOnlyCount;
+              globalAccumulator[fName]
+                .latestDigits =
+                latestDigits;
+              auditDataMap[
+                lotteryName
+              ][fName] = {
+                ...stats,
+                latestDigits
+              };
+            }
+          );
+        /*
+          =====================================================
+          DIGIT SELECTION
+          =====================================================
+          ระบบนี้ไม่ใช้ "สูตรเดียวชนะทุกอย่าง"
+          แต่ยังคงดูหลายมิติ:
+          1. Hit Rate
+          2. Current Streak
+          3. Miss Streak
+          4. Recent actual digits
+          =====================================================
+        */
+        const digitScores = {};
+        const digitVoteCounts = {};
+        Object.keys(allFormulas)
+          .forEach(
+            function(fName){
+              const auditStats =
+                auditDataMap[
+                  lotteryName
+                ][fName];
+              if(!auditStats)
+                return;
+              const predicted =
+                auditStats.latestDigits;
+              let formulaWeight =
+                auditStats.hitRate;
+              /*
+                ไม่เพิ่มน้ำหนัก Miss Streak
+                แบบตรง ๆ มากเกินไป
+                เพราะจะทำให้เลขหลุดกลายเป็น
+                "เลขเด่น" โดยอัตโนมัติ
+              */
+              if(
+                auditStats.lastHit === true &&
+                auditStats.curStreak >= 2
+              ){
+                formulaWeight +=
+                  Math.min(
+                    auditStats.curStreak*4,
+                    12
+                  );
+              }
+              /*
+                Miss streak ใช้เป็น
+                reversal signal แบบจำกัด
+                ไม่ใช่เอาหลุดมาทบจนชนะ
+              */
+              if(
+                auditStats.lastHit === false
+              ){
+                if(
+                  auditStats.curMissStreak >= 5
+                ){
+                  formulaWeight += 5;
+                }else if(
+                  auditStats.curMissStreak >= 3
+                ){
+                  formulaWeight += 2;
+                }
+              }
+              predicted.forEach(
+                function(d){
+                  if(
+                    !digitScores[d]
+                  ){
+                    digitScores[d] = 0;
+                    digitVoteCounts[d] = 0;
+                  }
+                  digitScores[d] +=
+                    formulaWeight;
+                  digitVoteCounts[d] += 1;
+                }
+              );
+            }
+          );
+        /*
+          Recent data receives only moderate weight.
+        */
+        const recentRecs =
+          recs.slice(-5);
+        recentRecs.forEach(
+          function(r,idx){
+            const weightFactor =
+              (idx+1)*2;
+            const digits =
+              (
+                r.n3 +
+                r.n2
+              )
+              .split("")
+              .map(Number);
+            digits.forEach(
+              function(d){
+                if(
+                  !digitScores[d]
+                ){
+                  digitScores[d] = 0;
+                  digitVoteCounts[d] = 0;
+                }
+                digitScores[d] +=
+                  weightFactor;
+              }
+            );
+          }
+        );
+        /*
+          Correct tie-breaker.
+        */
+        const sortedDigits =
+          Object.keys(
+            digitScores
+          )
+          .map(Number)
+          .sort(
+            function(a,b){
+              if(
+                digitScores[b] !==
+                digitScores[a]
+              ){
+                return (
+                  digitScores[b] -
+                  digitScores[a]
+                );
+              }
+              return (
+                (digitVoteCounts[b]||0) -
+                (digitVoteCounts[a]||0)
+              );
+            }
+          );
+        let d1 =
+          sortedDigits[0] !== undefined
+            ? sortedDigits[0]
+            : 4;
+        let d2 =
+          sortedDigits[1] !== undefined
+            ? sortedDigits[1]
+            : 1;
+        if(d1 === d2){
+          d2 =
+            norm(d1+1);
+        }
+        const calibration=getCalibration(lotteryName);
+        if(calibration&&typeof allFormulas[calibration.formula]==="function"){
+          try{const cd=sanitizeFormulaResult(allFormulas[calibration.formula](lTop[0],lTop[1],lTop[2],lBot[0],lBot[1]));d1=cd[0];d2=cd[1];}catch(e){}
+        }
+        /*
+          =====================================================
+          PAIR SELECTION
+          =====================================================
+        */
+        /*
+          =====================================================
+          STANDARD PAIR ENGINE
+          =====================================================
+          Every formula uses the same pair logic:
+          1) Anchor = |7 - hundreds digit| % 10
+          2) Start with +/-2 around the anchor (5-digit pool)
+          3) If the pool collides with either main digit, expand to +/-3
+          4) Remove both main digits and all doubles
+          5) Keep exactly 5 pairs per main digit
+          6) Always sort pairs from low to high
+        */
+        const anchor = Math.abs(7 - Number(lTop[0])) % 10;
+        const buildStandardPairPool =
+          function(center, radius){
+            const pool = [];
+            for(let step=-radius; step<=radius; step++){
+              pool.push(norm(center + step));
+            }
+            return Array.from(new Set(pool));
+          };
+        const makeStandardPairs =
+          function(mainDigit, otherDigit){
+            const pool2 = buildStandardPairPool(anchor, 2);
+            const collision =
+              pool2.includes(Number(mainDigit)) ||
+              pool2.includes(Number(otherDigit));
+            const radius = collision ? 3 : 2;
+            const pool = buildStandardPairPool(anchor, radius);
+            let targets = pool.filter(function(n){
+              return n !== Number(mainDigit) &&
+                     n !== Number(otherDigit);
+            });
+            /* In a collision case there can be one extra candidate.
+               Deterministically keep the lowest five targets. */
+            targets = targets
+              .slice()
+              .sort(function(a,b){ return a-b; })
+              .slice(0,5);
+            return targets
+              .map(function(target){
+                return {
+                  pair: String(mainDigit) + String(target),
+                  score: 0,
+                  color: "default"
+                };
+              })
+              .sort(function(a,b){
+                return parseInt(a.pair,10) - parseInt(b.pair,10);
+              })
+              .map(function(item,idx){
+                return {
+                  pair:item.pair,
+                  score:0,
+                  color:idx===0 ? "gold" : idx===1 ? "silver" : idx===2 ? "rose_gold" : "default"
+                };
+              });
+          };
+        const d1Pairs = makeStandardPairs(d1,d2);
+        const d2Pairs = makeStandardPairs(d2,d1);
+        predictionDataMap[
+          lotteryName
+        ] = {
+          nextDate:
+            getNextDateStr(
+              latestRec.date
+            ),
+          d1,
+          d2,
+          d1Pairs,
+          d2Pairs
+        };
+      }
+    );
+  const globalAuditMap = {};
+  Object.keys(
+    globalAccumulator
+  )
+  .forEach(
+    function(fName){
+      const g =
+        globalAccumulator[fName];
+      const hitRate =
+        g.totalTested > 0
+          ? Number(
+              (
+                g.hits /
+                g.totalTested *
+                100
+              ).toFixed(2)
+            )
+          : 0;
+      globalAuditMap[fName] = {
+        totalTested:
+          g.totalTested,
+        hits:
+          g.hits,
+        misses:
+          g.misses,
+        hundredsOnlyCount:
+          g.hundredsOnlyCount,
+        hitRate,
+        latestDigits:
+          g.latestDigits
       };
     }
-
-    updateIndicator();
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if(stored && JSON.parse(stored).length > 0) runEngine();
-    } catch(e){}
-  });
+  );
+  window.__lastAuditDataMap = auditDataMap;
+  renderFullUI(
+    globalAuditMap,
+    auditDataMap,
+    predictionDataMap
+  );
+  renderCalibrationList();
+  if($("calibrationStatus"))$("calibrationStatus").textContent="ผลประมวลผลพร้อมแล้ว — หากต้องการล็อกอันดับ 1 เป็นสูตรหลัก ให้กด “บันทึกสูตรหลักจากอันดับ 1”";
+  showToast(
+    "✓ ประมวลผลระบบสำเร็จ"
+  );
+}
+/* =========================================================
+   FINAL INIT / CALIBRATION UI BINDINGS
+========================================================= */
+window.addEventListener("DOMContentLoaded",function(){
+  const runBtn=$("run"),clearBtn=$("clearInput"),clearGlobalBtn=$("clearGlobal"),saveBtn=$("saveCalibration"),clearCalBtn=$("clearCalibration");
+  if(runBtn)runBtn.onclick=function(){runEngine();};
+  if(clearBtn)clearBtn.onclick=function(){$("bulkInput").value="";showToast("✓ ล้างกล่องกรอกข้อมูลแล้ว");};
+  if(clearGlobalBtn)clearGlobalBtn.onclick=function(){
+    if(!confirm("ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?"))return;
+    try{
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("lottery_audit_master_records_v312");
+      localStorage.removeItem("lottery_audit_master_records_v311");
+      localStorage.removeItem("lottery_audit_master_records_v310");
+    }catch(e){}
+    $("result").innerHTML="";updateIndicator();showToast("✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย");
+  };
+  if(saveBtn)saveBtn.onclick=function(){
+    if(!window.__lastAuditDataMap){showToast("⚠️ กรุณากดประมวลผลก่อนบันทึก Calibration");return;}
+    const out=saveCalibrationFromCurrentAudit(window.__lastAuditDataMap);
+    if(!out.ok){showToast("❌ บันทึกสูตรหลักไม่สำเร็จ");return;}
+    const st=$("calibrationStatus");if(st)st.textContent=`✓ บันทึกสูตรหลักแล้ว ${out.saved} หวย${out.skipped?` · ข้าม ${out.skipped} หวยที่ยังไม่มีหลักฐาน`:""}`;
+    showToast(`✓ บันทึกสูตรหลัก ${out.saved} หวยแล้ว`);
+    runEngine();
+  };
+  if(clearCalBtn)clearCalBtn.onclick=function(){
+    if(!Object.keys(loadCalibrations()).length){showToast("ℹ ยังไม่มีสูตรหลักที่บันทึกไว้");return;}
+    if(!confirm("ต้องการล้างสูตรหลักที่จำไว้ทั้งหมดหรือไม่?\n\nการล้างนี้จะไม่ลบ 15 สูตร ไม่ลบสูตรเลขเจาะ และไม่ลบข้อมูลสถิติย้อนหลัง"))return;
+    if(clearAllCalibrations()){
+      renderCalibrationList();
+      const st=$("calibrationStatus");if(st)st.textContent="ล้างความจำสูตรหลักทั้งหมดแล้ว — พร้อม Calibration ใหม่";
+      runEngine();showToast("✓ ล้างสูตรหลักของทุกหวยแล้ว");
+    }else showToast("❌ ล้างสูตรหลักไม่สำเร็จ");
+  };
+  renderCalibrationList();updateIndicator();
+  try{const stored=localStorage.getItem(STORAGE_KEY);if(stored&&JSON.parse(stored).length>0)setTimeout(runEngine,80);}catch(e){}
+});
 })();
 </script>
-
 </body>
-</html>
+  </html>
