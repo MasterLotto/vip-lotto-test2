@@ -3074,61 +3074,25 @@ function runAutoFormulaLab(){
         }
       );
       /*
-        Controlled mutations.
+        Deterministic mutations: identical input data always
+        produces the identical Candidate set and ranking.
       */
-      for(
-        let b=0;
-        b<bases.length;
-        b++
-      ){
-        const base =
-          bases[b];
-        for(
-          let m=0;
-          m<
-          FORMULA_LAB_LIMITS
-            .MAX_MUTATIONS_PER_BASE;
-          m++
-        ){
-          if(
-            candidates.length >=
-            FORMULA_LAB_LIMITS.MAX_CANDIDATES
-          ){
-            break;
-          }
-          let m1 =
-            cloneModel(base.m1);
-          let m2 =
-            cloneModel(base.m2);
-          /*
-            Mutate only one side per candidate
-            to keep interpretation clear.
-          */
-          if(Math.random() < .5){
-            m1 =
-              mutateModel(m1);
-          }else{
-            m2 =
-              mutateModel(m2);
-          }
-          const sig =
-            modelSignature(
-              m1,
-              m2
-            );
-          if(
-            seen.has(sig)
-          ){
-            continue;
-          }
+      for(let b=0;b<bases.length;b++){
+        const base=bases[b];
+        for(let m=0;m<FORMULA_LAB_LIMITS.MAX_MUTATIONS_PER_BASE;m++){
+          if(candidates.length>=FORMULA_LAB_LIMITS.MAX_CANDIDATES)break;
+          const m1=cloneModel(base.m1),m2=cloneModel(base.m2);
+          const targetSide=(b+m)%2===0?m1:m2;
+          const vars=['A','B','C','D','E'];
+          const target=(b*FORMULA_LAB_LIMITS.MAX_MUTATIONS_PER_BASE+m)%6;
+          const delta=(m%2===0)?1:-1;
+          if(target<5)targetSide.coeff[vars[target]]+=delta;
+          else targetSide.constant+=delta;
+          clampModel(targetSide);
+          const sig=modelSignature(m1,m2);
+          if(seen.has(sig))continue;
           seen.add(sig);
-          candidates.push({
-            source:
-              base.name,
-            m1,
-            m2,
-            mutation:1
-          });
+          candidates.push({source:base.name,m1,m2,mutation:1});
         }
       }
       /*
@@ -4143,13 +4107,36 @@ function saveLandmarks(x){try{localStorage.setItem(LANDMARK_STORAGE_KEY,JSON.str
 function getLandmark(lotteryName){const x=loadLandmarks();return x[lotteryName]||null;}
 function resolveLandmarkFormula(lotteryName,allFormulas){const lm=getLandmark(lotteryName);if(!lm)return null;if(typeof allFormulas[lm.formula]==="function")return allFormulas[lm.formula];return null;}
 function updateLandmarkForLottery(lotteryName,recs,audit,incomingCount){
-  if(!Array.isArray(recs)||recs.length<26||Number(incomingCount||0)<26||!audit)return getLandmark(lotteryName);
-  const all=buildAllFormulas(), names=Object.keys(audit);
+  const old=getLandmark(lotteryName);
+  if(!Array.isArray(recs)||recs.length<26||Number(incomingCount||0)<26||!audit)return old;
   let best=null;
-  names.forEach(function(name){const a=audit[name];if(!a)return;const score=Number(a.hitRate)||0;if(!best||score>best.score)best={formula:name,score,samples:recs.length,updatedAt:Date.now()};});
-  if(!best)return getLandmark(lotteryName);
-  const store=loadLandmarks(),old=store[lotteryName];
-  if(!old||best.score>Number(old.score||-Infinity)){store[lotteryName]=best;saveLandmarks(store);return best;}
+  Object.keys(audit).forEach(function(name){
+    const a=audit[name];
+    if(!a)return;
+    const candidate={
+      formula:name,
+      score:Number(a.hitRate)||0,
+      hits:Number(a.hits)||0,
+      misses:Number(a.misses)||0,
+      samples:recs.length,
+      updatedAt:Date.now()
+    };
+    if(!best||candidate.score>best.score||
+      (candidate.score===best.score&&candidate.hits>best.hits)||
+      (candidate.score===best.score&&candidate.hits===best.hits&&candidate.misses<best.misses)||
+      (candidate.score===best.score&&candidate.hits===best.hits&&candidate.misses===best.misses&&candidate.formula.localeCompare(best.formula,'th')<0)){
+      best=candidate;
+    }
+  });
+  if(!best)return old;
+  if(!old||best.score>Number(old.score||-Infinity)||
+    (best.score===Number(old.score||-Infinity)&&best.hits>Number(old.hits||0))||
+    (best.score===Number(old.score||-Infinity)&&best.hits===Number(old.hits||0)&&best.misses<Number(old.misses||Infinity))){
+    const store=loadLandmarks();
+    store[lotteryName]=best;
+    saveLandmarks(store);
+    return best;
+  }
   return old;
 }
 function buildLandmarkAndRecommendationHTML(auditDataMap){
@@ -4670,9 +4657,14 @@ function __landmarkCardForLottery(name,rec,lm,index){
 function __appendLandmarkCards(){
   const result=$("result");if(!result)return;
   const selected=__loadSelectedLandmarkCards();if(!selected.length)return;
-  const groups=__formulaLabGroups||{};
-  const stored=localStorage.getItem(STORAGE_KEY);let records=[];try{records=stored?JSON.parse(stored):[];}catch(e){}
-  const latest={};(Array.isArray(records)?records:[]).forEach(function(r){latest[r.name]=r;});
+  const latest={};
+  try{
+    const stored=localStorage.getItem(STORAGE_KEY);
+    const records=stored?JSON.parse(stored):[];
+    (Array.isArray(records)?records:[]).forEach(function(r){
+      if(!latest[r.name]||(r.timestamp||0)>(latest[r.name].timestamp||0))latest[r.name]=r;
+    });
+  }catch(e){}
   const old=result.querySelector("#selectedLandmarkCards");if(old)old.remove();
   let html=`<div id="selectedLandmarkCards" class="selected-recommendation-wrap"><div class="section-title">🏆 การ์ดสูตร Landmark</div>`;let n=0;
   selected.forEach(function(name){const lm=getLandmark(name),rec=latest[name];if(lm&&rec)html+=__landmarkCardForLottery(name,rec,lm,n++);});
@@ -4847,12 +4839,48 @@ function __appendSelectedRecommendationCards(){
   result.insertAdjacentHTML("beforeend",html);
 }
 /* Preserve the original main render and only append selected recommendation cards. */
+function __latestStoredRecordForLottery(name){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    const records=raw?JSON.parse(raw):[];
+    if(!Array.isArray(records))return null;
+    const matches=records.filter(function(r){return r&&r.name===name;});
+    matches.sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);});
+    return matches.length?matches[matches.length-1]:null;
+  }catch(e){return null;}
+}
+function __addLandmarkCardNow(name){
+  const lm=getLandmark(name);
+  const rec=__latestStoredRecordForLottery(name);
+  if(!lm||!rec){showToast("❌ ยังไม่พบข้อมูลสำหรับสร้างการ์ด Landmark");return;}
+  const result=$("result");
+  if(!result)return;
+  let box=result.querySelector("#selectedLandmarkCards");
+  if(!box){
+    box=document.createElement("div");
+    box.id="selectedLandmarkCards";
+    box.className="selected-recommendation-wrap";
+    box.innerHTML='<div class="section-title">🏆 การ์ดสูตร Landmark</div>';
+    result.appendChild(box);
+  }
+  const existing=box.querySelector('[data-landmark-card-name="'+CSS.escape(name)+'"]');
+  if(existing){showToast("✓ การ์ดสูตร Landmark นี้มีอยู่แล้ว");return;}
+  const holder=document.createElement("div");
+  holder.setAttribute("data-landmark-card-name",name);
+  holder.innerHTML=__landmarkCardForLottery(name,rec,lm,Date.now());
+  box.appendChild(holder.firstElementChild);
+  const arr=__loadSelectedLandmarkCards();
+  if(arr.indexOf(name)<0){arr.push(name);__saveSelectedLandmarkCards(arr);}
+  showToast("✓ เพิ่มการ์ดสูตร Landmark แล้ว");
+}
 const __originalRenderFullUI_V323 = renderFullUI;
 renderFullUI = function(globalAuditMap,auditDataMap,predictionDataMap){
   __originalRenderFullUI_V323(globalAuditMap,auditDataMap,predictionDataMap);
   __appendSelectedRecommendationCards();
   __appendSelectedLandmarkCards();
-  document.querySelectorAll("[data-add-landmark]").forEach(function(btn){btn.onclick=function(){const name=btn.dataset.addLandmark;const arr=__loadSelectedLandmarkCards();if(arr.indexOf(name)<0)arr.push(name);__saveSelectedLandmarkCards(arr);__appendSelectedLandmarkCards();showToast("✓ เพิ่มการ์ดสูตร Landmark แล้ว");};});
+  document.querySelectorAll("[data-add-landmark]").forEach(function(btn){
+    btn.onclick=function(){__addLandmarkCardNow(btn.dataset.addLandmark);};
+  });
 };
 /* Preserve the original Formula Lab search, while exposing its groups/formulas to the new ranker. */
 const __originalRunAutoFormulaLab_V323 = runAutoFormulaLab;
@@ -4899,7 +4927,10 @@ finishFormulaLab = function(results){
     return x.stats.validationTested>=5 && x.temporal.tested>=5;
   }).sort(function(a,b){
     if(b.finalRankScore!==a.finalRankScore) return b.finalRankScore-a.finalRankScore;
-    return b.stats.validationRate-a.stats.validationRate;
+    if(b.stats.validationRate!==a.stats.validationRate) return b.stats.validationRate-a.stats.validationRate;
+    if(b.stats.overallRate!==a.stats.overallRate) return b.stats.overallRate-a.stats.overallRate;
+    if(b.stats.recentRate!==a.stats.recentRate) return b.stats.recentRate-a.stats.recentRate;
+    return modelSignature(a.m1,a.m2).localeCompare(modelSignature(b.m1,b.m2));
   });
   const finalList=[];
   const seen=new Set();
