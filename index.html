@@ -1181,6 +1181,7 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 
 <div id="integrityPanel"></div>
 <div id="expandedAuditPanel"></div>
+<div id="walkForwardPanel"></div>
 
 
 </div>
@@ -6179,6 +6180,9 @@ function runEngine(){
   /* EXPANDED AUDIT — display only */
   renderExpandedAuditPanel(groups);
 
+  /* WALK-FORWARD VALIDATION — display only */
+  renderWalkForwardAudit(groups);
+
 
 
 
@@ -6555,6 +6559,158 @@ function renderExpandedAuditPanel(groups){
   root.innerHTML=html;
 }
 
+
+/* =========================================================
+   WALK-FORWARD VALIDATION AUDIT
+   Diagnostic / historical validation only.
+   IMPORTANT: this module never changes Score, Ranking,
+   prediction cards, or formula definitions.
+========================================================= */
+
+function wilsonInterval(hits,n){
+  if(!n) return {low:0,high:0};
+  const z=1.96;
+  const p=hits/n;
+  const den=1+(z*z/n);
+  const center=(p+(z*z/(2*n)))/den;
+  const margin=(z*Math.sqrt((p*(1-p)/n)+((z*z)/(4*n*n))))/den;
+  return {
+    low:round2(Math.max(0,(center-margin)*100)),
+    high:round2(Math.min(100,(center+margin)*100))
+  };
+}
+
+function buildWalkForwardAudit(recs, formulaName, maxTests=30){
+  const resultRecs=(recs||[])
+    .filter(isResultRecord)
+    .slice()
+    .sort((a,b)=>{
+      const ta=Number(a.timestamp)||parseThaiDate(a.date)||0;
+      const tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+      return ta-tb;
+    });
+
+  const usable=Math.min(maxTests,Math.max(0,resultRecs.length-1));
+  const rows=[];
+  let hits=0;
+  let missStreak=0;
+  let maxMissStreak=0;
+
+  /* Use only information available before each target. */
+  const start=Math.max(0,resultRecs.length-1-usable);
+  for(let i=start;i<resultRecs.length-1;i++){
+    const source=resultRecs[i];
+    const target=resultRecs[i+1];
+    const top=String(source.n3).split('').map(Number);
+    const bot=String(source.n2).split('').map(Number);
+    const predicted=sanitizeFormulaResult(
+      formulas[formulaName](top[0],top[1],top[2],bot[0],bot[1])
+    );
+    const check=checkHitDetail(predicted,target.n3,target.n2);
+    const trainHistory=getFormulaHistory(resultRecs.slice(0,i+1),formulaName);
+    const priorHits=trainHistory.filter(x=>x.hit).length;
+    const priorMisses=trainHistory.length-priorHits;
+    const priorRate=percent(priorHits,trainHistory.length);
+    const priorStreak=calculateStreaks(trainHistory);
+
+    if(check.hitAny){ hits++; missStreak=0; }
+    else { missStreak++; maxMissStreak=Math.max(maxMissStreak,missStreak); }
+
+    const sourceT=Number(source.timestamp)||parseThaiDate(source.date)||0;
+    const targetT=Number(target.timestamp)||parseThaiDate(target.date)||0;
+    rows.push({
+      sourceDate:source.date,
+      targetDate:target.date,
+      sourceT,targetT,
+      chronological:sourceT>0&&targetT>sourceT,
+      leakageFree:true,
+      trainSize:i+1,
+      priorRate,
+      priorMisses,
+      priorMissStreak:priorStreak.curMissStreak,
+      predicted,
+      actualN3:target.n3,
+      actualN2:target.n2,
+      hit:check.hitAny,
+      hundredsOnly:check.hitHundredsOnly,
+      cumulativeHits:hits,
+      cumulativeTests:rows.length
+    });
+  }
+
+  const interval=wilsonInterval(hits,rows.length);
+  const recent=rows.slice(-5);
+  const recentHits=recent.filter(x=>x.hit).length;
+  const rates=rows.length?rows.map(x=>x.hit?1:0):[];
+  const mean=rates.length?avg(rates)*100:0;
+  const variance=rates.length?avg(rates.map(v=>Math.pow(v-(mean/100),2))):0;
+  const volatility=round2(Math.sqrt(variance)*100);
+  const leakageIssues=rows.filter(x=>!x.chronological||!x.leakageFree).length;
+
+  return {
+    tested:rows.length,
+    hits,
+    misses:rows.length-hits,
+    hitRate:percent(hits,rows.length),
+    ciLow:interval.low,
+    ciHigh:interval.high,
+    recent5:percent(recentHits,recent.length),
+    maxMissStreak,
+    volatility,
+    leakageIssues,
+    rows
+  };
+}
+
+function renderWalkForwardAudit(groups){
+  const root=$('walkForwardPanel');
+  if(!root) return;
+  const names=Object.keys(groups||{});
+  if(!names.length){root.innerHTML='';return;}
+
+  let html=`<section class="walkforward-panel">
+    <style>
+      .walkforward-panel{margin:18px 0;padding:16px;border:1px solid rgba(255,255,255,.10);border-radius:18px;background:rgba(12,16,24,.72);box-shadow:0 10px 28px rgba(0,0,0,.16)}
+      .wf-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}.wf-title{font-size:17px;font-weight:800}.wf-sub{font-size:12px;opacity:.65;margin-top:3px}.wf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.wf-card{padding:12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}.wf-card h4{margin:0 0 9px;font-size:13px}.wf-kpi{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:11px}.wf-kpi b{font-size:12px}.wf-pass{color:#86efac}.wf-warn{color:#fcd34d}.wf-fail{color:#fca5a5}.wf-table{width:100%;border-collapse:collapse;font-size:11px}.wf-table th,.wf-table td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.07);text-align:left;white-space:nowrap}.wf-table th{font-size:10px;opacity:.7}.wf-wrap{overflow:auto}.wf-note{font-size:11px;opacity:.62;line-height:1.5;margin-top:9px}
+    </style>
+    <div class="wf-head"><div><div class="wf-title">🧪 Walk-Forward Validation Audit</div><div class="wf-sub">ทดสอบย้อนหลังแบบเดินหน้า โดยแต่ละงวดเป้าหมายใช้เฉพาะข้อมูลก่อนหน้า — Diagnostic only</div></div></div>`;
+
+  names.forEach(name=>{
+    const recs=groups[name]||[];
+    const formulaNames=Object.keys(formulas);
+    const reports=formulaNames.map(f=>({name:f,data:buildWalkForwardAudit(recs,f,30)}));
+    if(!reports.some(x=>x.data.tested)){return;}
+    html+=`<details class="wf-section" open><summary style="cursor:pointer;font-weight:800;padding:7px 0">${esc(formatDisplayTitle(name))}</summary>`;
+    html+=`<div class="wf-grid">`;
+    reports.forEach(r=>{
+      const d=r.data;
+      const cls=d.leakageIssues===0?'wf-pass':'wf-fail';
+      html+=`<div class="wf-card"><h4>${esc(r.name)}</h4>
+        <div class="wf-kpi"><span>OOS Tests</span><b>${d.tested}</b></div>
+        <div class="wf-kpi"><span>Hit / Miss</span><b>${d.hits} / ${d.misses}</b></div>
+        <div class="wf-kpi"><span>Hit Rate</span><b>${d.hitRate}%</b></div>
+        <div class="wf-kpi"><span>95% CI</span><b>${d.ciLow}%–${d.ciHigh}%</b></div>
+        <div class="wf-kpi"><span>Recent 5</span><b>${d.recent5}%</b></div>
+        <div class="wf-kpi"><span>Max Miss Streak</span><b>${d.maxMissStreak}</b></div>
+        <div class="wf-kpi"><span>Leakage Check</span><b class="${cls}">${d.leakageIssues===0?'PASS':'FAIL'}</b></div>
+      </div>`;
+    });
+    html+=`</div>`;
+
+    html+=`<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">รายละเอียด Walk-Forward สูงสุด 30 จุดทดสอบ</summary><div class="wf-wrap"><table class="wf-table"><thead><tr><th>สูตร</th><th>Source</th><th>Target</th><th>Train</th><th>Prior Rate</th><th>Prior Miss Streak</th><th>Result</th><th>Chronological</th></tr></thead><tbody>`;
+    reports.forEach(r=>{
+      r.data.rows.forEach(x=>{
+        html+=`<tr><td>${esc(r.name)}</td><td>${esc(x.sourceDate)}</td><td>${esc(x.targetDate)}</td><td>${x.trainSize}</td><td>${x.priorRate}%</td><td>${x.priorMissStreak}</td><td>${x.hit?'✓ Hit':'× Miss'}</td><td>${x.chronological?'PASS':'FAIL'}</td></tr>`;
+      });
+    });
+    html+=`</tbody></table></div></details>`;
+    html+=`</details>`;
+  });
+
+  html+=`<div class="wf-note">การทดสอบนี้ใช้เพื่อประเมินความถูกต้องและความเสถียรย้อนหลังเท่านั้น ไม่ส่งผลลัพธ์กลับไปแก้ Score, Ranking หรือการ์ดหลัก และไม่รวมงวดงดออกผลเป็น Target Test</div></section>`;
+  root.innerHTML=html;
+}
+
 /* =========================================================
    EXPORT AUDIT CSV
 ========================================================= */
@@ -6869,6 +7025,9 @@ window.addEventListener(
 
           if($('expandedAuditPanel'))
             $('expandedAuditPanel').innerHTML='';
+
+          if($('walkForwardPanel'))
+            $('walkForwardPanel').innerHTML='';
 
 
           updateIndicator();
