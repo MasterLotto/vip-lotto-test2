@@ -6436,7 +6436,7 @@ function auditWindowProfile(history){
   });
 }
 
-function auditConsistency(history){
+function auditความสม่ำเสมอ(history){
   const rates=auditWindowProfile(history)
     .filter(x=>x.tested>0)
     .map(x=>x.rate);
@@ -6475,21 +6475,21 @@ function renderExpandedAuditPanel(groups){
   let html=`
   <section class="expanded-audit-panel">
     <style>
-      .expanded-audit-panel{margin:18px 0;padding:16px;border:1px solid rgba(255,255,255,.10);border-radius:18px;background:rgba(12,16,24,.72);box-shadow:0 10px 28px rgba(0,0,0,.16)}
+      .expanded-audit-panel{margin:18px 0;padding:16px;border:1px solid #e5e7eb;border-radius:18px;background:#ffffff;color:#1f2937;box-shadow:0 8px 24px rgba(15,23,42,.08)}
       .ea-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
-      .ea-title{font-size:17px;font-weight:800}.ea-sub{font-size:12px;opacity:.65;margin-top:3px}
-      .ea-legend{font-size:11px;opacity:.72}.ea-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0}
-      .ea-card{padding:12px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}
-      .ea-card h4{margin:0 0 8px;font-size:13px}.ea-kpi{display:flex;justify-content:space-between;gap:8px;margin:4px 0;font-size:12px}.ea-kpi b{font-size:13px}
-      .ea-table-wrap{overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,.08)}
-      .ea-table{width:100%;border-collapse:collapse;min-width:760px;font-size:11px}.ea-table th,.ea-table td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.07);text-align:center;white-space:nowrap}.ea-table th{font-weight:800;opacity:.82}.ea-table td:first-child,.ea-table th:first-child{text-align:left}
-      .ea-cell{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-weight:900}.ea-cell.hit{background:rgba(34,197,94,.18);color:#86efac}.ea-cell.miss{background:rgba(239,68,68,.15);color:#fca5a5}.ea-cell.partial{background:rgba(245,158,11,.16);color:#fcd34d}
-      .ea-status{display:inline-block;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800}.ea-status.good{background:rgba(34,197,94,.15);color:#86efac}.ea-status.warn{background:rgba(245,158,11,.15);color:#fcd34d}.ea-status.bad{background:rgba(239,68,68,.15);color:#fca5a5}.ea-status.flat{background:rgba(148,163,184,.12);color:#cbd5e1}
-      .ea-section{margin-top:14px}.ea-section summary{cursor:pointer;font-weight:800;padding:8px 0}.ea-note{font-size:11px;opacity:.62;margin-top:8px;line-height:1.5}
+      .ea-title{font-size:17px;font-weight:800;color:#111827}.ea-sub{font-size:12px;color:#6b7280;margin-top:4px}
+      .ea-legend{font-size:11px;color:#4b5563}.ea-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0}
+      .ea-card{padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e5e7eb}
+      .ea-card h4{margin:0 0 8px;font-size:13px;color:#111827}.ea-kpi{display:flex;justify-content:space-between;gap:8px;margin:4px 0;font-size:12px;color:#4b5563}.ea-kpi b{font-size:13px;color:#111827}
+      .ea-table-wrap{overflow:auto;border-radius:12px;border:1px solid #e5e7eb;background:#fff}
+      .ea-table{width:100%;border-collapse:collapse;min-width:760px;font-size:11px;background:#fff}.ea-table th,.ea-table td{padding:7px 8px;border-bottom:1px solid #edf0f3;text-align:center;white-space:nowrap}.ea-table th{font-weight:800;color:#374151;background:#f3f4f6}.ea-table td{color:#374151}.ea-table tr:nth-child(even) td{background:#fafafa}.ea-table td:first-child,.ea-table th:first-child{text-align:left}
+      .ea-cell{display:inline-flex;width:22px;height:22px;border-radius:6px;align-items:center;justify-content:center;font-weight:900}.ea-cell.hit{background:#dcfce7;color:#15803d}.ea-cell.miss{background:#fee2e2;color:#b91c1c}.ea-cell.partial{background:#fef3c7;color:#b45309}
+      .ea-status{display:inline-block;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800}.ea-status.good{background:#dcfce7;color:#15803d}.ea-status.warn{background:#fef3c7;color:#b45309}.ea-status.bad{background:#fee2e2;color:#b91c1c}.ea-status.flat{background:#f1f5f9;color:#475569}
+      .ea-section{margin-top:14px}.ea-section summary{cursor:pointer;font-weight:800;padding:8px 0;color:#1f2937}.ea-note{font-size:11px;color:#6b7280;margin-top:8px;line-height:1.5}
     </style>
     <div class="ea-head">
-      <div><div class="ea-title">🔎 Expanded Historical Audit</div><div class="ea-sub">วิเคราะห์ย้อนหลังเพื่อความโปร่งใสของระบบเท่านั้น — ไม่เปลี่ยน Score, Ranking หรือสูตรเดิม</div></div>
-      <div class="ea-legend">✓ Hit · • หลักร้อยเท่านั้น · × Miss</div>
+      <div><div class="ea-title">🔎 การตรวจสอบสถิติย้อนหลังแบบละเอียด</div><div class="ea-sub">วิเคราะห์ย้อนหลังเพื่อความโปร่งใสของระบบเท่านั้น — ไม่เปลี่ยน Score, Ranking หรือสูตรเดิม</div></div>
+      <div class="ea-legend">✓ เข้า · • ตรงหลักร้อยเท่านั้น · × หลุด</div>
     </div>`;
 
   names.forEach(name=>{
@@ -6506,34 +6506,34 @@ function renderExpandedAuditPanel(groups){
       const h=f.history||[];
       const w=auditWindowProfile(h);
       const p=auditPositionProfile(h);
-      const c=auditConsistency(h);
+      const c=auditความสม่ำเสมอ(h);
       html+=`<div class="ea-card">
         <h4>${esc(fName)}</h4>
-        <div class="ea-kpi"><span>Hit / Miss</span><b>${f.hits} / ${f.misses}</b></div>
-        <div class="ea-kpi"><span>Current Miss Streak</span><b>${f.curMissStreak}</b></div>
-        <div class="ea-kpi"><span>Max Miss Streak</span><b>${f.maxMissStreak}</b></div>
-        <div class="ea-kpi"><span>Miss 5 / 10 / 20 / 30</span><b>${w.map(x=>x.misses).join(' / ')}</b></div>
-        <div class="ea-kpi"><span>Consistency</span><b><span class="ea-status ${c.cls}">${c.label}</span></b></div>
-        <div class="ea-kpi"><span>Position H / T / U</span><b>${p.topHundreds} / ${p.topTens} / ${p.topUnits}</b></div>
+        <div class="ea-kpi"><span>เข้า / หลุด</span><b>${f.hits} / ${f.misses}</b></div>
+        <div class="ea-kpi"><span>หลุดต่อเนื่องปัจจุบัน</span><b>${f.curMissStreak}</b></div>
+        <div class="ea-kpi"><span>หลุดต่อเนื่องสูงสุด</span><b>${f.maxMissStreak}</b></div>
+        <div class="ea-kpi"><span>หลุด 5 / 10 / 20 / 30 งวด</span><b>${w.map(x=>x.misses).join(' / ')}</b></div>
+        <div class="ea-kpi"><span>ความสม่ำเสมอ</span><b><span class="ea-status ${c.cls}">${c.label}</span></b></div>
+        <div class="ea-kpi"><span>ตำแหน่ง ร้อย / สิบ / หน่วย</span><b>${p.topHundreds} / ${p.topTens} / ${p.topUnits}</b></div>
       </div>`;
     });
     html+=`</div>`;
 
-    html+=`<div class="ea-table-wrap"><table class="ea-table"><thead><tr><th>สูตร</th><th>5 งวด</th><th>10 งวด</th><th>20 งวด</th><th>30 งวด</th><th>Consistency</th><th>Spread</th></tr></thead><tbody>`;
+    html+=`<div class="ea-table-wrap"><table class="ea-table"><thead><tr><th>สูตร</th><th>5 งวด</th><th>10 งวด</th><th>20 งวด</th><th>30 งวด</th><th>ความสม่ำเสมอ</th><th>Spread</th></tr></thead><tbody>`;
     formulaNamesLocal.forEach(fName=>{
-      const f=audit[fName]; const h=f.history||[]; const w=auditWindowProfile(h); const c=auditConsistency(h);
+      const f=audit[fName]; const h=f.history||[]; const w=auditWindowProfile(h); const c=auditความสม่ำเสมอ(h);
       html+=`<tr><td>${esc(fName)}</td>${w.map(x=>`<td>${x.hits}/${x.tested} (${x.rate}%)</td>`).join('')}<td><span class="ea-status ${c.cls}">${c.label}</span></td><td>${c.spread}%</td></tr>`;
     });
     html+=`</tbody></table></div>`;
 
-    html+=`<div class="ea-table-wrap" style="margin-top:10px"><table class="ea-table"><thead><tr><th>สูตร</th><th>หลักร้อย</th><th>หลักสิบ</th><th>หลักหน่วย</th><th>ล่าง</th><th>ร้อยอย่างเดียว</th></tr></thead><tbody>`;
+    html+=`<div class="ea-table-wrap" style="margin-top:10px"><table class="ea-table"><thead><tr><th>สูตร</th><th>หลักร้อย</th><th>หลักสิบ</th><th>หลักหน่วย</th><th>เลขล่าง</th><th>ตรงหลักร้อยอย่างเดียว</th></tr></thead><tbody>`;
     formulaNamesLocal.forEach(fName=>{
       const p=auditPositionProfile(audit[fName].history||[]);
       html+=`<tr><td>${esc(fName)}</td><td>${p.topHundreds}</td><td>${p.topTens}</td><td>${p.topUnits}</td><td>${p.bottomAny}</td><td>${p.hundredsOnly}</td></tr>`;
     });
     html+=`</tbody></table></div>`;
 
-    html+=`<details class="ea-section"><summary>Hit / Miss Matrix — ${esc(formatDisplayTitle(name))}</summary><div class="ea-table-wrap"><table class="ea-table"><thead><tr><th>งวดเป้าหมาย</th>`;
+    html+=`<details class="ea-section"><summary>เข้า / หลุด Matrix — ${esc(formatDisplayTitle(name))}</summary><div class="ea-table-wrap"><table class="ea-table"><thead><tr><th>งวดเป้าหมาย</th>`;
     formulaNamesLocal.forEach(fName=>html+=`<th>${esc(fName)}</th>`);
     html+=`</tr></thead><tbody>`;
 
@@ -6550,7 +6550,7 @@ function renderExpandedAuditPanel(groups){
       });
       html+=`</tr>`;
     }
-    html+=`</tbody></table></div><div class="ea-note">Matrix นี้เป็นประวัติย้อนหลังสำหรับตรวจสอบระบบเท่านั้น และไม่มีการนำค่า Matrix กลับไปคำนวณ Score หรือ Ranking</div></details>`;
+    html+=`</tbody></table></div><div class="ea-note">ตารางนี้เป็นประวัติย้อนหลังสำหรับตรวจสอบระบบเท่านั้น และไม่มีการนำค่า Matrix กลับไปคำนวณ Score หรือ Ranking</div></details>`;
 
     html+=`</details></div>`;
   });
@@ -6670,10 +6670,10 @@ function renderWalkForwardAudit(groups){
 
   let html=`<section class="walkforward-panel">
     <style>
-      .walkforward-panel{margin:18px 0;padding:16px;border:1px solid rgba(255,255,255,.10);border-radius:18px;background:rgba(12,16,24,.72);box-shadow:0 10px 28px rgba(0,0,0,.16)}
-      .wf-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}.wf-title{font-size:17px;font-weight:800}.wf-sub{font-size:12px;opacity:.65;margin-top:3px}.wf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.wf-card{padding:12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}.wf-card h4{margin:0 0 9px;font-size:13px}.wf-kpi{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:11px}.wf-kpi b{font-size:12px}.wf-pass{color:#86efac}.wf-warn{color:#fcd34d}.wf-fail{color:#fca5a5}.wf-table{width:100%;border-collapse:collapse;font-size:11px}.wf-table th,.wf-table td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.07);text-align:left;white-space:nowrap}.wf-table th{font-size:10px;opacity:.7}.wf-wrap{overflow:auto}.wf-note{font-size:11px;opacity:.62;line-height:1.5;margin-top:9px}
+      .walkforward-panel{margin:18px 0;padding:16px;border:1px solid #e5e7eb;border-radius:18px;background:#ffffff;color:#1f2937;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+      .wf-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}.wf-title{font-size:17px;font-weight:800;color:#111827}.wf-sub{font-size:12px;color:#6b7280;margin-top:4px}.wf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.wf-card{padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e5e7eb}.wf-card h4{margin:0 0 9px;font-size:13px;color:#111827}.wf-kpi{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:11px;color:#4b5563}.wf-kpi b{font-size:12px;color:#111827}.wf-pass{color:#15803d}.wf-warn{color:#b45309}.wf-fail{color:#b91c1c}.wf-table{width:100%;border-collapse:collapse;font-size:11px;background:#fff}.wf-table th,.wf-table td{padding:7px 6px;border-bottom:1px solid #edf0f3;text-align:left;white-space:nowrap}.wf-table th{font-size:10px;color:#374151;background:#f3f4f6;font-weight:800}.wf-table td{color:#374151}.wf-table tr:nth-child(even) td{background:#fafafa}.wf-wrap{overflow:auto;border:1px solid #e5e7eb;border-radius:12px}.wf-note{font-size:11px;color:#6b7280;line-height:1.5;margin-top:9px}
     </style>
-    <div class="wf-head"><div><div class="wf-title">🧪 Walk-Forward Validation Audit</div><div class="wf-sub">ทดสอบย้อนหลังแบบเดินหน้า โดยแต่ละงวดเป้าหมายใช้เฉพาะข้อมูลก่อนหน้า — Diagnostic only</div></div></div>`;
+    <div class="wf-head"><div><div class="wf-title">🧪 การตรวจสอบย้อนหลังแบบเดินหน้า</div><div class="wf-sub">ทดสอบย้อนหลังแบบเดินหน้า โดยแต่ละงวดเป้าหมายใช้เฉพาะข้อมูลก่อนหน้า — ใช้สำหรับตรวจสอบระบบเท่านั้น</div></div></div>`;
 
   names.forEach(name=>{
     const recs=groups[name]||[];
@@ -6686,28 +6686,28 @@ function renderWalkForwardAudit(groups){
       const d=r.data;
       const cls=d.leakageIssues===0?'wf-pass':'wf-fail';
       html+=`<div class="wf-card"><h4>${esc(r.name)}</h4>
-        <div class="wf-kpi"><span>OOS Tests</span><b>${d.tested}</b></div>
-        <div class="wf-kpi"><span>Hit / Miss</span><b>${d.hits} / ${d.misses}</b></div>
-        <div class="wf-kpi"><span>Hit Rate</span><b>${d.hitRate}%</b></div>
-        <div class="wf-kpi"><span>95% CI</span><b>${d.ciLow}%–${d.ciHigh}%</b></div>
-        <div class="wf-kpi"><span>Recent 5</span><b>${d.recent5}%</b></div>
-        <div class="wf-kpi"><span>Max Miss Streak</span><b>${d.maxMissStreak}</b></div>
-        <div class="wf-kpi"><span>Leakage Check</span><b class="${cls}">${d.leakageIssues===0?'PASS':'FAIL'}</b></div>
+        <div class="wf-kpi"><span>จุดทดสอบนอกตัวอย่าง</span><b>${d.tested}</b></div>
+        <div class="wf-kpi"><span>เข้า / หลุด</span><b>${d.hits} / ${d.misses}</b></div>
+        <div class="wf-kpi"><span>อัตราเข้า</span><b>${d.hitRate}%</b></div>
+        <div class="wf-kpi"><span>ช่วงความเชื่อมั่น 95%</span><b>${d.ciLow}%–${d.ciHigh}%</b></div>
+        <div class="wf-kpi"><span>5 งวดล่าสุด</span><b>${d.recent5}%</b></div>
+        <div class="wf-kpi"><span>หลุดต่อเนื่องสูงสุด</span><b>${d.maxMissStreak}</b></div>
+        <div class="wf-kpi"><span>ตรวจข้อมูลอนาคตรั่ว</span><b class="${cls}">${d.leakageIssues===0?'ผ่าน':'ไม่ผ่าน'}</b></div>
       </div>`;
     });
     html+=`</div>`;
 
-    html+=`<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">รายละเอียด Walk-Forward สูงสุด 30 จุดทดสอบ</summary><div class="wf-wrap"><table class="wf-table"><thead><tr><th>สูตร</th><th>Source</th><th>Target</th><th>Train</th><th>Prior Rate</th><th>Prior Miss Streak</th><th>Result</th><th>Chronological</th></tr></thead><tbody>`;
+    html+=`<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">รายละเอียดการตรวจสอบย้อนหลัง สูงสุด 30 จุดทดสอบ</summary><div class="wf-wrap"><table class="wf-table"><thead><tr><th>สูตร</th><th>ข้อมูลที่ใช้</th><th>งวดเป้าหมาย</th><th>จำนวนข้อมูลฝึก</th><th>อัตราก่อนทดสอบ</th><th>หลุดต่อเนื่องก่อนทดสอบ</th><th>ผล</th><th>ลำดับเวลา</th></tr></thead><tbody>`;
     reports.forEach(r=>{
       r.data.rows.forEach(x=>{
-        html+=`<tr><td>${esc(r.name)}</td><td>${esc(x.sourceDate)}</td><td>${esc(x.targetDate)}</td><td>${x.trainSize}</td><td>${x.priorRate}%</td><td>${x.priorMissStreak}</td><td>${x.hit?'✓ Hit':'× Miss'}</td><td>${x.chronological?'PASS':'FAIL'}</td></tr>`;
+        html+=`<tr><td>${esc(r.name)}</td><td>${esc(x.sourceDate)}</td><td>${esc(x.targetDate)}</td><td>${x.trainSize}</td><td>${x.priorRate}%</td><td>${x.priorMissStreak}</td><td>${x.hit?'✓ เข้า':'× หลุด'}</td><td>${x.chronological?'ผ่าน':'ไม่ผ่าน'}</td></tr>`;
       });
     });
     html+=`</tbody></table></div></details>`;
     html+=`</details>`;
   });
 
-  html+=`<div class="wf-note">การทดสอบนี้ใช้เพื่อประเมินความถูกต้องและความเสถียรย้อนหลังเท่านั้น ไม่ส่งผลลัพธ์กลับไปแก้ Score, Ranking หรือการ์ดหลัก และไม่รวมงวดงดออกผลเป็น Target Test</div></section>`;
+  html+=`<div class="wf-note">การตรวจสอบนี้ใช้เพื่อประเมินความถูกต้องและความเสถียรย้อนหลังเท่านั้น ไม่ส่งผลลัพธ์กลับไปแก้ Score, Ranking หรือการ์ดหลัก และไม่รวมงวดงดออกผลเป็น Target Test</div></section>`;
   root.innerHTML=html;
 }
 
@@ -6778,9 +6778,9 @@ function exportAuditCSV(){
     'Recency',
     'Stability',
     'Current Streak',
-    'Current Miss Streak',
+    'หลุดต่อเนื่องปัจจุบัน',
     'Max Streak',
-    'Max Miss Streak',
+    'หลุดต่อเนื่องสูงสุด',
     'เลขเด่นล่าสุด',
     'Trend'
   ]);
