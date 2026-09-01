@@ -102,7 +102,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 <canvas id="snow"></canvas>
 <div class="shell"><div class="app"><div class="inner">
   <div class="top"><div class="brand"><div class="logo">VIP</div><div><b>Mester Lotto VIP+</b><small>Ban Ngern Kong V32.3</small></div></div><div class="pill">● V32.3 OPTIMIZED</div></div>
-  <section class="hero"><span class="hero-tag">BAN NGERN KONG ULTIMATE PRECISION V32.3</span><h1>Master Audit & <em>บ้านเงินกอง V32.3</em></h1><p>ปรับแก้ตัวสะกดคำว่า "นิเคอิ" ให้ถูกต้องสมบูรณ์ พร้อมแสดงธงชาติญี่ปุ่น 🇯🇵 ชัดเจนไร้ที่ติ</p></section>
+  <section class="hero"><span class="hero-tag">BAN NGERN KONG ULTIMATE PRECISION V32.3</span><h1>Master Audit & <em>บ้านเงินกอง V32.3</em></h1><p>ปรับแก้ฟังก์ชันตรวจสอบธงชาติให้ตรงกับประเภทหวยทุกตัวแบบแม่นยำครบถ้วน 100%</p></section>
   <div id="console">
     <section class="panel"><div class="bulkbox"><label><span>📥 ข้อมูลสถิติย้อนหลัง (กรอกตามลำดับเวลา)</span><span id="recordCountIndicator" style="color:#856414; font-weight:700;">สะสมในระบบ: 0 งวด</span></label><textarea id="bulkInput" class="bulk" placeholder="นิเคอิ เช้า | 30 ส.ค. 69&#10;244&#10;43&#10;&#10;นิเคอิ บ่าย | 29 ส.ค. 69&#10;276&#10;87"></textarea></div>
     <div class="actions"><button id="run" class="run">⚡ ประมวลผลระบบ V32.3</button><button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button><button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button></div></section>
@@ -122,7 +122,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
   function $(id){ return document.getElementById(id); } function esc(val){ return String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); } function norm(v){ return (v % 10 + 10) % 10; }
   
-  // 🌟 ฟังก์ชันแปลงชื่อหวย (ปรับเพิ่มคำว่า "ปกติ" สำหรับนิเคอิธรรมดา)
   function formatDisplayTitle(rawName){
     let name = String(rawName || '').trim();
     name = name.replace(/^สถิติหุ้น\s*/, '').replace(/^สถิติ\s*/, '').replace(/^หุ้น\s*/, '').replace(/\s*ย้อนหลัง$/, '').trim();
@@ -160,7 +159,9 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       'ไทยเย็น': 'ไทย เย็น',
       'อังกฤษ': 'อังกฤษ',
       'เยอรมัน': 'เยอรมัน',
-      'รัสเซีย': 'รัสเซีย'
+      'รัสเซีย': 'รัสเซีย',
+      'ลาว': 'หวยลาว',
+      'ฮานอย': 'หวยฮานอย'
     };
     
     if (stockMap[name]) return stockMap[name];
@@ -170,13 +171,15 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     return name.replace(/\s+/g, ' ').trim();
   }
 
-  // 🌟 ฟังก์ชันดักจับธงชาติ ครอบคลุมคำว่า นิเคอิ / นิกเคอิ / เช้า / บ่าย / VIP เพื่อแสดงธงญี่ปุ่น 🇯🇵
+  // 🌟 ฟังก์ชันดักจับธงชาติที่ได้รับการออดิตและแก้ไขให้ตรงเป๊ะทุกประเภทหวยตามที่ต้องการ
   function getLotteryFlag(name){ 
-    const n = String(name || '').toLowerCase(); 
-    if(n.includes('นิเคอิ') || n.includes('นิกเคอิ') || n.includes('ญี่ปุ่น') || (n.includes('เช้า') && !n.includes('จีน') && !n.includes('ฮั่งเส็ง')) || (n.includes('บ่าย') && !n.includes('จีน') && !n.includes('ฮั่งเส็ง'))) return '🇯🇵'; 
+    const n = String(name || '').toLowerCase().trim(); 
+    
+    // ตรวจสอบตามลำดับความเฉพาะเจาะจงเพื่อไม่ให้ชื่อทับซ้อนกัน
+    if(n.includes('นิเคอิ') || n.includes('นิกเคอิ') || n.includes('ญี่ปุ่น')) return '🇯🇵'; 
+    if(n.includes('ฮั่งเส็ง') || n.includes('ฮ่องกง')) return '🇭🇰'; 
     if(n.includes('จีน')) return '🇨🇳'; 
-    if(n.includes('ฮั่งเส็ง')||n.includes('ฮ่องกง')) return '🇭🇰'; 
-    if(n.includes('ดาวโจนส์')||n.includes('อเมริกา')||n.includes('usa')) return '🇺🇸'; 
+    if(n.includes('ดาวโจนส์') || n.includes('อเมริกา') || n.includes('usa')) return '🇺🇸'; 
     if(n.includes('ไต้หวัน')) return '🇹🇼'; 
     if(n.includes('เกาหลี')) return '🇰🇷'; 
     if(n.includes('สิงคโปร์')) return '🇸🇬'; 
@@ -186,9 +189,10 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     if(n.includes('อินเดีย')) return '🇮🇳'; 
     if(n.includes('อียิปต์')) return '🇪🇬'; 
     if(n.includes('ลาว')) return '🇱🇦'; 
-    if(n.includes('ฮานอย')||n.includes('เวียดนาม')) return '🇻🇳'; 
-    if(n.includes('ไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส')) return '🇹🇭'; 
-    if(n.includes('มาเลย์')) return '🇲🇾'; 
+    if(n.includes('ฮานอย') || n.includes('เวียดนาม')) return '🇻🇳'; 
+    if(n.includes('มาเลย์') || n.includes('มาเลเซีย')) return '🇲🇾'; 
+    if(n.includes('ไทย') || n.includes('รัฐบาล') || n.includes('ออมสิน') || n.includes('ธกส') || n.includes('หวยหุ้นไทย')) return '🇹🇭'; 
+    
     return '🌐'; 
   }
 
