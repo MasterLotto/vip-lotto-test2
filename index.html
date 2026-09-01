@@ -5,7 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Ngern Kong V32.3</title>
+<title>Mester Lotto VIP+ — Ban Ngern Kong V32.4</title>
 <style>
 :root{
   --bg-main: linear-gradient(135deg, #fcfbfa 0%, #f4efe6 100%);
@@ -101,11 +101,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 <body>
 <canvas id="snow"></canvas>
 <div class="shell"><div class="app"><div class="inner">
-  <div class="top"><div class="brand"><div class="logo">VIP</div><div><b>Mester Lotto VIP+</b><small>Ban Ngern Kong V32.3</small></div></div><div class="pill">● V32.3 OPTIMIZED</div></div>
-  <section class="hero"><span class="hero-tag">BAN NGERN KONG ULTIMATE PRECISION V32.3</span><h1>Master Audit & <em>บ้านเงินกอง V32.3</em></h1><p>ปรับแก้ฟังก์ชันตรวจสอบธงชาติให้ตรงกับประเภทหวยทุกตัวแบบแม่นยำครบถ้วน 100%</p></section>
+  <div class="top"><div class="brand"><div class="logo">VIP</div><div><b>Mester Lotto VIP+</b><small>Ban Ngern Kong V32.4</small></div></div><div class="pill">● V32.4 OPTIMIZED</div></div>
+  <section class="hero"><span class="hero-tag">BAN NGERN KONG ULTIMATE PRECISION V32.4</span><h1>Master Audit & <em>บ้านเงินกอง V32.4</em></h1><p>แก้ไขธงชาติฮานอย/ลาวให้ถูกต้องแม่นยำ และปรับระบบแคปภาพให้บันทึกลงแกลเลอรี/เครื่องโดยตรง</p></section>
   <div id="console">
     <section class="panel"><div class="bulkbox"><label><span>📥 ข้อมูลสถิติย้อนหลัง (กรอกตามลำดับเวลา)</span><span id="recordCountIndicator" style="color:#856414; font-weight:700;">สะสมในระบบ: 0 งวด</span></label><textarea id="bulkInput" class="bulk" placeholder="นิเคอิ เช้า | 30 ส.ค. 69&#10;244&#10;43&#10;&#10;นิเคอิ บ่าย | 29 ส.ค. 69&#10;276&#10;87"></textarea></div>
-    <div class="actions"><button id="run" class="run">⚡ ประมวลผลระบบ V32.3</button><button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button><button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button></div></section>
+    <div class="actions"><button id="run" class="run">⚡ ประมวลผลระบบ V32.4</button><button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button><button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button></div></section>
     <div id="result" class="result"></div>
   </div>
   <div id="toast" class="toast">ดำเนินการเรียบร้อย</div>
@@ -113,7 +113,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v323';
+  const STORAGE_KEY = 'lottery_audit_master_records_v324';
   const canvas = document.getElementById('snow'); const ctx = canvas.getContext('2d');
   let width = canvas.width = innerWidth, height = canvas.height = innerHeight;
   window.addEventListener('resize', () => { width = canvas.width = innerWidth; height = canvas.height = innerHeight; });
@@ -171,11 +171,15 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     return name.replace(/\s+/g, ' ').trim();
   }
 
-  // 🌟 ฟังก์ชันดักจับธงชาติที่ได้รับการออดิตและแก้ไขให้ตรงเป๊ะทุกประเภทหวยตามที่ต้องการ
+  // 🌟 ฟังก์ชันตรวจสอบธงชาติที่แก้ไขลำดับให้ถูกต้องแม่นยำ 100% (ลาว = 🇱🇦, ฮานอย/เวียดนาม = 🇻🇳, นิเคอิ/ญี่ปุ่น = 🇯🇵)
   function getLotteryFlag(name){ 
     const n = String(name || '').toLowerCase().trim(); 
     
-    // ตรวจสอบตามลำดับความเฉพาะเจาะจงเพื่อไม่ให้ชื่อทับซ้อนกัน
+    // ตรวจสอบคำเฉพาะเจาะจงของ ลาว และ ฮานอย ก่อนอันดับแรกเพื่อป้องกันการถูกคำอื่นทับ
+    if(n.includes('ลาว')) return '🇱🇦'; 
+    if(n.includes('ฮานอย') || n.includes('เวียดนาม')) return '🇻🇳'; 
+    
+    // หวยต่างประเทศอื่นๆ
     if(n.includes('นิเคอิ') || n.includes('นิกเคอิ') || n.includes('ญี่ปุ่น')) return '🇯🇵'; 
     if(n.includes('ฮั่งเส็ง') || n.includes('ฮ่องกง')) return '🇭🇰'; 
     if(n.includes('จีน')) return '🇨🇳'; 
@@ -188,8 +192,6 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     if(n.includes('อังกฤษ')) return '🇬🇧'; 
     if(n.includes('อินเดีย')) return '🇮🇳'; 
     if(n.includes('อียิปต์')) return '🇪🇬'; 
-    if(n.includes('ลาว')) return '🇱🇦'; 
-    if(n.includes('ฮานอย') || n.includes('เวียดนาม')) return '🇻🇳'; 
     if(n.includes('มาเลย์') || n.includes('มาเลเซีย')) return '🇲🇾'; 
     if(n.includes('ไทย') || n.includes('รัฐบาล') || n.includes('ออมสิน') || n.includes('ธกส') || n.includes('หวยหุ้นไทย')) return '🇹🇭'; 
     
@@ -225,6 +227,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
   window.copyCardText = function(cardId, lotteryTitle, dateStr, d1Pairs, d2Pairs){ const allPairs=[...d1Pairs, ...d2Pairs].map(p=>p.pair).join(', '); navigator.clipboard.writeText(`🎯 ${lotteryTitle} (${dateStr}) | บ้านเงินกอง\nชุดเจาะเน้น: ${allPairs}`).then(()=>showToast(`✓ คัดลอกเลขเด่น ${lotteryTitle} เรียบร้อย`)).catch(()=>showToast('❌ คัดลอกไม่สำเร็จ')); };
   
+  // 🌟 ปรับปรุงระบบแคปภาพให้ดาวน์โหลดลงเครื่อง/แกลเลอรีโดยตรงทันที
   window.captureCardImage = function(cardId, lotteryTitle){ 
     const cardEl=$(cardId); if(!cardEl) return; 
     showToast('📸 กำลังประมวลผลจับภาพการ์ด...'); 
@@ -233,42 +236,18 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     
     html2canvas(cardEl, { scale:2, backgroundColor:'#ffffff' }).then(canvas=>{ 
       if(btnGroup) btnGroup.style.display='flex'; 
-      
-      canvas.toBlob(blob => {
-        const fileName = `BanNgernKong_${lotteryTitle.replace(/\s+/g,'_')}.png`;
-        const file = new File([blob], fileName, { type: 'image/png' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({
-            files: [file],
-            title: lotteryTitle,
-            text: `แนวทางเลขเด่น ${lotteryTitle} | บ้านเงินกอง`
-          }).then(() => {
-            showToast('✓ แชร์และบันทึกภาพสำเร็จ');
-          }).catch((error) => {
-            if (error.name !== 'AbortError') {
-              fallbackDownload(canvas, fileName);
-            }
-          });
-        } else {
-          fallbackDownload(canvas, fileName);
-        }
-      }, 'image/png');
-
+      const fileName = `BanNgernKong_${lotteryTitle.replace(/\s+/g,'_')}.png`;
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✓ บันทึกภาพลงแกลเลอรี/เครื่องสำเร็จ');
     }).catch(err=>{ 
       if(btnGroup) btnGroup.style.display='flex'; 
       console.error(err); 
       showToast('❌ ไม่สามารถจับภาพได้'); 
     }); 
   };
-
-  function fallbackDownload(canvas, fileName) {
-    const link=document.createElement('a'); 
-    link.download = fileName; 
-    link.href=canvas.toDataURL('image/png'); 
-    link.click(); 
-    showToast('✓ บันทึกภาพการ์ดสำเร็จ');
-  }
 
   function renderFullUI(globalAuditMap, auditDataMap, predictionDataMap){
     let html = '';
@@ -299,7 +278,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       html += `</tbody></table></div>`;
     });
 
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านเงินกอง V32.3 Clean Card)</div>`;
+    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านเงินกอง V32.4 Clean Card)</div>`;
     let cardIdx = 0;
     Object.keys(predictionDataMap).forEach(lotteryName => {
       const p = predictionDataMap[lotteryName], flagIcon = getLotteryFlag(lotteryName), cId = `card_${cardIdx++}`;
@@ -348,7 +327,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    html += `<div class="brand-footer"><span class="brand-star">✦</span><span>ระบบบ้านเงินกอง V32.3 Pure Raw Calculation สมบูรณ์แบบ 100%</span><span class="brand-star">✦</span></div>`;
+    html += `<div class="brand-footer"><span class="brand-star">✦</span><span>ระบบบ้านเงินกอง V32.4 Pure Raw Calculation สมบูรณ์แบบ 100%</span><span class="brand-star">✦</span></div>`;
     $('result').innerHTML = html;
     updateIndicator();
   }
@@ -489,7 +468,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V32.3 (บ้านเงินกอง) สำเร็จ');
+    showToast('✓ ประมวลผลระบบ V32.4 (บ้านเงินกอง) สำเร็จ');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
