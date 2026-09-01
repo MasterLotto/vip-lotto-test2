@@ -44,13 +44,11 @@ n=n.replace(/^(ฮานอย|ลาว|จีน|ฮั่งเส็ง|ด�
 n=n.replace(/([ก-๙a-zA-Z0-9])(VIP|พิเศษ|สามัคคี|พัฒนา|ประตูชัย|สตาร์|ทีวี|กาชาด|เฉพาะกิจ|Extra|HD|4D|เช้า|บ่าย|เย็น|ดึก|สันติภาพ)/g,'$1 $2');
 return n.replace(/\s+/g,' ').trim()
 }
-
-/* FIX: ตรวจชื่อ Nikkei ก่อน fallback อย่างเด็ดขาด รองรับภาษาไทย/อังกฤษ/รูปแบบ VIP ทุกแบบ */
 function getLotteryFlag(name){
-let raw=String(name||'').trim(),n=raw.toLowerCase().replace(/[\s._-]+/g,'');
-if(/นิเคอิ|นิกเคอิ|นิเคอิ|nikkei|japan|ญี่ปุ่น/.test(n))return'🇯🇵';
-if(/^(ki|kivip)(เช้า|บ่าย|เย็น|ดึก)?$/.test(n)||/^ki(vip)?(เช้า|บ่าย|เย็น|ดึก)/.test(n))return'🇰🇷';
-if(/ฮั่งเส็ง|ฮ่องกง|hangseng|hangsengvip/.test(n))return'🇭🇰';
+const n=String(name||'').toLowerCase().replace(/\s+/g,'').trim();
+if(/นิเคอิ|นิกเคอิ|nikkei|ญี่ปุ่น|japan/.test(n))return'🇯🇵';
+if(/^(ki|kivip)(เช้า|บ่าย|เย็น|ดึก)?/.test(n)||/ki/.test(n))return'🇰🇷';
+if(/ฮั่งเส็ง|ฮ่องกง|hangseng/.test(n))return'🇭🇰';
 if(/จีน|china/.test(n))return'🇨🇳';
 if(/ดาวโจนส์|อเมริกา|usa|สหรัฐ|dowjones/.test(n))return'🇺🇸';
 if(/ไต้หวัน|taiwan/.test(n))return'🇹🇼';
@@ -67,7 +65,6 @@ if(/มาเลย์|มาเลเซีย|malaysia/.test(n))return'🇲�
 if(/ไทย|รัฐบาล|ออมสิน|ธกส|หวยหุ้นไทย|thai/.test(n))return'🇹🇭';
 return'🌐'
 }
-
 function parseInput(text){
 let raw=String(text||'').replace(/\r/g,'').trim();if(!raw)return{records:[],errors:[]};
 let lines=raw.split('\n').map(v=>v.trim()).filter(Boolean),records=[],errors=[],i=0;
@@ -82,7 +79,6 @@ records.push({name,date,n3,n2,timestamp:parseThaiDate(date)});i+=3
 }
 return{records,errors}
 }
-
 const formulas={
 "อันดับ 1 — สูตร 2 N1":(A,B,C,D,E)=>[norm(-2*A-2*B+C+D-2*E+9),norm(-2*B+C+3)],
 "N2 — สูตรใหม่":(A,B,C,D,E)=>[norm(-A+B-C+2*D+E+4),norm(A-2*C-2*E+7)],
@@ -100,7 +96,6 @@ const formulas={
 "สูตร 5 — ฐาน 10 - หน่วยล่าง":(A,B,C,D,E)=>{let d=norm(10-E);return[d,norm(d+1)]},
 "สูตร 6 — ร้อยบน + สิบล่าง":(A,B,C,D,E)=>{let d=norm(A+D);return[d,norm(d+1)]}
 };
-
 function sanitizeFormulaResult(r){let a=norm(r[0]),b=norm(r[1]);return[a,b===a?norm(b+1):b]}
 function checkHitDetail(pred,actualN3,actualN2){
 let top=actualN3.split('').map(Number),bot=actualN2.split('').map(Number),h=top[0],tu=top.slice(1),hit=false,hOnly=false;
@@ -108,26 +103,71 @@ pred.forEach(d=>{let valid=bot.includes(d)||tu.includes(d);if(valid)hit=true;els
 return{hitAny:hit,hitHundredsOnly:!hit&&hOnly}
 }
 function showToast(msg){let t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500)}
-function updateIndicator(){
-try{let x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');$('recordCountIndicator').textContent=`สะสมในระบบ: ${x.length} งวด`}
-catch(e){$('recordCountIndicator').textContent='สะสมในระบบ: 0 งวด'}
-}
+function updateIndicator(){try{let x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');$('recordCountIndicator').textContent=`สะสมในระบบ: ${x.length} งวด`}catch(e){$('recordCountIndicator').textContent='สะสมในระบบ: 0 งวด'}}
+
 window.captureCardImage=function(cardId,lotteryTitle){
 let el=$(cardId);if(!el)return;showToast('📸 กำลังบันทึกภาพการ์ด...');
 let buttons=el.querySelector('.card-btn-group');if(buttons)buttons.style.visibility='hidden';
 html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true,logging:false}).then(c=>{
 if(buttons)buttons.style.visibility='visible';
-c.toBlob(blob=>{
-if(!blob){showToast('❌ ไม่สามารถสร้างไฟล์ภาพได้');return}
-let safe=String(lotteryTitle||'หวย').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_'),fileName=`BanNgernKong_${safe}.png`;
-let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);showToast('✓ บันทึกภาพการ์ดแล้ว')
-},'image/png')
+c.toBlob(blob=>{if(!blob){showToast('❌ ไม่สามารถสร้างไฟล์ภาพได้');return}
+let safe=String(lotteryTitle||'หวย').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_'),fileName=`BanNgernKong_${safe}.png`,url=URL.createObjectURL(blob),a=document.createElement('a');
+a.href=url;a.download=fileName;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);showToast('✓ บันทึกภาพการ์ดแล้ว')},'image/png')
 }).catch(e=>{if(buttons)buttons.style.visibility='visible';console.error(e);showToast('❌ ไม่สามารถจับภาพได้')})
 }
-window.copyCardText=function(cardId,title,date,pairs){
-let all=pairs.map(x=>x.pair).join(', ');
-navigator.clipboard?.writeText(`🎯 ${title} (${date}) | บ้านเงินกอง\nชุดเจาะเน้น: ${all}`).then(()=>showToast('✓ คัดลอกเลขเด่นเรียบร้อย')).catch(()=>showToast('❌ คัดลอกไม่สำเร็จ'))
+
+/* ระบบคัด "ชุดเน้น" ใหม่ */
+function buildBestCopySet(card,title,date,flag){
+let pills=[...card.querySelectorAll('.floating-pill')].map((x,i)=>({pair:x.textContent.trim(),rank:x.classList.contains('rank-gold')?1:x.classList.contains('rank-silver')?2:x.classList.contains('rank-rosegold')?3:4,index:i}));
+let d1=card.querySelector('.hero-gold .hero-circle')?.textContent.trim()||'';
+let d2=card.querySelector('.hero-silver .hero-circle')?.textContent.trim()||'';
+let first=pills.slice(0,5),second=pills.slice(5,10),all=[...first,...second];
+let best=all.filter(x=>x.rank<=3).sort((a,b)=>a.rank-b.rank||a.index-b.index);
+if(best.length<6)all.forEach(x=>{if(best.length<6&&!best.includes(x))best.push(x)});
+best=best.slice(0,6);
+
+let pairs2=best.map(x=>x.pair).filter(x=>/^\d{2}$/.test(x));
+while(pairs2.length<6){
+let used=new Set(pairs2),base=d1||d2||'0';
+for(let u=0;u<10&&pairs2.length<6;u++){let p=`${base}${u}`;if(!used.has(p)&&base!==String(u)){pairs2.push(p);used.add(p)}}
 }
+
+let row1=pairs2.slice(0,3),row2=pairs2.slice(3,6);
+let three=[];
+let candidates=[
+`${row1[0]?.[1]||d1}${row1[1]||''}`,
+`${row2[0]?.[1]||d2}${row2[1]||''}`,
+`${d1}${row2[2]||row1[2]||''}`
+];
+candidates.forEach(x=>{x=String(x).replace(/\D/g,'');if(x.length>=3)three.push(x.slice(0,3))});
+three=[...new Set(three)].slice(0,3);
+while(three.length<3){
+let seed=pairs2[three.length]||`${d1}${d2}`;
+let n=`${d1||'0'}${seed}`.slice(0,3);
+if(!three.includes(n))three.push(n);else three.push(`${d2||'0'}${seed}`.slice(0,3))
+}
+
+return`📅 ${date}
+
+${flag} ${title}
+
+✨ ${d1||d2}
+───────
+${row1.join(' — ')}
+${row2.join(' — ')}
+────────
+${three.join(' — ')}
+
+📮 ID : cpu80
+
+🪷   อ.อาร์ม   ทรัพย์ทวี   🪷`
+}
+
+window.copyCardText=function(cardId,title,date,pairs){
+let card=$(cardId),flag=card?.querySelector('.card-flag')?.textContent?.trim()||'🌐',text=buildBestCopySet(card,title,date,flag);
+navigator.clipboard?.writeText(text).then(()=>showToast('✓ คัดลอกชุดเน้นเรียบร้อย')).catch(()=>showToast('❌ คัดลอกไม่สำเร็จ'))
+}
+
 function recentRate(recs,formula,start,end){
 let from=Math.max(0,recs.length-end),to=Math.max(0,recs.length-start),total=0,hit=0;
 for(let i=from;i<to;i++){if(i>=recs.length-1)continue;let a=recs[i],b=recs[i+1],t=a.n3.split('').map(Number),u=a.n2.split('').map(Number),p=sanitizeFormulaResult(formula(t[0],t[1],t[2],u[0],u[1]));if(checkHitDetail(p,b.n3,b.n2).hitAny)hit++;total++}
@@ -159,7 +199,7 @@ candidates.push({digit:d,score})
 candidates.sort((a,b)=>b.score-a.score);
 let selected=[],protectedDigits=[...latestDigits];
 protectedDigits.forEach(d=>{if(!selected.includes(d))selected.push(d)});
-for(let c of candidates)if(selected.length<4&&!selected.includes(c.digit))selected.push(c.digit);
+for(let c of candidates){if(selected.length<4&&!selected.includes(c.digit))selected.push(c.digit)}
 return{selected,candidates}
 }
 function makeSmartPairs(digits,recs){
@@ -173,7 +213,6 @@ pairs.push(units.sort((a,b)=>a.val-b.val).map((x,i)=>({...x,rankClass:i===0?'ran
 });
 return pairs
 }
-
 function renderFullUI(globalAuditMap,auditDataMap,predictionDataMap,smartDataMap){
 let html=`<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย & จัดอันดับความแม่นยำ</div><div class="summary-table-container"><h3 style="color:#78590f;font-size:.78rem;margin:0 0 8px">ภาพรวมความแม่นยำของทุกสูตร (ค่าดิบ)</h3><table class="audit-table"><thead><tr><th>อันดับ</th><th>ชื่อสูตร</th><th>เลขเด่นงวดล่าสุด</th><th>งวดทดสอบรวม</th><th>เข้า / หลุด</th><th>หลักร้อยเดี่ยว</th><th>Hit Rate (%)</th><th>สถานะ</th></tr></thead><tbody>`;
 Object.keys(globalAuditMap).sort((a,b)=>globalAuditMap[b].hitRate-globalAuditMap[a].hitRate).forEach((f,i)=>{
@@ -204,39 +243,29 @@ html+=smartCardHTML(id,s,title,getLotteryFlag(name))
 html+=`<div class="brand-footer"><span class="brand-star">✦</span><span>ระบบบ้านเงินกอง V32.4 — Original Formula + Multi-View Statistical Filter</span><span class="brand-star">✦</span></div>`;
 $('result').innerHTML=html;bindCardButtons();updateIndicator()
 }
-
 function cardHTML(id,p,title,flag,label,smart){
 return`<div class="prediction-card${smart?' smart-card':''}" id="${id}" data-title="${esc(title)}"><div class="card-top-bar"><div class="card-title-group"><div class="card-flag">${flag}</div><div class="card-info"><small>${esc(p.nextDate)}</small><b>${esc(title)}</b></div></div><div class="card-right-group"><div class="card-brand-tag">✦ บ้านเงินกอง ✦</div><div class="card-btn-group"><button class="card-action-btn copy-btn">📋 คัดลอก</button><button class="card-action-btn capture-btn">📸 บันทึกภาพ</button></div></div></div><div class="hero-digits-wrap"><div class="hero-digit-badge hero-gold"><div class="hero-circle">${p.d1}</div><span class="hero-label">เด่น</span></div><div class="hero-digit-badge hero-silver"><div class="hero-circle">${p.d2}</div><span class="hero-label">รอง</span></div></div><div class="pairs-grid-container"><div class="pair-row-inline">${p.d1Pairs.map(x=>`<div class="floating-pill ${x.rankClass}">${x.pair}</div>`).join('')}</div><div class="pair-row-inline">${p.d2Pairs.map(x=>`<div class="floating-pill ${x.rankClass}">${x.pair}</div>`).join('')}</div></div></div>`
 }
-
 function smartCardHTML(id,s,title,flag){
 let d=s.selected.slice(0,2),p={nextDate:s.nextDate,d1:d[0],d2:d[1],d1Pairs:s.pairs[0]||[],d2Pairs:s.pairs[1]||[]};
 return cardHTML(id,p,title,flag,'Smart Filter',true)
 }
-
 function bindCardButtons(){
 document.querySelectorAll('.prediction-card').forEach(card=>{
-let title=card.dataset.title||'หวย';
+let title=card.dataset.title||'หวย',date=card.querySelector('.card-info small')?.textContent||'';
 card.querySelector('.capture-btn')?.addEventListener('click',()=>captureCardImage(card.id,title));
 card.querySelector('.copy-btn')?.addEventListener('click',()=>{
-let pairs=[...card.querySelectorAll('.floating-pill')].map(x=>({pair:x.textContent.trim()})),date=card.querySelector('.card-info small')?.textContent||'';
-navigator.clipboard?.writeText(`🎯 ${title} (${date}) | บ้านเงินกอง\nชุดคัดกรอง: ${pairs.map(x=>x.pair).join(', ')}`).then(()=>showToast('✓ คัดลอกเลขเรียบร้อย')).catch(()=>showToast('❌ คัดลอกไม่สำเร็จ'))
+let flag=card.querySelector('.card-flag')?.textContent?.trim()||'🌐',text=buildBestCopySet(card,title,date,flag);
+navigator.clipboard?.writeText(text).then(()=>showToast('✓ คัดลอกชุดเน้นเรียบร้อย')).catch(()=>showToast('❌ คัดลอกไม่สำเร็จ'))
 })
 })
 }
-
 function runEngine(){
 let text=$('bulkInput').value.trim(),newRecords=[];
-if(text){
-let parsed=parseInput(text);
-if(parsed.errors.length&&parsed.records.length===0){$('result').innerHTML=`<div class="errorbox"><b>ไม่สามารถประมวลผลได้:</b><br>${parsed.errors.join('<br>')}</div>`;return}
-newRecords=parsed.records
-}
-let master=[];
-try{master=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){}
+if(text){let parsed=parseInput(text);if(parsed.errors.length&&parsed.records.length===0){$('result').innerHTML=`<div class="errorbox"><b>ไม่สามารถประมวลผลได้:</b><br>${parsed.errors.join('<br>')}</div>`;return}newRecords=parsed.records}
+let master=[];try{master=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){}
 newRecords.forEach(nr=>{let i=master.findIndex(r=>r.name===nr.name&&r.date===nr.date);if(i>=0)master[i]=nr;else master.push(nr)});
-master.sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
-try{localStorage.setItem(STORAGE_KEY,JSON.stringify(master))}catch(e){}
+master.sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));try{localStorage.setItem(STORAGE_KEY,JSON.stringify(master))}catch(e){}
 if(!master.length){$('result').innerHTML='<div class="errorbox">ยังไม่มีข้อมูลในระบบ กรุณากรอกข้อมูลสถิติย้อนหลัง</div>';return}
 let groups={};master.forEach(r=>(groups[r.name]??=[]).push(r));
 let auditDataMap={},predictionDataMap={},smartDataMap={},globalAccumulator={};
@@ -251,8 +280,7 @@ let a=recs[i],b=recs[i+1],t=a.n3.split('').map(Number),u=a.n2.split('').map(Numb
 if(c.hitHundredsOnly)hundreds++;
 if(c.hitAny){hits++;cur++;curMiss=0;max=Math.max(max,cur)}else{misses++;curMiss++;cur=0;maxMiss=Math.max(maxMiss,curMiss)}
 }
-let latestDigits=sanitizeFormulaResult(formulas[f](lt[0],lt[1],lt[2],lb[0],lb[1])),total=hits+misses;
-let x={totalTested:total,hits,misses,hundredsOnlyCount:hundreds,hitRate:total?Number((100*hits/total).toFixed(2)):0,maxStreak:max,maxMissStreak:maxMiss,curStreak:cur,curMissStreak:curMiss,lastHit:cur>0,hitHundredsOnly:false,latestDigits,rate25:recentRate(recs,formulas[f],0,25),rate15:recentRate(recs,formulas[f],0,15),rate8:recentRate(recs,formulas[f],0,8)};
+let latestDigits=sanitizeFormulaResult(formulas[f](lt[0],lt[1],lt[2],lb[0],lb[1])),total=hits+misses,x={totalTested:total,hits,misses,hundredsOnlyCount:hundreds,hitRate:total?Number((100*hits/total).toFixed(2)):0,maxStreak:max,maxMissStreak:maxMiss,curStreak:cur,curMissStreak:curMiss,lastHit:cur>0,hitHundredsOnly:false,latestDigits,rate25:recentRate(recs,formulas[f],0,25),rate15:recentRate(recs,formulas[f],0,15),rate8:recentRate(recs,formulas[f],0,8)};
 fs[f]=x;
 let g=globalAccumulator[f];g.totalTested+=total;g.hits+=hits;g.misses+=misses;g.hundredsOnlyCount+=hundreds;g.latestDigits=latestDigits
 });
@@ -271,19 +299,14 @@ predictionDataMap[name]={nextDate:getNextDateStr(latest.date),d1,d2,d1Pairs:pair
 let smart=makeSmartSelection(recs,fs,[d1,d2]),sp=makeSmartPairs(smart.selected.slice(0,2),recs);
 smartDataMap[name]={nextDate:getNextDateStr(latest.date),selected:smart.selected,candidates:smart.candidates,pairs:sp}
 });
-let globalAuditMap={};
-Object.keys(globalAccumulator).forEach(f=>{let g=globalAccumulator[f];globalAuditMap[f]={...g,hitRate:g.totalTested?Number((100*g.hits/g.totalTested).toFixed(2)):0}});
+let globalAuditMap={};Object.keys(globalAccumulator).forEach(f=>{let g=globalAccumulator[f];globalAuditMap[f]={...g,hitRate:g.totalTested?Number((100*g.hits/g.totalTested).toFixed(2)):0}});
 renderFullUI(globalAuditMap,auditDataMap,predictionDataMap,smartDataMap);showToast('✓ ประมวลผลระบบ V32.4 สำเร็จ')
 }
-
 addEventListener('DOMContentLoaded',()=>{
 $('run').onclick=runEngine;
 $('clearInput').onclick=()=>{$('bulkInput').value='';showToast('✓ ล้างกล่องกรอกข้อมูลแล้ว')};
-$('clearGlobal').onclick=()=>{
-if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){try{localStorage.removeItem(STORAGE_KEY)}catch(e){}$('result').innerHTML='';updateIndicator();showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย')}
-};
-updateIndicator();
-try{if(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]').length)runEngine()}catch(e){}
+$('clearGlobal').onclick=()=>{if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){try{localStorage.removeItem(STORAGE_KEY)}catch(e){}$('result').innerHTML='';updateIndicator();showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย')}};
+updateIndicator();try{if(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]').length)runEngine()}catch(e){}
 });
 })();
 </script>
