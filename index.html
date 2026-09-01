@@ -1017,6 +1017,61 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 
   .score-audit-summary-grid{grid-template-columns:1fr 1fr}
 }
+
+/* =========================================================
+   DATA INTEGRITY AUDIT PANEL — non-scoring diagnostics
+========================================================= */
+.integrity-panel{
+  margin:18px 0 0;
+  border:1px solid rgba(133,100,20,.18);
+  border-radius:18px;
+  background:rgba(255,255,255,.78);
+  box-shadow:0 10px 28px rgba(52,40,12,.06);
+  overflow:hidden;
+}
+.integrity-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:15px 18px;
+  border-bottom:1px solid rgba(133,100,20,.12);
+}
+.integrity-title{
+  font-weight:800;
+  letter-spacing:.2px;
+}
+.integrity-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.integrity-badge.pass{background:rgba(34,139,80,.10);color:#17633a}
+.integrity-badge.warn{background:rgba(196,135,16,.12);color:#855f08}
+.integrity-badge.fail{background:rgba(190,55,55,.10);color:#8b2525}
+.integrity-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  padding:15px 18px 18px;
+}
+.integrity-item{
+  padding:11px 12px;
+  border-radius:12px;
+  background:rgba(247,244,235,.72);
+  border:1px solid rgba(133,100,20,.10);
+}
+.integrity-item small{display:block;opacity:.65;font-size:11px;margin-bottom:4px}
+.integrity-item b{font-size:16px}
+.integrity-note{padding:0 18px 16px;font-size:12px;opacity:.7}
+@media(max-width:900px){.integrity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.integrity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.integrity-head{align-items:flex-start;flex-direction:column}}
+
 </style>
 </head>
 
@@ -1123,6 +1178,9 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 
 
 <div id="result" class="result"></div>
+
+<div id="integrityPanel"></div>
+<div id="expandedAuditPanel"></div>
 
 
 </div>
@@ -2075,6 +2133,8 @@ function getFormulaHistory(
       sourceDate:curr.date,
       targetDate:next.date,
       predicted,
+      actualN3:next.n3,
+      actualN2:next.n2,
       hit:check.hitAny,
       hundredsOnly:check.hitHundredsOnly
     });
@@ -6113,6 +6173,13 @@ function runEngine(){
   );
 
 
+  /* DATA INTEGRITY — display only */
+  renderDataIntegrityPanel(groups);
+
+  /* EXPANDED AUDIT — display only */
+  renderExpandedAuditPanel(groups);
+
+
 
 
   /* =====================================================
@@ -6188,6 +6255,305 @@ function runEngine(){
 
 
 
+
+
+/* =========================================================
+   DATA INTEGRITY AUDIT
+   Diagnostic only — does not alter scoring/prediction logic.
+========================================================= */
+
+function buildDataIntegrity(recs){
+  const all=Array.isArray(recs)?recs:[];
+  const results=all.filter(isResultRecord);
+  const skipped=all.filter(isSkippedRecord);
+  const invalid=all.filter(r=>!isResultRecord(r)&&!isSkippedRecord(r));
+
+  const exactKeys=new Set();
+  let duplicates=0;
+  all.forEach(r=>{
+    const key=[
+      r.lotteryName||r.name||'',
+      r.date||'',
+      r.n3||'',
+      r.n2||'',
+      r.status||''
+    ].join('|');
+    if(exactKeys.has(key)) duplicates++;
+    else exactKeys.add(key);
+  });
+
+  const chronological=[...all].filter(r=>
+    (Number(r.timestamp)||parseThaiDate(r.date)||0)>0
+  );
+  let orderIssues=0;
+  for(let i=1;i<chronological.length;i++){
+    const prev=Number(chronological[i-1].timestamp)||parseThaiDate(chronological[i-1].date)||0;
+    const cur=Number(chronological[i].timestamp)||parseThaiDate(chronological[i].date)||0;
+    if(cur<prev) orderIssues++;
+  }
+
+  const incomplete=results.filter(r=>
+    !/^\d{3}$/.test(String(r.n3??''))||
+    !/^\d{2}$/.test(String(r.n2??''))
+  ).length;
+
+  const checks=[
+    ['ผลรางวัลจริง',results.length,results.length>0],
+    ['งดออกผล',skipped.length,true],
+    ['ข้อมูลผิดรูปแบบ',invalid.length,invalid.length===0],
+    ['ข้อมูลซ้ำ',duplicates,duplicates===0],
+    ['ลำดับเวลา',orderIssues,orderIssues===0],
+    ['ผลไม่ครบ',incomplete,incomplete===0]
+  ];
+
+  const hasFail=invalid.length>0||incomplete>0;
+  const hasWarn=duplicates>0||orderIssues>0;
+  const status=hasFail?'fail':hasWarn?'warn':'pass';
+  const label=hasFail?'CHECK FAILED':hasWarn?'CHECK WARNING':'DATA INTEGRITY PASS';
+
+  return{
+    raw:all.length,
+    results:results.length,
+    skipped:skipped.length,
+    invalid:invalid.length,
+    duplicates,
+    orderIssues,
+    incomplete,
+    status,
+    label,
+    checks
+  };
+}
+
+function renderDataIntegrityPanel(groups){
+  const root=$('integrityPanel');
+  if(!root) return;
+
+  const names=Object.keys(groups||{});
+  if(!names.length){
+    root.innerHTML='';
+    return;
+  }
+
+  const summaries=names.map(name=>({
+    name,
+    data:buildDataIntegrity(groups[name])
+  }));
+
+  const total={raw:0,results:0,skipped:0,invalid:0,duplicates:0,orderIssues:0,incomplete:0};
+  summaries.forEach(x=>Object.keys(total).forEach(k=>total[k]+=x.data[k]||0));
+
+  const globalStatus=
+    summaries.some(x=>x.data.status==='fail')?'fail':
+    summaries.some(x=>x.data.status==='warn')?'warn':'pass';
+
+  const globalLabel=
+    globalStatus==='fail'?'CHECK FAILED':
+    globalStatus==='warn'?'CHECK WARNING':'DATA INTEGRITY PASS';
+
+  const escLocal=v=>esc(String(v??''));
+
+  root.innerHTML=`
+    <section class="integrity-panel">
+      <div class="integrity-head">
+        <div>
+          <div class="integrity-title">🛡️ Data Integrity Audit</div>
+          <div style="font-size:12px;opacity:.65;margin-top:3px;">
+            ตรวจความครบถ้วน ลำดับเวลา ข้อมูลซ้ำ และการแยกงวดงดออกผล โดยไม่แตะ Score หรือสูตร
+          </div>
+        </div>
+        <span class="integrity-badge ${globalStatus}">● ${globalLabel}</span>
+      </div>
+      <div class="integrity-grid">
+        <div class="integrity-item"><small>Records ทั้งหมด</small><b>${total.raw}</b></div>
+        <div class="integrity-item"><small>ผลจริงที่ใช้ Audit</small><b>${total.results}</b></div>
+        <div class="integrity-item"><small>งดออกผล</small><b>${total.skipped}</b></div>
+        <div class="integrity-item"><small>ข้อมูลผิดรูปแบบ</small><b>${total.invalid}</b></div>
+        <div class="integrity-item"><small>ข้อมูลซ้ำ</small><b>${total.duplicates}</b></div>
+        <div class="integrity-item"><small>ลำดับเวลาผิด</small><b>${total.orderIssues}</b></div>
+      </div>
+      <div class="integrity-note">
+        ${summaries.map(x=>`<span style="display:inline-block;margin:2px 8px 2px 0;">${escLocal(formatDisplayTitle(x.name))}: <b>${escLocal(x.data.label)}</b></span>`).join('')}
+      </div>
+    </section>`;
+}
+
+/* =========================================================
+   EXPANDED AUDIT LAYER
+   Diagnostic / historical analysis only.
+   IMPORTANT: does NOT modify Score, Ranking, prediction,
+   or any original formula logic.
+========================================================= */
+
+function auditPositionProfile(history){
+  const out={
+    topHundreds:0,
+    topTens:0,
+    topUnits:0,
+    bottomAny:0,
+    hundredsOnly:0
+  };
+
+  history.forEach(item=>{
+    const p=Array.isArray(item.predicted)?item.predicted:[];
+    const n3=String(item.actualN3||'');
+    const n2=String(item.actualN2||'');
+    if(p.length<1||n3.length!==3||n2.length!==2) return;
+
+    const a=Number(p[0]);
+    const b=Number(p[1]);
+    const top=[Number(n3[0]),Number(n3[1]),Number(n3[2])];
+    const bot=[Number(n2[0]),Number(n2[1])];
+    const preds=[a,b];
+
+    if(preds.some(d=>d===top[0])) out.topHundreds++;
+    if(preds.some(d=>d===top[1])) out.topTens++;
+    if(preds.some(d=>d===top[2])) out.topUnits++;
+    if(preds.some(d=>bot.includes(d))) out.bottomAny++;
+    if(item.hundredsOnly) out.hundredsOnly++;
+  });
+
+  return out;
+}
+
+function auditWindowProfile(history){
+  const sizes=[5,10,20,30];
+  return sizes.map(size=>{
+    const arr=history.slice(-size);
+    const hits=arr.filter(x=>x.hit).length;
+    const misses=arr.length-hits;
+    return{
+      size,
+      tested:arr.length,
+      hits,
+      misses,
+      rate:percent(hits,arr.length)
+    };
+  });
+}
+
+function auditConsistency(history){
+  const rates=auditWindowProfile(history)
+    .filter(x=>x.tested>0)
+    .map(x=>x.rate);
+  if(!rates.length) return {label:'NO DATA',cls:'flat',spread:0,mean:0};
+  const mean=avg(rates);
+  const spread=Math.max(...rates)-Math.min(...rates);
+  let label='HIGH';
+  let cls='good';
+  if(spread>25){ label='VOLATILE'; cls='bad'; }
+  else if(spread>10){ label='MIXED'; cls='warn'; }
+  return{label,cls,spread:round2(spread),mean:round2(mean)};
+}
+
+function auditMatrixCell(item){
+  if(item.hit) return '<span class="ea-cell hit" title="Hit">✓</span>';
+  if(item.hundredsOnly) return '<span class="ea-cell partial" title="ตรงหลักร้อยเท่านั้น — ตามเกณฑ์ Audit ถือเป็น Miss">•</span>';
+  return '<span class="ea-cell miss" title="Miss">×</span>';
+}
+
+function renderExpandedAuditPanel(groups){
+  const root=$('expandedAuditPanel');
+  if(!root) return;
+
+  const names=Object.keys(groups||{});
+  if(!names.length){ root.innerHTML=''; return; }
+
+  const sortedGroups={};
+  names.forEach(name=>{
+    sortedGroups[name]=[...(groups[name]||[])].slice().sort((a,b)=>{
+      const ta=Number(a.timestamp)||parseThaiDate(a.date)||0;
+      const tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+      return ta-tb;
+    });
+  });
+
+  let html=`
+  <section class="expanded-audit-panel">
+    <style>
+      .expanded-audit-panel{margin:18px 0;padding:16px;border:1px solid rgba(255,255,255,.10);border-radius:18px;background:rgba(12,16,24,.72);box-shadow:0 10px 28px rgba(0,0,0,.16)}
+      .ea-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+      .ea-title{font-size:17px;font-weight:800}.ea-sub{font-size:12px;opacity:.65;margin-top:3px}
+      .ea-legend{font-size:11px;opacity:.72}.ea-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0}
+      .ea-card{padding:12px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}
+      .ea-card h4{margin:0 0 8px;font-size:13px}.ea-kpi{display:flex;justify-content:space-between;gap:8px;margin:4px 0;font-size:12px}.ea-kpi b{font-size:13px}
+      .ea-table-wrap{overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,.08)}
+      .ea-table{width:100%;border-collapse:collapse;min-width:760px;font-size:11px}.ea-table th,.ea-table td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.07);text-align:center;white-space:nowrap}.ea-table th{font-weight:800;opacity:.82}.ea-table td:first-child,.ea-table th:first-child{text-align:left}
+      .ea-cell{display:inline-flex;width:20px;height:20px;border-radius:6px;align-items:center;justify-content:center;font-weight:900}.ea-cell.hit{background:rgba(34,197,94,.18);color:#86efac}.ea-cell.miss{background:rgba(239,68,68,.15);color:#fca5a5}.ea-cell.partial{background:rgba(245,158,11,.16);color:#fcd34d}
+      .ea-status{display:inline-block;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800}.ea-status.good{background:rgba(34,197,94,.15);color:#86efac}.ea-status.warn{background:rgba(245,158,11,.15);color:#fcd34d}.ea-status.bad{background:rgba(239,68,68,.15);color:#fca5a5}.ea-status.flat{background:rgba(148,163,184,.12);color:#cbd5e1}
+      .ea-section{margin-top:14px}.ea-section summary{cursor:pointer;font-weight:800;padding:8px 0}.ea-note{font-size:11px;opacity:.62;margin-top:8px;line-height:1.5}
+    </style>
+    <div class="ea-head">
+      <div><div class="ea-title">🔎 Expanded Historical Audit</div><div class="ea-sub">วิเคราะห์ย้อนหลังเพื่อความโปร่งใสของระบบเท่านั้น — ไม่เปลี่ยน Score, Ranking หรือสูตรเดิม</div></div>
+      <div class="ea-legend">✓ Hit · • หลักร้อยเท่านั้น · × Miss</div>
+    </div>`;
+
+  names.forEach(name=>{
+    const recs=sortedGroups[name];
+    const audit=currentAuditDataMap?.[name]||{};
+    const formulaNamesLocal=Object.keys(audit);
+    if(!formulaNamesLocal.length) return;
+
+    html+=`<div class="ea-section"><details open><summary>${esc(formatDisplayTitle(name))}</summary>`;
+
+    html+=`<div class="ea-grid">`;
+    formulaNamesLocal.forEach(fName=>{
+      const f=audit[fName];
+      const h=f.history||[];
+      const w=auditWindowProfile(h);
+      const p=auditPositionProfile(h);
+      const c=auditConsistency(h);
+      html+=`<div class="ea-card">
+        <h4>${esc(fName)}</h4>
+        <div class="ea-kpi"><span>Hit / Miss</span><b>${f.hits} / ${f.misses}</b></div>
+        <div class="ea-kpi"><span>Current Miss Streak</span><b>${f.curMissStreak}</b></div>
+        <div class="ea-kpi"><span>Max Miss Streak</span><b>${f.maxMissStreak}</b></div>
+        <div class="ea-kpi"><span>Miss 5 / 10 / 20 / 30</span><b>${w.map(x=>x.misses).join(' / ')}</b></div>
+        <div class="ea-kpi"><span>Consistency</span><b><span class="ea-status ${c.cls}">${c.label}</span></b></div>
+        <div class="ea-kpi"><span>Position H / T / U</span><b>${p.topHundreds} / ${p.topTens} / ${p.topUnits}</b></div>
+      </div>`;
+    });
+    html+=`</div>`;
+
+    html+=`<div class="ea-table-wrap"><table class="ea-table"><thead><tr><th>สูตร</th><th>5 งวด</th><th>10 งวด</th><th>20 งวด</th><th>30 งวด</th><th>Consistency</th><th>Spread</th></tr></thead><tbody>`;
+    formulaNamesLocal.forEach(fName=>{
+      const f=audit[fName]; const h=f.history||[]; const w=auditWindowProfile(h); const c=auditConsistency(h);
+      html+=`<tr><td>${esc(fName)}</td>${w.map(x=>`<td>${x.hits}/${x.tested} (${x.rate}%)</td>`).join('')}<td><span class="ea-status ${c.cls}">${c.label}</span></td><td>${c.spread}%</td></tr>`;
+    });
+    html+=`</tbody></table></div>`;
+
+    html+=`<div class="ea-table-wrap" style="margin-top:10px"><table class="ea-table"><thead><tr><th>สูตร</th><th>หลักร้อย</th><th>หลักสิบ</th><th>หลักหน่วย</th><th>ล่าง</th><th>ร้อยอย่างเดียว</th></tr></thead><tbody>`;
+    formulaNamesLocal.forEach(fName=>{
+      const p=auditPositionProfile(audit[fName].history||[]);
+      html+=`<tr><td>${esc(fName)}</td><td>${p.topHundreds}</td><td>${p.topTens}</td><td>${p.topUnits}</td><td>${p.bottomAny}</td><td>${p.hundredsOnly}</td></tr>`;
+    });
+    html+=`</tbody></table></div>`;
+
+    html+=`<details class="ea-section"><summary>Hit / Miss Matrix — ${esc(formatDisplayTitle(name))}</summary><div class="ea-table-wrap"><table class="ea-table"><thead><tr><th>งวดเป้าหมาย</th>`;
+    formulaNamesLocal.forEach(fName=>html+=`<th>${esc(fName)}</th>`);
+    html+=`</tr></thead><tbody>`;
+
+    const maxRows=Math.min(30, ...formulaNamesLocal.map(f=>((audit[f].history||[]).length)));
+    for(let row=maxRows-1;row>=0;row--){
+      const refHistory=audit[formulaNamesLocal[0]].history||[];
+      const itemRef=refHistory[refHistory.length-maxRows+row];
+      const target=itemRef?.targetDate||'-';
+      html+=`<tr><td>${esc(target)}</td>`;
+      formulaNamesLocal.forEach(fName=>{
+        const h=audit[fName].history||[];
+        const idx=h.length-maxRows+row;
+        html+=`<td>${idx>=0&&h[idx]?auditMatrixCell(h[idx]):'-'}</td>`;
+      });
+      html+=`</tr>`;
+    }
+    html+=`</tbody></table></div><div class="ea-note">Matrix นี้เป็นประวัติย้อนหลังสำหรับตรวจสอบระบบเท่านั้น และไม่มีการนำค่า Matrix กลับไปคำนวณ Score หรือ Ranking</div></details>`;
+
+    html+=`</details></div>`;
+  });
+
+  html+=`</section>`;
+  root.innerHTML=html;
+}
 
 /* =========================================================
    EXPORT AUDIT CSV
@@ -6496,6 +6862,13 @@ window.addEventListener(
 
 
           $('result').innerHTML='';
+
+
+          if($('integrityPanel'))
+            $('integrityPanel').innerHTML='';
+
+          if($('expandedAuditPanel'))
+            $('expandedAuditPanel').innerHTML='';
 
 
           updateIndicator();
