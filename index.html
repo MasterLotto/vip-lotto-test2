@@ -1,506 +1,888 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Ngern Kong V32.3</title>
-<style>
-:root{
-  --bg-main: linear-gradient(135deg, #fcfbfa 0%, #f4efe6 100%);
-  --panel-bg: rgba(255, 255, 255, 0.96);
-  --line-gold: rgba(212, 175, 55, 0.3);
-  --line-soft: #eae3d2;
-  --text-dark: #322c23;
-  --text-muted: #827768;
-  
-  --gold-grad: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
-  --silver-grad: linear-gradient(135deg, #c0c0c0 0%, #8a929a 100%);
-  --shadow-lux: 0 12px 36px rgba(120, 90, 40, 0.07);
-}
-*{ box-sizing:border-box; } html{ scroll-behavior:smooth; }
-body{ margin:0; background: var(--bg-main); color:var(--text-dark); font-family:'Prompt', system-ui, -apple-system, sans-serif; min-height:100vh; }
-button,input,textarea{ font:inherit; } button{ cursor:pointer; }
-#snow{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
-.shell{ position:relative; z-index:1; min-height:100vh; padding:20px 14px 50px; } .app{ width:min(1000px,100%); margin:0 auto; } .inner{ padding:8px; }
+/* =========================================================
+   V32.4 — STATISTICAL AUDIT ENGINE
+   เน้นตรวจสอบสูตรย้อนหลัง ไม่สร้างคำแนะนำงวดถัดไป
+   ========================================================= */
 
-.top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
-.brand{ display:flex; align-items:center; gap:12px; }
-.logo{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg,#e6c875,#a67c1e); color:#fff; font-weight:800; font-size:.8rem; box-shadow:0 4px 12px rgba(166,124,30,.25); border:1px solid rgba(255,255,255,.4); }
-.brand b{ display:block; font-size:.85rem; letter-spacing:.2px; color:#4a3b18; font-weight:700; } .brand small{ display:block; margin-top:1px; font-size:.52rem; color:var(--text-muted); font-weight:500; }
-.pill{ padding:6px 12px; border:1px solid var(--line-gold); border-radius:99px; background:rgba(255,251,240,.9); color:#967219; font-size:.48rem; font-weight:700; box-shadow:0 2px 8px rgba(212,175,55,.1); }
-
-.hero{ padding:20px; margin-bottom:18px; border:1px solid rgba(212,175,55,.2); border-radius:20px; background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(252,247,237,.9)); box-shadow:var(--shadow-lux); backdrop-filter:blur(10px); }
-.hero-tag{ font-size:.48rem; font-weight:800; letter-spacing:1.5px; color:#a67c1e; } .hero h1{ margin:6px 0 4px; font-size:1.5rem; line-height:1.2; font-weight:700; } .hero h1 em{ font-style:normal; background:linear-gradient(135deg,#c49828,#825e0c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; } .hero p{ margin:0; font-size:.58rem; line-height:1.6; color:var(--text-muted); font-weight:400; }
-
-.panel{ background:var(--panel-bg); border:1px solid rgba(212,175,55,.2); border-radius:20px; box-shadow:var(--shadow-lux); margin-bottom:18px; backdrop-filter:blur(8px); }
-.bulkbox{ padding:16px; } .bulkbox label{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:.58rem; font-weight:700; color:#856414; }
-.bulk{ display:block; width:100%; min-height:140px; resize:vertical; padding:12px; border:1px solid var(--line-soft); border-radius:14px; background:rgba(255,255,255,.9); color:var(--text-dark); outline:none; font-family:"IBM Plex Mono",monospace; font-size:.6rem; line-height:1.6; transition:.2s; }
-.bulk:focus{ border-color:#d4af37; box-shadow:0 0 0 3px rgba(212,175,55,.15); }
-.actions{ padding:0 16px 16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-.run{ height:42px; border:0; border-radius:12px; background:linear-gradient(135deg,#c49828,#8c6511); color:#fff; font-size:.62rem; font-weight:700; box-shadow:0 6px 16px rgba(140,101,17,.25); transition:.15s; }
-.run:hover{ transform:translateY(-1px); box-shadow:0 8px 20px rgba(140,101,17,.32); }
-.clear{ height:42px; border:1px solid var(--line-soft); border-radius:12px; background:#fff; color:#7c7263; font-size:.62rem; font-weight:600; }
-.clear-global{ height:42px; border:1px solid #f2b6ba; border-radius:12px; background:#fff5f5; color:#ba3c46; font-size:.62rem; font-weight:600; }
-
-.result{ margin-top:16px; }
-.section-title{ font-size:.82rem; font-weight:700; color:#78590f; margin:22px 0 12px; display:flex; align-items:center; gap:8px; border-left:4px solid #c49828; padding-left:10px; }
-
-.summary-table-container{ overflow-x:auto; margin-bottom:16px; border:1px solid var(--line-soft); border-radius:18px; background:#fff; padding:16px; box-shadow:var(--shadow-lux); }
-table.audit-table{ width:100%; border-collapse:collapse; font-size:.54rem; font-family:'Prompt', sans-serif; }
-table.audit-table th, table.audit-table td{ border:1px solid #f0e6d6; padding:10px 8px; text-align:center; white-space:nowrap; }
-table.audit-table th{ background:#faf5eb; color:#78590f; font-weight:700; }
-table.audit-table td.formula-cell{ text-align:left; font-weight:600; min-width:140px; white-space:normal; line-height:1.3; }
-table.audit-table tr:nth-child(even){ background:#fdfbf7; }
-
-.badge-rank-1{ background:linear-gradient(135deg,#fff3cd,#ffe69c); color:#856404; border:1px solid #ffeeba; padding:4px 8px; border-radius:99px; font-weight:700; display:inline-block; }
-.badge-rank-2{ background:linear-gradient(135deg,#e2e3e5,#d6d8db); color:#383d41; border:1px solid #c6c8ca; padding:4px 8px; border-radius:99px; font-weight:700; display:inline-block; }
-.badge-rank-3{ background:linear-gradient(135deg,#f8d7da,#f5c6cb); color:#721c24; border:1px solid #f5c6cb; padding:4px 8px; border-radius:99px; font-weight:700; display:inline-block; }
-.badge-rank-other{ background:#f8f9fa; color:#6c757d; border:1px solid #dee2e6; padding:4px 8px; border-radius:99px; font-weight:600; display:inline-block; }
-.badge-status{ padding:3px 8px; border-radius:6px; font-weight:600; font-size:.48rem; display:inline-block; }
-.status-hot{ background:#e8f5e9; color:#2e7d32; } .status-cooling{ background:#fffde7; color:#f57f17; }
-.status-danger{ background:#ffebee; color:#c62828; } .status-warning{ background:#fff3e0; color:#ef6c00; }
-
-.prediction-card{ margin-bottom:20px; padding:20px 22px; border:1px solid rgba(212,175,55,.25); border-radius:24px; background:linear-gradient(145deg, #ffffff 0%, #faf7f2 100%); box-shadow:0 10px 30px rgba(120,90,40,0.06); position:relative; }
-.card-top-bar{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; border-bottom:1px dashed #efe8d9; padding-bottom:10px; gap:12px; }
-.card-title-group{ display:flex; align-items:center; gap:9px; flex-shrink:0; }
-.card-flag{ font-size:1.5rem; line-height:1; }
-
-.card-info small{ display:block; font-size:.57rem; font-weight:600; color:var(--text-muted); margin-bottom:2px; white-space:nowrap; }
-.card-info b{ display:block; font-size:0.99rem; font-weight:800; color:#362e21; letter-spacing:-.2px; white-space:nowrap; line-height:1.2; }
-
-.card-right-group{ display:flex; align-items:center; gap:10px; margin-left:auto; }
-.card-brand-tag{ font-size:.51rem; font-weight:700; color:#b8860b; display:flex; align-items:center; gap:3px; letter-spacing:.3px; white-space:nowrap; background:rgba(212,175,55,0.08); padding:3px 7px; border-radius:6px; border:1px solid rgba(212,175,55,0.2); }
-.card-btn-group{ display:flex; gap:5px; }
-.card-action-btn{ padding:4px 10px; border:1px solid var(--line-soft); border-radius:99px; background:rgba(255,255,255,.9); color:#825e0c; font-size:.45rem; font-weight:700; transition:.15s; }
-.card-action-btn:hover{ background:#fff8e7; border-color:#d4af37; }
-
-.hero-digits-wrap{ display:flex; justify-content:center; align-items:center; gap:18px; margin:8px 0 16px; }
-.hero-digit-badge{ display:flex; align-items:center; gap:9px; padding:5px 15px 5px 7px; border-radius:99px; background:rgba(255,255,255,0.9); border:1px solid #ede5d5; box-shadow:0 4px 12px rgba(0,0,0,0.03); }
-.hero-circle{ width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-size:1.18rem; font-weight:800; font-family:'Prompt', sans-serif; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.15); }
-.hero-gold .hero-circle{ background: var(--gold-grad); }
-.hero-silver .hero-circle{ background: var(--silver-grad); }
-.hero-label{ font-size:.55rem; font-weight:700; color:#6b5e4c; }
-
-.pairs-grid-container{ display:flex; flex-direction:column; gap:9px; background:rgba(252,249,243,0.7); padding:13px 16px; border-radius:18px; border:1px solid #f0e8d8; }
-.pair-row-inline{ display:flex; align-items:center; justify-content:space-between; gap:9px; }
-
-.floating-pill{ flex:1; height:34px; border-radius:99px; display:grid; place-items:center; font-size:.78rem; font-weight:700; font-family:'IBM Plex Mono',monospace; transition:.15s; background:#ffffff; border:1px solid #eae3d2; color:#4a4235; box-shadow:0 2px 5px rgba(0,0,0,0.02); }
-.floating-pill.rank-gold{ background:linear-gradient(135deg, #fffdf8 0%, #faf0d9 100%); border-color:#d4af37; color:#5c4308; font-weight:800; box-shadow:0 3px 8px rgba(212,175,55,0.15); }
-.floating-pill.rank-silver{ background:#f6f7f9; border-color:#d0d4d9; color:#343a40; font-weight:800; }
-.floating-pill.rank-rosegold{ background:#fdf5f3; border-color:#e8bbb2; color:#692a1d; font-weight:800; }
-
-.toast{ position:fixed; left:50%; bottom:24px; z-index:9; transform:translate(-50%,20px); opacity:0; padding:10px 18px; border-radius:99px; color:#fff; background:#846210; font-size:.58rem; font-weight:600; transition:.2s; pointer-events:none; box-shadow:0 6px 16px rgba(0,0,0,0.15); }
-.toast.show{ opacity:1; transform:translate(-50%,0); }
-.errorbox{ padding:14px; border-radius:14px; border:1px solid #f2b6ba; background:#fff5f5; color:#ba3c46; font-size:.62rem; line-height:1.7; }
-.brand-footer{ display:flex; justify-content:center; align-items:center; gap:8px; padding:16px 0; color:#856414; font-size:.5rem; font-weight:600; }
-.brand-star{ color:#c49828; font-size:.64rem; }
-</style>
-</head>
-<body>
-<canvas id="snow"></canvas>
-<div class="shell"><div class="app"><div class="inner">
-  <div class="top"><div class="brand"><div class="logo">VIP</div><div><b>Mester Lotto VIP+</b><small>Ban Ngern Kong V32.3</small></div></div><div class="pill">● V32.3 OPTIMIZED</div></div>
-  <section class="hero"><span class="hero-tag">BAN NGERN KONG ULTIMATE PRECISION V32.3</span><h1>Master Audit & <em>บ้านเงินกอง V32.3</em></h1><p>ปรับแก้ตัวสะกดคำว่า "นิเคอิ" ให้ถูกต้องสมบูรณ์ พร้อมแสดงธงชาติญี่ปุ่น 🇯🇵 ชัดเจนไร้ที่ติ</p></section>
-  <div id="console">
-    <section class="panel"><div class="bulkbox"><label><span>📥 ข้อมูลสถิติย้อนหลัง (กรอกตามลำดับเวลา)</span><span id="recordCountIndicator" style="color:#856414; font-weight:700;">สะสมในระบบ: 0 งวด</span></label><textarea id="bulkInput" class="bulk" placeholder="นิเคอิ เช้า | 30 ส.ค. 69&#10;244&#10;43&#10;&#10;นิเคอิ บ่าย | 29 ส.ค. 69&#10;276&#10;87"></textarea></div>
-    <div class="actions"><button id="run" class="run">⚡ ประมวลผลระบบ V32.3</button><button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button><button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button></div></section>
-    <div id="result" class="result"></div>
-  </div>
-  <div id="toast" class="toast">ดำเนินการเรียบร้อย</div>
-</div></div></div>
-
-<script>
-(function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v323';
-  const canvas = document.getElementById('snow'); const ctx = canvas.getContext('2d');
-  let width = canvas.width = innerWidth, height = canvas.height = innerHeight;
-  window.addEventListener('resize', () => { width = canvas.width = innerWidth; height = canvas.height = innerHeight; });
-  const particles = Array.from({length:28}, () => ({ x:Math.random()*width, y:Math.random()*height, r:.8+Math.random()*1.4, s:.15+Math.random()*.35, a:.12+Math.random()*.25 }));
-  (function drawSnow(){ ctx.clearRect(0,0,width,height); particles.forEach(p => { p.y += p.s; if(p.y > height+5){ p.y = -5; p.x = Math.random()*width; } ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle = `rgba(196,152,40,${p.a})`; ctx.fill(); }); requestAnimationFrame(drawSnow); })();
-
-  function $(id){ return document.getElementById(id); } function esc(val){ return String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); } function norm(v){ return (v % 10 + 10) % 10; }
-  
-  // 🌟 ฟังก์ชันแปลงชื่อหวย (ปรับเพิ่มคำว่า "ปกติ" สำหรับนิเคอิธรรมดา)
-  function formatDisplayTitle(rawName){
-    let name = String(rawName || '').trim();
-    name = name.replace(/^สถิติหุ้น\s*/, '').replace(/^สถิติ\s*/, '').replace(/^หุ้น\s*/, '').replace(/\s*ย้อนหลัง$/, '').trim();
-    
-    if (name === 'อินเดีย' || name === 'หุ้นอินเดีย') return 'อินเดีย';
-    if (name === 'อียิปต์' || name === 'หุ้นอียิปต์') return 'อียิปต์';
-    if (name === 'ประชาชนลาว' || name === 'ประชาชน ลาว') return 'ประชาชน ลาว';
-
-    const cleanLower = name.toLowerCase().replace(/\s+/g, '');
-    if (cleanLower.includes('นิเคอิ') || cleanLower.includes('นิกเคอิ')) {
-      const isVip = cleanLower.includes('vip') || cleanLower.includes('พิเศษ');
-      const isMorning = cleanLower.includes('เช้า');
-      const isAfternoon = cleanLower.includes('บ่าย') || cleanLower.includes('เย็น');
-      
-      if (isVip) {
-        if (isMorning) return 'นิเคอิ VIP เช้า';
-        if (isAfternoon) return 'นิเคอิ VIP บ่าย';
-        return 'นิเคอิ VIP';
-      } else {
-        if (isMorning) return 'นิเคอิ ปกติ เช้า';
-        if (isAfternoon) return 'นิเคอิ ปกติ บ่าย';
-        return 'นิเคอิ ปกติ';
-      }
-    }
-
-    const stockMap = {
-      'จีนเช้า': 'จีน เช้า',
-      'จีนบ่าย': 'จีน บ่าย',
-      'ฮั่งเส็งเช้า': 'ฮั่งเส็ง เช้า',
-      'ฮั่งเส็งบ่าย': 'ฮั่งเส็ง บ่าย',
-      'ดาวโจนส์': 'ดาวโจนส์',
-      'ไต้หวัน': 'ไต้หวัน',
-      'เกาหลี': 'เกาหลี',
-      'สิงคโปร์': 'สิงคโปร์',
-      'ไทยเย็น': 'ไทย เย็น',
-      'อังกฤษ': 'อังกฤษ',
-      'เยอรมัน': 'เยอรมัน',
-      'รัสเซีย': 'รัสเซีย'
+function calculateAuditStats(results) {
+  const total = results.length;
+  if (!total) {
+    return {
+      total: 0,
+      hits: 0,
+      misses: 0,
+      hitRate: 0,
+      missRate: 0,
+      avg: 0,
+      stdDev: 0,
+      currentStreak: 0,
+      currentMissStreak: 0,
+      maxStreak: 0,
+      maxMissStreak: 0
     };
-    
-    if (stockMap[name]) return stockMap[name];
-
-    name = name.replace(/^(ฮานอย|ลาว|จีน|ฮั่งเส็ง|ดาวโจนส์|ไต้หวัน|เกาหลี|สิงคโปร์|รัสเซีย|เยอรมัน|อังกฤษ)(?=[ก-๙a-zA-Z0-9])/g, '$1 ');
-    name = name.replace(/([ก-๙a-zA-Z0-9])(VIP|พิเศษ|สามัคคี|พัฒนา|ประตูชัย|สตาร์|ทีวี|กาชาด|เฉพาะกิจ|Extra|HD|4D|เช้า|บ่าย|เย็น|ดึก|สันติภาพ)/g, '$1 $2');
-    return name.replace(/\s+/g, ' ').trim();
   }
 
-  // 🌟 ฟังก์ชันดักจับธงชาติ ครอบคลุมคำว่า นิเคอิ / นิกเคอิ / เช้า / บ่าย / VIP เพื่อแสดงธงญี่ปุ่น 🇯🇵
-  function getLotteryFlag(name){ 
-    const n = String(name || '').toLowerCase(); 
-    if(n.includes('นิเคอิ') || n.includes('นิกเคอิ') || n.includes('ญี่ปุ่น') || (n.includes('เช้า') && !n.includes('จีน') && !n.includes('ฮั่งเส็ง')) || (n.includes('บ่าย') && !n.includes('จีน') && !n.includes('ฮั่งเส็ง'))) return '🇯🇵'; 
-    if(n.includes('จีน')) return '🇨🇳'; 
-    if(n.includes('ฮั่งเส็ง')||n.includes('ฮ่องกง')) return '🇭🇰'; 
-    if(n.includes('ดาวโจนส์')||n.includes('อเมริกา')||n.includes('usa')) return '🇺🇸'; 
-    if(n.includes('ไต้หวัน')) return '🇹🇼'; 
-    if(n.includes('เกาหลี')) return '🇰🇷'; 
-    if(n.includes('สิงคโปร์')) return '🇸🇬'; 
-    if(n.includes('รัสเซีย')) return '🇷🇺'; 
-    if(n.includes('เยอรมัน')) return '🇩🇪'; 
-    if(n.includes('อังกฤษ')) return '🇬🇧'; 
-    if(n.includes('อินเดีย')) return '🇮🇳'; 
-    if(n.includes('อียิปต์')) return '🇪🇬'; 
-    if(n.includes('ลาว')) return '🇱🇦'; 
-    if(n.includes('ฮานอย')||n.includes('เวียดนาม')) return '🇻🇳'; 
-    if(n.includes('ไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส')) return '🇹🇭'; 
-    if(n.includes('มาเลย์')) return '🇲🇾'; 
-    return '🌐'; 
-  }
+  const hits = results.filter(Boolean).length;
+  const misses = total - hits;
 
-  function parseThaiDate(dateStr){ const months={'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12}; const cleaned=String(dateStr||'').trim(); const parts=cleaned.split(/\s+/); if(parts.length>=3){ const day=parseInt(parts[0],10)||1, month=months[parts[1]]||1; let year=parseInt(parts[2],10)||2569; if(year<2500) year+=2543; return new Date(year-543,month-1,day).getTime(); } return 0; }
-  function getNextDateStr(dateStr){ const cleaned=String(dateStr||'').trim(); const parts=cleaned.split(/\s+/); if(parts.length>=3){ const day=parseInt(parts[0],10)||1, monthsMap={'ม.ค.':0,'ก.พ.':1,'มี.ค.':2,'เม.ย.':3,'พ.ค.':4,'มิ.ย.':5,'ก.ค.':6,'ส.ค.':7,'ก.ย.':8,'ต.ค.':9,'พ.ย.':10,'ธ.ค.':11}; const mIndex=monthsMap[parts[1]]!==undefined?monthsMap[parts[1]]:0, d=new Date((parseInt(parts[2],10)||2569)-543,mIndex,day+1); const thaiMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; return `${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear()+543}`; } return dateStr; }
-  function parseInput(text){ const raw=String(text||'').replace(/\r/g,'').trim(); if(!raw) return {records:[],errors:[]}; const lines=raw.split('\n').map(v=>v.trim()).filter(v=>v!==''); const records=[], errors=[]; let i=0; while(i<lines.length){ const headerLine=lines[i], header=headerLine.match(/^(.+?)\s*\|\s*(.+?)$/); if(!header){ errors.push(`บรรทัดที่ ${i+1}: รูปแบบหัวข้อไม่ถูกต้อง (${headerLine})`); i++; continue; } const name=header[1].trim(), date=header[2].trim(); if(i+2>=lines.length){ errors.push(`${name} | ${date}: ข้อมูลผลรางวัลไม่ครบถ้วน`); break; } const n3=lines[i+1], n2=lines[i+2]; if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2)){ errors.push(`${name} | ${date}: เลข 3 ตัวบน (${n3}) หรือ 2 ตัวล่าง (${n2}) ไม่ถูกต้องตามรูปแบบตัวเลข`); i+=3; continue; } records.push({ name, date, n3, n2, timestamp:parseThaiDate(date) }); i+=3; } return { records, errors }; }
+  const values = results.map(v => v ? 1 : 0);
+  const avg = values.reduce((a,b) => a+b, 0) / total;
 
-  const formulas = {
-    "อันดับ 1 — สูตร 2 N1": (A,B,C,D,E) => [norm(-2*A - 2*B + C + D - 2*E + 9), norm(-2*B + C + 3)],
-    "N2 — สูตรใหม่": (A,B,C,D,E) => [norm(-A + B - C + 2*D + E + 4), norm(A - 2*C - 2*E + 7)],
-    "N3 — สูตรเด่นชุดเดียวจบ": (A,B,C,D,E) => [norm(2*A - B + C + 2*D - E + 3), norm(A + 2*B - 2*C + D + 2*E + 6)],
-    "N4 — สูตรหลัก": (A,B,C,D,E) => [norm(-2*A - B - C - 2*D - 2*E + 5), norm(-2*A + B + 2*C - 2*D + E + 9)],
-    "N5 — สูตรคำนวณเด่น": (A,B,C,D,E) => [norm(-2*A - 2*B - C - D - 2*E + 7), norm(-A + B + 2*C - 2*D + E + 6)],
-    "N6 — Master Formula": (A,B,C,D,E) => [norm(-A - 2*B + C - E + 1), norm(A - C - D - 2*E)],
-    "N1+ — สูตรเสริม": (A,B,C,D,E) => [norm(2*A - 3*C - D - 2*E + 8), norm(-3*A - 2*C - D + E + 2)],
-    "N1+ V2 — สูตรเสริมตัวที่ 2": (A,B,C,D,E) => [norm(A + 3*B + C + 3*D + 3*E + 6), norm(-A - B - C + D - 3*E + 1)],
-    "Hybrid — สิบบบน + หน่วยล่าง + 2": (A,B,C,D,E) => { const d1 = norm(B + E + 2); return [d1, norm(d1 + 2)]; },
-    "สูตร 1 — สิบบบน + สิบล่าง": (A,B,C,D,E) => { const d1 = norm(B + D); return [d1, norm(d1 + 1)]; },
-    "สูตร 2 — ผลรวม 3 ตัวบน": (A,B,C,D,E) => { const d1 = norm(A + B + C); return [d1, norm(d1 + 1)]; },
-    "สูตร 3 — ร้อยบน + สิบล่าง": (A,B,C,D,E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; },
-    "สูตร 4 — หน่วยบน + หน่วยล่าง": (A,B,C,D,E) => { const d1 = norm(C + E); return [d1, norm(d1 + 1)]; },
-    "สูตร 5 — ฐาน 10 - หน่วยล่าง": (A,B,C,D,E) => { const d1 = norm(10 - E); return [d1, norm(d1 + 1)]; },
-    "สูตร 6 — ร้อยบน + สิบล่าง": (A,B,C,D,E) => { const d1 = norm(A + D); return [d1, norm(d1 + 1)]; }
-  };
+  const variance =
+    values.reduce((sum, value) => sum + Math.pow(value - avg, 2), 0)
+    / total;
 
-  function sanitizeFormulaResult(rawRes){ let d1=norm(rawRes[0]), d2=norm(rawRes[1]); if(d1===d2) d2=norm(d2+1); return [d1,d2]; }
-  function checkHitDetail(predictedDigits, actualN3, actualN2){ const topDigits=actualN3.split('').map(Number), bottomDigits=actualN2.split('').map(Number), hundredsDigit=topDigits[0], tensAndUnits=topDigits.slice(1); let hitAny=false, hitHundredsOnly=false, matchedInValidPos=false; predictedDigits.forEach(d => { const inBottom=bottomDigits.includes(d), inTensOrUnits=tensAndUnits.includes(d), inHundreds=(hundredsDigit===d); if(inBottom||inTensOrUnits){ hitAny=true; matchedInValidPos=true; } else if(inHundreds && !inBottom && !inTensOrUnits){ hitHundredsOnly=true; } }); if(!matchedInValidPos && hitHundredsOnly) hitAny=false; return { hitAny, hitHundredsOnly }; }
-  function showToast(msg){ const toast=$('toast'); if(msg) toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),1500); }
-  function updateIndicator(){ try{ const stored=localStorage.getItem(STORAGE_KEY); $('recordCountIndicator').textContent = stored ? `สะสมในระบบ: ${JSON.parse(stored).length} งวด` : `สะสมในระบบ: 0 งวด`; }catch(e){ $('recordCountIndicator').textContent=`สะสมในระบบ: 0 งวด`; } }
+  let currentStreak = 0;
+  let currentMissStreak = 0;
+  let maxStreak = 0;
+  let maxMissStreak = 0;
 
-  window.copyCardText = function(cardId, lotteryTitle, dateStr, d1Pairs, d2Pairs){ const allPairs=[...d1Pairs, ...d2Pairs].map(p=>p.pair).join(', '); navigator.clipboard.writeText(`🎯 ${lotteryTitle} (${dateStr}) | บ้านเงินกอง\nชุดเจาะเน้น: ${allPairs}`).then(()=>showToast(`✓ คัดลอกเลขเด่น ${lotteryTitle} เรียบร้อย`)).catch(()=>showToast('❌ คัดลอกไม่สำเร็จ')); };
-  
-  window.captureCardImage = function(cardId, lotteryTitle){ 
-    const cardEl=$(cardId); if(!cardEl) return; 
-    showToast('📸 กำลังประมวลผลจับภาพการ์ด...'); 
-    const btnGroup=cardEl.querySelector('.card-btn-group'); 
-    if(btnGroup) btnGroup.style.display='none'; 
-    
-    html2canvas(cardEl, { scale:2, backgroundColor:'#ffffff' }).then(canvas=>{ 
-      if(btnGroup) btnGroup.style.display='flex'; 
-      
-      canvas.toBlob(blob => {
-        const fileName = `BanNgernKong_${lotteryTitle.replace(/\s+/g,'_')}.png`;
-        const file = new File([blob], fileName, { type: 'image/png' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({
-            files: [file],
-            title: lotteryTitle,
-            text: `แนวทางเลขเด่น ${lotteryTitle} | บ้านเงินกอง`
-          }).then(() => {
-            showToast('✓ แชร์และบันทึกภาพสำเร็จ');
-          }).catch((error) => {
-            if (error.name !== 'AbortError') {
-              fallbackDownload(canvas, fileName);
-            }
-          });
-        } else {
-          fallbackDownload(canvas, fileName);
-        }
-      }, 'image/png');
-
-    }).catch(err=>{ 
-      if(btnGroup) btnGroup.style.display='flex'; 
-      console.error(err); 
-      showToast('❌ ไม่สามารถจับภาพได้'); 
-    }); 
-  };
-
-  function fallbackDownload(canvas, fileName) {
-    const link=document.createElement('a'); 
-    link.download = fileName; 
-    link.href=canvas.toDataURL('image/png'); 
-    link.click(); 
-    showToast('✓ บันทึกภาพการ์ดสำเร็จ');
-  }
-
-  function renderFullUI(globalAuditMap, auditDataMap, predictionDataMap){
-    let html = '';
-    const sortedGlobalFormulas = Object.keys(globalAuditMap).sort((a,b)=>globalAuditMap[b].hitRate - globalAuditMap[a].hitRate);
-
-    html += `<div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย & จัดอันดับความแม่นยำ</div><div class="summary-table-container"><h3 style="color:#78590f; font-size:.78rem; margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (ค่าดิบแท้ 100%)</h3><table class="audit-table"><thead><tr><th>อันดับ</th><th>ชื่อสูตร</th><th>เลขเด่นงวดล่าสุด</th><th>งวดทดสอบรวม</th><th>เข้า / หลุด</th><th>ออกหลักร้อยเดี่ยว</th><th>Hit Rate (%)</th><th>สถานะภาพรวม</th></tr></thead><tbody>`;
-    sortedGlobalFormulas.forEach((fName, index) => {
-      const g = globalAuditMap[fName], rank = index + 1;
-      let rankBadge = rank===1?'<span class="badge-rank-1">อันดับ 1</span>':rank===2?'<span class="badge-rank-2">อันดับ 2</span>':rank===3?'<span class="badge-rank-3">อันดับ 3</span>':`<span class="badge-rank-other">อันดับ ${rank}</span>`;
-      const latestDigitsText = g.latestDigits ? `<b style="color:#78590f; font-size:.55rem; background:#fff8e7; padding:2px 8px; border:1px solid #d4af37; border-radius:6px;">${g.latestDigits[0]}-${g.latestDigits[1]}</b>` : `-`;
-      html += `<tr><td>${rankBadge}</td><td class="formula-cell">${esc(fName)}</td><td>${latestDigitsText}</td><td>${g.totalTested}</td><td><span style="color:#2e7d32; font-weight:bold;">${g.hits}</span> / <span style="color:#c62828;">${g.misses}</span></td><td style="color:#ef6c00; font-weight:bold;">${g.hundredsOnlyCount || 0} งวด</td><td style="font-weight:bold; color:${g.hitRate>=50?'#2e7d32':'#c62828'};">${g.hitRate}%</td><td>${g.hitRate>=60?'<span class="badge-status status-hot">ยอดเยี่ยม</span>':'<span class="badge-status status-cooling">ปานกลาง</span>'}</td></tr>`;
-    });
-    html += `</tbody></table></div>`;
-
-    html += `<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย & จัดอันดับ Ranking 1-3</div>`;
-    Object.keys(auditDataMap).forEach(lotteryName => {
-      const formulasResult = auditDataMap[lotteryName];
-      const sortedFormulas = Object.keys(formulasResult).sort((a,b)=>formulasResult[b].hitRate - formulasResult[a].hitRate);
-      const displayTitle = formatDisplayTitle(lotteryName);
-      html += `<div class="summary-table-container"><h3 style="color:#78590f; font-size:.8rem; margin:0 0 10px;">หวย: ${esc(displayTitle)}</h3><table class="audit-table"><thead><tr><th>อันดับ</th><th>ชื่อสูตร</th><th>เลขเด่นงวดล่าสุด</th><th>งวดทดสอบ</th><th>เข้า / หลุด</th><th>ออกหลักร้อยเดี่ยว</th><th>Hit Rate (%)</th><th>สถานะงวดล่าสุด</th><th>เข้า/หลุดติดต่อกัน</th></tr></thead><tbody>`;
-      sortedFormulas.forEach((fName, index) => {
-        const f = formulasResult[fName], rank = index + 1;
-        let rankBadge = rank===1?'<span class="badge-rank-1">อันดับ 1</span>':rank===2?'<span class="badge-rank-2">อันดับ 2</span>':rank===3?'<span class="badge-rank-3">อันดับ 3</span>':`<span class="badge-rank-other">อันดับ ${rank}</span>`;
-        const latestDigitsText = f.latestDigits ? `<b style="color:#78590f; font-size:.55rem; background:#fff8e7; padding:2px 8px; border:1px solid #d4af37; border-radius:6px;">${f.latestDigits[0]}-${f.latestDigits[1]}</b>` : `-`;
-        let badgeHTML = f.lastHit===false ? (f.hitHundredsOnly?'<span class="badge-status status-warning">⚠️ หลุด (หลักร้อย)</span>':f.curMissStreak>=2?`<span class="badge-status status-danger">🔴 หลุด ${f.curMissStreak} งวด</span>`:'<span class="badge-status status-cooling">🟡 หลุด 1 งวด</span>') : '<span class="badge-status status-hot">🟢 เข้า</span>';
-        html += `<tr><td>${rankBadge}</td><td class="formula-cell">${esc(fName)}</td><td>${latestDigitsText}</td><td>${f.totalTested}</td><td style="font-weight:bold;"><span style="color:#2e7d32;">${f.hits}</span> / <span style="color:#c62828;">${f.misses}</span></td><td style="color:#ef6c00; font-weight:bold;">${f.hundredsOnlyCount || 0} งวด</td><td style="font-weight:bold; color:${f.hitRate>=50?'#2e7d32':'#c62828'};">${f.hitRate}%</td><td>${badgeHTML}</td><td><span style="color:#2e7d32;">${f.curStreak} ติด</span> / <span style="color:#c62828;">${f.curMissStreak} หลุด</span></td></tr>`;
-      });
-      html += `</tbody></table></div>`;
-    });
-
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านเงินกอง V32.3 Clean Card)</div>`;
-    let cardIdx = 0;
-    Object.keys(predictionDataMap).forEach(lotteryName => {
-      const p = predictionDataMap[lotteryName], flagIcon = getLotteryFlag(lotteryName), cId = `card_${cardIdx++}`;
-      const displayTitle = formatDisplayTitle(lotteryName);
-      const jsonD1 = JSON.stringify(p.d1Pairs).replace(/"/g, '&quot;'), jsonD2 = JSON.stringify(p.d2Pairs).replace(/"/g, '&quot;');
-
-      html += `
-        <div class="prediction-card" id="${cId}">
-          <div class="card-top-bar">
-            <div class="card-title-group">
-              <div class="card-flag">${flagIcon}</div>
-              <div class="card-info">
-                <small>${esc(p.nextDate)}</small>
-                <b>${esc(displayTitle)}</b>
-              </div>
-            </div>
-            <div class="card-right-group">
-              <div class="card-brand-tag">✦ บ้านเงินกอง ✦</div>
-              <div class="card-btn-group">
-                <button class="card-action-btn" onclick="copyCardText('${cId}', '${esc(displayTitle)}', '${esc(p.nextDate)}', ${jsonD1}, ${jsonD2})">📋 คัดลอก</button>
-                <button class="card-action-btn" onclick="captureCardImage('${cId}', '${esc(displayTitle)}')">📸 แคปภาพ</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="hero-digits-wrap">
-            <div class="hero-digit-badge hero-gold">
-              <div class="hero-circle">${p.d1}</div>
-              <span class="hero-label">เด่น</span>
-            </div>
-            <div class="hero-digit-badge hero-silver">
-              <div class="hero-circle">${p.d2}</div>
-              <span class="hero-label">รอง</span>
-            </div>
-          </div>
-
-          <div class="pairs-grid-container">
-            <div class="pair-row-inline">
-              ${p.d1Pairs.map(item => `<div class="floating-pill ${item.rankClass}">${item.pair}</div>`).join('')}
-            </div>
-            <div class="pair-row-inline">
-              ${p.d2Pairs.map(item => `<div class="floating-pill ${item.rankClass}">${item.pair}</div>`).join('')}
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
-    html += `<div class="brand-footer"><span class="brand-star">✦</span><span>ระบบบ้านเงินกอง V32.3 Pure Raw Calculation สมบูรณ์แบบ 100%</span><span class="brand-star">✦</span></div>`;
-    $('result').innerHTML = html;
-    updateIndicator();
-  }
-
-  function runEngine(){
-    const textVal = $('bulkInput').value.trim(); let newRecords = [];
-    if(textVal){
-      const parsed = parseInput(textVal);
-      if(parsed.errors.length > 0 && parsed.records.length === 0){
-        $('result').innerHTML = `<div class="errorbox"><b>ไม่สามารถประมวลผลได้เนื่องจากรูปแบบข้อมูลไม่ถูกต้อง:</b><br>${parsed.errors.join('<br>')}</div>`;
-        return;
-      }
-      newRecords = parsed.records;
+  for (const hit of results) {
+    if (hit) {
+      currentStreak++;
+      currentMissStreak = 0;
+      maxStreak = Math.max(maxStreak, currentStreak);
+    } else {
+      currentMissStreak++;
+      currentStreak = 0;
+      maxMissStreak = Math.max(maxMissStreak, currentMissStreak);
     }
+  }
 
-    let masterRecords = [];
-    try { const stored = localStorage.getItem(STORAGE_KEY); if(stored) masterRecords = JSON.parse(stored); } catch(e) {}
-    if(newRecords.length > 0){
-      newRecords.forEach(nr => {
-        const idx = masterRecords.findIndex(r => r.name === nr.name && r.date === nr.date);
-        if(idx >= 0) masterRecords[idx] = nr; else masterRecords.push(nr);
-      });
-    }
-    masterRecords.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(masterRecords)); } catch(e) {}
+  return {
+    total,
+    hits,
+    misses,
+    hitRate: Number(((hits / total) * 100).toFixed(2)),
+    missRate: Number(((misses / total) * 100).toFixed(2)),
+    avg: Number(avg.toFixed(4)),
+    stdDev: Number(Math.sqrt(variance).toFixed(4)),
+    currentStreak,
+    currentMissStreak,
+    maxStreak,
+    maxMissStreak
+  };
+}
 
-    if(masterRecords.length === 0){
-      $('result').innerHTML = '<div class="errorbox">ยังไม่มีข้อมูลในระบบ กรุณากรอกข้อมูลสถิติย้อนหลังในกล่องข้อความด้านบน</div>';
+
+/* ตรวจว่าผลลัพธ์ของสูตรสองสูตรเหมือนกันตลอดหรือไม่ */
+function compareFormulaOutputs(a, b) {
+  if (!a || !b || a.length !== b.length) return false;
+
+  return a.every((value, index) => {
+    return JSON.stringify(value) === JSON.stringify(b[index]);
+  });
+}
+
+
+/* =========================================================
+   EXPORT
+   ========================================================= */
+
+window.exportAuditJSON = function() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+
+    if (!stored) {
+      showToast('ไม่มีข้อมูลสำหรับ Export');
       return;
     }
 
-    const groups = {}; masterRecords.forEach(r => { if(!groups[r.name]) groups[r.name] = []; groups[r.name].push(r); });
-    const auditDataMap = {}, predictionDataMap = {}, globalAccumulator = {};
-    Object.keys(formulas).forEach(fName => { globalAccumulator[fName] = { totalTested:0, hits:0, misses:0, hundredsOnlyCount:0, latestDigits:null }; });
+    const blob = new Blob(
+      [stored],
+      { type: 'application/json;charset=utf-8' }
+    );
 
-    Object.keys(groups).forEach(lotteryName => {
-      const recs = groups[lotteryName]; if(recs.length < 2) return;
-      auditDataMap[lotteryName] = {}; const formulaNames = Object.keys(formulas);
-      const latestRec = recs[recs.length - 1], lTop = latestRec.n3.split('').map(Number), lBot = latestRec.n2.split('').map(Number);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
 
-      formulaNames.forEach(fName => {
-        let hits=0, misses=0, hundredsOnlyCount=0, currentStreak=0, maxStreak=0, currentMissStreak=0, maxMissStreak=0, totalTested=0, lastHitResult=true, lastHitHundredsOnly=false;
-        for(let i=0; i<recs.length-1; i++){
-          const curr=recs[i], next=recs[i+1], top=curr.n3.split('').map(Number), bot=curr.n2.split('').map(Number);
-          const rawPred = formulas[fName](top[0], top[1], top[2], bot[0], bot[1]), predicted = sanitizeFormulaResult(rawPred);
-          const check = checkHitDetail(predicted, next.n3, next.n2);
-          totalTested++; if(check.hitHundredsOnly) hundredsOnlyCount++;
-          if(check.hitAny){ hits++; currentStreak++; currentMissStreak=0; lastHitResult=true; lastHitHundredsOnly=false; if(currentStreak>maxStreak) maxStreak=currentStreak; }
-          else{ misses++; currentMissStreak++; currentStreak=0; lastHitResult=false; lastHitHundredsOnly=check.hitHundredsOnly; if(currentMissStreak>maxMissStreak) maxMissStreak=currentMissStreak; }
+    link.href = url;
+    link.download = 'BanNgernKong_Statistical_Audit_V32.4.json';
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+    showToast('✓ Export ข้อมูลสำเร็จ');
+
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Export ไม่สำเร็จ');
+  }
+};
+
+
+/* =========================================================
+   IMPORT
+   ========================================================= */
+
+window.importAuditJSON = function(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+    try {
+      const imported = JSON.parse(event.target.result);
+
+      if (!Array.isArray(imported)) {
+        throw new Error('รูปแบบข้อมูลไม่ถูกต้อง');
+      }
+
+      const cleaned = imported.filter(r =>
+        r &&
+        typeof r.name === 'string' &&
+        typeof r.date === 'string' &&
+        /^\d{3}$/.test(String(r.n3)) &&
+        /^\d{2}$/.test(String(r.n2))
+      );
+
+      const unique = [];
+
+      cleaned.forEach(record => {
+        const key = `${record.name}|${record.date}`;
+
+        if (!unique.some(x => `${x.name}|${x.date}` === key)) {
+          unique.push({
+            ...record,
+            n3: String(record.n3),
+            n2: String(record.n2),
+            timestamp: parseThaiDate(record.date)
+          });
         }
-        const rawLatestPred = formulas[fName](lTop[0], lTop[1], lTop[2], lBot[0], lBot[1]), latestDigits = sanitizeFormulaResult(rawLatestPred);
-        globalAccumulator[fName].totalTested += totalTested; globalAccumulator[fName].hits += hits; globalAccumulator[fName].misses += misses; globalAccumulator[fName].hundredsOnlyCount += hundredsOnlyCount; globalAccumulator[fName].latestDigits = latestDigits;
-        auditDataMap[lotteryName][fName] = { totalTested, hits, misses, hundredsOnlyCount, hitRate: totalTested>0 ? Number(((hits/totalTested)*100).toFixed(2)) : 0, maxStreak, maxMissStreak, curStreak:currentStreak, curMissStreak:currentMissStreak, lastHit:lastHitResult, hitHundredsOnly:lastHitHundredsOnly, latestDigits };
       });
 
-      const sortedFormulasForThisLottery = Object.keys(formulas).sort((a,b) => auditDataMap[lotteryName][b].hitRate - auditDataMap[lotteryName][a].hitRate);
-      const rank1FormulaName = sortedFormulasForThisLottery[0];
-      const rank1Digits = auditDataMap[lotteryName][rank1FormulaName].latestDigits;
-      let rawD1 = rank1Digits[0], rawD2 = rank1Digits[1];
-      if(rawD1 === rawD2) rawD2 = norm(rawD1 + 1);
+      unique.sort((a,b) =>
+        (a.timestamp || 0) - (b.timestamp || 0)
+      );
 
-      const digitScore = (digit) => {
-        let score = 0;
-        formulaNames.forEach(f => {
-          const res = auditDataMap[lotteryName][f].latestDigits;
-          if(res && res.includes(digit)) score += (auditDataMap[lotteryName][f].hitRate || 1);
-        });
-        return score;
-      };
-      const score1 = digitScore(rawD1), score2 = digitScore(rawD2);
-      let d1 = rawD1, d2 = rawD2, d1IsGold = true, d2IsGold = false;
-      if(score2 > score1){
-        d1 = rawD2; d2 = rawD1; d1IsGold = true; d2IsGold = false;
-      }
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(unique)
+      );
 
-      const hundredsDigit = lTop[0];
-      const anchor = Math.abs(7 - hundredsDigit) % 10;
-      const normalRange = [-2, -1, 0, 1, 2].map(off => norm(anchor + off));
-      const isCollided = normalRange.some(num => [d1, d2].includes(num));
-      const offsets = isCollided ? [-3, -2, -1, 0, 1, 2, 3] : [-2, -1, 0, 1, 2];
-      const poolDigits = offsets.map(off => norm(anchor + off));
+      updateIndicator();
+      runEngine();
 
-      const generatePairsForDigit = (mainDigit, otherDigit) => {
-        let validUnits = poolDigits.filter(u => u !== mainDigit && u !== otherDigit);
-        validUnits = Array.from(new Set(validUnits));
-        if(validUnits.length < 5){
-          for(let d=0; d<=9; d++){
-            if(d !== mainDigit && d !== otherDigit && !validUnits.includes(d)){
-              validUnits.push(d); if(validUnits.length === 5) break;
-            }
-          }
-        }
-        const selectedUnits = validUnits.slice(0, 5);
+      showToast(`✓ Import สำเร็จ ${unique.length} งวด`);
 
-        const scoredPairs = selectedUnits.map(unit => {
-          const pairStr = `${mainDigit}${unit}`;
-          const pairVal = parseInt(pairStr, 10);
-          let pairScore = 0;
-          formulaNames.forEach(fName => {
-            const digits = auditDataMap[lotteryName][fName].latestDigits;
-            if(digits && (digits.includes(mainDigit) || digits.includes(unit))){
-              pairScore += (auditDataMap[lotteryName][fName].hitRate || 1);
-            }
-          });
-          if(Math.abs(unit - anchor) <= 1) pairScore += 15;
-          return { pair: pairStr, val: pairVal, score: pairScore };
-        });
+    } catch (err) {
+      console.error(err);
+      showToast('❌ ไฟล์ JSON ไม่ถูกต้อง');
+    }
+  };
 
-        const sortedByScore = [...scoredPairs].sort((a,b) => b.score - a.score);
-        const rank1Pair = sortedByScore[0] ? sortedByScore[0].pair : null;
-        const rank2Pair = sortedByScore[1] ? sortedByScore[1].pair : null;
-        const rank3Pair = sortedByScore[2] ? sortedByScore[2].pair : null;
+  reader.readAsText(file);
+};
 
-        scoredPairs.sort((a,b) => a.val - b.val);
 
-        return scoredPairs.map(item => {
-          let rankClass = '';
-          if(item.pair === rank1Pair) rankClass = 'rank-gold';
-          else if(item.pair === rank2Pair) rankClass = 'rank-silver';
-          else if(item.pair === rank3Pair) rankClass = 'rank-rosegold';
-          return { pair: item.pair, val: item.val, rankClass };
-        });
-      };
+/* =========================================================
+   VALIDATE DATASET
+   ========================================================= */
 
-      const d1Pairs = generatePairsForDigit(d1, d2);
-      const d2Pairs = generatePairsForDigit(d2, d1);
+function validateDataset(records) {
+  const errors = [];
+  const seen = new Set();
 
-      predictionDataMap[lotteryName] = {
-        nextDate: getNextDateStr(latestRec.date),
-        d1, d2, d1IsGold, d2IsGold, d1Pairs, d2Pairs
-      };
-    });
+  records.forEach((r, index) => {
 
-    const globalAuditMap = {};
-    Object.keys(globalAccumulator).forEach(fName => {
-      const g = globalAccumulator[fName];
-      globalAuditMap[fName] = { totalTested:g.totalTested, hits:g.hits, misses:g.misses, hundredsOnlyCount:g.hundredsOnlyCount, hitRate: g.totalTested>0 ? Number(((g.hits/g.totalTested)*100).toFixed(2)) : 0, latestDigits:g.latestDigits };
-    });
+    if (!r.name || !r.date) {
+      errors.push(`รายการที่ ${index + 1}: ไม่มีชื่อหรือวันที่`);
+    }
 
-    renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V32.3 (บ้านเงินกอง) สำเร็จ');
+    if (!/^\d{3}$/.test(String(r.n3))) {
+      errors.push(`รายการที่ ${index + 1}: เลข 3 ตัวไม่ถูกต้อง`);
+    }
+
+    if (!/^\d{2}$/.test(String(r.n2))) {
+      errors.push(`รายการที่ ${index + 1}: เลข 2 ตัวไม่ถูกต้อง`);
+    }
+
+    const key = `${r.name}|${r.date}`;
+
+    if (seen.has(key)) {
+      errors.push(`พบข้อมูลซ้ำ: ${r.name} | ${r.date}`);
+    }
+
+    seen.add(key);
+  });
+
+  return errors;
+}
+
+
+/* =========================================================
+   V32.4 AUDIT ENGINE
+   ========================================================= */
+
+function runEngine() {
+
+  const textVal = $('bulkInput').value.trim();
+  let newRecords = [];
+
+  /* ---------- Parse Input ---------- */
+
+  if (textVal) {
+
+    const parsed = parseInput(textVal);
+
+    if (parsed.errors.length && !parsed.records.length) {
+
+      $('result').innerHTML = `
+        <div class="errorbox">
+          <b>ไม่สามารถประมวลผลข้อมูลได้</b><br>
+          ${parsed.errors.map(esc).join('<br>')}
+        </div>
+      `;
+
+      return;
+    }
+
+    newRecords = parsed.records;
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    if($('run')) $('run').onclick = runEngine;
-    if($('clearInput')) $('clearInput').onclick = () => { $('bulkInput').value = ''; showToast('✓ ล้างกล่องกรอกข้อมูลแล้ว'); };
-    if($('clearGlobal')) $('clearGlobal').onclick = () => {
-      if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
-        try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
-        $('result').innerHTML = ''; updateIndicator(); showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย');
+
+  /* ---------- Load Master Data ---------- */
+
+  let masterRecords = [];
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+
+    if (stored) {
+      const parsed = JSON.parse(stored);
+
+      if (Array.isArray(parsed)) {
+        masterRecords = parsed;
       }
-    };
-    updateIndicator();
-    try { const stored = localStorage.getItem(STORAGE_KEY); if(stored && JSON.parse(stored).length > 0) runEngine(); } catch(e){}
+    }
+
+  } catch (err) {
+    console.error('Storage error:', err);
+  }
+
+
+  /* ---------- Merge ---------- */
+
+  newRecords.forEach(record => {
+
+    const index = masterRecords.findIndex(
+      r => r.name === record.name &&
+           r.date === record.date
+    );
+
+    if (index >= 0) {
+      masterRecords[index] = record;
+    } else {
+      masterRecords.push(record);
+    }
   });
-})();
-</script>
-</body>
-</html>
+
+
+  /* ---------- Normalize ---------- */
+
+  masterRecords = masterRecords
+    .filter(r =>
+      r &&
+      typeof r.name === 'string' &&
+      typeof r.date === 'string' &&
+      /^\d{3}$/.test(String(r.n3)) &&
+      /^\d{2}$/.test(String(r.n2))
+    )
+    .map(r => ({
+      ...r,
+      n3: String(r.n3),
+      n2: String(r.n2),
+      timestamp: parseThaiDate(r.date)
+    }));
+
+
+  /* ---------- Sort ---------- */
+
+  masterRecords.sort(
+    (a,b) => (a.timestamp || 0) - (b.timestamp || 0)
+  );
+
+
+  /* ---------- Save ---------- */
+
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(masterRecords)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+
+
+  /* ---------- Empty Dataset ---------- */
+
+  if (!masterRecords.length) {
+
+    $('result').innerHTML = `
+      <div class="errorbox">
+        ยังไม่มีข้อมูลในระบบ
+        กรุณาเพิ่มข้อมูลย้อนหลังเพื่อเริ่ม Statistical Audit
+      </div>
+    `;
+
+    updateIndicator();
+    return;
+  }
+
+
+  /* =======================================================
+     GROUP DATA
+     ======================================================= */
+
+  const groups = {};
+
+  masterRecords.forEach(record => {
+
+    if (!groups[record.name]) {
+      groups[record.name] = [];
+    }
+
+    groups[record.name].push(record);
+  });
+
+
+  const auditDataMap = {};
+  const globalResults = {};
+
+
+  Object.keys(formulas).forEach(
+    formulaName => {
+      globalResults[formulaName] = [];
+    }
+  );
+
+
+  /* =======================================================
+     PROCESS EACH DATASET
+     ======================================================= */
+
+  Object.keys(groups).forEach(lotteryName => {
+
+    const records = groups[lotteryName];
+
+    if (records.length < 2) return;
+
+    auditDataMap[lotteryName] = {};
+
+    Object.keys(formulas).forEach(formulaName => {
+
+      const formula = formulas[formulaName];
+
+      const results = [];
+      const predictions = [];
+
+      for (let i = 0; i < records.length - 1; i++) {
+
+        const current = records[i];
+        const next = records[i + 1];
+
+        const top = current.n3
+          .split('')
+          .map(Number);
+
+        const bottom = current.n2
+          .split('')
+          .map(Number);
+
+
+        const raw = formula(
+          top[0],
+          top[1],
+          top[2],
+          bottom[0],
+          bottom[1]
+        );
+
+        const predicted = sanitizeFormulaResult(raw);
+
+        const check = checkHitDetail(
+          predicted,
+          next.n3,
+          next.n2
+        );
+
+        results.push(Boolean(check.hitAny));
+
+        predictions.push({
+          predicted,
+          actual: {
+            n3: next.n3,
+            n2: next.n2
+          },
+          hit: Boolean(check.hitAny),
+          hundredsOnly: Boolean(check.hitHundredsOnly)
+        });
+      }
+
+
+      const stats = calculateAuditStats(results);
+
+      const latest = records[records.length - 1];
+
+      const latestTop = latest.n3
+        .split('')
+        .map(Number);
+
+      const latestBottom = latest.n2
+        .split('')
+        .map(Number);
+
+      const latestRaw = formula(
+        latestTop[0],
+        latestTop[1],
+        latestTop[2],
+        latestBottom[0],
+        latestBottom[1]
+      );
+
+      const latestDigits =
+        sanitizeFormulaResult(latestRaw);
+
+
+      auditDataMap[lotteryName][formulaName] = {
+
+        ...stats,
+
+        latestDigits,
+
+        latestRecordDate: latest.date,
+
+        predictions
+
+      };
+
+
+      globalResults[formulaName] =
+        globalResults[formulaName].concat(results);
+    });
+  });
+
+
+  /* =======================================================
+     GLOBAL AUDIT
+     ======================================================= */
+
+  const globalAuditMap = {};
+
+  Object.keys(globalResults).forEach(formulaName => {
+
+    const stats =
+      calculateAuditStats(
+        globalResults[formulaName]
+      );
+
+    globalAuditMap[formulaName] = stats;
+  });
+
+
+  /* =======================================================
+     RENDER
+     ======================================================= */
+
+  renderStatisticalAudit(
+    globalAuditMap,
+    auditDataMap,
+    masterRecords
+  );
+
+  updateIndicator();
+
+  showToast(
+    '✓ Statistical Audit V32.4 เสร็จสมบูรณ์'
+  );
+}
+
+
+/* =========================================================
+   RENDER V32.4
+   ========================================================= */
+
+function renderStatisticalAudit(
+  globalAuditMap,
+  auditDataMap,
+  masterRecords
+) {
+
+  let html = '';
+
+
+  /* ---------- System Overview ---------- */
+
+  html += `
+    <div class="section-title">
+      📊 V32.4 Statistical Audit Dashboard
+    </div>
+
+    <div class="summary-table-container">
+
+      <h3 style="
+        color:#78590f;
+        font-size:.8rem;
+        margin:0 0 8px;
+      ">
+        ภาพรวมการทดสอบสูตรย้อนหลัง
+      </h3>
+
+      <table class="audit-table">
+
+        <thead>
+          <tr>
+            <th>อันดับ</th>
+            <th>สูตร</th>
+            <th>Sample</th>
+            <th>เข้า</th>
+            <th>หลุด</th>
+            <th>Hit Rate</th>
+            <th>Miss Rate</th>
+            <th>Max Hit Streak</th>
+            <th>Max Miss Streak</th>
+          </tr>
+        </thead>
+
+        <tbody>
+  `;
+
+
+  const sorted =
+    Object.keys(globalAuditMap)
+      .sort(
+        (a,b) =>
+          globalAuditMap[b].hitRate -
+          globalAuditMap[a].hitRate
+      );
+
+
+  sorted.forEach((formulaName, index) => {
+
+    const s = globalAuditMap[formulaName];
+
+    const rank = index + 1;
+
+    const rankBadge =
+      rank === 1
+        ? '<span class="badge-rank-1">อันดับ 1</span>'
+        : rank === 2
+        ? '<span class="badge-rank-2">อันดับ 2</span>'
+        : rank === 3
+        ? '<span class="badge-rank-3">อันดับ 3</span>'
+        : `<span class="badge-rank-other">อันดับ ${rank}</span>`;
+
+
+    html += `
+      <tr>
+
+        <td>${rankBadge}</td>
+
+        <td class="formula-cell">
+          ${esc(formulaName)}
+        </td>
+
+        <td>
+          ${s.total}
+        </td>
+
+        <td style="
+          color:#2e7d32;
+          font-weight:bold;
+        ">
+          ${s.hits}
+        </td>
+
+        <td style="
+          color:#c62828;
+          font-weight:bold;
+        ">
+          ${s.misses}
+        </td>
+
+        <td style="
+          font-weight:bold;
+          color:${s.hitRate >= 50
+            ? '#2e7d32'
+            : '#c62828'};
+        ">
+          ${s.hitRate}%
+        </td>
+
+        <td>
+          ${s.missRate}%
+        </td>
+
+        <td>
+          ${s.maxStreak}
+        </td>
+
+        <td>
+          ${s.maxMissStreak}
+        </td>
+
+      </tr>
+    `;
+  });
+
+
+  html += `
+        </tbody>
+      </table>
+
+      <p style="
+        margin:10px 0 0;
+        font-size:.48rem;
+        color:#827768;
+        line-height:1.6;
+      ">
+        หมายเหตุ: Hit Rate เป็นเพียงสถิติจากข้อมูลย้อนหลัง
+        ไม่ใช่การรับประกันผลในอนาคต
+      </p>
+
+    </div>
+  `;
+
+
+  /* =======================================================
+     DATASET AUDIT
+     ======================================================= */
+
+  html += `
+    <div class="section-title">
+      🔬 รายงานออดิตแยกตามชุดข้อมูล
+    </div>
+  `;
+
+
+  Object.keys(auditDataMap).forEach(lotteryName => {
+
+    const formulasResult =
+      auditDataMap[lotteryName];
+
+    const sortedFormulas =
+      Object.keys(formulasResult)
+        .sort(
+          (a,b) =>
+            formulasResult[b].hitRate -
+            formulasResult[a].hitRate
+        );
+
+
+    html += `
+      <div class="summary-table-container">
+
+        <h3 style="
+          color:#78590f;
+          font-size:.8rem;
+          margin:0 0 10px;
+        ">
+          ชุดข้อมูล: ${esc(formatDisplayTitle(lotteryName))}
+        </h3>
+
+        <table class="audit-table">
+
+          <thead>
+            <tr>
+              <th>อันดับ</th>
+              <th>สูตร</th>
+              <th>Sample</th>
+              <th>เข้า</th>
+              <th>หลุด</th>
+              <th>Hit Rate</th>
+              <th>Max เข้า</th>
+              <th>Max หลุด</th>
+              <th>งวดข้อมูลล่าสุด</th>
+            </tr>
+          </thead>
+
+          <tbody>
+    `;
+
+
+    sortedFormulas.forEach((formulaName,index) => {
+
+      const s =
+        formulasResult[formulaName];
+
+      const rank = index + 1;
+
+      const badge =
+        rank === 1
+          ? '<span class="badge-rank-1">อันดับ 1</span>'
+          : rank === 2
+          ? '<span class="badge-rank-2">อันดับ 2</span>'
+          : rank === 3
+          ? '<span class="badge-rank-3">อันดับ 3</span>'
+          : `<span class="badge-rank-other">อันดับ ${rank}</span>`;
+
+
+      html += `
+        <tr>
+
+          <td>${badge}</td>
+
+          <td class="formula-cell">
+            ${esc(formulaName)}
+          </td>
+
+          <td>${s.total}</td>
+
+          <td style="color:#2e7d32;font-weight:bold">
+            ${s.hits}
+          </td>
+
+          <td style="color:#c62828;font-weight:bold">
+            ${s.misses}
+          </td>
+
+          <td style="
+            font-weight:bold;
+            color:${s.hitRate >= 50
+              ? '#2e7d32'
+              : '#c62828'};
+          ">
+            ${s.hitRate}%
+          </td>
+
+          <td>${s.maxStreak}</td>
+
+          <td>${s.maxMissStreak}</td>
+
+          <td>${esc(s.latestRecordDate)}</td>
+
+        </tr>
+      `;
+    });
+
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+  });
+
+
+  /* =======================================================
+     DATA QUALITY
+     ======================================================= */
+
+  const validationErrors =
+    validateDataset(masterRecords);
+
+
+  html += `
+    <div class="section-title">
+      🧪 Data Quality Check
+    </div>
+
+    <div class="summary-table-container">
+
+      <table class="audit-table">
+
+        <tbody>
+
+          <tr>
+            <th>จำนวนข้อมูลทั้งหมด</th>
+            <td>${masterRecords.length}</td>
+          </tr>
+
+          <tr>
+            <th>จำนวนชุดข้อมูล</th>
+            <td>${Object.keys(auditDataMap).length}</td>
+          </tr>
+
+          <tr>
+            <th>ข้อมูลผิดรูปแบบ</th>
+            <td style="
+              color:${validationErrors.length
+                ? '#c62828'
+                : '#2e7d32'};
+              font-weight:bold;
+            ">
+              ${validationErrors.length}
+            </td>
+          </tr>
+
+          <tr>
+            <th>Engine Version</th>
+            <td>V32.4 Statistical Audit</td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+
+
+  /* =======================================================
+     EXPORT / IMPORT
+     ======================================================= */
+
+  html += `
+    <div class="section-title">
+      💾 Data Management
+    </div>
+
+    <div class="summary-table-container">
+
+      <div style="
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+      ">
+
+        <button
+          class="run"
+          onclick="exportAuditJSON()"
+          style="flex:1;min-width:160px"
+        >
+          ⬇ Export JSON
+        </button>
+
+        <label
+          class="clear"
+          style="
+            flex:1;
+            min-width:160px;
+            height:42px;
+            display:grid;
+            place-items:center;
+          "
+        >
+          ⬆ Import JSON
+          <input
+            type="file"
+            accept=".json,application/json"
+            onchange="importAuditJSON(this.files[0])"
+            style="display:none"
+          >
+        </label>
+
+      </div>
+
+    </div>
+  `;
+
+
+  /* =======================================================
+     FOOTER
+     ======================================================= */
+
+  html += `
+    <div class="brand-footer">
+      <span class="brand-star">✦</span>
+      <span>
+        Ban Ngern Kong V32.4 —
+        Statistical Audit / Historical Analysis
+      </span>
+      <span class="brand-star">✦</span>
+    </div>
+  `;
+
+
+  $('result').innerHTML = html;
+}
