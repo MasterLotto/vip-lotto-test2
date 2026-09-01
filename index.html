@@ -75,7 +75,6 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 .card-flag{font-size:1.5rem;line-height:1}
 .card-info small{display:block;font-size:.57rem;font-weight:600;color:var(--text-muted);margin-bottom:2px;white-space:nowrap}
 .card-info b{display:block;font-size:.99rem;font-weight:800;color:#362e21;letter-spacing:-.2px;white-space:nowrap;line-height:1.2}
-.card-info .formula-source{display:block;margin-top:3px;font-size:.48rem;color:#a67c1e;font-weight:700;white-space:normal}
 .card-right-group{display:flex;align-items:center;gap:10px;margin-left:auto}
 .card-brand-tag{font-size:.51rem;font-weight:700;color:#b8860b;display:flex;align-items:center;gap:3px;letter-spacing:.3px;white-space:nowrap;background:rgba(212,175,55,.08);padding:3px 7px;border-radius:6px;border:1px solid rgba(212,175,55,.2)}
 .card-btn-group{display:flex;gap:5px}
@@ -296,6 +295,7 @@ function updateIndicator(){
   }catch(e){$('recordCountIndicator').textContent='สะสมในระบบ: 0 งวด'}
 }
 
+/* สร้างเลข 5 คู่ พร้อมจัดอันดับ 3 คู่แรกเป็น ทอง / เงิน / โรสโกลด์ */
 function generateFormulaPairs(mainDigit,otherDigit,anchor,auditMap,lotteryName){
   const formulaNames=Object.keys(formulas);
   const poolDigits=[-2,-1,0,1,2].map(off=>norm(anchor+off));
@@ -304,19 +304,38 @@ function generateFormulaPairs(mainDigit,otherDigit,anchor,auditMap,lotteryName){
   if(validUnits.length<5){
     for(let d=0;d<=9;d++){
       if(d!==mainDigit&&d!==otherDigit&&!validUnits.includes(d)){
-        validUnits.push(d);if(validUnits.length===5)break;
+        validUnits.push(d);
+        if(validUnits.length===5)break;
       }
     }
   }
-  return validUnits.slice(0,5).map(unit=>{
+
+  const scoredPairs=validUnits.slice(0,5).map(unit=>{
     const pair=`${mainDigit}${unit}`;let score=0;
     formulaNames.forEach(f=>{
       const digits=auditMap[lotteryName][f].latestDigits;
-      if(digits&&(digits.includes(mainDigit)||digits.includes(unit)))score+=auditMap[lotteryName][f].hitRate||1;
+      if(digits&&(digits.includes(mainDigit)||digits.includes(unit))){
+        score+=auditMap[lotteryName][f].hitRate||1;
+      }
     });
     if(Math.abs(unit-anchor)<=1)score+=15;
     return{pair,val:parseInt(pair,10),score};
-  }).sort((a,b)=>a.val-b.val);
+  });
+
+  const sortedByScore=[...scoredPairs].sort((a,b)=>{
+    if(b.score!==a.score)return b.score-a.score;
+    return a.val-b.val;
+  });
+  const rank1=sortedByScore[0]?.pair;
+  const rank2=sortedByScore[1]?.pair;
+  const rank3=sortedByScore[2]?.pair;
+
+  return scoredPairs.sort((a,b)=>a.val-b.val).map(item=>({
+    pair:item.pair,
+    val:item.val,
+    score:item.score,
+    rankClass:item.pair===rank1?'rank-gold':item.pair===rank2?'rank-silver':item.pair===rank3?'rank-rosegold':''
+  }));
 }
 
 function buildFormulaPrediction(lotteryName,fName){
@@ -349,7 +368,11 @@ window.addFormulaCard=function(lotteryName,fName){
   renderManualCards();
   setTimeout(()=>{
     const el=document.querySelector(`[data-card-key="${encodeURIComponent(key)}"]`);
-    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('formula-selected');setTimeout(()=>el.classList.remove('formula-selected'),1500)}
+    if(el){
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.classList.add('formula-selected');
+      setTimeout(()=>el.classList.remove('formula-selected'),1500);
+    }
   },60);
   showToast(`✓ เพิ่มการ์ด ${fName} แล้ว`);
 };
@@ -365,6 +388,7 @@ function renderCardHTML(card,manual=false,index=0){
   const key=encodeURIComponent(`${card.lotteryName}|||${card.fName||''}`);
   const d1Json=esc(JSON.stringify(card.d1Pairs));
   const d2Json=esc(JSON.stringify(card.d2Pairs));
+
   return`
   <div class="prediction-card${manual?' formula-selected':''}" id="${cardId}" data-card-key="${key}">
     <div class="card-top-bar">
@@ -373,7 +397,6 @@ function renderCardHTML(card,manual=false,index=0){
         <div class="card-info">
           <small>${esc(card.nextDate)}</small>
           <b>${esc(card.displayTitle)}</b>
-          ${card.fName?`<span class="formula-source">✦ ${esc(card.fName)}</span>`:''}
         </div>
       </div>
       <div class="card-right-group">
@@ -385,10 +408,12 @@ function renderCardHTML(card,manual=false,index=0){
         </div>
       </div>
     </div>
+
     <div class="hero-digits-wrap">
       <div class="hero-digit-badge hero-gold"><div class="hero-circle">${card.d1}</div><span class="hero-label">เด่น</span></div>
       <div class="hero-digit-badge hero-silver"><div class="hero-circle">${card.d2}</div><span class="hero-label">รอง</span></div>
     </div>
+
     <div class="pairs-grid-container">
       <div class="pair-row-inline">${card.d1Pairs.map(item=>`<div class="floating-pill ${item.rankClass||''}">${item.pair}</div>`).join('')}</div>
       <div class="pair-row-inline">${card.d2Pairs.map(item=>`<div class="floating-pill ${item.rankClass||''}">${item.pair}</div>`).join('')}</div>
@@ -408,7 +433,14 @@ window.captureCardImage=function(cardId,lotteryTitle){
   showToast('📸 กำลังบันทึกภาพการ์ด...');
   const btnGroup=cardEl.querySelector('.card-btn-group');
   if(btnGroup)btnGroup.style.display='none';
-  html2canvas(cardEl,{scale:2,backgroundColor:'#ffffff',useCORS:true,allowTaint:false,logging:false}).then(canvas=>{
+
+  html2canvas(cardEl,{
+    scale:2,
+    backgroundColor:'#ffffff',
+    useCORS:true,
+    allowTaint:false,
+    logging:false
+  }).then(canvas=>{
     if(btnGroup)btnGroup.style.display='flex';
     canvas.toBlob(blob=>{
       if(!blob){showToast('❌ ไม่สามารถสร้างไฟล์ภาพได้');return}
@@ -416,11 +448,13 @@ window.captureCardImage=function(cardId,lotteryTitle){
       const url=URL.createObjectURL(blob),link=document.createElement('a');
       link.href=url;link.download=`BanNgernKong_${safeName}.png`;link.style.display='none';
       document.body.appendChild(link);link.click();link.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),2000);showToast('✓ บันทึกภาพการ์ดสำเร็จ');
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+      showToast('✓ บันทึกภาพการ์ดสำเร็จ');
     },'image/png');
   }).catch(err=>{
     if(btnGroup)btnGroup.style.display='flex';
-    console.error('captureCardImage:',err);showToast('❌ ไม่สามารถจับภาพได้');
+    console.error('captureCardImage:',err);
+    showToast('❌ ไม่สามารถจับภาพได้');
   });
 };
 
@@ -428,6 +462,7 @@ function renderManualCards(){
   const box=$('manualCards');
   if(!box)return;
   if(!manualCards.length){box.innerHTML='';return}
+
   box.innerHTML=`
     <div class="section-title">⭐ 3. การ์ดที่เลือกเอง — สูตรอิสระ</div>
     <div class="selected-cards-note">กด ＋ จากสูตรไหนก็ได้ การ์ดของสูตรนั้นจะถูกสร้างตรงนี้โดยไม่สนอันดับสูตร และใช้เลขเจาะจากสูตรที่เลือกโดยตรง</div>
@@ -437,25 +472,34 @@ function renderManualCards(){
 function renderFullUI(globalAuditMap,auditDataMap,predictionDataMap){
   let html='';
   const sortedGlobalFormulas=Object.keys(globalAuditMap).sort((a,b)=>globalAuditMap[b].hitRate-globalAuditMap[a].hitRate);
+
   html+=`
   <div class="section-title">🌐 0. ตารางออดิตสะสมรวมทุกหวย & จัดอันดับความแม่นยำ</div>
   <div class="summary-table-container">
   <h3 style="color:#78590f;font-size:.78rem;margin:0 0 8px;">ภาพรวมความแม่นยำของทุกสูตร (ค่าดิบแท้ 100%)</h3>
   <table class="audit-table"><thead><tr><th>อันดับ</th><th>ชื่อสูตร</th><th>เลขเด่นงวดล่าสุด</th><th>งวดทดสอบรวม</th><th>เข้า / หลุด</th><th>ออกหลักร้อยเดี่ยว</th><th>Hit Rate (%)</th><th>สถานะภาพรวม</th></tr></thead><tbody>`;
+
   sortedGlobalFormulas.forEach((fName,index)=>{
     const g=globalAuditMap[fName],rank=index+1;
     const badge=rank===1?'<span class="badge-rank-1">อันดับ 1</span>':rank===2?'<span class="badge-rank-2">อันดับ 2</span>':rank===3?'<span class="badge-rank-3">อันดับ 3</span>':`<span class="badge-rank-other">อันดับ ${rank}</span>`;
     const latest=g.latestDigits?`<b style="color:#78590f;font-size:.55rem;background:#fff8e7;padding:2px 8px;border:1px solid #d4af37;border-radius:6px;">${g.latestDigits[0]}-${g.latestDigits[1]}</b>`:'-';
+
     html+=`<tr><td>${badge}</td><td class="formula-cell">${esc(fName)}</td><td>${latest}</td><td>${g.totalTested}</td><td><span style="color:#2e7d32;font-weight:bold;">${g.hits}</span> / <span style="color:#c62828;">${g.misses}</span></td><td style="color:#ef6c00;font-weight:bold;">${g.hundredsOnlyCount||0} งวด</td><td style="font-weight:bold;color:${g.hitRate>=50?'#2e7d32':'#c62828'};">${g.hitRate}%</td><td>${g.hitRate>=60?'<span class="badge-status status-hot">ยอดเยี่ยม</span>':'<span class="badge-status status-cooling">ปานกลาง</span>'}</td></tr>`;
   });
+
   html+=`</tbody></table></div>`;
   html+=`<div class="section-title">📊 1. ส่วนตารางออดิตย้อนหลังรายหวย & จัดอันดับ Ranking 1-3</div>`;
+
   Object.keys(auditDataMap).forEach(lotteryName=>{
-    const formulasResult=auditDataMap[lotteryName],sortedFormulas=Object.keys(formulasResult).sort((a,b)=>formulasResult[b].hitRate-formulasResult[a].hitRate),displayTitle=formatDisplayTitle(lotteryName);
+    const formulasResult=auditDataMap[lotteryName];
+    const sortedFormulas=Object.keys(formulasResult).sort((a,b)=>formulasResult[b].hitRate-formulasResult[a].hitRate);
+    const displayTitle=formatDisplayTitle(lotteryName);
+
     html+=`
     <div class="summary-table-container">
     <h3 style="color:#78590f;font-size:.8rem;margin:0 0 10px;">หวย: ${esc(displayTitle)}</h3>
     <table class="audit-table"><thead><tr><th>อันดับ</th><th>ชื่อสูตร</th><th>เลขเด่นงวดล่าสุด</th><th>งวดทดสอบ</th><th>เข้า / หลุด</th><th>ออกหลักร้อยเดี่ยว</th><th>Hit Rate (%)</th><th>สถานะงวดล่าสุด</th><th>เข้า/หลุดติดต่อกัน</th><th>การ์ด</th></tr></thead><tbody>`;
+
     sortedFormulas.forEach((fName,index)=>{
       const f=formulasResult[fName],rank=index+1;
       const badge=rank===1?'<span class="badge-rank-1">อันดับ 1</span>':rank===2?'<span class="badge-rank-2">อันดับ 2</span>':rank===3?'<span class="badge-rank-3">อันดับ 3</span>':`<span class="badge-rank-other">อันดับ ${rank}</span>`;
@@ -463,6 +507,7 @@ function renderFullUI(globalAuditMap,auditDataMap,predictionDataMap){
       const badgeHTML=f.lastHit===false?(f.hitHundredsOnly?'<span class="badge-status status-warning">⚠️ หลุด (หลักร้อย)</span>':f.curMissStreak>=2?`<span class="badge-status status-danger">🔴 หลุด ${f.curMissStreak} งวด</span>`:'<span class="badge-status status-cooling">🟡 หลุด 1 งวด</span>'):'<span class="badge-status status-hot">🟢 เข้า</span>';
       const key=encodeURIComponent(`${lotteryName}|||${fName}`);
       const already=manualCards.some(c=>c.lotteryName===lotteryName&&c.fName===fName);
+
       html+=`
       <tr>
         <td>${badge}</td><td class="formula-cell">${esc(fName)}</td><td>${latest}</td><td>${f.totalTested}</td>
@@ -473,21 +518,33 @@ function renderFullUI(globalAuditMap,auditDataMap,predictionDataMap){
         <td><button class="add-card-btn${already?' added':''}" onclick="addFormulaCard(decodeURIComponent('${encodeURIComponent(lotteryName)}'),decodeURIComponent('${encodeURIComponent(fName)}'))">${already?'✓ อยู่ในการ์ด':'＋ เพิ่มการ์ด'}</button></td>
       </tr>`;
     });
+
     html+=`</tbody></table></div>`;
   });
 
   html+=`
   <div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านเงินกอง V32.3 Clean Card)</div>
   <div id="autoCards">`;
+
   let cardIdx=0;
+
   Object.keys(predictionDataMap).forEach(lotteryName=>{
     const p=predictionDataMap[lotteryName];
+
     html+=renderCardHTML({
-      lotteryName,fName:'อันดับสูงสุดอัตโนมัติ',nextDate:p.nextDate,displayTitle:formatDisplayTitle(lotteryName),
-      flag:getLotteryFlag(lotteryName),d1:p.d1,d2:p.d2,d1Pairs:p.d1Pairs,d2Pairs:p.d2Pairs
+      lotteryName,
+      nextDate:p.nextDate,
+      displayTitle:formatDisplayTitle(lotteryName),
+      flag:getLotteryFlag(lotteryName),
+      d1:p.d1,
+      d2:p.d2,
+      d1Pairs:p.d1Pairs,
+      d2Pairs:p.d2Pairs
     },false,cardIdx++);
   });
+
   html+=`</div><div id="manualCards"></div><div class="brand-footer"><span class="brand-star">✦</span><span>ระบบบ้านเงินกอง V32.3 Pure Raw Calculation สมบูรณ์แบบ 100%</span><span class="brand-star">✦</span></div>`;
+
   $('result').innerHTML=html;
   renderManualCards();
   updateIndicator();
@@ -495,56 +552,129 @@ function renderFullUI(globalAuditMap,auditDataMap,predictionDataMap){
 
 function runEngine(){
   const textVal=$('bulkInput').value.trim();let newRecords=[];
+
   if(textVal){
     const parsed=parseInput(textVal);
+
     if(parsed.errors.length>0&&parsed.records.length===0){
-      $('result').innerHTML=`<div class="errorbox"><b>ไม่สามารถประมวลผลได้เนื่องจากรูปแบบข้อมูลไม่ถูกต้อง:</b><br>${parsed.errors.join('<br>')}</div>`;return;
+      $('result').innerHTML=`<div class="errorbox"><b>ไม่สามารถประมวลผลได้เนื่องจากรูปแบบข้อมูลไม่ถูกต้อง:</b><br>${parsed.errors.join('<br>')}</div>`;
+      return;
     }
     newRecords=parsed.records;
   }
+
   let masterRecords=[];
-  try{const stored=localStorage.getItem(STORAGE_KEY);if(stored)masterRecords=JSON.parse(stored)}catch(e){}
+  try{
+    const stored=localStorage.getItem(STORAGE_KEY);
+    if(stored)masterRecords=JSON.parse(stored);
+  }catch(e){}
+
   if(newRecords.length>0)newRecords.forEach(nr=>{
     const idx=masterRecords.findIndex(r=>r.name===nr.name&&r.date===nr.date);
-    if(idx>=0)masterRecords[idx]=nr;else masterRecords.push(nr);
+    if(idx>=0)masterRecords[idx]=nr;
+    else masterRecords.push(nr);
   });
+
   masterRecords.sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(masterRecords))}catch(e){}
+
   if(masterRecords.length===0){
-    $('result').innerHTML='<div class="errorbox">ยังไม่มีข้อมูลในระบบ กรุณากรอกข้อมูลสถิติย้อนหลังในกล่องข้อความด้านบน</div>';return;
+    $('result').innerHTML='<div class="errorbox">ยังไม่มีข้อมูลในระบบ กรุณากรอกข้อมูลสถิติย้อนหลังในกล่องข้อความด้านบน</div>';
+    return;
   }
 
   const groups={};
-  masterRecords.forEach(r=>{if(!groups[r.name])groups[r.name]=[];groups[r.name].push(r)});
+  masterRecords.forEach(r=>{
+    if(!groups[r.name])groups[r.name]=[];
+    groups[r.name].push(r);
+  });
+
   const auditDataMap={},predictionDataMap={},globalAccumulator={};
-  Object.keys(formulas).forEach(fName=>globalAccumulator[fName]={totalTested:0,hits:0,misses:0,hundredsOnlyCount:0,latestDigits:null});
+
+  Object.keys(formulas).forEach(fName=>{
+    globalAccumulator[fName]={
+      totalTested:0,
+      hits:0,
+      misses:0,
+      hundredsOnlyCount:0,
+      latestDigits:null
+    };
+  });
 
   Object.keys(groups).forEach(lotteryName=>{
-    const recs=groups[lotteryName];if(recs.length<2)return;
+    const recs=groups[lotteryName];
+    if(recs.length<2)return;
+
     auditDataMap[lotteryName]={};
     const formulaNames=Object.keys(formulas),latestRec=recs[recs.length-1];
     const lTop=latestRec.n3.split('').map(Number),lBot=latestRec.n2.split('').map(Number);
 
     formulaNames.forEach(fName=>{
       let hits=0,misses=0,hundredsOnlyCount=0,currentStreak=0,maxStreak=0,currentMissStreak=0,maxMissStreak=0,totalTested=0,lastHitResult=true,lastHitHundredsOnly=false;
+
       for(let i=0;i<recs.length-1;i++){
-        const curr=recs[i],next=recs[i+1],top=curr.n3.split('').map(Number),bot=curr.n2.split('').map(Number);
-        const predicted=sanitizeFormulaResult(formulas[fName](top[0],top[1],top[2],bot[0],bot[1])),check=checkHitDetail(predicted,next.n3,next.n2);
-        totalTested++;if(check.hitHundredsOnly)hundredsOnlyCount++;
-        if(check.hitAny){hits++;currentStreak++;currentMissStreak=0;lastHitResult=true;lastHitHundredsOnly=false;if(currentStreak>maxStreak)maxStreak=currentStreak}
-        else{misses++;currentMissStreak++;currentStreak=0;lastHitResult=false;lastHitHundredsOnly=check.hitHundredsOnly;if(currentMissStreak>maxMissStreak)maxMissStreak=currentMissStreak}
+        const curr=recs[i],next=recs[i+1];
+        const top=curr.n3.split('').map(Number),bot=curr.n2.split('').map(Number);
+        const predicted=sanitizeFormulaResult(formulas[fName](top[0],top[1],top[2],bot[0],bot[1]));
+        const check=checkHitDetail(predicted,next.n3,next.n2);
+
+        totalTested++;
+        if(check.hitHundredsOnly)hundredsOnlyCount++;
+
+        if(check.hitAny){
+          hits++;currentStreak++;currentMissStreak=0;lastHitResult=true;lastHitHundredsOnly=false;
+          if(currentStreak>maxStreak)maxStreak=currentStreak;
+        }else{
+          misses++;currentMissStreak++;currentStreak=0;lastHitResult=false;lastHitHundredsOnly=check.hitHundredsOnly;
+          if(currentMissStreak>maxMissStreak)maxMissStreak=currentMissStreak;
+        }
       }
+
       const latestDigits=sanitizeFormulaResult(formulas[fName](lTop[0],lTop[1],lTop[2],lBot[0],lBot[1]));
-      globalAccumulator[fName].totalTested+=totalTested;globalAccumulator[fName].hits+=hits;globalAccumulator[fName].misses+=misses;globalAccumulator[fName].hundredsOnlyCount+=hundredsOnlyCount;globalAccumulator[fName].latestDigits=latestDigits;
-      auditDataMap[lotteryName][fName]={totalTested,hits,misses,hundredsOnlyCount,hitRate:totalTested>0?Number(((hits/totalTested)*100).toFixed(2)):0,maxStreak,maxMissStreak,curStreak:currentStreak,curMissStreak:currentMissStreak,lastHit:lastHitResult,hitHundredsOnly:lastHitHundredsOnly,latestDigits};
+
+      globalAccumulator[fName].totalTested+=totalTested;
+      globalAccumulator[fName].hits+=hits;
+      globalAccumulator[fName].misses+=misses;
+      globalAccumulator[fName].hundredsOnlyCount+=hundredsOnlyCount;
+      globalAccumulator[fName].latestDigits=latestDigits;
+
+      auditDataMap[lotteryName][fName]={
+        totalTested,
+        hits,
+        misses,
+        hundredsOnlyCount,
+        hitRate:totalTested>0?Number(((hits/totalTested)*100).toFixed(2)):0,
+        maxStreak,
+        maxMissStreak,
+        curStreak:currentStreak,
+        curMissStreak:currentMissStreak,
+        lastHit:lastHitResult,
+        hitHundredsOnly:lastHitHundredsOnly,
+        latestDigits
+      };
     });
 
     const sortedFormulasForThisLottery=Object.keys(formulas).sort((a,b)=>auditDataMap[lotteryName][b].hitRate-auditDataMap[lotteryName][a].hitRate);
-    const rank1FormulaName=sortedFormulasForThisLottery[0],rank1Digits=auditDataMap[lotteryName][rank1FormulaName].latestDigits;
-    let rawD1=rank1Digits[0],rawD2=rank1Digits[1];if(rawD1===rawD2)rawD2=norm(rawD1+1);
-    const digitScore=digit=>{let score=0;formulaNames.forEach(f=>{const res=auditDataMap[lotteryName][f].latestDigits;if(res&&res.includes(digit))score+=auditDataMap[lotteryName][f].hitRate||1});return score};
+    const rank1FormulaName=sortedFormulasForThisLottery[0];
+    const rank1Digits=auditDataMap[lotteryName][rank1FormulaName].latestDigits;
+
+    let rawD1=rank1Digits[0],rawD2=rank1Digits[1];
+    if(rawD1===rawD2)rawD2=norm(rawD1+1);
+
+    const digitScore=digit=>{
+      let score=0;
+      formulaNames.forEach(f=>{
+        const res=auditDataMap[lotteryName][f].latestDigits;
+        if(res&&res.includes(digit))score+=auditDataMap[lotteryName][f].hitRate||1;
+      });
+      return score;
+    };
+
     const score1=digitScore(rawD1),score2=digitScore(rawD2);
-    let d1=rawD1,d2=rawD2;if(score2>score1){d1=rawD2;d2=rawD1}
+    let d1=rawD1,d2=rawD2;
+    if(score2>score1){d1=rawD2;d2=rawD1}
+
     const hundredsDigit=lTop[0],anchor=Math.abs(7-hundredsDigit)%10;
     const normalRange=[-2,-1,0,1,2].map(off=>norm(anchor+off));
     const isCollided=normalRange.some(num=>[d1,d2].includes(num));
@@ -554,50 +684,115 @@ function runEngine(){
     const generatePairsForDigit=(mainDigit,otherDigit)=>{
       let validUnits=poolDigits.filter(u=>u!==mainDigit&&u!==otherDigit);
       validUnits=Array.from(new Set(validUnits));
-      if(validUnits.length<5)for(let d=0;d<=9;d++)if(d!==mainDigit&&d!==otherDigit&&!validUnits.includes(d)){validUnits.push(d);if(validUnits.length===5)break}
+
+      if(validUnits.length<5){
+        for(let d=0;d<=9;d++){
+          if(d!==mainDigit&&d!==otherDigit&&!validUnits.includes(d)){
+            validUnits.push(d);
+            if(validUnits.length===5)break;
+          }
+        }
+      }
+
       const selectedUnits=validUnits.slice(0,5);
+
       const scoredPairs=selectedUnits.map(unit=>{
-        const pairStr=`${mainDigit}${unit}`,pairVal=parseInt(pairStr,10);let pairScore=0;
+        const pairStr=`${mainDigit}${unit}`,pairVal=parseInt(pairStr,10);
+        let pairScore=0;
+
         formulaNames.forEach(fName=>{
           const digits=auditDataMap[lotteryName][fName].latestDigits;
-          if(digits&&(digits.includes(mainDigit)||digits.includes(unit)))pairScore+=auditDataMap[lotteryName][fName].hitRate||1;
+          if(digits&&(digits.includes(mainDigit)||digits.includes(unit))){
+            pairScore+=auditDataMap[lotteryName][fName].hitRate||1;
+          }
         });
+
         if(Math.abs(unit-anchor)<=1)pairScore+=15;
         return{pair:pairStr,val:pairVal,score:pairScore};
       });
-      const sortedByScore=[...scoredPairs].sort((a,b)=>b.score-a.score);
-      const rank1Pair=sortedByScore[0]?.pair,rank2Pair=sortedByScore[1]?.pair,rank3Pair=sortedByScore[2]?.pair;
-      scoredPairs.sort((a,b)=>a.val-b.val);
-      return scoredPairs.map(item=>({pair:item.pair,val:item.val,rankClass:item.pair===rank1Pair?'rank-gold':item.pair===rank2Pair?'rank-silver':item.pair===rank3Pair?'rank-rosegold':''}));
+
+      const sortedByScore=[...scoredPairs].sort((a,b)=>{
+        if(b.score!==a.score)return b.score-a.score;
+        return a.val-b.val;
+      });
+
+      const rank1Pair=sortedByScore[0]?.pair;
+      const rank2Pair=sortedByScore[1]?.pair;
+      const rank3Pair=sortedByScore[2]?.pair;
+
+      return scoredPairs.sort((a,b)=>a.val-b.val).map(item=>({
+        pair:item.pair,
+        val:item.val,
+        score:item.score,
+        rankClass:item.pair===rank1Pair?'rank-gold':item.pair===rank2Pair?'rank-silver':item.pair===rank3Pair?'rank-rosegold':''
+      }));
     };
 
-    const d1Pairs=generatePairsForDigit(d1,d2),d2Pairs=generatePairsForDigit(d2,d1);
-    predictionDataMap[lotteryName]={nextDate:getNextDateStr(latestRec.date),d1,d2,d1IsGold:true,d2IsGold:false,d1Pairs,d2Pairs,hundredsDigit};
+    const d1Pairs=generatePairsForDigit(d1,d2);
+    const d2Pairs=generatePairsForDigit(d2,d1);
+
+    predictionDataMap[lotteryName]={
+      nextDate:getNextDateStr(latestRec.date),
+      d1,
+      d2,
+      d1IsGold:true,
+      d2IsGold:false,
+      d1Pairs,
+      d2Pairs,
+      hundredsDigit
+    };
   });
 
   const globalAuditMap={};
+
   Object.keys(globalAccumulator).forEach(fName=>{
     const g=globalAccumulator[fName];
-    globalAuditMap[fName]={totalTested:g.totalTested,hits:g.hits,misses:g.misses,hundredsOnlyCount:g.hundredsOnlyCount,hitRate:g.totalTested>0?Number(((g.hits/g.totalTested)*100).toFixed(2)):0,latestDigits:g.latestDigits};
+    globalAuditMap[fName]={
+      totalTested:g.totalTested,
+      hits:g.hits,
+      misses:g.misses,
+      hundredsOnlyCount:g.hundredsOnlyCount,
+      hitRate:g.totalTested>0?Number(((g.hits/g.totalTested)*100).toFixed(2)):0,
+      latestDigits:g.latestDigits
+    };
   });
 
   currentAuditDataMap=auditDataMap;
   currentPredictionDataMap=predictionDataMap;
-  manualCards=manualCards.filter(c=>predictionDataMap[c.lotteryName]&&auditDataMap[c.lotteryName]?.[c.fName]);
+
+  manualCards=manualCards.filter(c=>
+    predictionDataMap[c.lotteryName]&&
+    auditDataMap[c.lotteryName]?.[c.fName]
+  );
+
   renderFullUI(globalAuditMap,auditDataMap,predictionDataMap);
   showToast('✓ ประมวลผลระบบ V32.3 (บ้านเงินกอง) สำเร็จ');
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
   if($('run'))$('run').onclick=runEngine;
-  if($('clearInput'))$('clearInput').onclick=()=>{$('bulkInput').value='';showToast('✓ ล้างกล่องกรอกข้อมูลแล้ว')};
-  if($('clearGlobal'))$('clearGlobal').onclick=()=>{
-    if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
-      try{localStorage.removeItem(STORAGE_KEY)}catch(e){}
-      manualCards=[];$('result').innerHTML='';updateIndicator();showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย');
-    }
-  };
+
+  if($('clearInput')){
+    $('clearInput').onclick=()=>{
+      $('bulkInput').value='';
+      showToast('✓ ล้างกล่องกรอกข้อมูลแล้ว');
+    };
+  }
+
+  if($('clearGlobal')){
+    $('clearGlobal').onclick=()=>{
+      if(confirm('ต้องการล้างข้อมูลสะสมทั้งหมดในระบบจริงหรือไม่?')){
+        try{localStorage.removeItem(STORAGE_KEY)}catch(e){}
+        manualCards=[];
+        $('result').innerHTML='';
+        updateIndicator();
+        showToast('✓ ล้างข้อมูลสะสมทั้งหมดเรียบร้อย');
+      }
+    };
+  }
+
   updateIndicator();
+
   try{
     const stored=localStorage.getItem(STORAGE_KEY);
     if(stored&&JSON.parse(stored).length>0)runEngine();
