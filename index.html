@@ -3462,21 +3462,13 @@ function renderCardHTML(
     card.type==='score';
 
 
-  const title=
-    isScore
-    ?'เลขเด่นตามคะแนนออดิท'
-    :'เลขเด่นจากสูตรดั้งเดิม';
-
-
-  const badge=
-    isScore
-    ?`
-      <span
-        class="badge-status status-blue">
-        🧠 ${esc(card.confidence?.label||'AUDIT')}
-      </span>
-    `
-    :'';
+  /*
+     Audit presentation rule:
+     Keep the card visually clean. Formula names, audit labels,
+     and audit scores are intentionally kept outside the share card.
+  */
+  const title='';
+  const badge='';
 
 
   /* คะแนนออดิทสรุปไว้นอกการ์ด เพื่อให้การ์ดสะอาดสำหรับแคปส่งสมาชิก */
@@ -3516,9 +3508,6 @@ function renderCardHTML(
           </b>
 
 
-          <div style="margin-top:4px">
-            ${badge}
-          </div>
 
 
         </div>
@@ -3580,31 +3569,6 @@ function renderCardHTML(
 
 
       </div>
-
-
-    </div>
-
-
-
-
-    <div
-      style="
-        text-align:center;
-        margin:-2px 0 10px;
-        color:${isScore?'#3569a8':'#a67c1e'};
-        font-size:.55rem;
-        font-weight:800;
-      ">
-
-
-      ${title}
-
-
-      ${
-        !isScore && card.fName
-        ?` · ${esc(card.fName)}`
-        :''
-      }
 
 
     </div>
