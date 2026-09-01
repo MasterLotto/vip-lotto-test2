@@ -3408,119 +3408,69 @@ function buildDigitConsensus(auditData,formulaNames){
 
 
 
-function buildDigitScore(digit,formulaNames,auditData,consensusMap,frequency){
-  const evidence=frequency?.evidence?.[digit]||{};
-  const sizes=AUDIT_WINDOW_SIZES.slice();
-
-  // Windows overlap heavily. Use them all, but compress correlated windows into
-  // independent-ish bands instead of simply averaging seven copies of the same data.
-  const wr=sizes.map(n=>Number(evidence.windowRates?.[n]||0));
-  const reliabilities=sizes.map(n=>Math.min(1,(frequency?.recordCount||0)/Math.max(1,n)));
-  const bandShort=avg([wr[0],wr[1]]);
-  const bandMid=avg([wr[2],wr[3],wr[4]]);
-  const bandLong=avg([wr[5],wr[6]]);
-  const bandReliability=avg([
-    reliabilities[0]*0.55+reliabilities[1]*0.45,
-    reliabilities[2]*0.34+reliabilities[3]*0.33+reliabilities[4]*0.33,
-    reliabilities[5]*0.5+reliabilities[6]*0.5
-  ]);
-  const multiWindowScore=clamp(
-    bandShort*.40+bandMid*.35+bandLong*.25,
-    0,100
-  );
-  const windowConsistency=Number(evidence.consistency||0);
-
-  const uniqueContrib=[];
-  const formulaSeen=new Set();
-  (formulaNames||[]).forEach(fName=>{
-    const f=auditData?.[fName];
-    if(!f||!Array.isArray(f.latestDigits)||!f.latestDigits.includes(digit))return;
-    const signature=f.latestDigits.slice().sort((a,b)=>a-b).join(',');
-    if(formulaSeen.has(signature))return;
-    formulaSeen.add(signature);
-    const fw=sizes.map(n=>Number(f.windowRates?.[n]||0));
-    const fShort=avg([fw[0],fw[1]]);
-    const fMid=avg([fw[2],fw[3],fw[4]]);
-    const fLong=avg([fw[5],fw[6]]);
-    const fWindow=clamp(fShort*.40+fMid*.35+fLong*.25,0,100);
-    uniqueContrib.push(avg([
-      Number(f.hitRate)||0,
-      fWindow,
-      Number(f.stability)||0,
-      Number(f.recencyRate)||0
-    ]));
-  });
-
-  const formulaScore=uniqueContrib.length?avg(uniqueContrib):0;
-  const c=consensusMap?.find(x=>x.digit===digit);
-  const consensusScore=clamp(((c?.agreement||0)/Math.max(1,(formulaNames||[]).length))*100,0,100);
-  const frequencyScore=clamp(Number(frequency?.rates?.[digit]||0)*5,0,100);
-
-  const temporalScore=clamp(
-    multiWindowScore*.48+
-    Number(evidence.momentum||0)*.22+
-    Number(evidence.trend||0)*.15+
-    windowConsistency*.15,
-    0,100
-  );
-  const positionScore=clamp(Number(evidence.positionStrength||0),0,100);
-
-  // Multi-dimensional evidence is intentionally capped and reliability-adjusted.
-  // It refines ranking; it never replaces or modifies the locked formulas/pairs.
-  const patternScore=clamp(Number(evidence.patternScore||0)*bandReliability,0,100);
-  const behaviorScore=clamp(avg([
-    evidence.consistency||0,
-    evidence.momentum||0,
-    evidence.trend||0,
-    evidence.gapScore||0,
-    evidence.sampleReliability||0
-  ]),0,100);
-
-  // Final blend. Window evidence is already compressed into temporalScore;
-  // patternScore is a small, reliability-gated refinement to avoid double count.
-  const rawScore=clamp(
-    formulaScore*.34+
-    consensusScore*.19+
-    frequencyScore*.14+
-    temporalScore*.17+
-    positionScore*.06+
-    behaviorScore*.06+
-    patternScore*.04,
-    0,100
-  );
-
-  const rankingScore=round2(rawScore);
-  const displayConfidence=round2(clamp(
-    rankingScore*.55+
-    Number(evidence.consistency||0)*.15+
-    Number(evidence.sampleReliability||0)*.15+
-    Number(evidence.patternScore||0)*.05+
-    Math.min(100,(c?.agreement||0)/Math.max(1,(formulaNames||[]).length)*100)*.10,
-    0,100
-  ));
-  return {
-    digit,
-    score:rankingScore,
-    rawScore:rankingScore,
-    rankingScore,
-    displayConfidence,
-    agreement:c?.agreement||0,
-    frequencyRate:Number(frequency?.rates?.[digit]||0),
-    formulaScore:round2(formulaScore),
-    consensusScore:round2(consensusScore),
-    temporalScore:round2(temporalScore),
-    positionScore:round2(positionScore),
-    behaviorScore:round2(behaviorScore),
-    patternScore:round2(patternScore),
-    multiWindowScore:round2(multiWindowScore),
-    windowConsistency:round2(windowConsistency),
-    windowBandShort:round2(bandShort),
-    windowBandMid:round2(bandMid),
-    windowBandLong:round2(bandLong),
-    windowReliability:round2(bandReliability*100),
-    evidence
-  };
+const SCORE_AUDIT_LOCKED_TARGET_SOURCE='ORIGINAL_CARD_RANK1_TARGETED_PAIRS';
+function observedDigits(r){const x=String(r?.n3||'')+String(r?.n2||'');return /^\d{5}$/.test(x)?x.split('').map(Number):[];}
+function analystSignals(f){return Array.from({length:10},(_,digit)=>{const e=f?.evidence?.[digit]||{};const h=clamp(Number(f?.rates?.[digit]||0)*5,0,100),s=Number(e.shortAvg||0),m=Number(e.midAvg||0),l=Number(e.longAvg||0),multi=clamp(s*.4+m*.35+l*.25,0,100),tm=clamp(Number(e.momentum||0)*.55+Number(e.trend||0)*.45,0,100),gr=clamp(Number(e.gapScore||0)*.65+s*.35,0,100),pos=clamp(Number(e.positionStrength||0),0,100),trans=clamp(Number(e.patternScore||0),0,100),stab=clamp(Number(e.consistency||0)*.65+Number(e.sampleReliability||0)*.35,0,100),struct=clamp(Number(e.patternScore||0)*.7+pos*.3,0,100),contr=clamp(100-Math.abs(s-l)*1.4-Math.abs(s-m)*.8,0,100),div=clamp(avg([h,multi,tm,gr,pos,trans,stab]),0,100);return{digit,historical:h,multiWindow:multi,trendMomentum:tm,gapRecency:gr,position:pos,transition:trans,stability:stab,structural:struct,contradiction:contr,diversity:div};});}
+function simulateAnalystReliability(records,maxTests=24){
+  const safe=(records||[]).filter(r=>observedDigits(r).length===5).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const names=['historical','multiWindow','trendMomentum','gapRecency','position','transition','stability','structural','contradiction','diversity'];
+  const st=Object.fromEntries(names.map(n=>[n,{hits:0,tests:0}]));
+  const rows=[];
+  const usable=Math.min(maxTests,Math.max(0,safe.length-9));
+  const startCut=Math.max(8,safe.length-usable);
+  for(let cut=startCut;cut<safe.length;cut++){
+    const train=safe.slice(0,cut);
+    const target=safe[cut];
+    if(train.length<8) continue;
+    const sig=analystSignals(calculateDigitFrequency(train));
+    const obs=new Set(observedDigits(target));
+    const row={sourceDate:train[train.length-1]?.date||'-',targetDate:target.date,trainSize:train.length,analysts:{}};
+    for(const n of names){
+      const top=sig.slice().sort((a,b)=>(b[n]-a[n])||(b.diversity-a.diversity)||(b.stability-a.stability)||(a.digit-b.digit)).slice(0,2);
+      const hit=top.some(x=>obs.has(x.digit));
+      st[n].tests++;
+      if(hit) st[n].hits++;
+      row.analysts[n]={top:top.map(x=>x.digit),hit};
+    }
+    rows.push(row);
+  }
+  const reliability={};
+  for(const n of names){
+    const x=st[n];
+    const empirical=x.tests?x.hits/x.tests:0.5;
+    const confidenceWeight=Math.min(1,x.tests/12);
+    reliability[n]=round2(50+(empirical*100-50)*confidenceWeight);
+  }
+  return{names,stats:st,reliability,rows,tested:rows.length,leakageFree:rows.every(r=>r.trainSize>=8)};
 }
+
+function learnAnalysts(records){
+  return simulateAnalystReliability(records,24);
+}
+
+function buildScoreAuditEnsemble(frequency,audit,formulaNames,target,records){const sig=analystSignals(frequency),learn=learnAnalysts(records),f=audit?.[target?.formulaName],td=target?.digits||[],tp=[...(target?.d1Pairs||[]),...(target?.d2Pairs||[])].map(x=>String(x?.pair||'')).filter(x=>/^\d{2}$/.test(x));return{signals:sig.map(x=>({...x,formula:clamp((Array.isArray(f?.latestDigits)&&f.latestDigits.includes(x.digit)?Number(f.hitRate)||0:0)*.55+(td.includes(x.digit)?30:0)+(tp.some(p=>p.includes(String(x.digit)))?15:0),0,100),lockedTargetSource:SCORE_AUDIT_LOCKED_TARGET_SOURCE,lockedTargetFormula:target?.formulaName||'',lockedTargetDigits:td,lockedTargetPairs:tp})),reliability:learn.reliability,learning:learn.stats,names:learn.names.concat(['formula'])};}
+function buildScoreAuditSimulator(records){
+  const safe=(records||[]).filter(r=>observedDigits(r).length===5).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const sim=simulateAnalystReliability(safe,24);
+  const aggregate={tests:0,hits:0};
+  sim.rows.forEach(row=>{
+    const votes={};
+    sim.names.forEach(n=>{
+      const a=row.analysts[n];
+      if(!a)return;
+      a.top.forEach(d=>{votes[d]=(votes[d]||0)+1;});
+    });
+    const ranked=Object.entries(votes).map(([digit,votes])=>({digit:Number(digit),votes})).sort((a,b)=>b.votes-a.votes||a.digit-b.digit).slice(0,2);
+    const target=safe.find(r=>String(r.date)===String(row.targetDate));
+    const actual=new Set(observedDigits(target));
+    if(ranked.some(x=>actual.has(x.digit))) aggregate.hits++;
+    aggregate.tests++;
+  });
+  return{...sim,ensembleTop2Rate:percent(aggregate.hits,aggregate.tests),ensembleHits:aggregate.hits,ensembleTests:aggregate.tests};
+}
+
+function buildDigitScore(digit,formulaNames,auditData,consensusMap,frequency,ensemble){const e=frequency?.evidence?.[digit]||{},s=Number(e.shortAvg||0),m=Number(e.midAvg||0),l=Number(e.longAvg||0),multi=clamp(s*.4+m*.35+l*.25,0,100),c=consensusMap?.find(x=>x.digit===digit),seen=new Set(),fc=[];(formulaNames||[]).forEach(n=>{const f=auditData?.[n];if(!f?.latestDigits?.includes(digit))return;const sig=f.latestDigits.slice().sort((a,b)=>a-b).join(',');if(seen.has(sig))return;seen.add(sig);fc.push(avg([Number(f.hitRate)||0,Number(f.recencyRate)||0,Number(f.stability)||0]));});const formulaHistory=fc.length?avg(fc):0,cons=clamp((c?.agreement||0)/Math.max(1,formulaNames.length)*100,0,100),freq=clamp(Number(frequency?.rates?.[digit]||0)*5,0,100),temporal=clamp(multi*.45+Number(e.momentum||0)*.2+Number(e.trend||0)*.15+Number(e.consistency||0)*.2,0,100),pos=clamp(Number(e.positionStrength||0),0,100),behavior=clamp(avg([e.consistency||0,e.momentum||0,e.trend||0,e.gapScore||0,e.sampleReliability||0]),0,100),rel=ensemble?.reliability||{},a=ensemble?.signals?.[digit]||{};const an=['historical','multiWindow','trendMomentum','gapRecency','position','transition','stability','structural','contradiction','diversity'];const analyst=avg(an.map(n=>Number(a[n]||0)*(.7+.3*(Number(rel[n]||50)/100)))),locked=Number(a.formula||0),pattern=clamp(Number(e.patternScore||0)*Math.min(1,(frequency?.recordCount||0)/30),0,100),raw=clamp(analyst*.30+formulaHistory*.20+locked*.14+cons*.10+freq*.08+temporal*.08+pos*.03+behavior*.04+pattern*.03,0,100),pen=clamp(100-Number(a.contradiction||50),0,100)*.06,score=round2(clamp(raw-pen,0,100));return{digit,score,rawScore:round2(raw),rankingScore:score,displayConfidence:round2(clamp(score*.5+Number(e.consistency||0)*.12+Number(e.sampleReliability||0)*.13+Number(a.diversity||0)*.1+Number(a.contradiction||0)*.1+(c?.agreement||0)/Math.max(1,formulaNames.length)*5,0,100)),agreement:c?.agreement||0,frequencyRate:Number(frequency?.rates?.[digit]||0),formulaScore:round2(formulaHistory),lockedTargetScore:round2(locked),consensusScore:round2(cons),temporalScore:round2(temporal),positionScore:round2(pos),behaviorScore:round2(behavior),patternScore:round2(pattern),analystScore:round2(analyst),contradictionScore:round2(Number(a.contradiction||0)),evidenceDiversity:round2(Number(a.diversity||0)),multiWindowScore:round2(multi),windowConsistency:round2(Number(e.consistency||0)),windowBandShort:round2(s),windowBandMid:round2(m),windowBandLong:round2(l),windowReliability:round2(Math.min(1,(frequency?.recordCount||0)/30)*100),analystReliability:rel,evidence:e};}
+
 function assertSharedPairEngine(cardA,cardB){
   const a=Array.isArray(cardA)?cardA.map(x=>x?.pair||''):[];
   const b=Array.isArray(cardB)?cardB.map(x=>x?.pair||''):[];
@@ -4280,22 +4230,22 @@ function buildScorePrediction(
 
 
 
-  const scoreData=
-    Array.from(
-      {length:10},
-      (_,digit)=>
-        buildDigitScore(
-          digit,
-          formulaNames,
-          audit,
-          consensus,
-          frequency
-        )
-    )
+  /* LOCKED: Score Audit consumes the Original Card Rank-1 targeted formula output. */
+  const lockedTarget={
+    formulaName:p.rank1Formula||'อันดับ 1 — สูตร 2 N1',
+    source:SCORE_AUDIT_LOCKED_TARGET_SOURCE,
+    digits:[p.d1,p.d2].filter(Number.isInteger),
+    d1Pairs:Array.isArray(p.d1Pairs)?p.d1Pairs:[],
+    d2Pairs:Array.isArray(p.d2Pairs)?p.d2Pairs:[]
+  };
+  const ensemble=buildScoreAuditEnsemble(frequency,audit,formulaNames,lockedTarget,p.recordsForFrequency||[]);
+  const scoreData=Array.from({length:10},(_,digit)=>buildDigitScore(digit,formulaNames,audit,consensus,frequency,ensemble))
     .sort(
       (a,b)=>
         b.score-a.score||
-        b.agreement-a.agreement||
+        b.displayConfidence-a.displayConfidence||
+        b.evidenceDiversity-a.evidenceDiversity||
+        b.analystScore-a.analystScore||
         a.digit-b.digit
     );
 
@@ -4471,6 +4421,12 @@ function buildScorePrediction(
 
 
 
+
+    analystEnsemble:ensemble,
+    lockedTargetSource:SCORE_AUDIT_LOCKED_TARGET_SOURCE,
+    lockedTargetFormula:lockedTarget.formulaName,
+    lockedTargetDigits:lockedTarget.digits,
+    lockedTargetPairs:[...lockedTarget.d1Pairs,...lockedTarget.d2Pairs].map(x=>x?.pair).filter(Boolean),
 
     type:'score'
   };
@@ -7953,6 +7909,11 @@ function runEngine(){
             (secondScore?.score||0)
           ),
 
+        scoreAuditTargetSource:SCORE_AUDIT_LOCKED_TARGET_SOURCE,
+        scoreAuditTargetFormula:rank1FormulaName,
+        scoreAuditTargetDigits:[d1,d2],
+        scoreAuditTargetPairs:[...d1Pairs,...d2Pairs].map(x=>x?.pair).filter(Boolean),
+
 
 
 
@@ -8894,6 +8855,15 @@ function renderWalkForwardAudit(groups){
       </div>`;
     });
     html+=`</div>`;
+
+    const sim=buildScoreAuditSimulator(recs);
+    html+=`<details class="wf-section" style="margin-top:12px" open><summary style="cursor:pointer;font-weight:800">🧠 Score Audit Simulator — ห้องทดสอบย้อนหลังแบบไม่เห็นอนาคต</summary>
+      <div class="wf-grid">
+        <div class="wf-card"><h4>Simulator</h4><div class="wf-kpi"><span>จุดทดสอบ</span><b>${sim.tested}</b></div><div class="wf-kpi"><span>Ensemble TOP 2</span><b>${sim.ensembleTop2Rate}%</b></div><div class="wf-kpi"><span>ข้อมูลอนาคตรั่ว</span><b class="${sim.leakageFree?'wf-pass':'wf-fail'}">${sim.leakageFree?'ไม่พบ':'พบ'}</b></div></div>
+        <div class="wf-card"><h4>Reliability ของ Analyst</h4>${sim.names.map(n=>`<div class="wf-kpi"><span>${esc(n)}</span><b>${sim.reliability[n]}%</b></div>`).join('')}</div>
+      </div>
+      <div class="wf-note">Simulator ใช้เฉพาะข้อมูลก่อนงวดเป้าหมายเพื่อประเมินความน่าเชื่อถือของแต่ละ Analyst และใช้เป็นชั้นปรับ Reliability เท่านั้น ไม่สร้างสูตรใหม่ ไม่เปลี่ยนสูตรเลขเด่น/สูตรเลขเจาะ และไม่เปลี่ยนหน้าการ์ด</div>
+    </details>`;
 
 
     html+=`<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">รายละเอียดการตรวจสอบย้อนหลัง สูงสุด 30 จุดทดสอบ</summary><div class="wf-wrap"><table class="wf-table"><thead><tr><th>สูตร</th><th>ข้อมูลที่ใช้</th><th>งวดเป้าหมาย</th><th>จำนวนข้อมูลฝึก</th><th>อัตราก่อนทดสอบ</th><th>หลุดต่อเนื่องก่อนทดสอบ</th><th>ผล</th><th>ลำดับเวลา</th></tr></thead><tbody>`;
