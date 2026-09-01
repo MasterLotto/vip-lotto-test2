@@ -2022,8 +2022,16 @@ function getFormulaHistory(
   const history=[];
 
 
+  /* TEMPORAL INTEGRITY: audit strictly in chronological order. */
   const resultRecs=
-    recs.filter(isResultRecord);
+    recs
+      .filter(isResultRecord)
+      .slice()
+      .sort((a,b)=>{
+        const ta=Number(a.timestamp)||parseThaiDate(a.date)||0;
+        const tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+        return ta-tb;
+      });
 
 
   for(let i=0;i<resultRecs.length-1;i++){
@@ -2637,7 +2645,14 @@ function auditFormula(
 
 
   const resultRecs=
-    recs.filter(isResultRecord);
+    recs
+      .filter(isResultRecord)
+      .slice()
+      .sort((a,b)=>{
+        const ta=Number(a.timestamp)||parseThaiDate(a.date)||0;
+        const tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+        return ta-tb;
+      });
 
 
   const latestRec=
@@ -5188,8 +5203,16 @@ function runEngine(){
         groups[lotteryName];
 
 
+      /* TEMPORAL INTEGRITY: use one chronological result snapshot. */
       const resultRecs=
-        recs.filter(isResultRecord);
+        recs
+          .filter(isResultRecord)
+          .slice()
+          .sort((a,b)=>{
+            const ta=Number(a.timestamp)||parseThaiDate(a.date)||0;
+            const tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+            return ta-tb;
+          });
 
 
       if(resultRecs.length<1)
