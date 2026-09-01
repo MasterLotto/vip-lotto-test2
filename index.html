@@ -3277,10 +3277,10 @@ function calculateDigitFrequency(recs){
   // This prevents correlated dimensions from being counted as independent evidence.
   const seq=safe.map(r=>String(r.n3+r.n2).split('').map(Number));
   const dimensionBuilders={
-    2:[[0,1],[0,2],[0,3],[0,4],[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]],
-    3:[[0,1,2],[0,1,3],[0,1,4],[0,2,3],[0,2,4],[0,3,4],[1,2,3],[1,2,4],[1,3,4],[2,3,4]],
-    4:[[0,1,2,3],[0,1,2,4],[0,1,3,4],[0,2,3,4],[1,2,3,4]],
-    5:[[0,1,2,3,4]]
+    2:0,1],[0,2],[0,3],[0,4],[1,2],[1,3],[1,4],[2,3],[2,4],[3,4,
+    3:0,1,2],[0,1,3],[0,1,4],[0,2,3],[0,2,4],[0,3,4],[1,2,3],[1,2,4],[1,3,4],[2,3,4,
+    4:0,1,2,3],[0,1,2,4],[0,1,3,4],[0,2,3,4],[1,2,3,4,
+    5:0,1,2,3,4
   };
   Object.keys(dimensionBuilders).forEach(dim=>{
     const combos={};
@@ -5320,55 +5320,1099 @@ function renderManualCards(){
 
 
 
-function renderGlobalTable(auditDataMap){
-  /* =====================================================
-     PER-LOTTERY FORMULA AUDIT
-     IMPORTANT: never aggregate different lottery types.
-     Every table below is built directly from
-     auditDataMap[lotteryName], so one lottery's statistics
-     cannot be used as another lottery's formula statistics.
-  ===================================================== */
-  const names=Object.keys(auditDataMap||{});
-  if(!names.length) return '';
+function renderGlobalTable(
+  globalAuditMap
+){
 
-  return names.map(lotteryName=>{
-    const map=auditDataMap[lotteryName]||{};
-    const sorted=Object.keys(map).sort((a,b)=>(map[b].hitRate||0)-(map[a].hitRate||0));
-    let html=`
-      <div class="section-title">🌐 ตารางออดิตสูตร — ${esc(lotteryName)}</div>
-      <div class="summary-table-container">
-        <h3 style="color:#78590f;font-size:.78rem;margin:0 0 8px;">
-          วิเคราะห์เฉพาะข้อมูลของ ${esc(lotteryName)} เท่านั้น
-        </h3>
-        <div class="warning-note">
-          ตารางนี้แยกตามประเภทหวยโดยสมบูรณ์ ไม่มีการนำสถิติของหวยประเภทอื่นมารวมใน Hit Rate,
-          Window, Recency, Stability หรืออันดับสูตรของประเภทนี้
-        </div>
-        <table class="audit-table">
-          <thead><tr>
-            <th>อันดับ</th><th>ชื่อสูตร</th><th>เลขล่าสุด</th><th>ทดสอบ</th><th>เข้า</th><th>หลุด</th>
-            <th>Hit Rate</th><th>3 งวด</th><th>5 งวด</th><th>10 งวด</th><th>15 งวด</th>
-            <th>20 งวด</th><th>25 งวด</th><th>30 งวด</th><th>Recency</th><th>Stability</th><th>Trend</th>
-          </tr></thead><tbody>`;
 
-    sorted.forEach((fName,index)=>{
-      const g=map[fName]||{};
+
+
+  const sorted=
+    Object.keys(globalAuditMap)
+      .sort(
+        (a,b)=>
+          globalAuditMap[b].hitRate-
+          globalAuditMap[a].hitRate
+      );
+
+
+
+
+  let html=`
+
+
+
+
+    <div class="section-title">
+      🌐 0. ตารางออดิตสะสมรวมทุกหวย
+    </div>
+
+
+
+
+    <div class="summary-table-container">
+
+
+
+
+      <h3
+        style="
+          color:#78590f;
+          font-size:.78rem;
+          margin:0 0 8px;
+        ">
+        ภาพรวมสูตรทั้งหมด + Multi-Angle Audit
+      </h3>
+
+
+
+
+      <div class="warning-note">
+        ตารางนี้เป็นการวัดผลงานย้อนหลัง
+        ไม่ใช่การรับประกันผลของงวดถัดไป
+        โดยเฉพาะเมื่อสูตรอันดับ 1 กับคะแนนระยะสั้นให้สัญญาณต่างกัน
+      </div>
+
+
+
+
+      <table class="audit-table">
+
+
+
+
+        <thead>
+          <tr>
+            <th>อันดับ</th>
+            <th>ชื่อสูตร</th>
+            <th>เลขล่าสุด</th>
+            <th>ทดสอบ</th>
+            <th>เข้า</th>
+            <th>หลุด</th>
+            <th>Hit Rate</th>
+            <th>3 งวด</th>
+            <th>5 งวด</th>
+            <th>10 งวด</th>
+            <th>15 งวด</th>
+            <th>20 งวด</th>
+            <th>25 งวด</th>
+            <th>30 งวด</th>
+            <th>Recency</th>
+            <th>Stability</th>
+            <th>Trend</th>
+          </tr>
+        </thead>
+
+
+
+
+        <tbody>
+  `;
+
+
+
+
+  sorted.forEach(
+    (fName,index)=>{
+
+
+
+
+      const g=
+        globalAuditMap[fName];
+
+
+
+
       const rank=index+1;
-      const badge=rank===1?'<span class="badge-rank-1">อันดับ 1</span>':rank===2?'<span class="badge-rank-2">อันดับ 2</span>':rank===3?'<span class="badge-rank-3">อันดับ 3</span>':`<span class="badge-rank-other">อันดับ ${rank}</span>`;
-      const latest=Array.isArray(g.latestDigits)?g.latestDigits.join(' / '):'-';
-      const wr=g.windowRates||{};
-      html+=`<tr>
-        <td>${badge}</td><td>${esc(fName)}</td><td><b>${esc(String(latest))}</b></td>
-        <td>${g.totalTested||0}</td><td>${g.hits||0}</td><td>${g.misses||0}</td>
-        <td><b>${g.hitRate||0}%</b></td><td>${wr[3]??0}%</td><td>${wr[5]??0}%</td><td>${wr[10]??0}%</td>
-        <td>${wr[15]??0}%</td><td>${wr[20]??0}%</td><td>${wr[25]??0}%</td><td>${wr[30]??0}%</td>
-        <td>${g.recencyRate??0}%</td><td>${g.stability??0}%</td><td>เฉพาะประเภทนี้</td>
-      </tr>`;
-    });
-    html+=`</tbody></table></div>`;
-    return html;
-  }).join('');
+
+
+
+
+      const badge=
+        rank===1
+        ?'<span class="badge-rank-1">อันดับ 1</span>'
+        :rank===2
+        ?'<span class="badge-rank-2">อันดับ 2</span>'
+        :rank===3
+        ?'<span class="badge-rank-3">อันดับ 3</span>'
+        :`<span class="badge-rank-other">อันดับ ${rank}</span>`;
+
+
+
+
+      const latest=
+        g.latestDigits
+        ?`
+          <b
+            style="
+              color:#78590f;
+              font-size:.55rem;
+              background:#fff8e7;
+              padding:2px 8px;
+              border:1px solid #d4af37;
+              border-radius:6px;
+            ">
+            ${g.latestDigits[0]}-${g.latestDigits[1]}
+          </b>
+        `
+        :'-';
+
+
+
+
+      html+=`
+
+
+
+
+        <tr>
+
+
+
+
+          <td>${badge}</td>
+
+
+
+
+          <td class="formula-cell">
+            ${esc(fName)}
+          </td>
+
+
+
+
+          <td>${latest}</td>
+
+
+
+
+          <td>${g.totalTested}</td>
+
+
+
+
+          <td style="color:#2e7d32;font-weight:bold">
+            ${g.hits}
+          </td>
+
+
+
+
+          <td style="color:#c62828;font-weight:bold">
+            ${g.misses}
+          </td>
+
+
+
+
+          <td>
+            <span class="score-chip">
+              ${g.hitRate}%
+            </span>
+          </td>
+
+
+
+
+          <td>${g.windowRates?.[3]||0}%</td>
+          <td>${g.windowRates?.[5]||0}%</td>
+          <td>${g.windowRates?.[10]||0}%</td>
+          <td>${g.windowRates?.[15]||0}%</td>
+          <td>${g.windowRates?.[20]||0}%</td>
+          <td>${g.windowRates?.[25]||0}%</td>
+          <td>${g.windowRates?.[30]||0}%</td>
+          <td>${g.recencyRate}%</td>
+          <td>${g.stability}%</td>
+
+
+
+
+          <td class="${g.trend.cls}">
+            ${g.trend.label}
+          </td>
+
+
+
+
+        </tr>
+      `;
+    }
+  );
+
+
+
+
+  html+=`
+
+
+
+
+        </tbody>
+      </table>
+    </div>
+  `;
+
+
+
+
+  return html;
 }
+
+
+
+
+
+
+
+
+/* =========================================================
+   DIGIT BOARD
+========================================================= */
+
+
+
+
+function renderEvidenceMatrix(frequency){
+  if(!frequency||!frequency.evidence)return '';
+  const top=[...frequency.evidence].sort((a,b)=>b.behavior-a.behavior).slice(0,3);
+  const w=frequency.windowSizes||[3,5,10,15,20,25,30];
+  const labels=w.map(x=>`${x}:${frequency.windows?.[x]?.tested||0}`).join(' · ');
+  const patterns=frequency.pattern||{};
+  const parity=Object.entries(patterns.resultParity||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>`${x[0]} ${x[1]}`).join(' · ')||'-';
+  const highLow=Object.entries(patterns.resultHighLow||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>`${x[0]} ${x[1]}`).join(' · ')||'-';
+  return `<details class="evidence-matrix-panel"><summary>🧭 Multi-Dimensional Evidence · Window 3/5/10/15/20/25/30</summary>
+    <div class="evidence-meta">ตัวอย่าง Window: ${labels}</div>
+    <div class="evidence-grid">
+      ${top.map(x=>`<div class="evidence-item"><b>เลข ${x.digit}</b><span>Momentum ${round2(x.momentum)} · Consistency ${round2(x.consistency)}</span><span>Position ${round2(x.positionStrength)} · Reliability ${round2(x.sampleReliability)}</span></div>`).join('')}
+    </div>
+    <div class="evidence-meta">Parity pattern: ${esc(parity)}<br>High/Low pattern: ${esc(highLow)}<br>2D–5D = โครงสร้างตำแหน่ง · 6D–8D = โครงสร้างข้ามงวด · ใช้เป็นหลักฐานประกอบ ไม่ใช่การโหวตซ้ำ</div>
+  </details>`;
+}
+
+function renderDigitBoard(
+  auditData,
+  formulaNames,
+  frequency
+){
+
+
+
+
+  const consensus=
+    buildDigitConsensus(
+      auditData,
+      formulaNames
+    );
+
+
+
+
+  const scoreData=
+    Array.from(
+      {length:10},
+      (_,digit)=>
+        buildDigitScore(
+          digit,
+          formulaNames,
+          auditData,
+          consensus,
+          frequency
+        )
+    )
+    .sort(
+      (a,b)=>
+        b.score-a.score
+    );
+
+
+
+
+  const topDigits=
+    scoreData
+      .slice(0,3)
+      .map(x=>x.digit);
+
+
+
+
+  let html=`
+
+
+
+
+    <div class="consensus-panel">
+
+
+
+
+      <div class="consensus-head">
+
+
+
+
+        <b>
+          🧠 Consensus Digit Board
+        </b>
+
+
+
+
+        <span
+          class="badge-status status-blue">
+          คะแนนใช้สำหรับคัดกรอง
+        </span>
+
+
+
+
+      </div>
+
+
+
+
+      <div class="digit-board">
+  `;
+
+
+
+
+  scoreData
+    .sort(
+      (a,b)=>a.digit-b.digit
+    )
+    .forEach(item=>{
+
+
+
+
+      const isHot=
+        topDigits.includes(
+          item.digit
+        );
+
+
+
+
+      html+=`
+
+
+
+
+        <div class="digit-cell ${isHot?'hot':''}">
+
+
+
+
+          <b>${item.digit}</b>
+
+
+
+
+          <small>
+            ${item.score}
+          </small>
+
+
+
+
+          <span>
+            ${item.agreement} สูตร
+          </span>
+
+
+
+
+          <small>
+            ${round2(item.frequencyRate)}%
+          </small>
+
+
+
+
+        </div>
+      `;
+    });
+
+
+
+
+  html+=`
+
+
+
+
+      </div>
+
+
+
+
+    </div>
+  `;
+
+
+
+
+  return html;
+}
+
+
+
+
+
+
+
+
+/* =========================================================
+   LOTTERY AUDIT TABLE
+========================================================= */
+
+
+
+
+function renderLotteryAuditTable(
+  lotteryName,
+  formulasResult
+){
+
+
+
+
+  const sorted=
+    Object.keys(formulasResult)
+      .sort(
+        (a,b)=>
+          formulasResult[b].hitRate-
+          formulasResult[a].hitRate
+      );
+
+
+
+
+  const displayTitle=
+    formatDisplayTitle(
+      lotteryName
+    );
+
+
+
+
+  let html=`
+
+
+
+
+    <div class="summary-table-container">
+
+
+
+
+      <h3
+        style="
+          color:#78590f;
+          font-size:.8rem;
+          margin:0 0 10px;
+        ">
+        หวย: ${esc(displayTitle)}
+      </h3>
+
+
+
+
+      <table class="audit-table">
+
+
+
+
+        <thead>
+
+
+
+
+          <tr>
+            <th>อันดับ</th>
+            <th>ชื่อสูตร</th>
+            <th>เลขล่าสุด</th>
+            <th>ทดสอบ</th>
+            <th>เข้า / หลุด</th>
+            <th>Hit Rate</th>
+            <th>3 งวด</th>
+            <th>5 งวด</th>
+            <th>10 งวด</th>
+            <th>15 งวด</th>
+            <th>20 งวด</th>
+            <th>25 งวด</th>
+            <th>30 งวด</th>
+            <th>Recency</th>
+            <th>Stability</th>
+            <th>Trend</th>
+            <th>Streak</th>
+            <th>Miss</th>
+            <th>สถานะล่าสุด</th>
+            <th>การ์ด</th>
+          </tr>
+
+
+
+
+        </thead>
+
+
+
+
+        <tbody>
+  `;
+
+
+
+
+  sorted.forEach(
+    (fName,index)=>{
+
+
+
+
+      const f=
+        formulasResult[fName];
+
+
+
+
+      const rank=index+1;
+
+
+
+
+      const badge=
+        rank===1
+        ?'<span class="badge-rank-1">อันดับ 1</span>'
+        :rank===2
+        ?'<span class="badge-rank-2">อันดับ 2</span>'
+        :rank===3
+        ?'<span class="badge-rank-3">อันดับ 3</span>'
+        :`<span class="badge-rank-other">อันดับ ${rank}</span>`;
+
+
+
+
+      const latest=
+        f.latestDigits
+        ?`
+          <b
+            style="
+              color:#78590f;
+              font-size:.55rem;
+              background:#fff8e7;
+              padding:2px 8px;
+              border:1px solid #d4af37;
+              border-radius:6px;
+            ">
+            ${f.latestDigits[0]}-${f.latestDigits[1]}
+          </b>
+        `
+        :'-';
+
+
+
+
+      let badgeHTML;
+
+
+
+
+      if(f.lastHit===false){
+
+
+
+
+        if(f.hitHundredsOnly){
+
+
+
+
+          badgeHTML=
+            '<span class="badge-status status-warning">⚠️ หลุด (หลักร้อย)</span>';
+
+
+
+
+        }else if(f.curMissStreak>=2){
+
+
+
+
+          badgeHTML=
+            `<span class="badge-status status-danger">
+              🔴 หลุด ${f.curMissStreak} งวด
+            </span>`;
+
+
+
+
+        }else{
+
+
+
+
+          badgeHTML=
+            '<span class="badge-status status-cooling">🟡 หลุด 1 งวด</span>';
+        }
+
+
+
+
+      }else{
+
+
+
+
+        badgeHTML=
+          '<span class="badge-status status-hot">🟢 เข้า</span>';
+      }
+
+
+
+
+      const key=
+        encodeURIComponent(
+          `${lotteryName}|||${fName}`
+        );
+
+
+
+
+      const already=
+        manualCards.some(
+          c=>
+            c.lotteryName===lotteryName &&
+            c.fName===fName
+        );
+
+
+
+
+      html+=`
+
+
+
+
+        <tr>
+
+
+
+
+          <td>${badge}</td>
+
+
+
+
+          <td class="formula-cell">
+            ${esc(fName)}
+          </td>
+
+
+
+
+          <td>${latest}</td>
+
+
+
+
+          <td>${f.totalTested}</td>
+
+
+
+
+          <td style="font-weight:bold">
+
+
+
+
+            <span style="color:#2e7d32">
+              ${f.hits}
+            </span>
+
+
+
+
+            /
+
+
+
+
+            <span style="color:#c62828">
+              ${f.misses}
+            </span>
+
+
+
+
+          </td>
+
+
+
+
+          <td>
+            <span class="score-chip">
+              ${f.hitRate}%
+            </span>
+          </td>
+
+
+
+
+          <td>${f.recentRate}%</td>
+
+
+
+
+          <td>${f.rolling10}%</td>
+
+
+
+
+          <td>${f.rolling20}%</td>
+
+
+
+
+          <td>${f.recencyRate}%</td>
+
+
+
+
+          <td>${f.stability}%</td>
+
+
+
+
+          <td class="${f.trend.cls}">
+            ${f.trend.label}
+          </td>
+
+
+
+
+          <td style="color:#2e7d32;font-weight:700">
+            ${f.curStreak}
+          </td>
+
+
+
+
+          <td style="color:#c62828;font-weight:700">
+            ${f.curMissStreak}
+          </td>
+
+
+
+
+          <td>${badgeHTML}</td>
+
+
+
+
+          <td>
+
+
+
+
+            <button
+              class="add-card-btn ${already?'added':''}"
+              onclick="
+                addFormulaCard(
+                  decodeURIComponent('${encodeURIComponent(lotteryName)}'),
+                  decodeURIComponent('${encodeURIComponent(fName)}')
+                )
+              ">
+
+
+
+
+              ${
+                already
+                ?'✓ อยู่ในการ์ด'
+                :'＋ เพิ่มการ์ด'
+              }
+
+
+
+
+            </button>
+
+
+
+
+          </td>
+
+
+
+
+        </tr>
+      `;
+    }
+  );
+
+
+
+
+  html+=`
+
+
+
+
+        </tbody>
+      </table>
+    </div>
+  `;
+
+
+
+
+  return html;
+}
+
+
+
+
+
+
+
+
+/* =========================================================
+   INSIGHT GENERATOR
+========================================================= */
+
+
+
+
+function buildInsight(
+  lotteryName,
+  auditData,
+  prediction,
+  scorePrediction
+){
+
+
+
+
+  const formulaNames=
+    Object.keys(auditData);
+
+
+
+
+  const ranked=
+    [...formulaNames]
+      .sort(
+        (a,b)=>
+          auditData[b].hitRate-
+          auditData[a].hitRate
+      );
+
+
+
+
+  const rank1=
+    ranked[0];
+
+
+
+
+  const best=
+    auditData[rank1];
+
+
+
+
+  const scoreD1=
+    scorePrediction?.d1;
+
+
+
+
+  const rawD1=
+    prediction?.d1;
+
+
+
+
+  const scoreD2=
+    scorePrediction?.d2;
+
+
+
+
+  const rawD2=
+    prediction?.d2;
+
+
+
+
+  let divergence='สอดคล้อง';
+
+
+
+
+  if(
+    rawD1!==scoreD1 ||
+    rawD2!==scoreD2
+  )
+    divergence='สวนกันบางส่วน';
+
+
+
+
+  return`
+
+
+
+
+    <div class="insight-box">
+
+
+
+
+      <b>
+        🔎 Audit Insight — ${esc(formatDisplayTitle(lotteryName))}
+      </b>
+
+
+
+
+      <br>
+
+
+
+
+      สูตรย้อนหลังอันดับ 1:
+      <b>${esc(rank1)}</b>
+      · Hit Rate ${best.hitRate}%
+      · Recent 5 ${best.recentRate}%
+      · Stability ${best.stability}%
+
+
+
+
+      <br>
+
+
+
+
+      สูตรดั้งเดิมให้:
+      <b>${rawD1}-${rawD2}</b>
+
+
+
+
+      · ชั้นคะแนนให้:
+      <b>${scoreD1}-${scoreD2}</b>
+
+
+
+
+      · สถานะ:
+      <b>${divergence}</b>
+
+
+
+
+      <br>
+
+
+
+
+      หมายเหตุ:
+      ชั้นคะแนนเป็นตัวช่วยกรองมุมมองจากข้อมูลย้อนหลัง
+      ไม่ได้เปลี่ยนสูตรเดิม และไม่ควรตีความเป็นการรับประกันผลลัพธ์
+    </div>
+  `;
+}
+
+
+
+
+
+
+
+
+/* =========================================================
+   SCORE AUDIT SUMMARY
+   แยกคะแนนออกจากการ์ดสำหรับงานแคปภาพ
+========================================================= */
+
+
+
+
+function renderScoreAuditSummary(
+  lotteryName,
+  scoreCard
+){
+  if(!scoreCard)
+    return'';
+
+
+
+
+  const gap=
+    round2(
+      (scoreCard.selectedScore||0)-
+      (scoreCard.secondScore||0)
+    );
+
+
+
+
+  return`
+    <div class="score-audit-summary">
+      <div class="score-audit-summary-head">
+        <span>
+          📊 สรุปคะแนนออดิท ·
+          ${esc(formatDisplayTitle(lotteryName))}
+        </span>
+        <span>
+          ${esc(scoreCard.confidence?.label||'AUDIT')}
+        </span>
+      </div>
+
+
+
+
+      <div class="score-audit-summary-grid">
+        <div class="score-audit-summary-item">
+          <small>คะแนนอันดับ 1</small>
+          <b>${scoreCard.selectedScore}</b>
+        </div>
+
+
+
+
+        <div class="score-audit-summary-item">
+          <small>คะแนนอันดับ 2</small>
+          <b>${scoreCard.secondScore}</b>
+        </div>
+
+
+
+
+        <div class="score-audit-summary-item">
+          <small>สูตรเห็นตรงกัน</small>
+          <b>${scoreCard.agreement}</b>
+        </div>
+
+
+
+
+        <div class="score-audit-summary-item gap">
+          <small>Gap</small>
+          <b>${gap}</b>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 
 
 
@@ -5380,6 +6424,7 @@ function renderGlobalTable(auditDataMap){
 
 
 function renderFullUI(
+  globalAuditMap,
   auditDataMap,
   predictionDataMap
 ){
@@ -5400,7 +6445,7 @@ function renderFullUI(
 
 
   html+=renderGlobalTable(
-    auditDataMap
+    globalAuditMap
   );
 
 
@@ -6117,7 +7162,47 @@ function runEngine(){
 
   const
     auditDataMap={},
-    predictionDataMap={};
+    predictionDataMap={},
+    globalAccumulator={};
+
+
+
+
+
+
+
+
+  /* -----------------------------------------
+     GLOBAL ACCUMULATOR
+  ----------------------------------------- */
+
+
+
+
+  Object.keys(formulas)
+    .forEach(fName=>{
+
+
+
+
+      globalAccumulator[fName]={
+        totalTested:0,
+        hits:0,
+        misses:0,
+        hundredsOnlyCount:0,
+        latestDigits:null,
+        recentRates:[],
+        rolling10:[],
+        rolling20:[],
+        windowRates:Object.fromEntries([3,5,10,15,20,25,30].map(size=>[size,[]])),
+        stability:[],
+        recencyRate:[]
+      };
+
+
+
+
+    });
 
 
 
@@ -6249,6 +7334,83 @@ function runEngine(){
 
 
 
+
+
+
+
+          const g=
+            globalAccumulator[
+              fName
+            ];
+
+
+
+
+          g.totalTested+=
+            audit.totalTested;
+
+
+
+
+          g.hits+=
+            audit.hits;
+
+
+
+
+          g.misses+=
+            audit.misses;
+
+
+
+
+          g.hundredsOnlyCount+=
+            audit.hundredsOnlyCount;
+
+
+
+
+          g.latestDigits=
+            audit.latestDigits;
+
+
+
+
+          g.recentRates.push(
+            audit.recentRate
+          );
+
+
+
+
+          g.rolling10.push(
+            audit.rolling10
+          );
+
+
+
+
+          g.rolling20.push(
+            audit.rolling20
+          );
+          [3,5,10,15,20,25,30].forEach(size=>{
+            if(!g.windowRates[size])g.windowRates[size]=[];
+            g.windowRates[size].push(audit.windowRates?.[size]||0);
+          });
+
+
+
+
+          g.stability.push(
+            audit.stability
+          );
+
+
+
+
+          g.recencyRate.push(
+            audit.recencyRate
+          );
 
 
 
@@ -6873,11 +8035,149 @@ function runEngine(){
 
   /* =====================================================
      GLOBAL AUDIT
-     Compatibility only: no cross-lottery aggregation exists.
-     The UI receives the per-lottery auditDataMap directly.
   ===================================================== */
 
+
+
+
   const globalAuditMap={};
+
+
+
+
+
+
+
+
+  Object.keys(
+    globalAccumulator
+  )
+  .forEach(fName=>{
+
+
+
+
+    const g=
+      globalAccumulator[fName];
+
+
+
+
+    globalAuditMap[fName]={
+
+
+
+
+      totalTested:
+        g.totalTested,
+
+
+
+
+      hits:
+        g.hits,
+
+
+
+
+      misses:
+        g.misses,
+
+
+
+
+      hundredsOnlyCount:
+        g.hundredsOnlyCount,
+
+
+
+
+      hitRate:
+        percent(
+          g.hits,
+          g.totalTested
+        ),
+
+
+
+
+      recentRate:
+        round2(
+          avg(
+            g.recentRates
+          )
+        ),
+
+
+
+
+      rolling10:
+        round2(
+          avg(
+            g.rolling10
+          )
+        ),
+
+
+
+
+      rolling20:
+        round2(
+          avg(
+            g.rolling20
+          )
+        ),
+
+      windowRates:Object.fromEntries(
+        [3,5,10,15,20,25,30].map(size=>[size,round2(avg(g.windowRates?.[size]||[]))])
+      ),
+
+
+
+
+      stability:
+        round2(
+          avg(
+            g.stability
+          )
+        ),
+
+
+
+
+      recencyRate:
+        round2(
+          avg(
+            g.recencyRate
+          )
+        ),
+
+
+
+
+      latestDigits:
+        g.latestDigits,
+
+
+
+
+      trend:
+        {
+          label:'รวมหลายหวย',
+          cls:'trend-flat'
+        }
+    };
+
+
+
+
+  });
+
+
+
+
+
+
 
 
   /* =====================================================
@@ -6900,7 +8200,7 @@ function runEngine(){
 
 
   currentGlobalAuditMap=
-    {};
+    globalAuditMap;
 
 
 
@@ -6942,6 +8242,7 @@ function runEngine(){
 
 
   renderFullUI(
+    globalAuditMap,
     auditDataMap,
     predictionDataMap
   );
