@@ -5,7 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Ngern Kong V32.2</title>
+<title>Mester Lotto VIP+ — Ban Ngern Kong V32.3</title>
 <style>
 :root{
   --bg-main: linear-gradient(135deg, #fcfbfa 0%, #f4efe6 100%);
@@ -101,11 +101,11 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 <body>
 <canvas id="snow"></canvas>
 <div class="shell"><div class="app"><div class="inner">
-  <div class="top"><div class="brand"><div class="logo">VIP</div><div><b>Mester Lotto VIP+</b><small>Ban Ngern Kong V32.2</small></div></div><div class="pill">● V32.2 OPTIMIZED</div></div>
-  <section class="hero"><span class="hero-tag">BAN NGERN KONG ULTIMATE PRECISION V32.2</span><h1>Master Audit & <em>บ้านเงินกอง V32.2</em></h1><p>ปรับปรุงชื่อแสดงผลนิเคอิให้สะอาดตา (ตัดคำว่าปกติออก) และบังคับแสดงธงชาติญี่ปุ่น 🇯🇵 สมบูรณ์แบบ 100%</p></section>
+  <div class="top"><div class="brand"><div class="logo">VIP</div><div><b>Mester Lotto VIP+</b><small>Ban Ngern Kong V32.3</small></div></div><div class="pill">● V32.3 OPTIMIZED</div></div>
+  <section class="hero"><span class="hero-tag">BAN NGERN KONG ULTIMATE PRECISION V32.3</span><h1>Master Audit & <em>บ้านเงินกอง V32.3</em></h1><p>ปรับแก้ตัวสะกดคำว่า "นิเคอิ" ให้ถูกต้องสมบูรณ์ พร้อมแสดงธงชาติญี่ปุ่น 🇯🇵 ชัดเจนไร้ที่ติ</p></section>
   <div id="console">
     <section class="panel"><div class="bulkbox"><label><span>📥 ข้อมูลสถิติย้อนหลัง (กรอกตามลำดับเวลา)</span><span id="recordCountIndicator" style="color:#856414; font-weight:700;">สะสมในระบบ: 0 งวด</span></label><textarea id="bulkInput" class="bulk" placeholder="นิเคอิ เช้า | 30 ส.ค. 69&#10;244&#10;43&#10;&#10;นิเคอิ บ่าย | 29 ส.ค. 69&#10;276&#10;87"></textarea></div>
-    <div class="actions"><button id="run" class="run">⚡ ประมวลผลระบบ V32.2</button><button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button><button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button></div></section>
+    <div class="actions"><button id="run" class="run">⚡ ประมวลผลระบบ V32.3</button><button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button><button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button></div></section>
     <div id="result" class="result"></div>
   </div>
   <div id="toast" class="toast">ดำเนินการเรียบร้อย</div>
@@ -113,7 +113,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
 <script>
 (function() {
-  const STORAGE_KEY = 'lottery_audit_master_records_v322';
+  const STORAGE_KEY = 'lottery_audit_master_records_v323';
   const canvas = document.getElementById('snow'); const ctx = canvas.getContext('2d');
   let width = canvas.width = innerWidth, height = canvas.height = innerHeight;
   window.addEventListener('resize', () => { width = canvas.width = innerWidth; height = canvas.height = innerHeight; });
@@ -122,7 +122,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
 
   function $(id){ return document.getElementById(id); } function esc(val){ return String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); } function norm(v){ return (v % 10 + 10) % 10; }
   
-  // 🌟 ฟังก์ชันแปลงชื่อหวย (ซ่อนคำว่า "ปกติ" ให้เหลือแค่ "นิเคอิ เช้า" / "นิเคอิ บ่าย" และจัดรูปแบบ VIP ให้สวยงาม)
+  // 🌟 ฟังก์ชันแปลงชื่อหวย (ปรับตัวสะกด "นิเคอิ" ให้ถูกต้อง ไม่มี ค. ควาย เบิ้ล และตัดคำว่า "ปกติ" ทิ้ง)
   function formatDisplayTitle(rawName){
     let name = String(rawName || '').trim();
     name = name.replace(/^สถิติหุ้น\s*/, '').replace(/^สถิติ\s*/, '').replace(/^หุ้น\s*/, '').replace(/\s*ย้อนหลัง$/, '').trim();
@@ -170,7 +170,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     return name.replace(/\s+/g, ' ').trim();
   }
 
-  // 🌟 ฟังก์ชันดักจับธงชาติ ครอบคลุมคำว่า นิเคอิ / เช้า / บ่าย / VIP เพื่อให้แสดงธงญี่ปุ่น 🇯🇵 เสมอ
+  // 🌟 ฟังก์ชันดักจับธงชาติ ครอบคลุมคำว่า นิเคอิ / นิกเคอิ / เช้า / บ่าย / VIP เพื่อแสดงธงญี่ปุ่น 🇯🇵
   function getLotteryFlag(name){ 
     const n = String(name || '').toLowerCase(); 
     if(n.includes('นิเคอิ') || n.includes('นิกเคอิ') || n.includes('ญี่ปุ่น') || (n.includes('เช้า') && !n.includes('จีน') && !n.includes('ฮั่งเส็ง')) || (n.includes('บ่าย') && !n.includes('จีน') && !n.includes('ฮั่งเส็ง'))) return '🇯🇵'; 
@@ -295,7 +295,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       html += `</tbody></table></div>`;
     });
 
-    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านเงินกอง V32.2 Clean Card)</div>`;
+    html += `<div class="section-title">🎯 2. ส่วนคำนวณเลขเด่นงวดถัดไป (บ้านเงินกอง V32.3 Clean Card)</div>`;
     let cardIdx = 0;
     Object.keys(predictionDataMap).forEach(lotteryName => {
       const p = predictionDataMap[lotteryName], flagIcon = getLotteryFlag(lotteryName), cId = `card_${cardIdx++}`;
@@ -344,7 +344,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
       `;
     });
 
-    html += `<div class="brand-footer"><span class="brand-star">✦</span><span>ระบบบ้านเงินกอง V32.2 Pure Raw Calculation สมบูรณ์แบบ 100%</span><span class="brand-star">✦</span></div>`;
+    html += `<div class="brand-footer"><span class="brand-star">✦</span><span>ระบบบ้านเงินกอง V32.3 Pure Raw Calculation สมบูรณ์แบบ 100%</span><span class="brand-star">✦</span></div>`;
     $('result').innerHTML = html;
     updateIndicator();
   }
@@ -485,7 +485,7 @@ table.audit-table tr:nth-child(even){ background:#fdfbf7; }
     });
 
     renderFullUI(globalAuditMap, auditDataMap, predictionDataMap);
-    showToast('✓ ประมวลผลระบบ V32.2 (บ้านเงินกอง) สำเร็จ');
+    showToast('✓ ประมวลผลระบบ V32.3 (บ้านเงินกอง) สำเร็จ');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
