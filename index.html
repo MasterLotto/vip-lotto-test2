@@ -445,6 +445,14 @@ table.audit-table td.formula-cell{
 
 table.audit-table tr:nth-child(even){background:#fdfbf7}
 
+/* Data-dense audit tables must scroll rather than squeeze/wrap. */
+.summary-table-container{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+table.audit-table{width:max-content;min-width:1120px;table-layout:auto}
+table.audit-table th,table.audit-table td{white-space:nowrap;vertical-align:middle}
+table.audit-table th:nth-child(2),table.audit-table td:nth-child(2){min-width:170px}
+table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82px}
+
+
 
 
 
@@ -1333,10 +1341,15 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 .ea-matrix-guide{margin:0 0 8px;padding:7px 9px;border-radius:9px;background:#faf7ef;color:#78683f;font-size:10px;line-height:1.45}
 .matrix-short{display:none}
 @media(max-width:700px){
-  .summary-table-container{padding:10px;border-radius:14px;overflow:hidden}
+  /* AUDIT TABLE READABILITY: keep columns readable; horizontal scrolling is intentional. */
+  .summary-table-container{padding:10px;border-radius:14px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
   .summary-table-container h3{font-size:.72rem!important;line-height:1.35}
-  table.audit-table{font-size:.46rem;table-layout:fixed;width:100%}
-  table.audit-table th,table.audit-table td{padding:6px 3px;white-space:normal;word-break:break-word;line-height:1.25}
+  table.audit-table{font-size:.60rem;table-layout:auto;width:max-content;min-width:1120px}
+  table.audit-table th,table.audit-table td{padding:7px 7px;white-space:nowrap;word-break:normal;line-height:1.35}
+  table.audit-table th:first-child,table.audit-table td:first-child{min-width:76px}
+  table.audit-table th:nth-child(2),table.audit-table td:nth-child(2){min-width:170px}
+  table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82px}
+  table.audit-table th:nth-child(n+4),table.audit-table td:nth-child(n+4){min-width:66px}
   .lottery-audit-block{padding:10px;border-radius:15px;margin-bottom:12px}
   .lottery-audit-block-head{font-size:10px;margin-bottom:7px}
   .lottery-audit-title{font-size:.72rem}
@@ -1368,11 +1381,7 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 </style>
 
 <style id="m2d-specialized-css">
-.m2d-shell{margin:18px 0 0;border:1px solid rgba(212,175,55,.34);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(247,243,233,.98));box-shadow:0 12px 34px rgba(120,90,40,.08);overflow:hidden}
-.m2d-head{padding:16px 18px 12px;border-bottom:1px solid rgba(212,175,55,.24);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.m2d-title{font-weight:800;font-size:1.08rem;color:#6b5010}.m2d-sub{font-size:.78rem;color:#827768}.m2d-body{padding:14px}.m2d-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.m2d-card{border:1px solid #e7dfcd;border-radius:15px;background:rgba(255,255,255,.92);padding:13px;min-width:0}.m2d-card h3{margin:0 0 8px;font-size:.92rem;color:#5d4714}.m2d-top3{display:flex;gap:7px;margin:7px 0 11px}.m2d-digit{flex:1;text-align:center;border:1px solid rgba(212,175,55,.35);border-radius:11px;padding:7px 3px;background:#fffdf7}.m2d-digit b{display:block;font-size:1.25rem;color:#7b5b0b}.m2d-digit small{font-size:.67rem;color:#8b7a5d}.m2d-pairs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.m2d-pair{font-family:'IBM Plex Mono',monospace;text-align:center;border-radius:8px;background:#f6f1e5;border:1px solid #e6dcc6;padding:5px 1px;font-size:.76rem;font-weight:700}.m2d-walk{margin-top:11px;padding:8px 9px;border-radius:10px;background:#faf7ef;border:1px dashed #ddcfad;font-size:.74rem;line-height:1.55}.m2d-walk b{color:#6e5310}.m2d-consensus{margin-top:12px;padding:10px 11px;border-radius:11px;background:#fffdf7;border:1px solid rgba(212,175,55,.28);font-size:.78rem;line-height:1.6}.m2d-consensus strong{color:#6b5010}.m2d-note{padding:0 14px 14px;color:#827768;font-size:.7rem;line-height:1.5}.m2d-empty{padding:18px;text-align:center;color:#827768}.m2d-badge{font-size:.68rem;padding:4px 8px;border-radius:999px;background:#f4eddb;color:#725714;border:1px solid #e2d5b7}
-@media(max-width:760px){.m2d-grid{grid-template-columns:1fr}.m2d-shell{border-radius:14px}.m2d-body{padding:10px}.m2d-card{padding:11px}.m2d-pairs{gap:4px}.m2d-pair{font-size:.72rem;padding:5px 0}.m2d-title{font-size:1rem}}
+.m2d-shell{margin:18px 0 0;border:1px solid rgba(212,175,55,.34);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.99),rgba(247,243,233,.98));box-shadow:0 12px 34px rgba(120,90,40,.08);overflow:hidden;padding:14px}.m2d-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.m2d-card{border:1px solid rgba(212,175,55,.34);border-radius:16px;background:linear-gradient(145deg,#fff,#fbf8f0);overflow:hidden;min-width:0;box-shadow:0 7px 18px rgba(90,70,30,.07)}.m2d-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px 11px;border-bottom:1px solid rgba(212,175,55,.22)}.m2d-card-title{display:flex;align-items:center;gap:9px;min-width:0}.m2d-flag{font-size:1.35rem;line-height:1}.m2d-name{font-weight:900;font-size:1.08rem;line-height:1.05;color:#684d0c;white-space:nowrap}.m2d-time{font-size:.70rem;font-weight:700;letter-spacing:.02em;color:#8b7a5d;margin-top:4px}.m2d-date{font-size:.68rem;font-weight:700;color:#75684f;white-space:nowrap}.m2d-content{padding:11px 12px 12px}.m2d-label{font-size:.70rem;font-weight:800;color:#8a6a21;margin-bottom:7px}.m2d-rank-row{display:grid;grid-template-columns:45px 38px minmax(0,1fr);align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid #eee6d7}.m2d-rank-row:last-child{border-bottom:0}.m2d-rank-label{font-size:.63rem;font-weight:800;color:#8b7a5d}.m2d-main-digit{font-size:1.28rem;font-weight:900;text-align:center;color:#74540b}.m2d-pair-line{display:flex;flex-wrap:wrap;gap:4px}.m2d-pair{font-family:'IBM Plex Mono',monospace;min-width:28px;text-align:center;border-radius:7px;background:#f5efdf;border:1px solid #e5d9bc;padding:4px 5px;font-size:.70rem;font-weight:800;color:#594716}.m2d-card-actions{padding:9px 12px;border-top:1px solid rgba(212,175,55,.18);display:flex;justify-content:flex-end;background:rgba(250,247,239,.72)}.m2d-card-actions .card-action-btn{font-size:.68rem;padding:6px 10px}.m2d-note{padding:8px 4px 0;color:#827768;font-size:.68rem;line-height:1.5}.m2d-error{color:#8a4b35}@media(max-width:900px){.m2d-grid{grid-template-columns:1fr 1fr}}@media(max-width:760px){.m2d-shell{border-radius:14px;padding:9px}.m2d-grid{grid-template-columns:1fr;gap:10px}.m2d-card-head{padding:12px}.m2d-name{font-size:1.02rem}.m2d-time{font-size:.67rem}.m2d-date{font-size:.64rem}.m2d-content{padding:9px 10px 10px}.m2d-rank-row{grid-template-columns:43px 34px minmax(0,1fr);gap:5px}.m2d-pair{font-size:.68rem;padding:4px 4px}}
 </style>
 </head>
 
@@ -3728,8 +3737,27 @@ function buildDigitIntelligence(records,auditData,formulaNames){
       (a.raw.formulaEvidence+a.raw.historicalEvidence*.35+a.raw.recencyStrength*.15)||
       b.selectionQuality-a.selectionQuality||a.digit-b.digit
     ).slice(0,2);
+  } else {
+    /* TOP-2 BALANCE OPTIMIZER — backend only. Uses existing audited evidence
+       and prevents an exceptionally strong digit from being paired with a
+       materially weaker partner. Protected formulas remain untouched. */
+    const balancePool=pairCandidates.slice(0,Math.min(20,pairCandidates.length));
+    if(balancePool.length){
+      const balanced=balancePool.map(pc=>{
+        const aq=pc.a.selectionQuality||0, bq=pc.b.selectionQuality||0;
+        const minQ=Math.min(aq,bq), avgQ=(aq+bq)/2;
+        const minStable=Math.min(pc.a.raw.rankStability??50,pc.b.raw.rankStability??50);
+        const minSurvive=Math.min(pc.a.raw.survivalTop2??50,pc.b.raw.survivalTop2??50);
+        const diversity=Math.min(pc.a.raw.evidenceDiversity??0,pc.b.raw.evidenceDiversity??0);
+        const balancePenalty=Math.abs(aq-bq)*.08;
+        const balancedScore=pc.pairScore+minQ*.28+avgQ*.08+minStable*.045+minSurvive*.035+diversity*.70-balancePenalty;
+        return {pc,balancedScore};
+      }).sort((x,y)=>y.balancedScore-x.balancedScore||y.pc.pairScore-x.pc.pairScore);
+      const winner=balanced[0]?.pc;
+      if(winner) selected=[winner.a,winner.b];
+    }
   }
-  selected=selected.slice().sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
+  selected=selected.slice().sort((a,b)=>b.selectionQuality-a.selectionQuality||b.raw.rankStability-a.raw.rankStability||b.score-a.score||a.digit-b.digit);
 
   const margin=selected.length>=2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0;
   const avgRisk=selected.length?round2(selected.reduce((s,x)=>s+x.raw.falsePositiveRisk,0)/selected.length):100;
@@ -6946,28 +6974,42 @@ function reconcileDatasetIds(masterRecords,newRecords){
    MYANMAR 2D SPECIALIZED ENGINE
    Strictly isolated from the main lottery engine/formulas.
 ========================================================= */
-const M2D_STORAGE_KEY='MESTER_M2D_SPECIALIZED_V1';
+const M2D_STORAGE_KEY='MESTER_M2D_SPECIALIZED_V2';
 const M2D_WINDOWS=[7,14,30,60,90,120];
+const M2D_MAIN_WINDOW=30;
 
 function m2dEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function m2dCleanText(v){return String(v??'').replace(/[\uFEFF\u200B-\u200D\u2060]/g,'').replace(/\r/g,'');}
 function m2dNorm10(v){return ((Number(v)%10)+10)%10;}
-function m2dIs2DLine(line){return /^🗓\s*.+?\s*:\s*(?:\d{2}|××|xx)\s*--\s*(?:\d{2}|××|xx)$/i.test(String(line).trim());}
+function m2dNormalizeDateText(v){return String(v||'').replace(/\s+/g,' ').trim().replace(/\s*\.\s*/g,'.');}
+function m2dThaiDate(dateText){
+  const d=m2dNormalizeDateText(dateText);
+  const m=d.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{2,4})$/);
+  if(!m)return 0;
+  const day=Number(m[1]);
+  const monthKey=m[2].replace(/\.+$/,'')+'.';
+  const months={'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12};
+  const month=months[monthKey]; if(!month||day<1||day>31)return 0;
+  let year=Number(m[3]); if(year<100)year+=2500; if(year>=2400)year-=543;
+  return new Date(year,month-1,day).getTime();
+}
+function m2dIs2DLine(line){return /^🗓\s*.+?\s*:\s*(?:\d{2}|××|xx)\s*--\s*(?:\d{2}|××|xx)$/i.test(m2dCleanText(line).trim());}
 function m2dParse(text){
-  const lines=String(text||'').replace(/\r/g,'').split('\n').map(x=>x.trim()).filter(Boolean);
+  const lines=m2dCleanText(text).split('\n').map(x=>x.trim()).filter(Boolean);
   const records=[],errors=[]; let seq=0;
-  for(const line of lines){
+  for(const rawLine of lines){
+    const line=rawLine.replace(/\s+/g,' ').trim();
     const m=line.match(/^🗓\s*(.+?)\s*:\s*(\d{2}|××|xx)\s*--\s*(\d{2}|××|xx)$/i);
-    if(!m){
-      if(/🗓/.test(line)) errors.push(`รูปแบบวันที่/ผลไม่ถูกต้อง: ${line}`);
-      continue;
-    }
-    const date=m[1].trim();
+    if(!m){if(/🗓/.test(line))errors.push(`รูปแบบข้อมูลไม่ถูกต้อง: ${rawLine}`);continue;}
+    const date=m2dNormalizeDateText(m[1]);
+    const timestamp=m2dThaiDate(date);
+    if(!timestamp)errors.push(`วันที่ไม่รู้จัก: ${date}`);
     const noonRaw=m[2].toLowerCase()==='xx'?'××':m[2];
     const eveRaw=m[3].toLowerCase()==='xx'?'××':m[3];
     const parseVal=v=>/^\d{2}$/.test(v)?{value:v,tens:+v[0],units:+v[1]}:null;
     const noon=parseVal(noonRaw), evening=parseVal(eveRaw);
-    if(!noon&&!evening) errors.push(`${date}: ไม่มีผลที่ใช้วิเคราะห์ได้`);
-    records.push({date,noon,evening,seq:seq++,timestamp:(typeof parseThaiDate==='function'?parseThaiDate(date):0)});
+    if(!noon&&!evening)errors.push(`${date}: ไม่มีผลที่ใช้วิเคราะห์ได้`);
+    records.push({date,noon,evening,seq:seq++,timestamp});
   }
   return {records,errors};
 }
@@ -6975,82 +7017,75 @@ function m2dValidSeq(records,session){return records.map(r=>r[session]).filter(B
 function m2dFreq(arr){const c=Array(10).fill(0);arr.forEach(x=>{c[x.tens]++;c[x.units]++});return c;}
 function m2dPositionFreq(arr,pos){const c=Array(10).fill(0);arr.forEach(x=>c[x[pos]]++);return c;}
 function m2dGap(arr,pos,d){let gap=arr.length+1;for(let i=arr.length-1;i>=0;i--){if(arr[i][pos]===d){gap=arr.length-1-i;break}}return gap;}
-function m2dMomentum(arr,pos,d,window=7){const a=arr.slice(-window),b=arr.slice(-Math.min(arr.length,window*2),-window);if(!a.length)return 0;return (a.filter(x=>x[pos]===d).length/(a.length||1))-(b.length?b.filter(x=>x[pos]===d).length/b.length:0);}
+function m2dMomentum(arr,pos,d,window=7){const a=arr.slice(-window),b=arr.slice(-Math.min(arr.length,window*2),-window);if(!a.length)return 0;return (a.filter(x=>x[pos]===d).length/a.length)-(b.length?b.filter(x=>x[pos]===d).length/b.length:0);}
 function m2dTransition(arr,pos,d){let score=0;for(let i=1;i<arr.length;i++){if(arr[i][pos]===d){score++;if(arr[i-1][pos]===d)score+=.45}}return score;}
 function m2dScoreDigits(arr){
-  const n=arr.length;if(!n)return Array(10).fill(0);
-  const out=Array(10).fill(0);
-  const windows=[7,14,30,60,90,120].filter(w=>n>=Math.min(w,3));
-  const weights=[.28,.20,.17,.13,.10,.07];
-  const base=m2dFreq(arr),ft=m2dPositionFreq(arr,'tens'),fu=m2dPositionFreq(arr,'units');
+  const n=arr.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
+  const windows=M2D_WINDOWS.filter(w=>n>=Math.min(w,3));
+  const weights={7:.32,14:.24,30:.24,60:.09,90:.06,120:.05};
+  const ft=m2dPositionFreq(arr,'tens'),fu=m2dPositionFreq(arr,'units');
   for(let d=0;d<10;d++){
     let multi=0,used=0;
-    windows.forEach((w,idx)=>{
-      const take=arr.slice(-Math.min(w,n)); if(!take.length)return;
-      const pf=m2dFreq(take)[d]/Math.max(1,take.length*2);
-      const mom=(m2dMomentum(arr,'tens',d,Math.min(w,7))+m2dMomentum(arr,'units',d,Math.min(w,7)))/2;
-      const wt=weights[idx]||.04;
-      multi+=(pf+Math.max(0,mom))*wt;used+=wt;
-    });
+    windows.forEach(w=>{const take=arr.slice(-Math.min(w,n));const pf=m2dFreq(take)[d]/Math.max(1,take.length*2);const mom=(m2dMomentum(arr,'tens',d,Math.min(w,7))+m2dMomentum(arr,'units',d,Math.min(w,7)))/2;const wt=weights[w]||.03;multi+=(pf+Math.max(0,mom))*wt;used+=wt;});
     multi/=Math.max(used,.01);
     const p=(ft[d]+fu[d])/Math.max(1,n*2);
-    const recent=arr.slice(-Math.min(30,n));
+    const recent=arr.slice(-Math.min(M2D_MAIN_WINDOW,n));
     const rp=m2dFreq(recent)[d]/Math.max(1,recent.length*2);
     const gap=Math.min(m2dGap(arr,'tens',d),m2dGap(arr,'units',d));
     const recovery=gap>=4?Math.min(gap/12,1):0;
     const trans=(m2dTransition(arr,'tens',d)+m2dTransition(arr,'units',d))/Math.max(1,n*2);
     const stability=Math.max(0,1-Math.abs((m2dMomentum(arr,'tens',d)+m2dMomentum(arr,'units',d))/2)*1.8);
-    out[d]=p*18+multi*42+rp*18+recovery*7+trans*9+stability*6;
+    out[d]=p*16+multi*44+rp*22+recovery*6+trans*7+stability*5;
   }
   return out;
 }
-function m2dTop3(arr){
-  const score=m2dScoreDigits(arr);return [...Array(10).keys()].sort((a,b)=>score[b]-score[a]||a-b).slice(0,3).map(d=>({digit:d,score:score[d]}));
-}
+function m2dTop3(arr){const score=m2dScoreDigits(arr);return [...Array(10).keys()].sort((a,b)=>score[b]-score[a]||a-b).slice(0,3).map(d=>({digit:d,score:score[d]}));}
+function m2dCanonicalPair(a,b){const x=String(a)+String(b),y=String(b)+String(a);return x<=y?x:y;}
 function m2dPairScores(arr,target){
-  const scores=[];
+  const map=new Map();
   for(let x=0;x<10;x++){
     if(x===target)continue;
-    let s=0,exact=0,transition=0,recent=0;
+    const key=m2dCanonicalPair(target,x); let exact=0,recent=0,transition=0;
     for(let i=0;i<arr.length;i++){
       const v=String(arr[i].tens)+String(arr[i].units);
-      if(v===`${target}${x}`||v===`${x}${target}`){exact++;if(i>=arr.length-30)recent++}
-      if(i>0){
-        const prev=String(arr[i-1].tens)+String(arr[i-1].units),cur=v;
-        if((prev.includes(String(target))&&cur.includes(String(x)))||(prev.includes(String(x))&&cur.includes(String(target))))transition++;
-      }
+      if(v===key||v===key.split('').reverse().join('')){exact++;if(i>=arr.length-M2D_MAIN_WINDOW)recent++;}
+      if(i>0){const prev=String(arr[i-1].tens)+String(arr[i-1].units);if((prev.includes(String(target))&&v.includes(String(x)))||(prev.includes(String(x))&&v.includes(String(target))))transition++;}
     }
     const dScore=m2dScoreDigits(arr)[x];
-    s=exact*1.5+recent*2.2+transition*.65+dScore*.08;
-    scores.push({pair:`${target}${x}`,score:s});scores.push({pair:`${x}${target}`,score:s*.94+recent*.15});
+    const score=exact*1.5+recent*2.4+transition*.65+dScore*.08;
+    const prior=map.get(key)||{pair:key,score:0}; prior.score=Math.max(prior.score,score); map.set(key,prior);
   }
-  const seen=new Set();return scores.sort((a,b)=>b.score-a.score||a.pair.localeCompare(b.pair)).filter(p=>{if(seen.has(p.pair))return false;seen.add(p.pair);return true}).slice(0,5);
+  return [...map.values()].sort((a,b)=>b.score-a.score||a.pair.localeCompare(b.pair)).slice(0,5);
 }
 function m2dAnalyzeSession(records,session){
-  const arr=m2dValidSeq(records,session);const top=m2dTop3(arr);const pairs=top.flatMap(t=>m2dPairScores(arr,t.digit).map(p=>({...p,target:t.digit})));const byTarget={};top.forEach(t=>byTarget[t.digit]=pairs.filter(p=>p.target===t.digit).slice(0,5));
-  const walkPos=pos=>{const recent=arr.slice(-7);if(!recent.length)return 'ยังไม่มีข้อมูล';const last=recent[recent.length-1][pos];const cnt=recent.filter(x=>x[pos]===last).length;const mom=m2dMomentum(arr,pos,last);const gap=m2dGap(arr,pos,last);let label=cnt>=3?'ต่อเนื่อง':mom>.10?'กำลังขึ้น':mom<-.10?'กำลังเปลี่ยน':gap>=4?'มี Gap':'สลับ';return `${pos==='tens'?'หลักสิบ':'หลักหน่วย'} ${last} • ${label} • 7รอบ ${cnt}ครั้ง • Gap ${gap}`};
-  return {session,arr,top,pairsByTarget:byTarget,walk:[walkPos('tens'),walkPos('units')]};
+  const arr=m2dValidSeq(records,session),top=m2dTop3(arr); const byTarget={};
+  top.forEach(t=>byTarget[t.digit]=m2dPairScores(arr,t.digit));
+  return {session,arr,top,pairsByTarget:byTarget};
 }
 function m2dConsensus(noon,evening){
-  const ns=Object.fromEntries(noon.top.map(x=>[x.digit,x.score]));const es=Object.fromEntries(evening.top.map(x=>[x.digit,x.score]));
-  const combined=[...Array(10).keys()].map(d=>({digit:d,score:(ns[d]||0)*.45+(es[d]||0)*.45+(ns[d]&&es[d]?12:0)})).sort((a,b)=>b.score-a.score||a.digit-b.digit).slice(0,3);
-  return {top:combined,pairsByTarget:Object.fromEntries(combined.map(t=>[t.digit,m2dPairScores([...noon.arr,...evening.arr],t.digit)]))};
+  const ns=m2dScoreDigits(noon.arr),es=m2dScoreDigits(evening.arr);
+  const combined=[...Array(10).keys()].map(d=>({digit:d,score:ns[d]*.45+es[d]*.45+(ns[d]>0&&es[d]>0?12:0)})).sort((a,b)=>b.score-a.score||a.digit-b.digit).slice(0,3);
+  const chronological=[...noon.arr.map(x=>({...x,_session:'noon'})),...evening.arr.map(x=>({...x,_session:'evening'}))];
+  return {top:combined,pairsByTarget:Object.fromEntries(combined.map(t=>[t.digit,m2dPairScores(chronological,t.digit)]))};
 }
-function m2dRenderBlock(title,emoji,data){
-  const top=data.top||[];return `<section class="m2d-card"><h3>${emoji} ${m2dEsc(title)}</h3><div class="m2d-top3">${top.map((t,i)=>`<div class="m2d-digit"><small>TOP ${i+1}</small><b>${t.digit}</b><small>${Number(t.score).toFixed(1)}</small></div>`).join('')}</div><div class="m2d-pairs">${top.flatMap(t=>(data.pairsByTarget?.[t.digit]||[]).map(p=>`<span class="m2d-pair">${m2dEsc(p.pair)}</span>`)).slice(0,15).map(x=>x).join('')}</div>${data.walk?`<div class="m2d-walk"><b>เดิน:</b><br>${data.walk.map(m2dEsc).join('<br>')}</div>`:''}</section>`;
+function m2dRenderBlock(title,time,emoji,data,cardId,dateLabel){
+  const top=data.top||[];
+  const pairRows=top.map((t,i)=>`<div class="m2d-rank-row"><div class="m2d-rank-label">TOP ${i+1}</div><div class="m2d-main-digit">${t.digit}</div><div class="m2d-pair-line">${(data.pairsByTarget?.[t.digit]||[]).map(p=>`<span class="m2d-pair">${m2dEsc(p.pair)}</span>`).join('')}</div></div>`).join('');
+  return `<section class="m2d-card" id="${cardId}"><div class="m2d-card-head"><div class="m2d-card-title"><span class="m2d-flag">🇲🇲</span><div><div class="m2d-name">เมียนมา 2D</div><div class="m2d-time">${m2dEsc(time)}</div></div></div><div class="m2d-date">${m2dEsc(dateLabel)}</div></div><div class="m2d-content"><div class="m2d-label">${m2dEsc(title)}</div>${pairRows}</div><div class="m2d-card-actions"><button class="card-action-btn" onclick="captureCardImage('${cardId}','เมียนมา 2D ${m2dEsc(time)}')">📸 แคปภาพ</button></div></section>`;
 }
 function renderMyanmar2DModule(text){
   const parsed=m2dParse(text);if(!parsed.records.length)return null;
   const usable=parsed.records.some(r=>r.noon||r.evening);if(!usable)return null;
   let stored=[];try{stored=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){stored=[]}
-  const keyify=r=>`${r.date}|${r.noon?.value||'××'}|${r.evening?.value||'××'}`;
+  const keyify=r=>`${r.date}|${r.noon?.value||'××'}|${r.evening?.value||'××'}|${r.timestamp||0}`;
   const map=new Map(stored.map(r=>[keyify(r),r]));parsed.records.forEach(r=>map.set(keyify(r),r));
   stored=[...map.values()];try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify(stored))}catch(e){}
-  const use=stored.slice().map((r,i)=>({...r,timestamp:r.timestamp||(typeof parseThaiDate==='function'?parseThaiDate(r.date):0),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a._m2i-b._m2i));
+  const use=stored.map((r,i)=>({...r,timestamp:r.timestamp||m2dThaiDate(r.date),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a.seq||0)-(b.seq||0)||(a._m2i-b._m2i));
   const noon=m2dAnalyzeSession(use,'noon'),evening=m2dAnalyzeSession(use,'evening'),cons=m2dConsensus(noon,evening);
+  const dateLabel=(parsed.records[parsed.records.length-1]?.date)||use[use.length-1]?.date||'';
   const all={top:cons.top,pairsByTarget:cons.pairsByTarget};
-  const err=parsed.errors.length?`<div class="m2d-note">⚠️ ${parsed.errors.map(m2dEsc).join(' • ')}</div>`:'';
-  return `<div class="m2d-shell"><div class="m2d-head"><div><div class="m2d-title">🇲🇲 พม่า 2D — Specialized Intelligence</div><div class="m2d-sub">แยกสมองจากหวยหลัก • ${stored.length} วันข้อมูล • วิเคราะห์เที่ยง/เย็นแยกกัน</div></div><span class="m2d-badge">7 / 14 / 30 / 60 / 90 / 120 รอบ + ALL</span></div><div class="m2d-body"><div class="m2d-grid">${m2dRenderBlock('รอบเที่ยง','☀️',noon)}${m2dRenderBlock('รอบเย็น','🌙',evening)}${m2dRenderBlock('ชุดทั้งวัน','📅',all)}</div><div class="m2d-consensus"><strong>Consensus:</strong> ${cons.top.map((x,i)=>`TOP ${i+1} = ${x.digit}`).join(' • ')}<br>ชุดทั้งวันคำนวณจากหลักฐานของทั้งสอง session โดยไม่เอาสูตรหลัก 15/20 สูตรเข้ามาปน</div></div>${err}<div class="m2d-note">หมายเหตุ: คะแนนนี้เป็นการจัดอันดับเชิงสถิติ ไม่ใช่การรับประกันผลลัพธ์ และสัญลักษณ์ ×× ถูกละเว้นจากการคำนวณ</div></div>`;
+  const err=parsed.errors.length?`<div class="m2d-note m2d-error">⚠️ ${parsed.errors.map(m2dEsc).join(' • ')}</div>`:'';
+  return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('รอบเที่ยง','12.01 P.M.','☀️',noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('รอบเย็น','4.30 P.M.','🌙',evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('ชุดทั้งวัน','12.01 P.M. + 4.30 P.M.','📅',all,'m2d-card-all',dateLabel)}</div>${err}</div>`;
 }
 
 function runEngineCore(){
