@@ -6897,7 +6897,13 @@ function m2dScoreDigits(arr){
   const ft=m2dPositionFreq(arr,'tens'),fu=m2dPositionFreq(arr,'units');
   for(let d=0;d<10;d++){
     let multi=0,used=0;
-    windows.forEach(w=>{const take=arr.slice(-Math.min(w,n));const pf=m2dFreq(take)[d]/Math.max(1,take.length*2);const mom=(m2dMomentum(arr,'tens',d,Math.min(w,7))+m2dMomentum(arr,'units',d,Math.min(w,7)))/2;const wt=weights[w]||.03;multi+=(pf+Math.max(0,mom))*wt;used+=wt;});
+    windows.forEach(w=>{
+      const take=arr.slice(-Math.min(w,n));
+      const pf=m2dFreq(take)[d]/Math.max(1,take.length*2);
+      /* Keep the locked TOP-3 formula architecture unchanged. */
+      const mom=(m2dMomentum(arr,'tens',d,Math.min(w,7))+m2dMomentum(arr,'units',d,Math.min(w,7)))/2;
+      const wt=weights[w]||.03;multi+=(pf+Math.max(0,mom))*wt;used+=wt;
+    });
     multi/=Math.max(used,.01);
     const p=(ft[d]+fu[d])/Math.max(1,n*2);
     const recent=arr.slice(-Math.min(M2D_MAIN_WINDOW,n));
@@ -6958,6 +6964,45 @@ function m2dRecentPairMomentum(arr,target,partner){
   const br=b.length?b.filter(isPair).length/b.length:0;
   return ar-br;
 }
+
+/* Precision Upgrade #2: 30-round adaptive profile. */
+function m2dAdaptiveProfile(arr,target,partner){
+  const n=arr.length;
+  const isPair=r=>(r.tens===target&&r.units===partner)||(r.tens===partner&&r.units===target);
+  const rate=w=>{const a=arr.slice(-Math.min(w,n));return a.length?a.filter(isPair).length/a.length:0;};
+  const r10=rate(10),r20=rate(20),r30=rate(30);
+  const recent=r10*.50+r20*.30+r30*.20;
+  const base=r30;
+  const adaptive=recent*0.65+base*0.35;
+  return {r10,r20,r30,recent,base,adaptive};
+}
+
+/* Precision Upgrade #3: detect a recent shift without changing locked TOP-3. */
+function m2dRegimeShift(arr,target,partner){
+  const n=arr.length;
+  const isPair=r=>(r.tens===target&&r.units===partner)||(r.tens===partner&&r.units===target);
+  const recent=arr.slice(-10),mid=arr.slice(-20,-10),base=arr.slice(-30,-20);
+  const rate=a=>a.length?a.filter(isPair).length/a.length:0;
+  const rr=rate(recent),mr=rate(mid),br=rate(base);
+  const delta=rr-((mr*.55)+(br*.45));
+  const strength=m2dClamp01(Math.abs(delta)*4);
+  return {recent:rr,mid:mr,base:br,delta,strength,direction:delta>0?'up':delta<0?'down':'flat'};
+}
+
+/* Precision Upgrade #4: stability across 15/20/25/30 windows. */
+function m2dPairStability(arr,target,partner){
+  const n=arr.length;
+  const isPair=r=>(r.tens===target&&r.units===partner)||(r.tens===partner&&r.units===target);
+  const rates=[15,20,25,30].map(w=>{
+    const a=arr.slice(-Math.min(w,n));
+    return a.length?a.filter(isPair).length/a.length:0;
+  });
+  const mean=rates.reduce((a,b)=>a+b,0)/rates.length;
+  const variance=rates.reduce((a,b)=>a+(b-mean)*(b-mean),0)/rates.length;
+  const spread=Math.max(...rates)-Math.min(...rates);
+  return {rates,mean,variance,spread,score:m2dClamp01(1-spread*3.2)};
+}
+
 function m2dPairSupport(arr,target,partner){
   const st=m2dPairStats(arr,target,partner),n=arr.length;
   if(!n)return 0;
@@ -6980,6 +7025,33 @@ function m2dPairNoisePenalty(arr,target,partner){
   const penalty=(spike>.18?Math.min(.55,(spike-.18)*1.8):0)+(isolated&&support<.55?.20:0);
   return m2dClamp01(penalty);
 }
+
+/* Precision Upgrade #1/#5: confidence + evidence gates are applied to pairs,
+   while the locked TOP-3 selector itself remains unchanged. */
+function m2dPairEvidence(arr,target,partner,digitScores){
+  const st=m2dPairStats(arr,target,partner);
+  const adaptive=m2dAdaptiveProfile(arr,target,partner);
+  const regime=m2dRegimeShift(arr,target,partner);
+  const stability=m2dPairStability(arr,target,partner);
+  const support=m2dPairSupport(arr,target,partner);
+  const noise=m2dPairNoisePenalty(arr,target,partner);
+  const targetMax=Math.max(...digitScores,1);
+  const targetConfidence=m2dClamp01(digitScores[target]/targetMax);
+  const partnerConfidence=m2dClamp01(digitScores[partner]/targetMax);
+  const evidenceCount=[
+    st.exact>=2,
+    st.recent>0,
+    st.previous>0,
+    st.cooccur>=.25,
+    st.transition>0,
+    adaptive.r10>=adaptive.r30,
+    stability.score>=.65,
+    noise<.30
+  ].filter(Boolean).length;
+  const evidence=m2dClamp01(evidenceCount/8);
+  const confidence=m2dClamp01(targetConfidence*.50+stability.score*.25+support*.15+evidence*.10);
+  return {evidenceCount,evidence,confidence,adaptive,regime,stability,support,noise};
+}
 function m2dPairScores(arr,target){
   const map=new Map();
   if(!Array.isArray(arr)||!arr.length)return [];
@@ -6990,29 +7062,52 @@ function m2dPairScores(arr,target){
     if(x===target)continue;
     const key=m2dPairKey(target,x);
     const st=m2dPairStats(arr,target,x);
+    const evidence=m2dPairEvidence(arr,target,x,digitScores);
     const recentMomentum=m2dClamp01(.5+m2dRecentPairMomentum(arr,target,x)*3);
+    const adaptive=evidence.adaptive;
+    const regime=evidence.regime;
+    const stability=evidence.stability;
     const cooccur=st.cooccur;
     const pos=(st.balance*.65)+(st.exact?m2dClamp01(st.orientTargetTens/Math.max(1,st.exact))*.35:0);
-    const support=m2dPairSupport(arr,target,x);
-    const noise=m2dPairNoisePenalty(arr,target,x);
+    const support=evidence.support;
+    const noise=evidence.noise;
     const transition=m2dClamp01(st.transition/Math.max(1,st.exact*2));
     const partnerStrength=m2dClamp01(digitScores[x]/maxDigitScore);
+
+    /* Evidence-first scoring: the existing layers remain, but the final
+       ranking is tightened by 30-round adaptivity, regime awareness and
+       cross-window stability. */
+    const regimeBoost=regime.direction==='up'?regime.strength*.08:regime.direction==='down'?-regime.strength*.05:0;
     const raw=
-      targetStrength*0.16+
-      recentMomentum*0.20+
-      cooccur*0.22+
-      pos*0.14+
-      support*0.18+
-      transition*0.10+
-      partnerStrength*0.08-
+      targetStrength*0.14+
+      recentMomentum*0.14+
+      cooccur*0.20+
+      pos*0.10+
+      support*0.15+
+      transition*0.08+
+      partnerStrength*0.07+
+      adaptive.adaptive*0.05+
+      stability.score*0.07+
+      evidence.confidence*0.10+
+      regimeBoost-
       noise*0.18;
-    const score=Math.max(0,raw)*100;
+
+    /* Small-sample reliability: do not let a tiny history masquerade as
+       strong evidence. This changes confidence/ranking only; TOP-3 stays locked. */
+    const reliability=m2dClamp01(arr.length/30);
+    const score=Math.max(0,raw)*(0.70+0.30*reliability)*100;
+    /* Evidence gate: qualified candidates rank normally; weaker candidates
+       remain only as a deterministic fallback so the existing 5-pair UI
+       contract can never collapse to fewer than 5 when data permits. */
+    const qualified=(arr.length<10)||(evidence.evidenceCount>=3&&stability.score>=.35);
+    const gatePenalty=qualified?1:(.72+evidence.evidence*.18);
+    const gatedScore=score*gatePenalty;
     const prior=map.get(key);
-    if(!prior||score>prior.score){
-      map.set(key,{pair:key,score,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,noise}});
+    if(!prior||gatedScore>prior.score){
+      map.set(key,{pair:key,score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,evidenceCount:evidence.evidenceCount,reliability,gatePenalty}});
     }
   }
-  const ranked=[...map.values()].sort((a,b)=>b.score-a.score||a.pair.localeCompare(b.pair));
+  const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||a.pair.localeCompare(b.pair));
   const selected=[];const used=new Set();
   for(const item of ranked){
     if(used.has(item.pair))continue;
