@@ -1268,26 +1268,6 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 
 
 /* =========================================================
-   SAFE ENGINE ENTRY POINT
-   Prevent a single backend exception from leaving the UI blank.
-========================================================= */
-function runEngine(){
-  try{
-    return runEngineCore();
-  }catch(err){
-    console.error('[V32.4 ENGINE ERROR]',err);
-    const root=$('result');
-    if(root){
-      const msg=String(err?.message||err||'ไม่ทราบสาเหตุ');
-      root.innerHTML=`<div class="errorbox"><b>ระบบหยุดการประมวลผลเนื่องจากข้อผิดพลาดภายใน</b><br>${esc(msg)}<br><small>ข้อมูลเดิมยังไม่ถูกลบ กรุณาตรวจสอบรูปแบบข้อมูลแล้วลองใหม่</small></div>`;
-    }
-    return null;
-  }
-}
-
-
-
-/* =========================================================
    DATA INTEGRITY AUDIT PANEL — non-scoring diagnostics
 ========================================================= */
 .integrity-panel{
@@ -7596,6 +7576,7 @@ function runEngineCore(){
       ----------------------------------------- */
 
       const intelligence=buildDigitIntelligence(resultRecs,auditDataMap[lotteryName],formulaNames);
+      const consensus=intelligence.consensus;
       const scoreData=intelligence.rows.map(row=>buildDigitScore(row.digit,formulaNames,auditDataMap[lotteryName],intelligence.consensus,intelligence.frequency,intelligence))
         .sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
 
@@ -8975,6 +8956,25 @@ function exportAuditCSV(){
 
 
 
+
+
+/* =========================================================
+   SAFE ENGINE ENTRY POINT
+   Prevent a single backend exception from leaving the UI blank.
+========================================================= */
+function runEngine(){
+  try{
+    return runEngineCore();
+  }catch(err){
+    console.error('[V32.4 ENGINE ERROR]',err);
+    const root=$('result');
+    if(root){
+      const msg=String(err?.message||err||'ไม่ทราบสาเหตุ');
+      root.innerHTML=`<div class="errorbox"><b>ระบบหยุดการประมวลผลเนื่องจากข้อผิดพลาดภายใน</b><br>${esc(msg)}<br><small>ข้อมูลเดิมยังไม่ถูกลบ กรุณาตรวจสอบรูปแบบข้อมูลแล้วลองใหม่</small></div>`;
+    }
+    return null;
+  }
+}
 
 
 /* =========================================================
