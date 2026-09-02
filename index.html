@@ -3686,6 +3686,57 @@ function buildDigitIntelligence(records,auditData,formulaNames){
   );
   adversarialRanked.forEach((r,i)=>{r.raw.adversarialRank=i+1;});
 
+  /* ================================================================
+     V36 BACKEND PRECISION LAYER — CALIBRATION / INDEPENDENCE / ABSTENTION
+     Backend only. Locked formulas and the existing TOP-2 selection contract
+     remain intact. This layer prevents correlated evidence from being treated
+     as independent, checks sensitivity to the latest observations, rewards
+     persistent signals, calibrates score margins and marks weak decisions.
+     ================================================================ */
+  const mainEvidenceKeys=[
+    'frequencyEvidence','trendEvidence','timingEvidence',
+    'structuralEvidence','formulaEvidence','historicalEvidence'
+  ];
+  rows.forEach(row=>{
+    const r=row.raw;
+    const vals=mainEvidenceKeys.map(k=>Number(r[k])||0);
+    const mean=vals.length?avg(vals):0;
+    const dispersion=vals.length?avg(vals.map(v=>Math.abs(v-mean))):0;
+    const strong=vals.filter(v=>v>=60).length;
+    const weak=vals.filter(v=>v<35).length;
+    /* Evidence Independence: highly similar families are compressed so one
+       underlying signal cannot masquerade as several independent confirmations. */
+    const independence=clamp(100-dispersion*.55-(strong<=1?18:0)-(weak>=4?10:0),0,100);
+    const complement=clamp((strong*16)+(r.evidenceDiversity*6)-weak*7,0,100);
+    /* Signal persistence: compare short, middle and long empirical windows. */
+    const persistence=clamp(
+      (Number(r.recencyStrength)||50)*.30+
+      (Number(r.windowConsistency)||50)*.30+
+      (Number(r.robustnessSurvival)||50)*.25+
+      (Number(r.rankStability)||50)*.15,0,100);
+    /* Counterfactual sensitivity: penalize candidates whose rank is too dependent
+       on the most recent tail stress tests. */
+    const adv=Number(r.adversarialTop2)||50;
+    const surv=Number(r.survivalTop2)||50;
+    const counterfactual=clamp(Math.min(adv,surv),0,100);
+    row.raw.evidenceIndependence=round2(independence);
+    row.raw.evidenceComplement=round2(complement);
+    row.raw.signalPersistence=round2(persistence);
+    row.raw.counterfactualStability=round2(counterfactual);
+    row.selectionQuality=round2(clamp(
+      row.selectionQuality+independence*.025+complement*.018+persistence*.025+counterfactual*.025-
+      (independence<45?4:0)-(persistence<40?4:0)-(counterfactual<40?4:0),0,110
+    ));
+  });
+
+  const calibratedRanked=[...rows].sort((a,b)=>
+    b.selectionQuality-a.selectionQuality||
+    b.raw.signalPersistence-a.raw.signalPersistence||
+    b.raw.counterfactualStability-a.raw.counterfactualStability||
+    b.score-a.score||a.digit-b.digit
+  );
+  calibratedRanked.forEach((r,i)=>{r.raw.calibratedRank=i+1;});
+
   /* Pairwise robustness: a pair is stronger when both digits survive the
      window perturbations and when their evidence is complementary rather than
      coming from the same family. */
@@ -3764,10 +3815,20 @@ function buildDigitIntelligence(records,auditData,formulaNames){
   selected=selected.slice().sort((a,b)=>b.selectionQuality-a.selectionQuality||b.raw.rankStability-a.raw.rankStability||b.score-a.score||a.digit-b.digit);
 
   const margin=selected.length>=2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0;
+  const secondGapRatio=selected.length>=2?clamp(margin/Math.max(1,Math.abs(selected[0].selectionQuality)),0,1):0;
+  const selectedPersistence=selected.length?round2(avg(selected.map(x=>x.raw.signalPersistence??50))):0;
+  const selectedIndependence=selected.length?round2(avg(selected.map(x=>x.raw.evidenceIndependence??50))):0;
+  const selectedCounterfactual=selected.length?round2(avg(selected.map(x=>x.raw.counterfactualStability??50))):0;
+  const uncertaintyPenalty=round2(clamp(
+    (100-selectedIndependence)*.25+(100-selectedPersistence)*.25+(100-selectedCounterfactual)*.25+
+    (1-secondGapRatio)*25,0,100));
   const avgRisk=selected.length?round2(selected.reduce((s,x)=>s+x.raw.falsePositiveRisk,0)/selected.length):100;
   const totalConflict=selected.reduce((s,x)=>s+x.raw.conflict,0);
   const minDiversity=selected.length?Math.min(...selected.map(x=>x.raw.evidenceDiversity)):0;
   const minRobustness=selected.length?round2(Math.min(...selected.map(x=>x.raw.robustnessSurvival))):0;
+  const decisionConfidence=round2(clamp(
+    selectedPersistence*.25+selectedIndependence*.20+selectedCounterfactual*.25+
+    (secondGapRatio*100)*.20+(minDiversity*5)*.10-uncertaintyPenalty*.15,0,100));
   const pairQuality=bestPair?round2(bestPair.pairScore):0;
   const top2Adversarial=selected.length?round2(avg(selected.map(x=>x.raw.adversarialTop2??50))):0;
   const top2Stability=selected.length?round2(avg(selected.map(x=>x.raw.rankStability??50))):0;
@@ -3794,6 +3855,12 @@ function buildDigitIntelligence(records,auditData,formulaNames){
     rankStability:top2Stability,
     calibrationProxy,
     calibrationBand,
+    evidenceIndependence:selectedIndependence,
+    signalPersistence:selectedPersistence,
+    counterfactualStability:selectedCounterfactual,
+    uncertaintyPenalty,
+    decisionConfidence,
+    abstain:decisionConfidence<45||uncertaintyPenalty>=65,
     decision:'SELECT'
   };
   if(!finalGate.passed) finalGate.decision='INSUFFICIENT_CANDIDATES';
@@ -3801,6 +3868,7 @@ function buildDigitIntelligence(records,auditData,formulaNames){
   else if(avgRisk>=78&&totalConflict>=6) finalGate.decision='HIGH_FALSE_POSITIVE_RISK';
   else if(margin<finalGate.minMargin&&ranked.length>=2) finalGate.decision='LOW_MARGIN_BUT_BEST_AVAILABLE';
   else if(totalConflict>=6) finalGate.decision='CONFLICT_REVIEWED_SELECT';
+  if(finalGate.abstain&&finalGate.decision==='SELECT') finalGate.decision='LOW_CONFIDENCE_REVIEWED_SELECT';
 
   return{
     frequency,
@@ -6990,6 +7058,22 @@ function m2dRegimeShift(arr,target,partner){
 }
 
 /* Precision Upgrade #4: stability across 15/20/25/30 windows. */
+/* Precision Upgrade #6: recency decay — recent pair evidence is stronger,
+   while older occurrences remain useful instead of being discarded. */
+function m2dPairRecencyDecay(arr,target,partner){
+  const n=arr.length;if(!n)return 0;
+  const isPair=r=>(r.tens===target&&r.units===partner)||(r.tens===partner&&r.units===target);
+  let weighted=0,total=0;
+  arr.forEach((r,i)=>{
+    if(!isPair(r))return;
+    const age=n-1-i;
+    const w=Math.pow(.94,age);
+    weighted+=w;total+=w;
+  });
+  const expected=arr.reduce((s,r)=>s+1,0)||1;
+  return m2dClamp01((weighted/Math.max(1,expected))/.30);
+}
+
 function m2dPairStability(arr,target,partner){
   const n=arr.length;
   const isPair=r=>(r.tens===target&&r.units===partner)||(r.tens===partner&&r.units===target);
@@ -7035,6 +7119,7 @@ function m2dPairEvidence(arr,target,partner,digitScores){
   const stability=m2dPairStability(arr,target,partner);
   const support=m2dPairSupport(arr,target,partner);
   const noise=m2dPairNoisePenalty(arr,target,partner);
+  const recencyDecay=m2dPairRecencyDecay(arr,target,partner);
   const targetMax=Math.max(...digitScores,1);
   const targetConfidence=m2dClamp01(digitScores[target]/targetMax);
   const partnerConfidence=m2dClamp01(digitScores[partner]/targetMax);
@@ -7049,8 +7134,10 @@ function m2dPairEvidence(arr,target,partner,digitScores){
     noise<.30
   ].filter(Boolean).length;
   const evidence=m2dClamp01(evidenceCount/8);
-  const confidence=m2dClamp01(targetConfidence*.50+stability.score*.25+support*.15+evidence*.10);
-  return {evidenceCount,evidence,confidence,adaptive,regime,stability,support,noise};
+  const persistence=m2dClamp01(stability.score*.45+recencyDecay*.30+support*.25);
+  const confidence=m2dClamp01(targetConfidence*.45+stability.score*.20+support*.15+evidence*.10+persistence*.10);
+  const uncertainty=m2dClamp01((1-confidence)*.55+(1-stability.score)*.20+noise*.15+(arr.length<10?.10:0));
+  return {evidenceCount,evidence,confidence,persistence,uncertainty,recencyDecay,adaptive,regime,stability,support,noise};
 }
 function m2dPairScores(arr,target){
   const map=new Map();
@@ -7073,6 +7160,8 @@ function m2dPairScores(arr,target){
     const noise=evidence.noise;
     const transition=m2dClamp01(st.transition/Math.max(1,st.exact*2));
     const partnerStrength=m2dClamp01(digitScores[x]/maxDigitScore);
+    const partnerQuality=m2dClamp01(partnerStrength*.55+evidence.persistence*.25+evidence.recencyDecay*.20);
+    const diversityBonus=m2dClamp01((evidence.evidenceCount/8)*.70+(st.cooccur>=.25?.15:0)+(st.transition>0?.15:0));
 
     /* Evidence-first scoring: the existing layers remain, but the final
        ranking is tightened by 30-round adaptivity, regime awareness and
@@ -7085,12 +7174,17 @@ function m2dPairScores(arr,target){
       pos*0.10+
       support*0.15+
       transition*0.08+
-      partnerStrength*0.07+
+      partnerStrength*0.05+
+      partnerQuality*0.04+
       adaptive.adaptive*0.05+
-      stability.score*0.07+
-      evidence.confidence*0.10+
+      stability.score*0.06+
+      evidence.persistence*0.07+
+      evidence.confidence*0.09+
+      diversityBonus*0.06+
+      evidence.recencyDecay*0.04+
       regimeBoost-
-      noise*0.18;
+      noise*0.18-
+      evidence.uncertainty*0.10;
 
     /* Small-sample reliability: do not let a tiny history masquerade as
        strong evidence. This changes confidence/ranking only; TOP-3 stays locked. */
@@ -7104,7 +7198,7 @@ function m2dPairScores(arr,target){
     const gatedScore=score*gatePenalty;
     const prior=map.get(key);
     if(!prior||gatedScore>prior.score){
-      map.set(key,{pair:key,score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,evidenceCount:evidence.evidenceCount,reliability,gatePenalty}});
+      map.set(key,{pair:key,score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty}});
     }
   }
   const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||a.pair.localeCompare(b.pair));
