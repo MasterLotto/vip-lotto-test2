@@ -1268,6 +1268,26 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 
 
 /* =========================================================
+   SAFE ENGINE ENTRY POINT
+   Prevent a single backend exception from leaving the UI blank.
+========================================================= */
+function runEngine(){
+  try{
+    return runEngineCore();
+  }catch(err){
+    console.error('[V32.4 ENGINE ERROR]',err);
+    const root=$('result');
+    if(root){
+      const msg=String(err?.message||err||'ไม่ทราบสาเหตุ');
+      root.innerHTML=`<div class="errorbox"><b>ระบบหยุดการประมวลผลเนื่องจากข้อผิดพลาดภายใน</b><br>${esc(msg)}<br><small>ข้อมูลเดิมยังไม่ถูกลบ กรุณาตรวจสอบรูปแบบข้อมูลแล้วลองใหม่</small></div>`;
+    }
+    return null;
+  }
+}
+
+
+
+/* =========================================================
    DATA INTEGRITY AUDIT PANEL — non-scoring diagnostics
 ========================================================= */
 .integrity-panel{
@@ -2217,6 +2237,9 @@ function parseInput(text){
     }
 
     const valid=blockRecords.filter(isResultRecord).length;
+    if(valid===0 && blockRecords.length===0){
+      errors.push(`ชุดข้อมูล ${blockIndex+1}: ไม่พบรายการผลรางวัลที่ประมวลผลได้`);
+    }
     datasets.push({datasetId,blockIndex,name:blockName,date:blockDate,recordCount:valid,records:blockRecords});
   });
 
@@ -6473,7 +6496,7 @@ function reconcileDatasetIds(masterRecords,newRecords){
   return newRecords;
 }
 
-function runEngine(){
+function runEngineCore(){
 
 
 
