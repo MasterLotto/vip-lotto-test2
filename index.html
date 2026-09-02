@@ -7076,6 +7076,7 @@ function m2dScoreDigits(arr){
   return out;
 }
 const M2D_PRECISION_CACHE=new WeakMap();
+const M2D_SELECTED_WF_CACHE=new WeakMap();
 const M2D_DIGIT_WF_CACHE=new WeakMap();
 function m2dDigitWalkForwardQuality(arr){
   if(!Array.isArray(arr)||arr.length<12)return {precision:50,stability:50,tested:0};
@@ -7118,6 +7119,8 @@ function m2dPrecisionScoreDigits(arr){
     counterRanks.push([...Array(10).keys()].sort((a,b)=>r[b]-r[a]||a-b).slice(0,3));
   }
   const wf=m2dDigitWalkForwardQuality(arr);
+  const selectedWF=m2dSelectedTop3WalkForward(arr);
+  const selectedCalibration=m2dClamp01((selectedWF.coverage||50)/100);
   const out=Array(10).fill(0);
   for(let d=0;d<10;d++){
     const rates=windows.map(w=>{const a=arr.slice(-Math.min(w,n));return a.length?(m2dFreq(a)[d]/Math.max(1,a.length*2)):0;});
@@ -7134,7 +7137,7 @@ function m2dPrecisionScoreDigits(arr){
     const baseNorm=norm(base[d],maxBase);
     const empirical=m2dClamp01((wf.precision[d]||50)/100);
     const wfStability=m2dClamp01((wf.stability[d]||50)/100);
-    out[d]=baseNorm*.47+recent*.12+stability*.10+counterfactual*.07+rankStability*.05+recovery*.03+(1-volatility)*.03+empirical*.09+wfStability*.04;
+    out[d]=baseNorm*.42+recent*.12+stability*.09+counterfactual*.07+rankStability*.05+recovery*.03+(1-volatility)*.03+empirical*.08+wfStability*.04+selectedCalibration*.07;
   }
   if(Array.isArray(arr)) M2D_PRECISION_CACHE.set(arr,out);
   return out;
@@ -7322,6 +7325,34 @@ function m2dPairWalkForwardQuality(arr,target,partner){
   const stability=rankObs?((rankSum/rankObs)*.70+rankStability*.30):50;
   return {precision,stability:Math.max(0,Math.min(100,stability)),tested};
 }
+function m2dSelectedTop3WalkForward(arr){
+  const n=arr.length;
+  if(n<16)return {precision:50,coverage:0,tested:0,byRank:[50,50,50]};
+  const tests=Math.min(12,n-12),start=n-tests;
+  let hits=0,tested=0; const rankHits=[0,0,0];
+  for(let cut=start;cut<n;cut++){
+    const train=arr.slice(0,cut), actual=arr[cut];
+    const ranked=m2dScoreDigits(train).map((score,digit)=>({digit,score})).sort((a,b)=>b.score-a.score||a.digit-b.digit).slice(0,3);
+    const actualDigits=[actual.tens,actual.units];
+    ranked.forEach((x,i)=>{ if(actualDigits.includes(x.digit)){ hits++; rankHits[i]++; }});
+    tested++;
+  }
+  const precision=tested?hits/(tested*3)*100:50;
+  return {precision,coverage:tested?hits/tested*100:50,tested,byRank:rankHits.map(x=>tested?x/tested*100:50)};
+}
+function m2dSelectedPairWalkForward(arr,target){
+  const n=arr.length;
+  if(n<16)return {precision:50,coverage:0,tested:0};
+  const tests=Math.min(10,n-12),start=n-tests; let selectedHits=0,slots=0;
+  for(let cut=start;cut<n;cut++){
+    const train=arr.slice(0,cut),actual=arr[cut];
+    const pairs=m2dPairScores(train,target,true).slice(0,5);
+    const hit=pairs.some(p=>{const [a,b]=String(p.pair).split('').map(Number);return (a===actual.tens&&b===actual.units)||(a===actual.units&&b===actual.tens);});
+    if(hit)selectedHits++; slots++;
+  }
+  return {precision:slots?selectedHits/slots*100:50,coverage:slots?selectedHits/slots*100:50,tested:slots};
+}
+
 function m2dPairScores(arr,target,skipWF=false){
   const map=new Map();
   if(!Array.isArray(arr)||!arr.length)return [];
@@ -7421,7 +7452,7 @@ function m2dConsensus(noon,evening){
 function m2dRenderBlock(title,time,emoji,data,cardId,dateLabel){
   const top=(data.top||[]).slice(0,3);
   const pairRows=top.map((t,i)=>`<div class="m2d-rank-row rank-${i+1}"><div class="m2d-rank-label">TOP ${i+1}</div><div class="m2d-main-digit">${t.digit}</div><div class="m2d-pair-line">${(data.pairsByTarget?.[t.digit]||[]).map((p,pi)=>`<span class="m2d-pair ${pi<3?`m2d-pair-focus-${pi+1}`:''}">${m2dEsc(p.pair)}</span>`).join('')}</div></div>`).join('');
-  return `<section class="m2d-card" id="${cardId}"><div class="m2d-card-head"><div class="m2d-card-title"><span class="m2d-flag">🇲🇲</span><div><div class="m2d-name">MYANMAR 2D</div><div class="m2d-time">${m2dEsc(time)}</div></div></div><div class="m2d-date">${m2dEsc(m2dFormatDate(dateLabel))}</div></div><div class="m2d-content"><div class="m2d-label">${m2dEsc(title)}</div>${pairRows}</div><div class="m2d-card-actions"><span class="m2d-brand" aria-label="บ้านกองเงิน"><span class="m2d-brand-icon">✦</span><span>บ้านกองเงิน</span></span><button class="card-action-btn m2d-capture-button" onclick="captureCardImage('${cardId}','MYANMAR 2D ${m2dEsc(time)}')">📸 แคปภาพ</button></div></section>`;
+  return `<section class="m2d-card" id="${cardId}"><div class="m2d-card-head"><div class="m2d-card-title"><span class="m2d-flag">🇲🇲</span><div><div class="m2d-name">MYANMAR 2D</div><div class="m2d-time">${m2dEsc(time)}</div></div></div><div class="m2d-date">${m2dEsc(m2dFormatDate(dateLabel))}</div></div><div class="m2d-content"><div class="m2d-label">${m2dEsc(title)}</div>${pairRows}</div><div class="m2d-card-actions"><span class="m2d-brand" aria-label="บ้านเงินกอง"><span class="m2d-brand-icon">✦</span><span>บ้านเงินกอง</span></span><button class="card-action-btn m2d-capture-button" onclick="captureCardImage('${cardId}','MYANMAR 2D ${m2dEsc(time)}')">📸 แคปภาพ</button></div></section>`;
 }
 
 function m2dNextTargetDate(records){
