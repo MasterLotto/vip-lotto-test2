@@ -1388,7 +1388,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 
 </style>
 <!-- V43 baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
-<!-- V44 AUDIT: empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
+<!-- V45 AUDIT: empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 </head>
 
 
@@ -3335,7 +3335,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   const familyIdByFormula={};
   formulaFamilies.forEach((fam,i)=>fam.names.forEach(n=>familyIdByFormula[n]=i));
 
-  /* V44 empirical evidence-correlation audit: identical bodies are not the
+  /* V45 empirical evidence-correlation audit: identical bodies are not the
      only source of double-counting. Measure overlap of historical formula
      proposals and use it only as a bounded ranking penalty. Locked formula
      equations/bodies are never changed. */
@@ -3899,6 +3899,28 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   });
   const bestPrecisionPair=optimizedPairs[0]||bestPair;
   if(bestPrecisionPair) bestPair=bestPrecisionPair;
+
+  /* V45 TOP2 CALIBRATION TIE-BREAK:
+     when pair scores are close, prefer the pair whose weaker member has
+     stronger empirical precision and stress survival. This only changes
+     selection, never a protected formula. */
+  if(optimizedPairs.length>1){
+    const top=optimizedPairs[0], alt=optimizedPairs[1];
+    const close=Number(top.precisionPairScore||0)-Number(alt.precisionPairScore||0) < 1.75;
+    if(close){
+      const quality=pc=>{
+        const aa=pc.a,bb=pc.b;
+        return Math.min(
+          Number(aa.raw.empiricalPrecision||50),
+          Number(bb.raw.empiricalPrecision||50)
+        )*.08+
+        Math.min(Number(aa.raw.adversarialTop2||50),Number(bb.raw.adversarialTop2||50))*.06+
+        Math.min(Number(aa.raw.signalPersistence||50),Number(bb.raw.signalPersistence||50))*.05-
+        Math.max(Number(aa.raw.falsePositiveRisk||50),Number(bb.raw.falsePositiveRisk||50))*.025;
+      };
+      if(quality(alt)>quality(top)) bestPair=alt,selected=[alt.a,alt.b];
+    }
+  }
 
   const margin=selected.length>=2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0;
   const secondGapRatio=selected.length>=2?clamp(margin/Math.max(1,Math.abs(selected[0].selectionQuality)),0,1):0;
@@ -6945,7 +6967,7 @@ function renderFullUI(
 
 
       <span>
-        ระบบบ้านเงินกอง V32.4
+        ระบบบ้านเงินกอง V45.0
         Multi-Angle Audit Layer
       </span>
 
@@ -7182,6 +7204,32 @@ function m2dDigitWalkForwardQuality(arr){
   M2D_DIGIT_WF_CACHE.set(arr,out);
   return out;
 }
+function m2dAdaptiveWindowWeights(arr){
+  const data=m2dFixed30(arr), n=data.length;
+  if(!n) return {7:.45,14:.30,21:.15,30:.10};
+  const ws=[7,14,21,30].filter(w=>n>=w);
+  const raw={};
+  ws.forEach(w=>{
+    const a=data.slice(-w);
+    const mid=Math.max(1,Math.floor(w/2));
+    const recent=m2dFreq(a.slice(-mid));
+    const prior=m2dFreq(a.slice(0,Math.max(1,a.length-mid)));
+    const changes=recent.map((v,i)=>Math.abs((v/Math.max(1,mid*2))-(prior[i]/Math.max(1,(a.length-mid)*2))));
+    const avgChange=changes.reduce((x,y)=>x+y,0)/10;
+    raw[w]=1/(1+avgChange*3);
+  });
+  const defaults={7:.45,14:.30,21:.15,30:.10};
+  const total=ws.reduce((z,w)=>z+raw[w],0)||1;
+  const out={};
+  [7,14,21,30].forEach(w=>{
+    out[w]=ws.includes(w)?raw[w]/total:0;
+  });
+  if(!ws.includes(30)) out[30]=.10;
+  const sum=Object.values(out).reduce((a,b)=>a+b,0)||1;
+  [7,14,21,30].forEach(w=>out[w]=(out[w]||0)/sum);
+  return out;
+}
+
 function m2dPrecisionScoreDigits(arr){
   const data=m2dFixed30(arr);
   if(Array.isArray(arr)&&M2D_PRECISION_CACHE.has(arr)) return M2D_PRECISION_CACHE.get(arr);
@@ -7207,7 +7255,13 @@ function m2dPrecisionScoreDigits(arr){
     const rates=windows.map(w=>{const a=data.slice(-Math.min(w,n));return a.length?(m2dFreq(a)[d]/Math.max(1,a.length*2)):0;});
     const spread=rates.length?Math.max(...rates)-Math.min(...rates):0;
     const stability=m2dClamp01(1-spread*3.0);
-    const recent=m2dClamp01(.45*norm(s7[d],maxBase)+.30*norm(s14[d],maxBase)+.15*norm(s21[d],maxBase)+.10*norm(s30[d],maxBase));
+    const adaptiveWindowWeights=m2dAdaptiveWindowWeights(data);
+    const recent=m2dClamp01(
+      adaptiveWindowWeights[7]*norm(s7[d],maxBase)+
+      adaptiveWindowWeights[14]*norm(s14[d],maxBase)+
+      adaptiveWindowWeights[21]*norm(s21[d],maxBase)+
+      adaptiveWindowWeights[30]*norm(s30[d],maxBase)
+    );
     const gap=Math.min(m2dGap(data,'tens',d),m2dGap(data,'units',d));
     const recovery=(gap>=4&&gap<=12&&base[d]>0)?m2dClamp01((12-gap)/8):0;
     const rankStability=counterRanks.length?m2dClamp01(1-counterRanks.reduce((sum,r)=>{
@@ -7548,28 +7602,54 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
   return selected;
 }
 function m2dJointSelect15Pairs(top,pairsByTarget){
-  const targets=(top||[]).slice(0,3), pools=targets.map(t=>(pairsByTarget?.[t.digit]||[]).slice(0,9));
+  const targets=(top||[]).slice(0,3);
+  const pools=targets.map(t=>(pairsByTarget?.[t.digit]||[]).slice(0,9));
   if(pools.some(p=>!p.length)) return m2dSelectCoveredPairs(top,pairsByTarget);
-  let best=null;
-  for(const a of pools[0]) for(const b of pools[1]) for(const c of pools[2]){
-    const chosen=[a,b,c];
-    if(chosen.some(p=>String(p.pair)[0]===String(p.pair)[1] && Number(p.meta?.confidence||0)<90)) continue;
-    const keys=chosen.map(p=>m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1])));
-    const unique=new Set(keys); if(unique.size<3)continue;
-    let total=0; chosen.forEach(p=>total+=Number(p.score)||0);
-    const minQ=Math.min(...chosen.map(p=>Number(p.meta?.confidence)||50));
-    const minWF=Math.min(...chosen.map(p=>Number(p.meta?.selectedPairPrecision)||50));
-    const diversity=new Set(chosen.flatMap(p=>String(p.pair).split('').map(Number))).size;
-    const objective=total+minQ*.08+minWF*.12+diversity*.35;
-    if(!best||objective>best.objective)best={chosen,objective};
+
+  const out={}; const used=new Set();
+  targets.forEach(t=>out[t.digit]=[]);
+
+  /* V45 GLOBAL 15-SLOT OPTIMIZER:
+     every slot competes globally, while each TOP keeps its five-slot quota.
+     The objective rewards pair quality, historical selected precision,
+     confidence, stability and new coverage. Reverse pairs share one key. */
+  for(let round=0;round<5;round++){
+    let best=null;
+    targets.forEach((t,ti)=>{
+      if(out[t.digit].length>=5)return;
+      for(const p of pools[ti]){
+        const key=m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1]));
+        if(used.has(key))continue;
+        const isDouble=String(p.pair)[0]===String(p.pair)[1];
+        const conf=Number(p.meta?.confidence)||0;
+        const selWF=Number(p.meta?.selectedPairPrecision)||50;
+        if(isDouble && (conf<90 || selWF<65))continue;
+        const partnerDigits=new Set(out[t.digit].flatMap(x=>String(x.pair).split('').map(Number)));
+        const globalDigits=new Set(Object.values(out).flat().flatMap(x=>String(x.pair).split('').map(Number)));
+        const novelty=partnerDigits.has(Number(p.pair[1]))?0:2.5;
+        const globalNovelty=globalDigits.has(Number(p.pair[0]))&&globalDigits.has(Number(p.pair[1]))?0:1.5;
+        const marginal=(Number(p.score)||0)+conf*.07+selWF*.11+
+          (Number(p.meta?.pairWalkForwardStability)||50)*.06+
+          (Number(p.meta?.persistence)||50)*.04+novelty+globalNovelty;
+        if(!best||marginal>best.marginal)best={t, p, key, marginal};
+      }
+    });
+    if(!best)break;
+    used.add(best.key);
+    out[best.t.digit].push(best.p);
   }
-  const out={}; targets.forEach((t,i)=>out[t.digit]=best.chosen[i]);
-  // Fill each target to five while preserving global reverse-pair uniqueness.
-  const used=new Set(best.chosen.map(p=>m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1]))));
-  targets.forEach((t,i)=>{
-    const pool=pools[i],chosen=out[t.digit]?[out[t.digit]]:[];
-    for(const p of pool){ if(chosen.length>=5)break; const k=m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1])); if(used.has(k))continue; if(String(p.pair)[0]===String(p.pair)[1] && Number(p.meta?.confidence||0)<90)continue; used.add(k); chosen.push(p); }
-    out[t.digit]=chosen;
+
+  /* Deterministic fill only from valid, globally unused candidates. */
+  targets.forEach((t,ti)=>{
+    for(const p of pools[ti]){
+      if(out[t.digit].length>=5)break;
+      const key=m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1]));
+      if(used.has(key))continue;
+      const isDouble=String(p.pair)[0]===String(p.pair)[1];
+      const conf=Number(p.meta?.confidence)||0, selWF=Number(p.meta?.selectedPairPrecision)||50;
+      if(isDouble && (conf<90 || selWF<65))continue;
+      used.add(key); out[t.digit].push(p);
+    }
   });
   return out;
 }
@@ -7579,7 +7659,10 @@ function m2dSelectCoveredPairs(top,pairsByTarget){
   const targets=(top||[]).slice(0,3);
   targets.forEach((t,rank)=>{
     const candidates=[...(pairsByTarget?.[t.digit]||[])];
-    const strongDoubles=candidates.filter(p=>String(p.pair)[0]===String(p.pair)[1] && Number(p.meta?.confidence||0)>=90 && Number(p.meta?.selectedPairPrecision||50)>=65);
+    const strongDoubles=candidates.filter(p=>String(p.pair)[0]===String(p.pair)[1] &&
+      Number(p.meta?.confidence||0)>=90 &&
+      Number(p.meta?.selectedPairPrecision||50)>=65 &&
+      Number(p.meta?.pairWalkForwardStability||50)>=60);
     const normal=candidates.filter(p=>!(String(p.pair)[0]===String(p.pair)[1]));
     const ordered=[...normal,...strongDoubles];
     const chosen=[];
