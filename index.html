@@ -1387,7 +1387,8 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 .m2d-capture-button{display:inline-flex;}
 
 </style>
-<!-- V43: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
+<!-- V43 baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
+<!-- V44 AUDIT: empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 </head>
 
 
@@ -3334,6 +3335,27 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   const familyIdByFormula={};
   formulaFamilies.forEach((fam,i)=>fam.names.forEach(n=>familyIdByFormula[n]=i));
 
+  /* V44 empirical evidence-correlation audit: identical bodies are not the
+     only source of double-counting. Measure overlap of historical formula
+     proposals and use it only as a bounded ranking penalty. Locked formula
+     equations/bodies are never changed. */
+  const formulaCorrelation={};
+  names.forEach(name=>{ formulaCorrelation[name]={meanOverlap:0,highOverlap:0}; });
+  for(let i=0;i<names.length;i++) for(let j=i+1;j<names.length;j++){
+    const A=getFormulaHistory(recs,names[i]),B=getFormulaHistory(recs,names[j]);
+    const n=Math.min(A.length,B.length); let sum=0,high=0;
+    for(let k=0;k<n;k++){
+      const sa=new Set(A[A.length-n+k]?.predicted||[]), sb=new Set(B[B.length-n+k]?.predicted||[]);
+      const uni=new Set([...sa,...sb]); const inter=[...sa].filter(d=>sb.has(d)).length;
+      const ov=uni.size?inter/uni.size:0; sum+=ov; if(ov>=.75)high++;
+    }
+    const mean=n?sum/n:0, highRate=n?high/n:0;
+    formulaCorrelation[names[i]].meanOverlap=Math.max(formulaCorrelation[names[i]].meanOverlap,mean);
+    formulaCorrelation[names[j]].meanOverlap=Math.max(formulaCorrelation[names[j]].meanOverlap,mean);
+    formulaCorrelation[names[i]].highOverlap=Math.max(formulaCorrelation[names[i]].highOverlap,highRate);
+    formulaCorrelation[names[j]].highOverlap=Math.max(formulaCorrelation[names[j]].highOverlap,highRate);
+  }
+
   /* Formula reliability is measured per formula, but capped before aggregation
      so one unusually strong formula cannot dominate the digit decision. */
   const formulaStats={};
@@ -3730,7 +3752,8 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     const weak=vals.filter(v=>v<35).length;
     /* Evidence Independence: highly similar families are compressed so one
        underlying signal cannot masquerade as several independent confirmations. */
-    const independence=clamp(100-dispersion*.55-(strong<=1?18:0)-(weak>=4?10:0),0,100);
+    const corrPenalty=avg((row.formulaHits||[]).map(f=>{const c=formulaCorrelation[f]||{};return (c.meanOverlap||0)*24+(c.highOverlap||0)*12;}));
+    const independence=clamp(100-dispersion*.55-(strong<=1?18:0)-(weak>=4?10:0)-corrPenalty,0,100);
     const complement=clamp((strong*16)+(r.evidenceDiversity*6)-weak*7,0,100);
     /* Signal persistence: compare short, middle and long empirical windows. */
     const persistence=clamp(
@@ -3743,6 +3766,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     const adv=Number(r.adversarialTop2)||50;
     const surv=Number(r.survivalTop2)||50;
     const counterfactual=clamp(Math.min(adv,surv),0,100);
+    row.raw.evidenceCorrelationPenalty=round2(corrPenalty);
     row.raw.evidenceIndependence=round2(independence);
     row.raw.evidenceComplement=round2(complement);
     row.raw.signalPersistence=round2(persistence);
@@ -3965,7 +3989,8 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     endToEndWalkForward,
     empiricalWalkForwardRate,
     formulaFamilies,
-    familyIdByFormula
+    familyIdByFormula,
+    formulaCorrelation
   };
 }
 
@@ -7085,10 +7110,29 @@ function m2dJointTop3Score(digits,score,base){
   const baseAvg=chosen.reduce((z,d)=>z+(base[d]||0),0)/Math.max(1,chosen.length);
   return avg*100+baseAvg*.35+diversity*3-spread*4;
 }
+function m2dAdaptiveWindowWeights(arr){
+  const data=m2dFixed30(arr),n=data.length;
+  const wins=[7,14,21,30],raw={7:1,14:1,21:1,30:1};
+  if(n<16)return {7:.34,14:.27,21:.21,30:.18};
+  const tests=Math.min(8,n-8),start=n-tests;
+  for(const w of wins){
+    let score=0,obs=0;
+    for(let cut=start;cut<n;cut++){
+      const train=data.slice(0,cut),actual=data[cut],take=train.slice(-Math.min(w,train.length));
+      if(!take.length)continue;
+      const f=m2dFreq(take),rank=[...Array(10).keys()].sort((a,b)=>f[b]-f[a]||a-b).slice(0,3);
+      score+=(rank.includes(actual.tens)||rank.includes(actual.units))?1:0; obs++;
+    }
+    raw[w]=obs?Math.max(.25,score/obs):1;
+  }
+  const sum=Object.values(raw).reduce((a,b)=>a+b,0)||1;
+  return Object.fromEntries(wins.map(w=>[w,raw[w]/sum]));
+}
+
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
   const windows=[7,14,21,30].filter(w=>n>=Math.min(w,3));
-  const weights={7:.34,14:.27,21:.21,30:.18};
+  const weights=m2dAdaptiveWindowWeights(data);
   const ft=m2dPositionFreq(data,'tens'),fu=m2dPositionFreq(data,'units');
   for(let d=0;d<10;d++){
     let multi=0,used=0;
@@ -7503,12 +7547,39 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
   }
   return selected;
 }
+function m2dJointSelect15Pairs(top,pairsByTarget){
+  const targets=(top||[]).slice(0,3), pools=targets.map(t=>(pairsByTarget?.[t.digit]||[]).slice(0,9));
+  if(pools.some(p=>!p.length)) return m2dSelectCoveredPairs(top,pairsByTarget);
+  let best=null;
+  for(const a of pools[0]) for(const b of pools[1]) for(const c of pools[2]){
+    const chosen=[a,b,c];
+    if(chosen.some(p=>String(p.pair)[0]===String(p.pair)[1] && Number(p.meta?.confidence||0)<90)) continue;
+    const keys=chosen.map(p=>m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1])));
+    const unique=new Set(keys); if(unique.size<3)continue;
+    let total=0; chosen.forEach(p=>total+=Number(p.score)||0);
+    const minQ=Math.min(...chosen.map(p=>Number(p.meta?.confidence)||50));
+    const minWF=Math.min(...chosen.map(p=>Number(p.meta?.selectedPairPrecision)||50));
+    const diversity=new Set(chosen.flatMap(p=>String(p.pair).split('').map(Number))).size;
+    const objective=total+minQ*.08+minWF*.12+diversity*.35;
+    if(!best||objective>best.objective)best={chosen,objective};
+  }
+  const out={}; targets.forEach((t,i)=>out[t.digit]=best.chosen[i]);
+  // Fill each target to five while preserving global reverse-pair uniqueness.
+  const used=new Set(best.chosen.map(p=>m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1]))));
+  targets.forEach((t,i)=>{
+    const pool=pools[i],chosen=out[t.digit]?[out[t.digit]]:[];
+    for(const p of pool){ if(chosen.length>=5)break; const k=m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1])); if(used.has(k))continue; if(String(p.pair)[0]===String(p.pair)[1] && Number(p.meta?.confidence||0)<90)continue; used.add(k); chosen.push(p); }
+    out[t.digit]=chosen;
+  });
+  return out;
+}
+
 function m2dSelectCoveredPairs(top,pairsByTarget){
   const used=new Set(),out={};
   const targets=(top||[]).slice(0,3);
   targets.forEach((t,rank)=>{
     const candidates=[...(pairsByTarget?.[t.digit]||[])];
-    const strongDoubles=candidates.filter(p=>String(p.pair)[0]===String(p.pair)[1] && Number(p.meta?.confidence||0)>=90);
+    const strongDoubles=candidates.filter(p=>String(p.pair)[0]===String(p.pair)[1] && Number(p.meta?.confidence||0)>=90 && Number(p.meta?.selectedPairPrecision||50)>=65);
     const normal=candidates.filter(p=>!(String(p.pair)[0]===String(p.pair)[1]));
     const ordered=[...normal,...strongDoubles];
     const chosen=[];
@@ -7526,7 +7597,7 @@ function m2dSelectCoveredPairs(top,pairsByTarget){
 function m2dAnalyzeSession(records,session){
   const arr=m2dValidSeq(records,session),top=m2dTop3(arr);const raw={};
   top.forEach(t=>raw[t.digit]=m2dPairScores(arr,t.digit,false,9));
-  const pairsByTarget=m2dSelectCoveredPairs(top,raw);
+  const pairsByTarget=m2dJointSelect15Pairs(top,raw);
   return {session,arr,top,pairsByTarget,inputQuality:m2dInputQuality(arr),pairSetWF:m2dFinal15PairWalkForward(arr,top)};
 }
 function m2dConsensus(noon,evening){
@@ -7542,8 +7613,10 @@ function m2dConsensus(noon,evening){
       const as=(a.score||0),bs=(b.score||0);return bs-as||((b.meta?.confidence||0)-(a.meta?.confidence||0))||a.pair.localeCompare(b.pair);
     });
   });
-  const pairsByTarget=m2dSelectCoveredPairs(combined,raw);
-  return {top:combined,pairsByTarget,inputQuality:{noon:m2dInputQuality(noon.arr),evening:m2dInputQuality(evening.arr)},pairSetWF:m2dFinal15PairWalkForward(noon.arr,combined)};
+  const pairsByTarget=m2dJointSelect15Pairs(combined,raw);
+  const wfNoon=m2dFinal15PairWalkForward(noon.arr,combined),wfEvening=m2dFinal15PairWalkForward(evening.arr,combined);
+  const pairSetWF={precision:round2(((wfNoon.precision||50)+(wfEvening.precision||50))/2),coverage:round2(((wfNoon.coverage||50)+(wfEvening.coverage||50))/2),tested:Math.min(wfNoon.tested||0,wfEvening.tested||0),noon:wfNoon,evening:wfEvening};
+  return {top:combined,pairsByTarget,inputQuality:{noon:m2dInputQuality(noon.arr),evening:m2dInputQuality(evening.arr)},pairSetWF};
 }
 function m2dRenderBlock(title,time,emoji,data,cardId,dateLabel){
   const top=(data.top||[]).slice(0,3);
