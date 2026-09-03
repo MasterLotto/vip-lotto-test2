@@ -1029,10 +1029,16 @@ function cleanDatasetKey(rawName){
 function formatDisplayTitle(rawName){
   rawName=cleanDatasetKey(rawName);
   let name=String(rawName||'').trim();
+  const thaiSynthetic=String(rawName||'').trim();
+  if(/^__THAI_ROUND__/.test(thaiSynthetic)){
+    const r=thaiSynthetic.replace(/^__THAI_ROUND__/,'').trim();
+    return `หุ้นไทย ${r}`.trim();
+  }
+  if(thaiSynthetic==='__THAI_ALLDAY__') return 'หุ้นไทย ทั้งวัน';
+  if(thaiSynthetic==='__THAI_TOP__') return 'หุ้นไทย บนตรง ๆ';
   name=name
     .replace(/^สถิติหุ้น\s*/,'')
     .replace(/^สถิติ\s*/,'')
-    .replace(/^หุ้น\s*/,'')
     .replace(/\s*ย้อนหลัง$/,'')
     .trim();
   if(name==='อินเดีย'||name==='หุ้นอินเดีย')
@@ -1092,28 +1098,88 @@ function formatDisplayTitle(rawName){
   return name.replace(/\s+/g,' ').trim();
 }
 /* =========================================================
+   V57 THAI STOCK DAILY MODE
+   Input keeps the original round names, but the backend groups them into
+   one Thai-stock market with four round-specific datasets plus one all-day
+   dataset. No duplicate all-day input is required.
+========================================================= */
+function v57ThaiRound(name){
+  const n=String(name||'').toLowerCase().replace(/\s+/g,'');
+  if(!n.includes('หุ้นไทย')) return '';
+  if(n.includes('เช้า')) return 'เช้า';
+  if(n.includes('เที่ยง')) return 'เที่ยง';
+  if(n.includes('บ่าย')) return 'บ่าย';
+  if(n.includes('เย็น')) return 'เย็น';
+  return '';
+}
+function v57IsThaiStockName(name){
+  return String(name||'').toLowerCase().replace(/\s+/g,'').includes('หุ้นไทย');
+}
+function v57ThaiRoundOrder(round){
+  return ({'เช้า':0,'เที่ยง':1,'บ่าย':2,'เย็น':3})[round]??9;
+}
+function v57ThaiRecords(records){
+  return (Array.isArray(records)?records:[])
+    .filter(r=>v57IsThaiStockName(r.name)&&isResultRecord(r))
+    .slice()
+    .sort((a,b)=>{
+      const ta=Number(a.timestamp)||parseThaiDate(a.date)||0;
+      const tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+      if(ta!==tb)return ta-tb;
+      return v57ThaiRoundOrder(v57ThaiRound(a.name))-v57ThaiRoundOrder(v57ThaiRound(b.name));
+    });
+}
+function v57ThaiDisplayRecords(records,round){
+  return v57ThaiRecords(records).filter(r=>v57ThaiRound(r.name)===round);
+}
+function v57ThaiBuildSpecialTop(records){
+  const data=v57ThaiRecords(records), n=data.length;
+  if(!n)return {d1:0,d2:1,d1Pairs:[],d2Pairs:[],nextDate:'',recordCount:0};
+  const windows=[7,14,21,30].filter(w=>n>=Math.min(w,3));
+  const score=Array(10).fill(0);
+  const topFreq=arr=>{
+    const c=Array(10).fill(0); arr.forEach(r=>String(r.n3||'').split('').forEach(ch=>c[+ch]++));
+    return c;
+  };
+  const latest=data.slice(-Math.min(7,n)), prior=data.slice(-Math.min(14,n),-Math.min(7,n));
+  for(let d=0;d<10;d++){
+    const longCount=data.reduce((z,r)=>z+(String(r.n3||'').split('').filter(x=>+x===d).length),0);
+    const recentCount=latest.reduce((z,r)=>z+(String(r.n3||'').split('').filter(x=>+x===d).length),0);
+    const priorCount=prior.reduce((z,r)=>z+(String(r.n3||'').split('').filter(x=>+x===d).length),0);
+    const longRate=longCount/Math.max(1,n*3)*100;
+    const recentRate=recentCount/Math.max(1,latest.length*3)*100;
+    const priorRate=prior.length?priorCount/(prior.length*3)*100:longRate;
+    const momentum=clamp(50+(recentRate-priorRate)*1.2,0,100);
+    const gap=(()=>{for(let i=data.length-1;i>=0;i--){if(String(data[i].n3||'').includes(String(d)))return data.length-1-i;}return n+1;})();
+    const recency=clamp(100-gap*6,0,100);
+    score[d]=longRate*.38+recentRate*.28+momentum*.18+recency*.16;
+  }
+  const ranked=[...Array(10).keys()].sort((a,b)=>score[b]-score[a]||a-b);
+  let d1=ranked[0]??0,d2=ranked.find(d=>d!==d1)??((d1+1)%10);
+  if(d1===d2)d2=(d1+1)%10;
+  return {d1,d2,nextDate:getNextDateStr(data[data.length-1].date),recordCount:n,scores:score,records:data};
+}
+
+/* =========================================================
    FLAGS
 ========================================================= */
 function getLotteryFlag(name){
-  const n=String(name||'').toLowerCase();
-  if(
-    n.includes('นิเคอิ')||
-    n.includes('นิกเคอิ')||
-    n.includes('ญี่ปุ่น')||
-    (
-      n.includes('เช้า') &&
-      !n.includes('จีน') &&
-      !n.includes('ฮั่งเส็ง')
-    )||
-    (
-      n.includes('บ่าย') &&
-      !n.includes('จีน') &&
-      !n.includes('ฮั่งเส็ง')
-    )
-  )
-    return'🇯🇵';
-  if(n.includes('จีน'))return'🇨🇳';
+  /* V56 — deterministic market-first flag resolver.
+     Never infer country from a generic time word such as "เช้า" or "บ่าย".
+     Market identity must win before time-of-day identity. */
+  const n=String(name||'').trim().toLowerCase().replace(/\s+/g,'');
+  if(!n)return'🌐';
+  /* Thailand — exact/strong market identity first. */
+  if(n.includes('หุ้นไทย')||n.includes('__thai_round__')||n.includes('__thai_allday__')||n.includes('__thai_top__')||n.includes('ไทยเย็น')||n.includes('ไทยเช้า')||n.includes('ไทยเที่ยง')||n.includes('ไทยบ่าย')||n.includes('ตลาดหุ้นไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส'))return'🇹🇭';
+  /* Vietnam / Hanoi. */
+  if(n.includes('ฮานอย')||n.includes('เวียดนาม'))return'🇻🇳';
+  /* Laos. */
+  if(n.includes('ลาว')||n.includes('ประชาชนลาว'))return'🇱🇦';
+  /* Japan / Nikkei. */
+  if(n.includes('นิเคอิ')||n.includes('นิกเคอิ')||n.includes('ญี่ปุ่น'))return'🇯🇵';
+  /* China / Hong Kong. */
   if(n.includes('ฮั่งเส็ง')||n.includes('ฮ่องกง'))return'🇭🇰';
+  if(n.includes('จีน'))return'🇨🇳';
   if(n.includes('ดาวโจนส์')||n.includes('อเมริกา')||n.includes('usa'))return'🇺🇸';
   if(n.includes('ไต้หวัน'))return'🇹🇼';
   if(n.includes('เกาหลี'))return'🇰🇷';
@@ -1123,16 +1189,8 @@ function getLotteryFlag(name){
   if(n.includes('อังกฤษ'))return'🇬🇧';
   if(n.includes('อินเดีย'))return'🇮🇳';
   if(n.includes('อียิปต์'))return'🇪🇬';
-  if(n.includes('ลาว'))return'🇱🇦';
-  if(n.includes('ฮานอย')||n.includes('เวียดนาม'))return'🇻🇳';
-  if(
-    n.includes('ไทย')||
-    n.includes('รัฐบาล')||
-    n.includes('ออมสิน')||
-    n.includes('ธกส')
-  )
-    return'🇹🇭';
-  if(n.includes('มาเลย์'))return'🇲🇾';
+  if(n.includes('มาเลย์')||n.includes('มาเลเซีย'))return'🇲🇾';
+  /* No country inference from generic "เช้า/บ่าย/เย็น". */
   return'🌐';
 }
 /* =========================================================
@@ -3083,7 +3141,8 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
     const oosGate=selectionOOSGate(wf.precision,wf.tested,wf.stability);
     const finalSanity=finalPairSanityGate({conflict,uncertainty:Math.max(0,50-negativeEvidence),pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,pairObservations:interaction.observations});
     const perturbGate=selectionPerturbationGate({pairPerturbationStability:perturb.stability,pairPerturbationSensitivity:perturb.sensitivity});
-    const finalGate=clamp(gate*oosGate*driftGuard*regimeGuard*(reverseSymmetry/100)*sampleReliability*finalSanity*perturbGate,.52,1);
+    const v56PairGate=v56MainPairConfidenceGate({pairWalkForwardPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,conditionalPair, pairPerturbationStability:perturb.stability,conflict});
+    const finalGate=clamp(gate*oosGate*driftGuard*regimeGuard*(reverseSymmetry/100)*sampleReliability*finalSanity*perturbGate*v56PairGate,.50,1);
     return {
       pair:String(target)+String(unit),
       val:target*10+unit,
@@ -3099,7 +3158,7 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
         structuralScore:round2(structural),targetStrength:round2(targetStrength),partnerStrength:round2(partnerStrength),
         conditionalPair:round2(conditionalPair),conditionalForward:round2(conditionalRaw.forward),conditionalReverse:round2(conditionalRaw.reverse),formulaFamily:round2(formulaFamily),temporalFamily:round2(temporalFamily),validationFamily:round2(validationFamily),
         formulaOutcomeIndependence:round2(formulaOutcomeIndependenceScore),independentEvidence:round2(independentEvidence),negativeEvidence:round2(negativeEvidence),conflict:round2(conflict),selectionGate:round2(finalGate),oosSelectionGate:round2(oosGate),
-        risk:round2(risk),evidenceDiversity:round2(evidenceDiversity),evidenceGroups:strongGroups,driftGuard:round2(driftGuard),regimeGuard:round2(regimeGuard),reverseSymmetry:round2(reverseSymmetry),sampleReliability:round2(sampleReliability),finalSanity:round2(finalSanity),perturbationGate:round2(perturbGate)
+        risk:round2(risk),evidenceDiversity:round2(evidenceDiversity),evidenceGroups:strongGroups,driftGuard:round2(driftGuard),regimeGuard:round2(regimeGuard),reverseSymmetry:round2(reverseSymmetry),sampleReliability:round2(sampleReliability),finalSanity:round2(finalSanity),perturbationGate:round2(perturbGate),v56PairConfidenceGate:round2(v56PairGate)
       }
     };
   }).sort((a,b)=>b.score-a.score||b.meta.pairWalkForwardPrecision-a.meta.pairWalkForwardPrecision||b.meta.pairWalkForwardStability-a.meta.pairWalkForwardStability||a.val-b.val);
@@ -4075,6 +4134,7 @@ function renderFullUI(
   `;
   let cardIdx=0;
   Object.keys(predictionDataMap)
+    .filter(lotteryName=>!String(lotteryName).startsWith('__THAI_'))
     .forEach(lotteryName=>{
       const p=
         predictionDataMap[
@@ -4125,6 +4185,7 @@ function renderFullUI(
   `;
   let scoreIdx=0;
   Object.keys(predictionDataMap)
+    .filter(lotteryName=>!String(lotteryName).startsWith('__THAI_'))
     .forEach(lotteryName=>{
       const scoreCard=
         predictionDataMap[
@@ -4144,11 +4205,22 @@ function renderFullUI(
     });
   html+=`
     </div>
+    <div id="thaiStockCards" class="thai-stock-card-set">`;
+  ['เช้า','เที่ยง','บ่าย','เย็น'].forEach((round,idx)=>{
+    const key=`__THAI_ROUND__${round}`;
+    const sc=predictionDataMap[key]?.scoreCard;
+    if(sc) html+=renderCardHTML(sc,false,700+idx);
+  });
+  const allDay=predictionDataMap.__THAI_ALLDAY__?.scoreCard;
+  if(allDay) html+=renderCardHTML({...allDay,displayTitle:'หุ้นไทย ทั้งวัน',flag:'🇹🇭'},false,704);
+  const topCard=predictionDataMap.__THAI_TOP__?.scoreCard;
+  if(topCard) html+=renderCardHTML(topCard,false,705);
+  html+=`</div>
     <div id="manualCards"></div>
     <div class="brand-footer">
       <span class="brand-star">✦</span>
       <span>
-        ระบบบ้านเงินกอง V47.0
+        ระบบบ้านเงินกอง V57.0
         Multi-Angle Audit Layer
       </span>
       <span class="brand-star">✦</span>
@@ -4778,10 +4850,11 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
     const qualified=(arr.length<10)||(evidence.evidenceCount>=3&&stability.score>=.35);
     const gatePenalty=qualified?1:(.72+evidence.evidence*.18);
     const sanityGate=m2dPairSanityGate({noise,uncertainty:evidence.uncertainty,perturbationStability:perturb.stability});
-    const gatedScore=score*gatePenalty*pairOOSGate*sampleGate*sanityGate;
+    const v56PairGate=v56M2DPairConfidenceGate({empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,confidence:evidence.confidence,noise,uncertainty:evidence.uncertainty});
+    const gatedScore=score*gatePenalty*pairOOSGate*sampleGate*sanityGate*v56PairGate;
     const prior=map.get(key);
     if(!prior||gatedScore>prior.score){
-      map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,positionConditional,pairOOSGate,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,reverseSymmetry,sampleGate,sanityGate,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
+      map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,positionConditional,pairOOSGate,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,reverseSymmetry,sampleGate,sanityGate,v56PairConfidenceGate:v56PairGate,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
     }
   }
   const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||a.pair.localeCompare(b.pair));
@@ -5070,6 +5143,42 @@ function v55SelectionPerturbation(rows){
   const spread=tail.length?Math.max(...tail)-Math.min(...tail):0;
   return{score:round2(clamp(100-Math.abs(margin-3)*8-spread*.35,0,100)),margin:round2(margin)};
 }
+function v56ConsensusTrapPenalty(row,errorDigit,diversity){
+  const r=row||{}, raw=r.raw||{};
+  const agreement=Math.max(0,Number(r.agreement)||0);
+  const precision=clamp(Number(errorDigit?.precision)||50,0,100);
+  const div=clamp(Number(diversity)||50,0,100);
+  const corr=clamp(Number(raw.formulaCorrelation)||0,0,100);
+  if(agreement<3)return 0;
+  const consensusExcess=clamp((agreement-2)/6,0,1);
+  const weakDigit=clamp((50-precision)/25,0,1);
+  const lowDiversity=clamp((58-div)/35,0,1);
+  const highCorrelation=clamp(corr/100,0,1);
+  return round2(clamp(consensusExcess*(weakDigit*.55+lowDiversity*.25+highCorrelation*.20)*7.5,0,7.5));
+}
+function v56MainPairConfidenceGate(meta){
+  const m=meta||{};
+  const wf=clamp(Number(m.pairWalkForwardPrecision)||50,0,100);
+  const sel=clamp(Number(m.selectedPairPrecision)||50,0,100);
+  const stab=clamp(Number(m.pairWalkForwardStability)||50,0,100);
+  const cond=clamp(Number(m.conditionalPair)||50,0,100);
+  const perturb=clamp(Number(m.pairPerturbationStability)||50,0,100);
+  const conflict=clamp(Number(m.conflict)||0,0,100);
+  const evidence=wf*.26+sel*.22+stab*.18+cond*.18+perturb*.16;
+  const penalty=conflict*.0022;
+  return clamp(.74+evidence/100*.26-penalty,.72,1);
+}
+function v56M2DPairConfidenceGate(meta){
+  const m=meta||{};
+  const wf=clamp(Number(m.empiricalPairPrecision)||50,0,100);
+  const sel=clamp(Number(m.selectedPairPrecision)||50,0,100);
+  const stab=clamp(Number(m.pairWalkForwardStability)||50,0,100);
+  const conf=clamp(Number(m.confidence)||0,0,1)*100;
+  const evidence=wf*.28+sel*.22+stab*.22+conf*.28;
+  const noise=clamp(Number(m.noise)||0,0,1);
+  const uncertainty=clamp(Number(m.uncertainty)||0,0,1);
+  return clamp(.76+evidence/100*.24-noise*.08-uncertainty*.08,.72,1);
+}
 function v55ApplyMainPrecisionLayer(intelligence,records,auditData,formulaNames){
   const base=intelligence||{}; const rows=Array.isArray(base.rows)?base.rows.slice():[];
   if(!rows.length)return base;
@@ -5081,6 +5190,7 @@ function v55ApplyMainPrecisionLayer(intelligence,records,auditData,formulaNames)
     const d=Number(row.digit), er=error[d]||{precision:50,support:0,tests:0,formulas:0};
     const ws=v55DigitWindowStability(records,d);
     const div=v55EnsembleDiversity(row,base);
+    const trapPenalty=v56ConsensusTrapPenalty(row,er,div);
     const raw=row.raw||{};
     const independence=v55SafeNum(raw.evidenceIndependence,50);
     const robustness=v55SafeNum(raw.robustnessSurvival,50);
@@ -5094,8 +5204,8 @@ function v55ApplyMainPrecisionLayer(intelligence,records,auditData,formulaNames)
     const robustnessBoost=(robustness-50)*.025;
     const riskPenalty=Math.max(0,falseRisk-50)*.035+conflict*.55;
     const calibrated=v55SafeNum(row.selectionQuality,row.score||0)*cal.factor;
-    const finalScore=round2(clamp(calibrated+stabilityBoost+independenceBoost+robustnessBoost-errorPenalty-shiftPenalty-riskPenalty-multiplePenalty,0,100));
-    return{...row,selectionQuality:finalScore,score:round2(clamp(v55SafeNum(row.score,0)*cal.factor,0,100)),raw:{...raw,v55WindowStability:ws.score,v55RankStability:ws.rankStability,v55DistributionShift:shift.score,v55FormulaDigitPrecision:er.precision,v55EnsembleDiversity:div,v55ErrorPenalty:errorPenalty,v55MultipleTestingPenalty:multiplePenalty,v55CalibrationFactor:cal.factor,v55QualityGate:quality.gate,v55Perturbation:perturb.score}};
+    const finalScore=round2(clamp(calibrated+stabilityBoost+independenceBoost+robustnessBoost-errorPenalty-shiftPenalty-riskPenalty-multiplePenalty-trapPenalty,0,100));
+    return{...row,selectionQuality:finalScore,score:round2(clamp(v55SafeNum(row.score,0)*cal.factor,0,100)),raw:{...raw,v56ConsensusTrapPenalty:trapPenalty,v55WindowStability:ws.score,v55RankStability:ws.rankStability,v55DistributionShift:shift.score,v55FormulaDigitPrecision:er.precision,v55EnsembleDiversity:div,v55ErrorPenalty:errorPenalty,v55MultipleTestingPenalty:multiplePenalty,v55CalibrationFactor:cal.factor,v55QualityGate:quality.gate,v55Perturbation:perturb.score}};
   }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
   const champion=(base.selected||[]).map(x=>Number(x.digit));
   const challenger=scored.slice(0,2).map(x=>x.digit);
@@ -5111,8 +5221,8 @@ function v55ApplyMainPrecisionLayer(intelligence,records,auditData,formulaNames)
   const minStability=finalSelected.length?Math.min(...finalSelected.map(x=>v55SafeNum(x.raw?.v55WindowStability,50))):50;
   const precisionAbstain=quality.gate<70||minStability<28||(margin<0.5&&finalSelected.length===2);
   const finalGate={...(base.finalGate||{}),v55DataQuality:quality.gate,v55DistributionShift:shift.score,v55WindowStability:minStability,v55Calibration:cal.score,v55Perturbation:perturb.score,v55ChampionChallengerPromoted:promote,v55PrecisionAbstain:precisionAbstain};
-  if(precisionAbstain&&finalGate.decision==='SELECT')finalGate.decision='V55_PRECISION_REVIEW';
-  return{...base,rows:scored,selected:finalSelected,margin,finalGate,precisionLayer:{version:'V55',dataQuality:quality,distributionShift:shift,formulaErrorLearning:error,calibration:cal,perturbation:perturb,champion:champion,challenger:challenger,shadow:{champion,challenger},championScore:round2(champScore),challengerScore:round2(challScore),promoted:promote,selectedMargin:margin,abstain:precisionAbstain}};
+  if(precisionAbstain&&finalGate.decision==='SELECT')finalGate.decision='V57_PRECISION_REVIEW';
+  return{...base,rows:scored,selected:finalSelected,margin,finalGate,precisionLayer:{version:'V57',dataQuality:quality,distributionShift:shift,formulaErrorLearning:error,calibration:cal,perturbation:perturb,champion:champion,challenger:challenger,shadow:{champion,challenger},championScore:round2(champScore),challengerScore:round2(challScore),promoted:promote,selectedMargin:margin,abstain:precisionAbstain}};
 }
 function m2dV55DataQuality(arr){
   const data=Array.isArray(arr)?arr:[]; const keys=new Set(); let dup=0;
@@ -5246,14 +5356,24 @@ function runEngineCore(){
   ----------------------------------------- */
   const groups={};
   masterRecords.forEach(r=>{
-    /* Item 22: isolate every parsed input block. The zero-width separator
-       keeps the internal key unique without changing visible lottery text. */
+    /* V57: Thai Stock is one market with four internal rounds. Input names
+       remain intact; grouping ignores datasetId so daily blocks merge safely. */
+    if(v57IsThaiStockName(r.name)){
+      const round=v57ThaiRound(r.name);
+      const groupKey=round?`__THAI_ROUND__${round}`:`__THAI_UNKNOWN__`;
+      if(!groups[groupKey]) groups[groupKey]=[];
+      groups[groupKey].push(r);
+      return;
+    }
+    /* Existing dataset isolation remains unchanged for every other market. */
     const groupKey=r.datasetId
       ? `${r.name}\u2063${r.datasetId}`
       : r.name;
     if(!groups[groupKey]) groups[groupKey]=[];
     groups[groupKey].push(r);
   });
+  const thaiAllDay=v57ThaiRecords(masterRecords);
+  if(thaiAllDay.length) groups.__THAI_ALLDAY__=thaiAllDay;
   const
     auditDataMap={},
     predictionDataMap={},
@@ -5504,6 +5624,22 @@ function runEngineCore(){
       };
     });
   /* =====================================================
+     V57 THAI SPECIALIST — DIRECT 3-DIGIT-TOP CARD
+     This is deliberately separate from the all-day card. It uses n3 only,
+     so bottom digits cannot distort the specialist ranking.
+  ===================================================== */
+  if(thaiAllDay.length){
+    const top= v57ThaiBuildSpecialTop(thaiAllDay);
+    const topPairs1=generateFormulaPairs(top.d1,top.d2,auditDataMap,'__THAI_ALLDAY__',thaiAllDay);
+    const topPairs2=generateFormulaPairs(top.d2,top.d1,auditDataMap,'__THAI_ALLDAY__',thaiAllDay);
+    predictionDataMap.__THAI_TOP__={
+      nextDate:top.nextDate,d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,
+      rank1Formula:'V57 TOP DIRECT',rank1Rate:0,recordCount:top.recordCount,recordsForFrequency:thaiAllDay,
+      topAgreement:0,scoreGap:round2((top.scores[top.d1]||0)-(top.scores[top.d2]||0)),
+      scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรง ๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{}}
+    };
+  }
+  /* =====================================================
      GLOBAL AUDIT
   ===================================================== */
   const globalAuditMap={};
@@ -5608,6 +5744,7 @@ function runEngineCore(){
   Object.keys(
     predictionDataMap
   )
+  .filter(lotteryName=>lotteryName!=='__THAI_TOP__')
   .forEach(lotteryName=>{
     const p=
       predictionDataMap[
@@ -5647,7 +5784,7 @@ function runEngineCore(){
     );
   });
   showToast(
-    '✓ ประมวลผล V32.4 Multi-Angle Audit สำเร็จ'
+    '✓ ประมวลผล V57 Multi-Angle Audit สำเร็จ'
   );
 }
 /* =========================================================
