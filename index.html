@@ -2641,89 +2641,83 @@ function auditFormula(
    13. ORIGINAL PAIR GENERATOR
    *** คง logic เดิม ***
 ========================================================= */
-function generateFormulaPairs(
-  mainDigit,
-  otherDigit,
-  anchor,
-  auditMap,
-  lotteryName
-){
-  const formulaNames=
-    Object.keys(formulas);
-  /* LOCKED TARGET-PAIR METHOD — SCORE AUDIT CARD
-     Anchor = |7 - hundredsDigit| % 10.
-     Normal expansion -2..+2; any collision with either standout digit
-     upgrades the whole symmetric pool to -3..+3.
-     No standout-vs-standout pairs and no doubles. No unrelated fallback. */
+function mainPairWalkForwardQuality(records,mainDigit,unit){
+  const data=Array.isArray(records)?records:[];
+  if(data.length<14)return {precision:50,stability:50,tested:0};
+  const tests=Math.min(12,data.length-10),start=data.length-tests;
+  const hits=[];
+  for(let cut=start;cut<data.length;cut++){
+    const train=data.slice(0,cut),actual=data[cut];
+    const actualDigits=[...String(actual.n3||''),...String(actual.n2||'')].map(Number).filter(Number.isFinite);
+    const targetHit=actualDigits.includes(mainDigit)&&actualDigits.includes(unit);
+    /* The pair is validated as a true co-occurrence only. This is deliberately
+       stricter than single-digit hit rate and is evaluated chronologically. */
+    hits.push(targetHit?1:0);
+  }
+  const precision=hits.length?hits.reduce((a,b)=>a+b,0)/hits.length*100:50;
+  const half=Math.max(1,Math.floor(hits.length/2));
+  const a=hits.slice(-half),b=hits.slice(0,-half);
+  const ar=a.length?a.reduce((x,y)=>x+y,0)/a.length*100:precision;
+  const br=b.length?b.reduce((x,y)=>x+y,0)/b.length*100:precision;
+  const stability=clamp(100-Math.abs(ar-br)*1.5,0,100);
+  return {precision:round2(precision),stability:round2(stability),tested:hits.length};
+}
+function adaptiveMainPairCandidates(mainDigit,otherDigit,anchor,auditMap,lotteryName,records){
+  const formulaNames=Object.keys(formulas);
+  const data=Array.isArray(records)?records:[];
   const normalPool=[-2,-1,0,1,2].map(off=>norm(anchor+off));
   const collision=normalPool.some(u=>u===mainDigit||u===otherDigit);
   const offsets=collision?[-3,-2,-1,0,1,2,3]:[-2,-1,0,1,2];
-  const poolDigits=Array.from(new Set(offsets.map(off=>norm(anchor+off))));
-  const validUnits=poolDigits.filter(u=>u!==mainDigit&&u!==otherDigit);
-  const scoredPairs=
-    validUnits
-      .slice(0,5)
-      .map(unit=>{
-        const pair=
-          `${mainDigit}${unit}`;
-        let score=0;
-        formulaNames.forEach(f=>{
-          const digits=
-            auditMap[lotteryName][f]
-              .latestDigits;
-          if(
-            digits &&
-            (
-              digits.includes(mainDigit)||
-              digits.includes(unit)
-            )
-          ){
-            score+=
-              auditMap[lotteryName][f]
-                .hitRate||1;
-          }
-        });
-        if(
-          Math.abs(unit-anchor)<=1
-        )
-          score+=15;
-        return{
-          pair,
-          val:parseInt(pair,10),
-          score
-        };
-      });
-  const sortedByScore=
-    [...scoredPairs].sort(
-      (a,b)=>{
-        if(b.score!==a.score)
-          return b.score-a.score;
-        return a.val-b.val;
-      }
-    );
-  const rank1=
-    sortedByScore[0]?.pair;
-  const rank2=
-    sortedByScore[1]?.pair;
-  const rank3=
-    sortedByScore[2]?.pair;
-  return scoredPairs
-    .sort(
-      (a,b)=>a.val-b.val
-    )
-    .map(item=>({
-      pair:item.pair,
-      val:item.val,
-      score:item.score,
-      rankClass:
-        item.pair===rank1
-        ?'rank-gold'
-        :item.pair===rank2
-        ?'rank-silver'
-        :item.pair===rank3
-        ?'rank-rosegold'
-        :''
-    }));
+  const baselinePool=Array.from(new Set(offsets.map(off=>norm(anchor+off))))
+    .filter(u=>u!==mainDigit&&u!==otherDigit);
+  const allUnits=[...Array(10).keys()].filter(u=>u!==mainDigit&&u!==otherDigit&&u!==mainDigit);
+  const candidates=Array.from(new Set([...baselinePool,...allUnits]));
+  const recentN=Math.min(10,data.length),midN=Math.min(20,data.length),longN=Math.min(30,data.length);
+  const rate=(arr,u)=>arr.length?arr.filter(r=>String(r.n3||'').includes(String(mainDigit))&&String(r.n3||'').includes(String(u))||String(r.n2||'').includes(String(mainDigit))&&String(r.n2||'').includes(String(u))).length/arr.length*100:50;
+  const out=candidates.map(unit=>{
+    let formulaSupport=0,formulaHits=0;
+    formulaNames.forEach(f=>{
+      const fs=auditMap?.[lotteryName]?.[f];
+      if(!fs)return;
+      const digits=Array.isArray(fs.latestDigits)?fs.latestDigits:[];
+      if(digits.includes(mainDigit)||digits.includes(unit)){formulaSupport+=Number(fs.hitRate)||0;formulaHits++;}
+    });
+    const pair=String(mainDigit)+String(unit);
+    const exactAll=rate(data,unit);
+    const recent=rate(data.slice(-recentN),unit);
+    const mid=rate(data.slice(-midN),unit);
+    const long=rate(data.slice(-longN),unit);
+    const wf=mainPairWalkForwardQuality(data,mainDigit,unit);
+    const anchorScore=clamp(100-Math.abs(unit-anchor)*25,0,100);
+    const baselineBonus=baselinePool.includes(unit)?6:0;
+    const empirical=clamp(exactAll*.35+recent*.30+mid*.20+long*.15,0,100);
+    const formulaScore=formulaHits?clamp(formulaSupport/formulaHits,0,100):50;
+    const risk=clamp(100-(recent<20?20:0)-(exactAll<15?12:0)-Math.abs(recent-long)*.35,0,100);
+    const score=empirical*.28+formulaScore*.12+anchorScore*.08+
+      clamp(wf.precision*3.0,0,100)*.28+wf.stability*.12+risk*.12+baselineBonus;
+    return {pair,val:parseInt(pair,10),score:round2(score),meta:{empiricalPrecision:round2(empirical),formulaSupport:round2(formulaScore),anchorScore:round2(anchorScore),pairWalkForwardPrecision:wf.precision,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,risk:round2(risk),baseline:baselinePool.includes(unit)}};
+  }).sort((a,b)=>b.score-a.score||b.meta.pairWalkForwardPrecision-a.meta.pairWalkForwardPrecision||a.val-b.val);
+  const baseline=baselinePool.slice(0,5).map(unit=>out.find(x=>x.pair===String(mainDigit)+String(unit))).filter(Boolean);
+  const adaptive=out.slice(0,5);
+  const baselineScore=baseline.length?baseline.reduce((a,x)=>a+x.score,0)/baseline.length:0;
+  const adaptiveScore=adaptive.length?adaptive.reduce((a,x)=>a+x.score,0)/adaptive.length:0;
+  /* Evolution Guard: replace the baseline only when the broader candidate
+     search has enough chronological evidence and a meaningful advantage. */
+  const tested=adaptive.reduce((m,x)=>Math.max(m,x.meta.pairWalkForwardTests||0),0);
+  const useAdaptive=adaptive.length>=5 && (data.length<14 || (tested>=4 && adaptiveScore>=baselineScore+2.0));
+  const chosen=(useAdaptive?adaptive:baseline.length>=5?baseline:adaptive).slice(0,5);
+  const chosenSorted=[...chosen].sort((a,b)=>b.score-a.score||a.val-b.val);
+  const r1=chosenSorted[0]?.pair,r2=chosenSorted[1]?.pair,r3=chosenSorted[2]?.pair;
+  return chosen.sort((a,b)=>a.val-b.val).map(x=>({...x,selectionMode:useAdaptive?'ADAPTIVE_GUARDED':'BASELINE_GUARDED',rankClass:x.pair===r1?'rank-gold':x.pair===r2?'rank-silver':x.pair===r3?'rank-rosegold':''}));
+}
+/* =========================================================
+   13. TARGET-PAIR INTELLIGENCE
+   Baseline method is preserved as the reference. The unlocked selection
+   layer may replace it only after a bounded chronological advantage test.
+========================================================= */
+function generateFormulaPairs(mainDigit,otherDigit,anchor,auditMap,lotteryName){
+  const records=(typeof window!=='undefined'&&Array.isArray(window.__LOTTO_RESULT_RECS__))?window.__LOTTO_RESULT_RECS__:[];
+  return adaptiveMainPairCandidates(mainDigit,otherDigit,anchor,auditMap,lotteryName,records);
 }
 /* =========================================================
    14. BUILD FORMULA CARD
@@ -3872,7 +3866,10 @@ function m2dJointTop3Score(digits,score,base){
   }
   const avg=chosen.reduce((z,d)=>z+(score[d]||0),0)/Math.max(1,chosen.length);
   const baseAvg=chosen.reduce((z,d)=>z+(base[d]||0),0)/Math.max(1,chosen.length);
-  return avg*100+baseAvg*.35+diversity*3-spread*4;
+  const wf=m2dDigitWalkForwardQuality(Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[]);
+  const wfAvg=chosen.reduce((z,d)=>z+(wf.precision?.[d]||50),0)/Math.max(1,chosen.length);
+  const wfStable=chosen.reduce((z,d)=>z+(wf.stability?.[d]||50),0)/Math.max(1,chosen.length);
+  return avg*100+baseAvg*.35+diversity*3-spread*4+wfAvg*.34+wfStable*.12;
 }
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
@@ -4023,6 +4020,7 @@ function m2dPrecisionScoreDigits(arr){
   return out;
 }
 function m2dTop3(arr){
+  m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   const base=m2dScoreDigits(arr),score=m2dPrecisionScoreDigits(arr);
   const pool=[...Array(10).keys()].sort((a,b)=>score[b]-score[a]||base[b]-base[a]||a-b).slice(0,7);
   let best=null;
@@ -4371,6 +4369,39 @@ function m2dJointSelect15Pairs(top,pairsByTarget){
     used.add(best.key);
     out[best.t.digit].push(best.p);
   }
+  /* Local-swap refinement: after the global greedy pass, test one-for-one
+     replacements. This improves portfolio coverage without changing the
+     five-pairs-per-TOP contract or allowing reverse duplicates. */
+  const objective=()=>{
+    const all=Object.values(out).flat();
+    const digitUse=new Map(); all.forEach(p=>String(p.pair).split('').forEach(d=>digitUse.set(d,(digitUse.get(d)||0)+1)));
+    const concentration=[...digitUse.values()].reduce((a,v)=>a+Math.max(0,v-4),0);
+    const quality=all.reduce((a,p)=>a+(Number(p.score)||0)+Number(p.meta?.selectedPairPrecision||50)*.035+Number(p.meta?.pairWalkForwardStability||50)*.025,0);
+    return quality-concentration*1.5;
+  };
+  for(let pass=0;pass<2;pass++){
+    let improved=true;
+    while(improved){
+      improved=false; const baseObj=objective();
+      outer: for(const t of targets){
+        const pool=pools[targets.indexOf(t)];
+        for(let si=0;si<out[t.digit].length;si++){
+          for(const p of pool){
+            const key=m2dCanonicalPair(Number(p.pair[0]),Number(p.pair[1]));
+            if(used.has(key))continue;
+            const isDouble=String(p.pair)[0]===String(p.pair)[1];
+            const conf=Number(p.meta?.confidence)||0,selWF=Number(p.meta?.selectedPairPrecision)||50;
+            if(isDouble&&(conf<90||selWF<65))continue;
+            const old=out[t.digit][si]; const oldKey=m2dCanonicalPair(Number(old.pair[0]),Number(old.pair[1]));
+            out[t.digit][si]=p; used.delete(oldKey); used.add(key);
+            const nextObj=objective();
+            if(nextObj>baseObj+0.15){improved=true;break outer;}
+            used.delete(key);used.add(oldKey);out[t.digit][si]=old;
+          }
+        }
+      }
+    }
+  }
   /* Deterministic fill only from valid, globally unused candidates. */
   targets.forEach((t,ti)=>{
     for(const p of pools[ti]){
@@ -4463,6 +4494,7 @@ function renderMyanmar2DModule(text){
   return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('နေ့လယ်ပိုင်း','12.01 P.M.','☀️',noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('ညနေပိုင်း','4.30 P.M.','🌙',evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('တစ်နေ့တာ','12.01 P.M. + 4.30 P.M.','📅',all,'m2d-card-all',dateLabel)}</div>${err}</div>`;
 }
 function runEngineCore(){
+      window.__LOTTO_RESULT_RECS__=getResultRecords(recs);
   const textVal=
     $('bulkInput')
       .value
