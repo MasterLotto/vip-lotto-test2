@@ -2787,6 +2787,57 @@ function pairBayesPrecision(hits,total,priorRate=50,priorN=10){
   return betaSmoothedRate(hits,total,priorRate,priorN);
 }
 
+
+/* =========================================================
+   V53.1 FINAL DECISION HARDENING
+   - Evidence families prevent correlated evidence from being counted as
+     independent votes.
+   - Negative evidence / conflict gates reduce false-positive selection.
+   - Conditional pair evidence evaluates the partner given the target.
+   - Selection stability is treated as a gate, not only a bonus.
+========================================================= */
+function evidenceFamilyScore(parts){
+  const vals=Object.values(parts||{}).map(v=>clamp(Number(v)||0,0,100)).filter(Number.isFinite);
+  if(!vals.length)return 50;
+  const mean=avg(vals), top=Math.max(...vals);
+  return clamp(mean*.65+top*.35,0,100);
+}
+function independentEvidenceScore(groups){
+  const vals=Object.values(groups||{}).map(v=>clamp(Number(v)||0,0,100));
+  if(!vals.length)return 50;
+  const active=vals.filter(v=>v>=62).length;
+  const mean=avg(vals), top=Math.max(...vals);
+  return clamp(mean*.55+top*.25+Math.min(active,4)*5,0,100);
+}
+function conditionalPairPrecision(records,target,partner){
+  const data=Array.isArray(records)?records.filter(isResultRecord):[];
+  if(!data.length)return 50;
+  let targetObs=0,pairHits=0;
+  data.forEach(r=>{
+    const text=String(r?.n3??'')+String(r?.n2??'').padStart(2,'0');
+    if(!text.includes(String(target)))return;
+    targetObs++;
+    const n2=String(r?.n2??'').padStart(2,'0'),n3=String(r?.n3??'').padStart(3,'0');
+    const p=String(target)+String(partner),rev=String(partner)+String(target);
+    if(n2===p||n2===rev||n3.includes(p)||n3.includes(rev))pairHits++;
+  });
+  return targetObs?betaSmoothedRate(pairHits,targetObs,50,6):50;
+}
+function targetSelectionGate(meta){
+  const independent=clamp(Number(meta?.independentEvidence)||50,0,100);
+  const negative=clamp(Number(meta?.negativeEvidence)||50,0,100);
+  const stability=clamp(Number(meta?.stability)||50,0,100);
+  const conditional=clamp(Number(meta?.conditionalPair)||50,0,100);
+  const conflict=clamp(Number(meta?.conflict)||0,0,100);
+  let gate=1;
+  if(independent<48)gate*=.88;
+  if(stability<40)gate*=.90;
+  if(negative<35)gate*=.86;
+  if(conditional<30)gate*=.92;
+  if(conflict>60)gate*=.88;
+  return clamp(gate,.62,1);
+}
+
 function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,records){
   /* V52 — FULLY UNLOCKED TARGET-PAIR INTELLIGENCE
      All legacy target-pair rules, anchors, offsets and formula fallbacks are removed from target selection.
@@ -2840,25 +2891,37 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
     const calibrated=mainPairCalibratedPrecision(wf.precision,wf.tested,empirical);
     const targetStrength=clampEvidence(digitRate(data,target));
     const partnerStrength=clampEvidence(digitRate(data,unit));
-    const structural=clampEvidence(targetStrength*0.35+partnerStrength*0.35+interactionScore*0.30);
+    const structural=clampEvidence(targetStrength*0.30+partnerStrength*0.30+interactionScore*0.40);
+    const conditionalPair=clampEvidence(conditionalPairPrecision(data,target,unit));
     const drift=Math.abs(recentRate-longRate);
     const risk=clampEvidence(100-(recentRate<20?18:0)-(empirical<15?14:0)-drift*0.30-(100-perturb.stability)*0.22);
-    const groupScores=[empirical,temporal,formulaScore,interactionScore,validation,structural];
+    const formulaFamily=evidenceFamilyScore({formula:formulaScore,interaction:interactionScore});
+    const temporalFamily=evidenceFamilyScore({temporal,empirical});
+    const validationFamily=evidenceFamilyScore({validation,stability:perturb.stability});
+    const independentEvidence=independentEvidenceScore({formula:formulaFamily,temporal:temporalFamily,validation:validationFamily,structural});
+    const negativeEvidence=clampEvidence(100-(risk<45?35:0)-(validation<45?25:0)-(perturb.stability<40?20:0)-(conditionalPair<25?15:0));
+    const conflict=clampEvidence(Math.max(0,Math.abs(formulaScore-empirical)-25)+Math.max(0,50-conditionalPair)*.35);
+    const groupScores=[formulaFamily,temporalFamily,validationFamily,structural,conditionalPair];
     const strongGroups=groupScores.filter(v=>v>=62).length;
     const evidenceDiversity=clampEvidence(50+strongGroups*8);
     const baseScore=
-      empirical*0.24+
-      temporal*0.16+
-      formulaScore*0.12+
-      interactionScore*0.10+
-      validation*0.22+
-      structural*0.06+
-      risk*0.06+
-      evidenceDiversity*0.04;
+      empirical*0.16+
+      temporal*0.11+
+      formulaFamily*0.12+
+      interactionScore*0.08+
+      validationFamily*0.20+
+      structural*0.07+
+      conditionalPair*0.10+
+      independentEvidence*0.09+
+      risk*0.03+
+      negativeEvidence*0.02+
+      evidenceDiversity*0.02-
+      conflict*0.05;
+    const gate=targetSelectionGate({independentEvidence,negativeEvidence,stability:perturb.stability,conditionalPair,conflict});
     return {
       pair:String(target)+String(unit),
       val:target*10+unit,
-      score:round2(clampEvidence(baseScore)),
+      score:round2(clampEvidence(baseScore*gate)),
       meta:{
         empiricalPrecision:round2(empirical),temporalEvidence:round2(temporal),
         recentPrecision:round2(recentRate),midPrecision:round2(midRate),longPrecision:round2(longRate),
@@ -2868,6 +2931,8 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
         pairWalkForwardTests:wf.tested,pairPerturbationStability:round2(perturb.stability),
         pairPerturbationSensitivity:perturb.sensitivity,calibratedPrecision:calibrated,
         structuralScore:round2(structural),targetStrength:round2(targetStrength),partnerStrength:round2(partnerStrength),
+        conditionalPair:round2(conditionalPair),formulaFamily:round2(formulaFamily),temporalFamily:round2(temporalFamily),validationFamily:round2(validationFamily),
+        independentEvidence:round2(independentEvidence),negativeEvidence:round2(negativeEvidence),conflict:round2(conflict),selectionGate:round2(gate),
         risk:round2(risk),evidenceDiversity:round2(evidenceDiversity),evidenceGroups:strongGroups
       }
     };
@@ -4024,17 +4089,21 @@ function m2dJointTop3Score(digits,score,base){
   const chosen=digits.map(d=>d.digit);
   let diversity=0,spread=0;
   for(let i=0;i<chosen.length;i++)for(let j=i+1;j<chosen.length;j++){
-    const a=chosen[i],b=chosen[j];
-    const diff=Math.abs(a-b);
+    const a=chosen[i],b=chosen[j],diff=Math.abs(a-b);
     diversity+=Math.min(1,diff/5);
     spread+=Math.abs((score[a]||0)-(score[b]||0));
   }
-  const avg=chosen.reduce((z,d)=>z+(score[d]||0),0)/Math.max(1,chosen.length);
-  const baseAvg=chosen.reduce((z,d)=>z+(base[d]||0),0)/Math.max(1,chosen.length);
+  const normVals=chosen.map(d=>clamp(Number(score[d])||0,0,100));
+  const baseVals=chosen.map(d=>clamp(Number(base[d])||0,0,100));
+  const avg=avg(normVals),baseAvg=avg(baseVals);
+  const spreadPenalty=clamp(spread/Math.max(1,chosen.length*2),0,50);
   const wf=m2dDigitWalkForwardQuality(Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[]);
-  const wfAvg=chosen.reduce((z,d)=>z+(wf.precision?.[d]||50),0)/Math.max(1,chosen.length);
-  const wfStable=chosen.reduce((z,d)=>z+(wf.stability?.[d]||50),0)/Math.max(1,chosen.length);
-  return avg*100+baseAvg*.35+diversity*3-spread*4+wfAvg*.34+wfStable*.12;
+  const wfAvg=avg(chosen.map(d=>clamp(Number(wf.precision?.[d])||50,0,100)));
+  const wfStable=avg(chosen.map(d=>clamp(Number(wf.stability?.[d])||50,0,100)));
+  /* All components are normalized to the same 0-100 scale before the joint
+     objective is formed; this prevents any raw score scale from dominating. */
+  const diversityScore=clamp(diversity/Math.max(1,chosen.length),0,1)*100;
+  return avg*.36+baseAvg*.16+wfAvg*.20+wfStable*.14+diversityScore*.08-spreadPenalty*.06;
 }
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
@@ -4385,13 +4454,14 @@ function m2dShadowFinalTop3(arr){
 function m2dSelectedTop3WalkForward(arr){
   const data=m2dFixed30(arr),n=data.length;
   if(n<16)return {precision:50,coverage:50,tested:0,byRank:[50,50,50]};
-  const tests=Math.min(12,n-12),start=n-tests;let hits=0,tested=0;const rankHits=[0,0,0];
+  const tests=Math.min(12,n-12),start=n-tests;let digitHits=0,roundHits=0,tested=0;const rankHits=[0,0,0];
   for(let cut=start;cut<n;cut++){
     const train=data.slice(0,cut),actual=data[cut],ranked=m2dShadowFinalTop3(train);
-    const actualDigits=[actual.tens,actual.units];
-    ranked.forEach((x,i)=>{if(actualDigits.includes(x.digit)){hits++;rankHits[i]++;}});tested++;
+    const actualDigits=[actual.tens,actual.units]; let roundHit=false;
+    ranked.forEach((x,i)=>{if(actualDigits.includes(x.digit)){digitHits++;rankHits[i]++;roundHit=true;}});
+    if(roundHit)roundHits++; tested++;
   }
-  return {precision:tested?hits/(tested*3)*100:50,coverage:tested?hits/tested*100:50,tested,byRank:rankHits.map(x=>tested?x/tested*100:50)};
+  return {precision:tested?digitHits/(tested*3)*100:50,coverage:tested?roundHits/tested*100:50,roundCoverage:tested?roundHits/tested*100:50,digitCoverage:tested?digitHits/(tested*3)*100:50,tested,byRank:rankHits.map(x=>tested?x/tested*100:50)};
 }
 function m2dFinal15PairWalkForward(arr,top){
   const data=m2dFixed30(arr),n=data.length;
