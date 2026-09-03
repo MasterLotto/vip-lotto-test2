@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<title>Mester Lotto VIP+ — Ban Ngern Kong V32.4 Audit Intelligence + Myanmar 2D Specialized</title>
+<title>Mester Lotto VIP+ — V54 Plus+ Decision Intelligence + Myanmar 2D Specialized</title>
 <style>
 :root{
   --bg-main:linear-gradient(135deg,#fcfbfa 0%,#f4efe6 100%);
@@ -180,10 +180,11 @@ button{cursor:pointer}
 .actions{
   padding:0 16px 16px;
   display:grid;
-  grid-template-columns:1fr 1fr 1fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:10px
 }
 .run{
+  grid-column:1 / -1;
   height:42px;
   border:0;
   border-radius:12px;
@@ -215,15 +216,6 @@ button{cursor:pointer}
   color:#ba3c46;
   font-size:.62rem;
   font-weight:600
-}
-.export-btn{
-  height:42px;
-  border:1px solid #b8c9df;
-  border-radius:12px;
-  background:#f5f9ff;
-  color:#3569a8;
-  font-size:.62rem;
-  font-weight:700
 }
 .result{margin-top:16px}
 .section-title{
@@ -747,6 +739,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
   .audit-grid{grid-template-columns:repeat(2,1fr)}
   .digit-board{grid-template-columns:repeat(5,1fr)}
   .actions{grid-template-columns:1fr 1fr}
+  .run{grid-column:1 / -1}
 }
 @media(max-width:700px){
   .top{align-items:flex-start}
@@ -754,7 +747,8 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
     font-size:.42rem;
     padding:5px 8px
   }
-  .actions{grid-template-columns:1fr}
+  .actions{grid-template-columns:1fr 1fr}
+  .run{grid-column:1 / -1}
   .hero{padding:16px}
   .hero h1{font-size:1.25rem}
   .card-top-bar{flex-direction:column}
@@ -881,7 +875,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 /* Capture-safe: the export routine renders a clone with the button removed. */
 .m2d-capture-button{display:inline-flex;}
 </style>
-<!-- V43 baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
+<!-- V54 PLUS+ baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
 <!-- V47 AUDIT: empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 </head>
 <body>
@@ -935,9 +929,6 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
     </button>
     <button id="clearGlobal" class="clear-global">
       ล้างข้อมูลสะสมทั้งหมด
-    </button>
-    <button id="exportAudit" class="export-btn">
-      📊 ส่งออกออดิต
     </button>
   </div>
 </section>
@@ -2838,6 +2829,170 @@ function targetSelectionGate(meta){
   return clamp(gate,.62,1);
 }
 
+
+/* =========================================================
+   V54 PLUS — PRECISION REFINEMENT LAYER
+   Backend-only upgrade. UI/card markup remains untouched.
+   Adds selection-level OOS gating, outcome-error correlation,
+   directional conditional-pair evidence, continuous conflict/negative
+   evidence, and portfolio diversity controls.
+========================================================= */
+function continuousPenalty(value,soft=50,hard=20,maxPenalty=35){
+  const v=clamp(Number(value)||0,0,100);
+  if(v>=soft)return 0;
+  return clamp((soft-v)/Math.max(1,soft-hard)*maxPenalty,0,maxPenalty);
+}
+function outcomeErrorCorrelation(records,formulaNames){
+  const names=Array.isArray(formulaNames)?formulaNames.filter(Boolean):[];
+  const recs=Array.isArray(records)?records.filter(isResultRecord):[];
+  if(names.length<2||recs.length<6)return {avg:0,byFormula:{},pairs:[]};
+  const errors={};
+  names.forEach(n=>{
+    const h=getFormulaHistory(recs,n);
+    errors[n]=h.map(x=>x.hit?0:1);
+  });
+  const pairs=[];
+  for(let i=0;i<names.length;i++)for(let j=i+1;j<names.length;j++){
+    const a=errors[names[i]],b=errors[names[j]],n=Math.min(a.length,b.length);
+    if(!n)continue;
+    let both=0,ea=0,eb=0;
+    for(let k=0;k<n;k++){if(a[k])ea++;if(b[k])eb++;if(a[k]&&b[k])both++;}
+    const pa=ea/n,pb=eb/n,den=Math.sqrt(Math.max(.0001,pa*(1-pa)*pb*(1-pb)));
+    const corr=den?clamp((both/n-pa*pb)/den,-1,1):0;
+    pairs.push({a:names[i],b:names[j],correlation:round2(corr)});
+  }
+  const meanAbsCorrelation=pairs.length?avg(pairs.map(x=>Math.abs(x.correlation))):0;
+  return {avg:round2(meanAbsCorrelation),pairs};
+}
+function formulaOutcomeIndependence(records,formulaNames){
+  const c=outcomeErrorCorrelation(records,formulaNames);
+  return clamp(100-c.avg*45,35,100);
+}
+function directionalConditionalPairPrecision(records,target,partner){
+  const data=Array.isArray(records)?records.filter(isResultRecord):[];
+  if(!data.length)return {forward:50,reverse:50,both:50};
+  let tObs=0,pObs=0,forward=0,reverse=0;
+  data.forEach(r=>{
+    const n2=String(r?.n2??'').padStart(2,'0'),n3=String(r?.n3??'').padStart(3,'0');
+    const pair=String(target)+String(partner),rev=String(partner)+String(target);
+    const hasT=n2.includes(String(target))||n3.includes(String(target));
+    const hasP=n2.includes(String(partner))||n3.includes(String(partner));
+    if(hasT){tObs++;if(n2===pair||n3.includes(pair))forward++;}
+    if(hasP){pObs++;if(n2===rev||n3.includes(rev))reverse++;}
+  });
+  const f=betaSmoothedRate(forward,tObs,50,8),r=betaSmoothedRate(reverse,pObs,50,8);
+  return {forward:f,reverse:r,both:round2(f*.55+r*.45)};
+}
+function selectionOOSGate(precision,tests,stability=50){
+  const p=clamp(Number(precision)||50,0,100),t=Math.max(0,Number(tests)||0),s=clamp(Number(stability)||50,0,100);
+  const sample=t<4?.90:t<7?.95:1;
+  const quality=p<35?.82:p<45?.90:p<52?.96:1;
+  const stab=s<35?.90:s<50?.96:1;
+  return clamp(sample*quality*stab,.68,1);
+}
+function pairPortfolioDiversity(items){
+  const arr=Array.isArray(items)?items:[];
+  if(!arr.length)return 50;
+  const counts={};
+  arr.forEach(p=>String(p?.pair||'').split('').forEach(d=>counts[d]=(counts[d]||0)+1));
+  const max=Math.max(...Object.values(counts),1);
+  const concentration=Object.values(counts).reduce((a,v)=>a+Math.max(0,v-2),0);
+  return clamp(100-(max-2)*9-concentration*2,25,100);
+}
+function m2dPositionConditional(arr,target,partner){
+  const data=m2dFixed30(arr);
+  if(!data.length)return 50;
+  let t=0,both=0;
+  data.forEach(r=>{
+    if(r.tens===target){t++;if(r.units===partner)both++;}
+    if(r.units===target){t++;if(r.tens===partner)both++;}
+  });
+  return betaSmoothedRate(both,t,50,8);
+}
+function m2dPairOOSGate(arr,target,partner){
+  const data=m2dFixed30(arr),n=data.length;
+  if(n<16)return .92;
+  const tests=Math.min(10,n-12),start=n-tests;let hit=0;
+  for(let cut=start;cut<n;cut++){
+    const train=data.slice(0,cut),actual=data[cut];
+    const st=m2dPairStats(train,target,partner);
+    const pair=String(target)+String(partner),rev=String(partner)+String(target);
+    if(String(actual.tens)+String(actual.units)===pair||String(actual.tens)+String(actual.units)===rev)hit++;
+  }
+  const p=hit/Math.max(1,tests)*100;
+  return selectionOOSGate(p,tests,60);
+}
+
+function lastMinuteDriftGuard(records,target,partner){
+  const arr=Array.isArray(records)?records:[];
+  if(arr.length<8)return 1;
+  const recent=arr.slice(-5),prior=arr.slice(-15,-5);
+  const hit=(r,a,b)=>{
+    const n2=String(r?.n2??'').padStart(2,'0'),n3=String(r?.n3??'').padStart(3,'0');
+    const p=String(a)+String(b),rev=String(b)+String(a);
+    return n2===p||n2===rev||n3.includes(p)||n3.includes(rev);
+  };
+  const rr=recent.length?recent.filter(r=>hit(r,target,partner)).length/recent.length*100:50;
+  const pp=prior.length?prior.filter(r=>hit(r,target,partner)).length/prior.length*100:50;
+  const drift=Math.abs(rr-pp);
+  return clamp(1-drift/220,.72,1);
+}
+function smallSampleReliability(total,minimum=30){
+  const n=Math.max(0,Number(total)||0),m=Math.max(1,Number(minimum)||30);
+  if(n>=m)return 1;
+  return clamp(.62+.38*Math.sqrt(n/m),.62,1);
+}
+function nearTieGate(scoreA,scoreB){
+  const a=Number(scoreA)||0,b=Number(scoreB)||0;
+  const gap=Math.abs(a-b);
+  return gap<2?0.96:gap<4?0.985:1;
+}
+function reversePairSymmetry(records,target,partner){
+  const arr=Array.isArray(records)?records:[];
+  if(!arr.length)return 50;
+  let forward=0,reverse=0,tf=0,tr=0;
+  arr.forEach(r=>{
+    const n2=String(r?.n2??'').padStart(2,'0'),n3=String(r?.n3??'').padStart(3,'0');
+    const pair=String(target)+String(partner),rev=String(partner)+String(target);
+    const hasPair=n2===pair||n3.includes(pair),hasRev=n2===rev||n3.includes(rev);
+    if(hasPair){tf++;forward++;} if(hasRev){tr++;reverse++;}
+  });
+  const f=betaSmoothedRate(forward,Math.max(tf,1),50,8),r=betaSmoothedRate(reverse,Math.max(tr,1),50,8);
+  const balance=100-Math.min(55,Math.abs(f-r)*.65);
+  return clamp(balance,35,100);
+}
+function regimeTransitionGuard(records){
+  const arr=Array.isArray(records)?records:[];
+  if(arr.length<12)return 1;
+  const recent=arr.slice(-6),prior=arr.slice(-12,-6);
+  const digitSet=rows=>{
+    const c=Array(10).fill(0); rows.forEach(r=>String(r?.n3??'').split('').forEach(d=>{if(/\d/.test(d))c[Number(d)]++;}));
+    return c;
+  };
+  const a=digitSet(recent),b=digitSet(prior),totA=Math.max(1,recent.length*3),totB=Math.max(1,prior.length*3);
+  let dist=0;for(let i=0;i<10;i++)dist+=Math.abs(a[i]/totA-b[i]/totB);
+  return clamp(1-dist*.45,.78,1);
+}
+function finalPairSanityGate(meta){
+  const m=meta||{};
+  const conflict=clamp(Number(m.conflict)||0,0,100);
+  const uncertainty=clamp(Number(m.uncertainty)||0,0,100);
+  const stability=clamp(Number(m.pairWalkForwardStability??m.stability??50)||50,0,100);
+  const small=smallSampleReliability(Number(m.pairWalkForwardTests??m.pairObservations??30)||0,10);
+  return clamp((1-conflict*.0018)*(1-uncertainty*.0012)*(.88+.12*stability/100)*small,.70,1);
+}
+function selectionPerturbationGate(meta){
+  const stability=clamp(Number(meta?.pairPerturbationStability??meta?.perturbationStability??50)||50,0,100);
+  const sensitivity=clamp(Number(meta?.pairPerturbationSensitivity??meta?.perturbationSensitivity??0)||0,0,100);
+  return clamp(.82+.18*(stability/100)-Math.min(.10,sensitivity/1000),.72,1);
+}
+function partnerConcentrationPenalty(selected){
+  const arr=Array.isArray(selected)?selected:[]; if(arr.length<2)return 1;
+  const partners=arr.map(x=>String(x?.pair||'').slice(-1)).filter(Boolean);
+  const c={};partners.forEach(d=>c[d]=(c[d]||0)+1);
+  const max=Math.max(...Object.values(c),1);
+  return max>=4?.90:max===3?.96:1;
+}
 function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,records){
   /* V52 — FULLY UNLOCKED TARGET-PAIR INTELLIGENCE
      All legacy target-pair rules, anchors, offsets and formula fallbacks are removed from target selection.
@@ -2848,6 +3003,7 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
   const data=Array.isArray(records)?records:[];
   const target=Number(mainDigit),other=Number(otherDigit);
   const governor=buildAdaptiveFormulaWeights(data,formulaNames);
+  const formulaOutcomeIndependenceScore=formulaOutcomeIndependence(data,formulaNames);
   const candidates=[...Array(10).keys()].filter(u=>u!==target&&u!==other);
   const recentN=Math.min(10,data.length),midN=Math.min(20,data.length),longN=Math.min(30,data.length);
   const contains=(r,d)=>String(r?.n3??'').includes(String(d))||String(r?.n2??'').includes(String(d));
@@ -2892,16 +3048,21 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
     const targetStrength=clampEvidence(digitRate(data,target));
     const partnerStrength=clampEvidence(digitRate(data,unit));
     const structural=clampEvidence(targetStrength*0.30+partnerStrength*0.30+interactionScore*0.40);
-    const conditionalPair=clampEvidence(conditionalPairPrecision(data,target,unit));
+    const conditionalRaw=directionalConditionalPairPrecision(data,target,unit);
+    const conditionalPair=clampEvidence(conditionalRaw.both*.70+conditionalPairPrecision(data,target,unit)*.30);
     const drift=Math.abs(recentRate-longRate);
-    const risk=clampEvidence(100-(recentRate<20?18:0)-(empirical<15?14:0)-drift*0.30-(100-perturb.stability)*0.22);
-    const formulaFamily=evidenceFamilyScore({formula:formulaScore,interaction:interactionScore});
+    const driftGuard=lastMinuteDriftGuard(data,target,unit);
+    const regimeGuard=regimeTransitionGuard(data);
+    const reverseSymmetry=reversePairSymmetry(data,target,unit);
+    const sampleReliability=smallSampleReliability(Math.min(data.length,30),30);
+    const risk=clampEvidence(100-continuousPenalty(recentRate,35,10,24)-continuousPenalty(empirical,38,12,20)-drift*0.30-(100-perturb.stability)*0.22);
+    const formulaFamily=evidenceFamilyScore({formula:formulaScore,interaction:interactionScore,independence:formulaOutcomeIndependenceScore});
     const temporalFamily=evidenceFamilyScore({temporal,empirical});
     const validationFamily=evidenceFamilyScore({validation,stability:perturb.stability});
     const independentEvidence=independentEvidenceScore({formula:formulaFamily,temporal:temporalFamily,validation:validationFamily,structural});
-    const negativeEvidence=clampEvidence(100-(risk<45?35:0)-(validation<45?25:0)-(perturb.stability<40?20:0)-(conditionalPair<25?15:0));
-    const conflict=clampEvidence(Math.max(0,Math.abs(formulaScore-empirical)-25)+Math.max(0,50-conditionalPair)*.35);
-    const groupScores=[formulaFamily,temporalFamily,validationFamily,structural,conditionalPair];
+    const negativeEvidence=clampEvidence(100-continuousPenalty(risk,55,25,35)-continuousPenalty(validation,55,25,30)-continuousPenalty(perturb.stability,55,25,25)-continuousPenalty(conditionalPair,48,20,20));
+    const conflict=clampEvidence(Math.max(0,Math.abs(formulaScore-empirical)-18)+Math.max(0,50-conditionalPair)*.28+Math.max(0,60-formulaOutcomeIndependenceScore)*.35);
+    const groupScores=[formulaFamily,temporalFamily,validationFamily,structural,conditionalPair,formulaOutcomeIndependenceScore];
     const strongGroups=groupScores.filter(v=>v>=62).length;
     const evidenceDiversity=clampEvidence(50+strongGroups*8);
     const baseScore=
@@ -2918,10 +3079,14 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
       evidenceDiversity*0.02-
       conflict*0.05;
     const gate=targetSelectionGate({independentEvidence,negativeEvidence,stability:perturb.stability,conditionalPair,conflict});
+    const oosGate=selectionOOSGate(wf.precision,wf.tested,wf.stability);
+    const finalSanity=finalPairSanityGate({conflict,uncertainty:Math.max(0,50-negativeEvidence),pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,pairObservations:interaction.observations});
+    const perturbGate=selectionPerturbationGate({pairPerturbationStability:perturb.stability,pairPerturbationSensitivity:perturb.sensitivity});
+    const finalGate=clamp(gate*oosGate*driftGuard*regimeGuard*(reverseSymmetry/100)*sampleReliability*finalSanity*perturbGate,.52,1);
     return {
       pair:String(target)+String(unit),
       val:target*10+unit,
-      score:round2(clampEvidence(baseScore*gate)),
+      score:round2(clampEvidence(baseScore*finalGate)),
       meta:{
         empiricalPrecision:round2(empirical),temporalEvidence:round2(temporal),
         recentPrecision:round2(recentRate),midPrecision:round2(midRate),longPrecision:round2(longRate),
@@ -2931,13 +3096,27 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
         pairWalkForwardTests:wf.tested,pairPerturbationStability:round2(perturb.stability),
         pairPerturbationSensitivity:perturb.sensitivity,calibratedPrecision:calibrated,
         structuralScore:round2(structural),targetStrength:round2(targetStrength),partnerStrength:round2(partnerStrength),
-        conditionalPair:round2(conditionalPair),formulaFamily:round2(formulaFamily),temporalFamily:round2(temporalFamily),validationFamily:round2(validationFamily),
-        independentEvidence:round2(independentEvidence),negativeEvidence:round2(negativeEvidence),conflict:round2(conflict),selectionGate:round2(gate),
-        risk:round2(risk),evidenceDiversity:round2(evidenceDiversity),evidenceGroups:strongGroups
+        conditionalPair:round2(conditionalPair),conditionalForward:round2(conditionalRaw.forward),conditionalReverse:round2(conditionalRaw.reverse),formulaFamily:round2(formulaFamily),temporalFamily:round2(temporalFamily),validationFamily:round2(validationFamily),
+        formulaOutcomeIndependence:round2(formulaOutcomeIndependenceScore),independentEvidence:round2(independentEvidence),negativeEvidence:round2(negativeEvidence),conflict:round2(conflict),selectionGate:round2(finalGate),oosSelectionGate:round2(oosGate),
+        risk:round2(risk),evidenceDiversity:round2(evidenceDiversity),evidenceGroups:strongGroups,driftGuard:round2(driftGuard),regimeGuard:round2(regimeGuard),reverseSymmetry:round2(reverseSymmetry),sampleReliability:round2(sampleReliability),finalSanity:round2(finalSanity),perturbationGate:round2(perturbGate)
       }
     };
   }).sort((a,b)=>b.score-a.score||b.meta.pairWalkForwardPrecision-a.meta.pairWalkForwardPrecision||b.meta.pairWalkForwardStability-a.meta.pairWalkForwardStability||a.val-b.val);
-  const selected=out.slice(0,5);
+  let selected=out.slice(0,5);
+  if(selected.length>=2){
+    const tieGate=nearTieGate(selected[0].score,selected[1].score);
+    if(tieGate<1){ selected=selected.map(x=>({...x,score:round2(x.score*tieGate)})); }
+  }
+  const concentrationGate=partnerConcentrationPenalty(selected);
+  if(concentrationGate<1){ selected=selected.map(x=>({...x,score:round2(x.score*concentrationGate)})).sort((a,b)=>b.score-a.score||a.val-b.val); }
+  const diversity=pairPortfolioDiversity(selected);
+  if(selected.length>=5&&diversity<55){
+    const ranked=[...out].slice(5);
+    for(const alt of ranked){
+      const trial=selected.slice(0,4).concat([alt]);
+      if(pairPortfolioDiversity(trial)>diversity+5){selected=trial;break;}
+    }
+  }
   const rank1=selected[0]?.pair,rank2=selected[1]?.pair,rank3=selected[2]?.pair;
   return selected.sort((a,b)=>a.val-b.val).map(x=>({...x,
     selectionMode:'FULL_INTELLIGENCE',
@@ -4103,7 +4282,9 @@ function m2dJointTop3Score(digits,score,base){
   /* All components are normalized to the same 0-100 scale before the joint
      objective is formed; this prevents any raw score scale from dominating. */
   const diversityScore=clamp(diversity/Math.max(1,chosen.length),0,1)*100;
-  return avg*.36+baseAvg*.16+wfAvg*.20+wfStable*.14+diversityScore*.08-spreadPenalty*.06;
+  const arr=Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[];
+  const positionAvg=arr.length?avg(chosen.map(d=>clamp((m2dPositionConditional(arr,d,(d+1)%10))/100,0,1)))*100:50;
+  return avg*.32+baseAvg*.14+wfAvg*.20+wfStable*.14+positionAvg*.06+diversityScore*.08-spreadPenalty*.06;
 }
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
@@ -4254,6 +4435,7 @@ function m2dPrecisionScoreDigits(arr){
   return out;
 }
 function m2dTop3(arr){
+  m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   const base=m2dScoreDigits(arr),score=m2dPrecisionScoreDigits(arr);
   const pool=[...Array(10).keys()].sort((a,b)=>score[b]-score[a]||base[b]-base[a]||a-b).slice(0,7);
@@ -4500,6 +4682,24 @@ function m2dPairCalibratedPrecision(wfPrecision,wfTests,selectedPrecision,select
   const denom=a+b+10;
   return round2(m2dClamp01(((Number(wfPrecision)||50)*a+(Number(selectedPrecision)||50)*b+e*10)/Math.max(1,denom)/100)*100);
 }
+function m2dReverseSymmetry(arr,target,partner){
+  const data=m2dFixed30(arr); if(!data.length)return 50;
+  let tf=0,tr=0,forward=0,reverse=0;
+  data.forEach(r=>{
+    if(r.tens===target&&r.units===partner){tf++;forward++;}
+    if(r.tens===partner&&r.units===target){tr++;reverse++;}
+  });
+  const f=betaSmoothedRate(forward,Math.max(1,tf),50,6),r=betaSmoothedRate(reverse,Math.max(1,tr),50,6);
+  return clamp(100-Math.min(60,Math.abs(f-r)*.7),35,100);
+}
+function m2dSmallSampleGate(n){
+  return smallSampleReliability(Math.min(Math.max(0,Number(n)||0),30),30);
+}
+function m2dPairSanityGate(meta){
+  const m=meta||{}; const noise=clamp(Number(m.noise)||0,0,1),unc=clamp(Number(m.uncertainty)||0,0,1);
+  const stab=clamp(Number(m.perturbationStability??50)||50,0,100);
+  return clamp((1-noise*.10)*(1-unc*.10)*(.88+.12*stab/100),.76,1);
+}
 function m2dPairScores(arr,target,skipWF=false,limit=5){
   const map=new Map();
   if(!Array.isArray(arr)||!arr.length)return [];
@@ -4529,6 +4729,10 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
     const transition=m2dClamp01(st.transition/Math.max(1,st.exact*2));
     const partnerStrength=m2dClamp01(digitScores[x]/maxDigitScore);
     const partnerQuality=m2dClamp01(partnerStrength*.55+evidence.persistence*.25+evidence.recencyDecay*.20);
+    const positionConditional=m2dClamp01(m2dPositionConditional(arr,target,x)/100);
+    const pairOOSGate=m2dPairOOSGate(arr,target,x);
+    const reverseSymmetry=m2dReverseSymmetry(arr,target,x);
+    const sampleGate=m2dSmallSampleGate(arr.length);
     const diversityBonus=m2dClamp01((evidence.evidenceCount/8)*.70+(st.cooccur>=.25?.15:0)+(st.transition>0?.15:0));
     /* Evidence-first scoring: the existing layers remain, but the final
        ranking is tightened by 30-round adaptivity, regime awareness and
@@ -4554,7 +4758,10 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
       m2dClamp01(wf.precision/100)*0.06+
       m2dClamp01((wf.selectedPrecision??50)/100)*0.08+
       m2dClamp01(wf.stability/100)*0.05+
-      m2dClamp01(perturb.stability/100)*0.05-
+      m2dClamp01(perturb.stability/100)*0.05+
+      positionConditional*0.055+
+      pairOOSGate*0.045+
+      m2dClamp01(reverseSymmetry/100)*0.035-
       m2dClamp01(Math.max(0,50-wf.precision)/50)*0.04+
       regimeBoost-
       noise*0.16-
@@ -4569,10 +4776,11 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
        contract can never collapse to fewer than 5 when data permits. */
     const qualified=(arr.length<10)||(evidence.evidenceCount>=3&&stability.score>=.35);
     const gatePenalty=qualified?1:(.72+evidence.evidence*.18);
-    const gatedScore=score*gatePenalty;
+    const sanityGate=m2dPairSanityGate({noise,uncertainty:evidence.uncertainty,perturbationStability:perturb.stability});
+    const gatedScore=score*gatePenalty*pairOOSGate*sampleGate*sanityGate;
     const prior=map.get(key);
     if(!prior||gatedScore>prior.score){
-      map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
+      map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,positionConditional,pairOOSGate,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,reverseSymmetry,sampleGate,sanityGate,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
     }
   }
   const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||a.pair.localeCompare(b.pair));
@@ -4633,8 +4841,9 @@ function m2dJointSelect15Pairs(top,pairsByTarget){
     const all=Object.values(out).flat();
     const digitUse=new Map(); all.forEach(p=>String(p.pair).split('').forEach(d=>digitUse.set(d,(digitUse.get(d)||0)+1)));
     const concentration=[...digitUse.values()].reduce((a,v)=>a+Math.max(0,v-4),0);
-    const quality=all.reduce((a,p)=>a+(Number(p.score)||0)+Number(p.meta?.selectedPairPrecision||50)*.035+Number(p.meta?.pairWalkForwardStability||50)*.025,0);
-    return quality-concentration*1.5;
+    const quality=all.reduce((a,p)=>a+(Number(p.score)||0)+Number(p.meta?.selectedPairPrecision||50)*.035+Number(p.meta?.pairWalkForwardStability||50)*.025+Number(p.meta?.positionConditional||.5)*6+Number(p.meta?.pairOOSGate||.9)*4,0);
+    const diversity=pairPortfolioDiversity(all);
+    return quality-concentration*1.5+diversity*.35;
   };
   for(let pass=0;pass<2;pass++){
     let improved=true;
@@ -5655,144 +5864,8 @@ function renderWalkForwardAudit(groups){
   html+=`<div class="wf-note">การตรวจสอบนี้ใช้เพื่อประเมินความถูกต้องและความเสถียรย้อนหลังเท่านั้น ไม่ส่งผลลัพธ์กลับไปแก้ Score, Ranking หรือการ์ดหลัก และไม่รวมงวดงดออกผลเป็น Target Test</div></section>`;
   root.innerHTML=html;
 }
-/* =========================================================
-   EXPORT AUDIT CSV
-========================================================= */
-function csvEscape(value){
-  const str=
-    String(
-      value??''
-    );
-  if(
-    /[",\n]/.test(str)
-  ){
-    return`"${str.replace(/"/g,'""')}"`;
-  }
-  return str;
-}
-function exportAuditCSV(){
-  if(
-    !currentAuditDataMap ||
-    !Object.keys(
-      currentAuditDataMap
-    ).length
-  ){
-    showToast(
-      '⚠️ กรุณาประมวลผลข้อมูลก่อน'
-    );
-    return;
-  }
-  const rows=[];
-  rows.push([
-    'หวย',
-    'สูตร',
-    'ทดสอบ',
-    'เข้า',
-    'หลุด',
-    'Hit Rate',
-    'Recent 5',
-    'Rolling 10',
-    'Rolling 20',
-    'Recency',
-    'Stability',
-    'Current Streak',
-    'หลุดต่อเนื่องปัจจุบัน',
-    'Max Streak',
-    'หลุดต่อเนื่องสูงสุด',
-    'เลขเด่นล่าสุด',
-    'Trend'
-  ]);
-  Object.keys(
-    currentAuditDataMap
-  )
-  .forEach(lotteryName=>{
-    const audit=
-      currentAuditDataMap[
-        lotteryName
-      ];
-    Object.keys(audit)
-      .forEach(fName=>{
-        const f=
-          audit[fName];
-        rows.push([
-          formatDisplayTitle(
-            lotteryName
-          ),
-          fName,
-          f.totalTested,
-          f.hits,
-          f.misses,
-          f.hitRate,
-          f.recentRate,
-          f.rolling10,
-          f.rolling20,
-          f.recencyRate,
-          f.stability,
-          f.curStreak,
-          f.curMissStreak,
-          f.maxStreak,
-          f.maxMissStreak,
-          f.latestDigits
-            ?`${f.latestDigits[0]}-${f.latestDigits[1]}`
-            :'',
-          f.trend?.label||''
-        ]);
-      });
-  });
-  const csv=
-    '\uFEFF'+
-    rows
-      .map(
-        row=>
-          row
-            .map(csvEscape)
-            .join(',')
-      )
-      .join('\n');
-  const blob=
-    new Blob(
-      [csv],
-      {
-        type:
-          'text/csv;charset=utf-8;'
-      }
-    );
-  const url=
-    URL.createObjectURL(blob);
-  const link=
-    document.createElement('a');
-  link.href=url;
-  link.download=
-    `BanNgernKong_Audit_${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(
-    ()=>URL.revokeObjectURL(url),
-    1500
-  );
-  showToast(
-    '✓ Export Audit CSV สำเร็จ'
-  );
-}
-/* =========================================================
-   SAFE ENGINE ENTRY POINT
-   Prevent a single backend exception from leaving the UI blank.
-========================================================= */
 function runEngine(){
-  const root=$('result');
-  /* Clear only the rendered result at the start. Stored input/history remains intact. */
-  if(root) root.innerHTML='';
-  try{
-    return runEngineCore();
-  }catch(err){
-    console.error('[V49 ENGINE ERROR]',err);
-    if(root){
-      const msg=String(err?.message||err||'ไม่ทราบสาเหตุ');
-      root.innerHTML=`<div class="errorbox"><b>ระบบหยุดการประมวลผลเนื่องจากข้อผิดพลาดภายใน</b><br>${esc(msg)}<br><small>ข้อมูลประวัติเดิมยังคงเก็บไว้ และหน้าผลลัพธ์ถูกล้างเพื่อป้องกันข้อมูลค้าง</small></div>`;
-    }
-    return null;
-  }
+  return runEngineCore();
 }
 /* =========================================================
    DOM READY
@@ -5803,10 +5876,6 @@ window.addEventListener(
     if($('run')){
       $('run').onclick=
         runEngine;
-    }
-    if($('exportAudit')){
-      $('exportAudit').onclick=
-        exportAuditCSV;
     }
     if($('clearInput')){
       $('clearInput').onclick=()=>{
