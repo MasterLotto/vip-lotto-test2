@@ -1388,7 +1388,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 
 </style>
 <!-- V43 baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
-<!-- V45 AUDIT: empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
+<!-- V46 AUDIT: empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 </head>
 
 
@@ -3335,7 +3335,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   const familyIdByFormula={};
   formulaFamilies.forEach((fam,i)=>fam.names.forEach(n=>familyIdByFormula[n]=i));
 
-  /* V45 empirical evidence-correlation audit: identical bodies are not the
+  /* V46 empirical evidence-correlation audit: identical bodies are not the
      only source of double-counting. Measure overlap of historical formula
      proposals and use it only as a bounded ranking penalty. Locked formula
      equations/bodies are never changed. */
@@ -3900,7 +3900,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   const bestPrecisionPair=optimizedPairs[0]||bestPair;
   if(bestPrecisionPair) bestPair=bestPrecisionPair;
 
-  /* V45 TOP2 CALIBRATION TIE-BREAK:
+  /* V46 TOP2 CALIBRATION TIE-BREAK:
      when pair scores are close, prefer the pair whose weaker member has
      stronger empirical precision and stress survival. This only changes
      selection, never a protected formula. */
@@ -4380,65 +4380,16 @@ function generateFormulaPairs(
 
 
 
-  const poolDigits=[
-    -2,-1,0,1,2
-  ].map(
-    off=>norm(anchor+off)
-  );
-
-
-
-
-  let validUnits=
-    poolDigits.filter(
-      u=>
-        u!==mainDigit &&
-        u!==otherDigit
-    );
-
-
-
-
-  validUnits=
-    Array.from(
-      new Set(validUnits)
-    );
-
-
-
-
-  if(validUnits.length<5){
-
-
-
-
-    for(let d=0;d<=9;d++){
-
-
-
-
-      if(
-        d!==mainDigit &&
-        d!==otherDigit &&
-        !validUnits.includes(d)
-      ){
-
-
-
-
-        validUnits.push(d);
-
-
-
-
-        if(validUnits.length===5)
-          break;
-      }
-    }
-  }
-
-
-
+  /* LOCKED TARGET-PAIR METHOD — SCORE AUDIT CARD
+     Anchor = |7 - hundredsDigit| % 10.
+     Normal expansion -2..+2; any collision with either standout digit
+     upgrades the whole symmetric pool to -3..+3.
+     No standout-vs-standout pairs and no doubles. No unrelated fallback. */
+  const normalPool=[-2,-1,0,1,2].map(off=>norm(anchor+off));
+  const collision=normalPool.some(u=>u===mainDigit||u===otherDigit);
+  const offsets=collision?[-3,-2,-1,0,1,2,3]:[-2,-1,0,1,2];
+  const poolDigits=Array.from(new Set(offsets.map(off=>norm(anchor+off))));
+  const validUnits=poolDigits.filter(u=>u!==mainDigit&&u!==otherDigit);
 
   const scoredPairs=
     validUnits
@@ -6967,7 +6918,7 @@ function renderFullUI(
 
 
       <span>
-        ระบบบ้านเงินกอง V45.0
+        ระบบบ้านเงินกอง V46.0
         Multi-Angle Audit Layer
       </span>
 
@@ -7609,7 +7560,7 @@ function m2dJointSelect15Pairs(top,pairsByTarget){
   const out={}; const used=new Set();
   targets.forEach(t=>out[t.digit]=[]);
 
-  /* V45 GLOBAL 15-SLOT OPTIMIZER:
+  /* V46 GLOBAL 15-SLOT OPTIMIZER:
      every slot competes globally, while each TOP keeps its five-slot quota.
      The objective rewards pair quality, historical selected precision,
      confidence, stability and new coverage. Reverse pairs share one key. */
@@ -8486,55 +8437,11 @@ function runEngineCore(){
 
 
 
-      const normalRange=[
-        -2,-1,0,1,2
-      ].map(
-        off=>norm(anchor+off)
-      );
-
-
-
-
-
-
-
-
-      const isCollided=
-        normalRange.some(
-          num=>
-            [d1,d2].includes(num)
-        );
-
-
-
-
-
-
-
-
-      const offsets=
-        isCollided
-        ?[-3,-2,-1,0,1,2,3]
-        :[-2,-1,0,1,2];
-
-
-
-
-
-
-
-
-      const poolDigits=
-        offsets.map(
-          off=>norm(anchor+off)
-        );
-
-
-
-
-
-
-
+      /* Exact same locked pair-expansion method as the original formula card. */
+      const normalRange=[-2,-1,0,1,2].map(off=>norm(anchor+off));
+      const isCollided=normalRange.some(num=>[d1,d2].includes(num));
+      const offsets=isCollided?[-3,-2,-1,0,1,2,3]:[-2,-1,0,1,2];
+      const poolDigits=Array.from(new Set(offsets.map(off=>norm(anchor+off))));
 
       const generatePairsForDigit=
         (mainDigit,otherDigit)=>{
@@ -8542,64 +8449,7 @@ function runEngineCore(){
 
 
 
-          let validUnits=
-            poolDigits.filter(
-              u=>
-                u!==mainDigit &&
-                u!==otherDigit
-            );
-
-
-
-
-          validUnits=
-            Array.from(
-              new Set(validUnits)
-            );
-
-
-
-
-
-
-
-
-          if(validUnits.length<5){
-
-
-
-
-            for(let d=0;d<=9;d++){
-
-
-
-
-              if(
-                d!==mainDigit &&
-                d!==otherDigit &&
-                !validUnits.includes(d)
-              ){
-
-
-
-
-                validUnits.push(d);
-
-
-
-
-                if(validUnits.length===5)
-                  break;
-              }
-            }
-          }
-
-
-
-
-
-
-
+          const validUnits=poolDigits.filter(u=>u!==mainDigit&&u!==otherDigit);
 
           const selectedUnits=
             validUnits.slice(0,5);
