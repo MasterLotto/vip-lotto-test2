@@ -1709,33 +1709,104 @@ function calculateDigitFrequency(recs){
   });
   return{counts,totalDigits,rates:counts.map(c=>percent(c,totalDigits)),positions,windowRates,windows};
 }
-function buildDigitConsensus(auditData,formulaNames){
-  const data=Array.from({length:10},(_,digit)=>({digit,agreement:0,weightedAgreement:0,formulas:[],score:0}));
+/* =========================================================
+   V52 FORMULA ADAPTATION / EVIDENCE GOVERNOR
+   Formulas remain deterministic; this layer only decides how much trust each
+   formula receives from chronological evidence. No future result is used.
+========================================================= */
+function betaSmoothedRate(hits,total,priorRate=50,priorN=8){
+  const n=Math.max(0,Number(total)||0);
+  const h=clamp(Number(hits)||0,0,n);
+  const p=clamp(Number(priorRate)||50,0,100)/100;
+  const a=p*priorN;
+  const b=(1-p)*priorN;
+  return clamp(((h+a)/(n+priorN))*100,0,100);
+}
+function buildAdaptiveFormulaWeights(records,formulaNames){
+  const recs=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const names=Array.isArray(formulaNames)?formulaNames.filter(n=>typeof allFormulas?.[n]==='function'):[];
+  const raw={};
+  names.forEach(name=>{
+    const hist=getFormulaHistory(recs,name);
+    const total=hist.length;
+    const hits=hist.filter(x=>x.hit).length;
+    const recent=hist.slice(-Math.min(10,total));
+    const prior=hist.slice(-Math.min(20,total),-Math.min(10,total));
+    const recentRate=recent.length?percent(recent.filter(x=>x.hit).length,recent.length):50;
+    const priorRate=prior.length?percent(prior.filter(x=>x.hit).length,prior.length):50;
+    const longRate=betaSmoothedRate(hits,total,50,8);
+    const recentSmoothed=betaSmoothedRate(recent.filter(x=>x.hit).length,recent.length,50,5);
+    const stability=total>=6?clamp(100-Math.abs(recentRate-priorRate)*2.2,0,100):55;
+    const direction=recentRate-priorRate;
+    const recency=clamp(50+direction*1.6,0,100);
+    const hitDensity=clamp(.52*longRate+.30*recentSmoothed+.12*stability+.06*recency,0,100);
+    raw[name]={total,hits,longRate,recentRate,priorRate,stability,recency,hitDensity};
+  });
+  const scores=Object.values(raw).map(x=>x.hitDensity);
+  const center=scores.length?avg(scores):50;
+  const spread=scores.length?avg(scores.map(v=>Math.abs(v-center))):0;
+  const weights={};
+  Object.entries(raw).forEach(([name,x])=>{
+    /* Evidence governor: shrink toward 1.0 when the formula sample is sparse
+       or formula scores are too similar to justify aggressive re-weighting. */
+    const sampleTrust=clamp(x.total/16,0,1);
+    const separationTrust=clamp(spread/12,0,1);
+    const normalized=clamp(1+(x.hitDensity-center)/55,0.68,1.32);
+    const governed=1+(normalized-1)*(.35+.65*sampleTrust*separationTrust);
+    weights[name]=round2(clamp(governed,0.72,1.28));
+  });
+  return{weights,raw,center:round2(center),spread:round2(spread)};
+}
+function evidenceGroupCap(parts,cap=100){
+  const vals=Object.values(parts||{}).map(v=>clamp(Number(v)||0,0,100));
+  if(!vals.length)return 0;
+  const mean=avg(vals);
+  const top=Math.max(...vals);
+  return clamp(mean*.72+top*.28,0,cap);
+}
+function adaptiveWindowBlend(rates,weights){
+  if(!rates?.length)return 50;
+  const ws=(weights||rates.map((_,i)=>Math.pow(.78,rates.length-1-i))).map(Number);
+  const den=ws.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0)||1;
+  return clamp(rates.reduce((a,v,i)=>a+clamp(Number(v)||0,0,100)*(ws[i]||0),0)/den,0,100);
+}
+
+function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null){
+  const data=Array.from({length:10},(_,digit)=>({digit,agreement:0,weightedAgreement:0,formulas:[],score:0,independentWeight:0}));
   formulaNames.forEach(fName=>{
     const f=auditData[fName];
     if(!f||!Array.isArray(f.latestDigits)) return;
+    const fw=Number(formulaGovernor?.weights?.[fName]||1);
     f.latestDigits.forEach(digit=>{
-      data[digit].agreement++;
-      data[digit].weightedAgreement+=Number(f.hitRate)||0;
-      data[digit].formulas.push(fName);
+      const d=Number(digit);
+      if(d<0||d>9)return;
+      data[d].agreement++;
+      data[d].weightedAgreement+=(Number(f.hitRate)||0)*fw;
+      data[d].independentWeight+=fw;
+      data[d].formulas.push(fName);
     });
   });
-  data.forEach(item=>item.score=round2(item.weightedAgreement+item.agreement*4));
-  return data.sort((a,b)=>b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
+  data.forEach(item=>{
+    const independence=evidenceGroupCap({agreement:clamp(item.agreement*10,0,100),weight:clamp(item.independentWeight*10,0,100)},100);
+    item.score=round2(item.weightedAgreement+independence*.18);
+  });
+  return data.sort((a,b)=>b.score-a.score||b.independentWeight-a.independentWeight||b.agreement-a.agreement||a.digit-b.digit);
 }
-function buildHistoricalDigitConsensus(recs,formulaNames){
+function buildHistoricalDigitConsensus(recs,formulaNames,formulaGovernor=null){
   const out=Array.from({length:10},(_,digit)=>({digit,predicted:0,hitSupport:0,weightedSupport:0,formulas:[]}));
   formulaNames.forEach(fName=>{
     const history=getFormulaHistory(recs,fName);
-    const fHit=history.length?percent(history.filter(x=>x.hit).length,history.length):0;
+    const fHit=history.length?percent(history.filter(x=>x.hit).length,history.length):50;
+    const fw=Number(formulaGovernor?.weights?.[fName]||1);
     history.forEach((h,idx)=>{
       const age=history.length-1-idx;
-      const w=Math.pow(.93,age);
+      const w=Math.pow(.93,age)*fw;
       (h.predicted||[]).forEach(d=>{
-        out[d].predicted++;
-        out[d].weightedSupport+=w*(h.hit?1:.25)*(0.5+fHit/200);
-        if(h.hit) out[d].hitSupport+=w;
-        if(!out[d].formulas.includes(fName)) out[d].formulas.push(fName);
+        const digit=Number(d); if(digit<0||digit>9)return;
+        out[digit].predicted++;
+        out[digit].weightedSupport+=w*(h.hit?1:.25)*(0.5+fHit/200);
+        if(h.hit) out[digit].hitSupport+=w;
+        if(!out[digit].formulas.includes(fName)) out[digit].formulas.push(fName);
       });
     });
   });
@@ -1763,10 +1834,11 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     .sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
   const safeAudit=auditData||{};
   const names=Array.isArray(formulaNames)?formulaNames.filter(Boolean):[];
+  const formulaGovernor=buildAdaptiveFormulaWeights(recs,names);
   const frequency=calculateDigitFrequency(recs);
-  const consensus=buildDigitConsensus(safeAudit,names);
-  const consensusByDigit=Array.from({length:10},(_,d)=>consensus.find(x=>x.digit===d)||({digit:d,agreement:0,weightedAgreement:0,formulas:[],score:0}));
-  const historicalConsensus=buildHistoricalDigitConsensus(recs,names);
+  const consensus=buildDigitConsensus(safeAudit,names,formulaGovernor);
+  const consensusByDigit=Array.from({length:10},(_,d)=>consensus.find(x=>x.digit===d)||({digit:d,agreement:0,weightedAgreement:0,formulas:[],score:0,independentWeight:0}));
+  const historicalConsensus=buildHistoricalDigitConsensus(recs,names,formulaGovernor);
   /* Digit-level out-of-sample evidence: unlike the coarse formula hit flag,
      this measures whether a digit proposed by a formula actually appeared in
      the following result. It is chronological and therefore does not leak the
@@ -1913,7 +1985,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
        proposals is penalized; unseen digits remain neutral rather than punished. */
     const histN=Number(digitHistorical[digit].total)||0;
     const rawEmpiricalPrecision=histN>0
-      ? clamp(digitHistorical[digit].hit/Math.max(0.0001,histN)*100,0,100)
+      ? betaSmoothedRate(digitHistorical[digit].hit,histN,50,8)
       : 50;
     /* Empirical precision is shrunk toward neutral when the chronological
        sample is small, preventing a handful of hits/misses from dominating. */
@@ -2460,7 +2532,8 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     empiricalWalkForwardRate,
     formulaFamilies,
     familyIdByFormula,
-    formulaCorrelation
+    formulaCorrelation,
+    formulaGovernor
   };
 }
 function buildEndToEndWalkForward(recs,auditData,formulaNames){
@@ -2698,8 +2771,12 @@ function mainPairCalibratedPrecision(wfPrecision,tests,empirical){
   const shrink=8;
   return round2(clamp(((Number(wfPrecision)||50)*t+e*shrink)/(t+shrink),0,100));
 }
+function pairBayesPrecision(hits,total,priorRate=50,priorN=10){
+  return betaSmoothedRate(hits,total,priorRate,priorN);
+}
+
 function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,records){
-  /* V51 — FULLY UNLOCKED TARGET-PAIR INTELLIGENCE
+  /* V52 — FULLY UNLOCKED TARGET-PAIR INTELLIGENCE
      All legacy target-pair rules, anchors, offsets and formula fallbacks are removed from target selection.
      Every valid partner digit competes directly on independent evidence.
      Output contract: main digit ALWAYS stays first; partner is ALWAYS the
@@ -2786,7 +2863,7 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
   }));
 }
 function generateFormulaPairs(mainDigit,otherDigit,auditMap,lotteryName,records){
-  /* V51: no formula-derived target-pair rule remains. */
+  /* V52: no formula-derived target-pair rule remains. */
   const data=Array.isArray(records)?records:[];
   return adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,data);
 }
@@ -4860,7 +4937,7 @@ function runEngineCore(){
       }
       /* -----------------------------------------
          ORIGINAL PAIR / DIGIT GENERATION
-         *** V51 — LEGACY TARGET-PAIR FORMULA REMOVED ***
+         *** V52 — LEGACY TARGET-PAIR FORMULA REMOVED ***
       ----------------------------------------- */
       const d1Pairs=
         generateFormulaPairs(
@@ -4883,6 +4960,9 @@ function runEngineCore(){
          22-25: isolated dataset + multi-angle intelligence
       ----------------------------------------- */
       const intelligence=buildDigitIntelligence(resultRecs,auditDataMap[lotteryName],formulaNames);
+      if(auditDataMap[lotteryName]&&intelligence?.formulaGovernor){
+        auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
+      }
       const consensus=intelligence.consensus;
       const selectedRows=intelligence.selected||[];
       const scoreD1=selectedRows[0]?.digit;
@@ -5715,4 +5795,4 @@ window.addEventListener(
 })();
 </script>
 </body>
-</html>
+  </html>
