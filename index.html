@@ -2662,6 +2662,42 @@ function mainPairWalkForwardQuality(records,mainDigit,unit){
   const stability=clamp(100-Math.abs(ar-br)*1.5,0,100);
   return {precision:round2(precision),stability:round2(stability),tested:hits.length};
 }
+/* V49 Pair Intelligence MAX — calibrated pair evidence, interaction, perturbation and evolution guard. */
+function mainPairInteractionQuality(records,mainDigit,unit){
+  const data=Array.isArray(records)?records:[], n=data.length;
+  if(!n) return {synergy:50,exactPairPrecision:50,observations:0};
+  const pair=String(mainDigit)+String(unit);
+  const reverse=String(unit)+String(mainDigit);
+  let exact=0, reverseHits=0;
+  data.forEach(r=>{
+    const n2=String(r?.n2??'').padStart(2,'0');
+    const n3=String(r?.n3??'').padStart(3,'0');
+    if(n2===pair) exact++;
+    else if(n2===reverse) reverseHits++;
+    else if(n3.includes(pair)) exact++;
+  });
+  const rate=(exact+reverseHits)/n*100;
+  const mainRate=data.filter(r=>String(r?.n2??'').includes(String(mainDigit))||String(r?.n3??'').includes(String(mainDigit))).length/Math.max(1,n)*100;
+  const unitRate=data.filter(r=>String(r?.n2??'').includes(String(unit))||String(r?.n3??'').includes(String(unit))).length/Math.max(1,n)*100;
+  const expected=Math.max(1,(mainRate/100)*(unitRate/100)*n);
+  const lift=(exact+reverseHits)/expected;
+  const synergy=clamp(50+(lift-1)*35+Math.min(15,rate*.35),0,100);
+  return {synergy:round2(synergy),exactPairPrecision:round2(rate),observations:exact+reverseHits};
+}
+function mainPairPerturbationQuality(records,mainDigit,unit){
+  const data=Array.isArray(records)?records:[];
+  if(data.length<10)return {stability:50,sensitivity:0};
+  const base=mainPairInteractionQuality(data,mainDigit,unit).exactPairPrecision;
+  const cuts=[1,2,3].filter(c=>data.length-c>=7);
+  const vals=cuts.map(c=>mainPairInteractionQuality(data.slice(0,data.length-c),mainDigit,unit).exactPairPrecision);
+  const diff=vals.length?vals.reduce((a,v)=>a+Math.abs(v-base),0)/vals.length:0;
+  return {stability:round2(clamp(100-diff*2.2,0,100)),sensitivity:round2(diff)};
+}
+function mainPairCalibratedPrecision(wfPrecision,tests,empirical){
+  const t=Math.max(0,Number(tests)||0), e=Number.isFinite(empirical)?empirical:50;
+  const shrink=8;
+  return round2(clamp(((Number(wfPrecision)||50)*t+e*shrink)/(t+shrink),0,100));
+}
 function adaptiveMainPairCandidates(mainDigit,otherDigit,anchor,auditMap,lotteryName,records){
   const formulaNames=Object.keys(formulas);
   const data=Array.isArray(records)?records:[];
@@ -2688,14 +2724,17 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,anchor,auditMap,lottery
     const mid=rate(data.slice(-midN),unit);
     const long=rate(data.slice(-longN),unit);
     const wf=mainPairWalkForwardQuality(data,mainDigit,unit);
+    const interaction=mainPairInteractionQuality(data,mainDigit,unit);
+    const perturb=mainPairPerturbationQuality(data,mainDigit,unit);
     const anchorScore=clamp(100-Math.abs(unit-anchor)*25,0,100);
     const baselineBonus=baselinePool.includes(unit)?6:0;
     const empirical=clamp(exactAll*.35+recent*.30+mid*.20+long*.15,0,100);
+    const calibrated=mainPairCalibratedPrecision(wf.precision,wf.tested,empirical);
     const formulaScore=formulaHits?clamp(formulaSupport/formulaHits,0,100):50;
-    const risk=clamp(100-(recent<20?20:0)-(exactAll<15?12:0)-Math.abs(recent-long)*.35,0,100);
-    const score=empirical*.28+formulaScore*.12+anchorScore*.08+
-      clamp(wf.precision*3.0,0,100)*.28+wf.stability*.12+risk*.12+baselineBonus;
-    return {pair,val:parseInt(pair,10),score:round2(score),meta:{empiricalPrecision:round2(empirical),formulaSupport:round2(formulaScore),anchorScore:round2(anchorScore),pairWalkForwardPrecision:wf.precision,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,risk:round2(risk),baseline:baselinePool.includes(unit)}};
+    const risk=clamp(100-(recent<20?20:0)-(exactAll<15?12:0)-Math.abs(recent-long)*.35-(100-perturb.stability)*.18,0,100);
+    const score=empirical*.20+calibrated*.20+formulaScore*.10+interaction.synergy*.12+
+      anchorScore*.06+clamp(wf.precision*3.0,0,100)*.18+wf.stability*.07+perturb.stability*.07+risk*.10+baselineBonus;
+    return {pair,val:parseInt(pair,10),score:round2(score),meta:{empiricalPrecision:round2(empirical),calibratedPrecision:calibrated,formulaSupport:round2(formulaScore),anchorScore:round2(anchorScore),pairInteraction:interaction.synergy,exactPairPrecision:interaction.exactPairPrecision,pairObservations:interaction.observations,pairPerturbationStability:perturb.stability,pairPerturbationSensitivity:perturb.sensitivity,pairWalkForwardPrecision:wf.precision,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,risk:round2(risk),baseline:baselinePool.includes(unit)}};
   }).sort((a,b)=>b.score-a.score||b.meta.pairWalkForwardPrecision-a.meta.pairWalkForwardPrecision||a.val-b.val);
   const baseline=baselinePool.slice(0,5).map(unit=>out.find(x=>x.pair===String(mainDigit)+String(unit))).filter(Boolean);
   const adaptive=out.slice(0,5);
@@ -2704,7 +2743,8 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,anchor,auditMap,lottery
   /* Evolution Guard: replace the baseline only when the broader candidate
      search has enough chronological evidence and a meaningful advantage. */
   const tested=adaptive.reduce((m,x)=>Math.max(m,x.meta.pairWalkForwardTests||0),0);
-  const useAdaptive=adaptive.length>=5 && (data.length<14 || (tested>=4 && adaptiveScore>=baselineScore+2.0));
+  const adaptiveRobustness=adaptive.length?adaptive.reduce((a,x)=>a+(Number(x.meta?.pairPerturbationStability)||50),0)/adaptive.length:50;
+  const useAdaptive=adaptive.length>=5 && (data.length<14 || (tested>=4 && adaptiveScore>=baselineScore+2.0 && adaptiveRobustness>=58));
   const chosen=(useAdaptive?adaptive:baseline.length>=5?baseline:adaptive).slice(0,5);
   const chosenSorted=[...chosen].sort((a,b)=>b.score-a.score||a.val-b.val);
   const r1=chosenSorted[0]?.pair,r2=chosenSorted[1]?.pair,r3=chosenSorted[2]?.pair;
@@ -4252,6 +4292,19 @@ function m2dSelectedPairWalkForward(arr,target){
   }
   return {precision:slots?selectedHits/slots*100:50,coverage:slots?selectedHits/slots*100:50,tested:slots};
 }
+function m2dPairPerturbationQuality(arr,target,partner){
+  const data=m2dFixed30(arr);
+  if(data.length<16)return {stability:50,sensitivity:0};
+  const base=m2dPairStats(data,target,partner).exact/Math.max(1,data.length)*100;
+  const vals=[1,2,3].map(c=>m2dPairStats(data.slice(0,Math.max(0,data.length-c)),target,partner).exact/Math.max(1,data.length-c)*100);
+  const diff=vals.reduce((a,v)=>a+Math.abs(v-base),0)/vals.length;
+  return {stability:round2(m2dClamp01(1-diff/45)*100),sensitivity:round2(diff)};
+}
+function m2dPairCalibratedPrecision(wfPrecision,wfTests,selectedPrecision,selectedTests,empirical){
+  const a=Math.max(0,Number(wfTests)||0), b=Math.max(0,Number(selectedTests)||0), e=Number.isFinite(empirical)?empirical:50;
+  const denom=a+b+10;
+  return round2(m2dClamp01(((Number(wfPrecision)||50)*a+(Number(selectedPrecision)||50)*b+e*10)/Math.max(1,denom)/100)*100);
+}
 function m2dPairScores(arr,target,skipWF=false,limit=5){
   const map=new Map();
   if(!Array.isArray(arr)||!arr.length)return [];
@@ -4269,6 +4322,7 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
       if(!wf){ wf=m2dPairWalkForwardQuality(arr,target,x); pairWF.set(key,wf); }
     }
     const evidence=m2dPairEvidence(arr,target,x,digitScores);
+    const perturb=m2dPairPerturbationQuality(arr,target,x);
     const recentMomentum=m2dClamp01(.5+m2dRecentPairMomentum(arr,target,x)*3);
     const adaptive=evidence.adaptive;
     const regime=evidence.regime;
@@ -4304,11 +4358,13 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
       evidence.recencyDecay*0.02+
       m2dClamp01(wf.precision/100)*0.06+
       m2dClamp01((wf.selectedPrecision??50)/100)*0.08+
-      m2dClamp01(wf.stability/100)*0.05-
-      m2dClamp01(Math.max(0,50-wf.precision)/50)*0.045+
+      m2dClamp01(wf.stability/100)*0.05+
+      m2dClamp01(perturb.stability/100)*0.05-
+      m2dClamp01(Math.max(0,50-wf.precision)/50)*0.04+
       regimeBoost-
       noise*0.16-
-      evidence.uncertainty*0.09;
+      evidence.uncertainty*0.09-
+      m2dClamp01(perturb.sensitivity/40)*0.035;
     /* Small-sample reliability: do not let a tiny history masquerade as
        strong evidence. This changes confidence/ranking only; TOP-3 stays locked. */
     const reliability=m2dClamp01(arr.length/30);
@@ -4321,7 +4377,7 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
     const gatedScore=score*gatePenalty;
     const prior=map.get(key);
     if(!prior||gatedScore>prior.score){
-      map.set(key,{pair:key,score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0}});
+      map.set(key,{pair:key,score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
     }
   }
   const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||a.pair.localeCompare(b.pair));
@@ -4354,7 +4410,7 @@ function m2dJointSelect15Pairs(top,pairsByTarget){
         const isDouble=String(p.pair)[0]===String(p.pair)[1];
         const conf=Number(p.meta?.confidence)||0;
         const selWF=Number(p.meta?.selectedPairPrecision)||50;
-        if(isDouble && (conf<90 || selWF<65))continue;
+        if(isDouble && (conf<90 || selWF<65 || Number(p.meta?.perturbationStability||50)<60))continue;
         const partnerDigits=new Set(out[t.digit].flatMap(x=>String(x.pair).split('').map(Number)));
         const globalDigits=new Set(Object.values(out).flat().flatMap(x=>String(x.pair).split('').map(Number)));
         const novelty=partnerDigits.has(Number(p.pair[1]))?0:2.5;
@@ -4391,7 +4447,7 @@ function m2dJointSelect15Pairs(top,pairsByTarget){
             if(used.has(key))continue;
             const isDouble=String(p.pair)[0]===String(p.pair)[1];
             const conf=Number(p.meta?.confidence)||0,selWF=Number(p.meta?.selectedPairPrecision)||50;
-            if(isDouble&&(conf<90||selWF<65))continue;
+            if(isDouble&&(conf<90||selWF<65||Number(p.meta?.perturbationStability||50)<60))continue;
             const old=out[t.digit][si]; const oldKey=m2dCanonicalPair(Number(old.pair[0]),Number(old.pair[1]));
             out[t.digit][si]=p; used.delete(oldKey); used.add(key);
             const nextObj=objective();
@@ -4410,7 +4466,7 @@ function m2dJointSelect15Pairs(top,pairsByTarget){
       if(used.has(key))continue;
       const isDouble=String(p.pair)[0]===String(p.pair)[1];
       const conf=Number(p.meta?.confidence)||0, selWF=Number(p.meta?.selectedPairPrecision)||50;
-      if(isDouble && (conf<90 || selWF<65))continue;
+      if(isDouble && (conf<90 || selWF<65 || Number(p.meta?.perturbationStability||50)<60))continue;
       used.add(key); out[t.digit].push(p);
     }
   });
@@ -4494,7 +4550,6 @@ function renderMyanmar2DModule(text){
   return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('နေ့လယ်ပိုင်း','12.01 P.M.','☀️',noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('ညနေပိုင်း','4.30 P.M.','🌙',evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('တစ်နေ့တာ','12.01 P.M. + 4.30 P.M.','📅',all,'m2d-card-all',dateLabel)}</div>${err}</div>`;
 }
 function runEngineCore(){
-      window.__LOTTO_RESULT_RECS__=getResultRecords(recs);
   const textVal=
     $('bulkInput')
       .value
@@ -5623,14 +5678,16 @@ function exportAuditCSV(){
    Prevent a single backend exception from leaving the UI blank.
 ========================================================= */
 function runEngine(){
+  const root=$('result');
+  /* Clear only the rendered result at the start. Stored input/history remains intact. */
+  if(root) root.innerHTML='';
   try{
     return runEngineCore();
   }catch(err){
-    console.error('[V32.4 ENGINE ERROR]',err);
-    const root=$('result');
+    console.error('[V49 ENGINE ERROR]',err);
     if(root){
       const msg=String(err?.message||err||'ไม่ทราบสาเหตุ');
-      root.innerHTML=`<div class="errorbox"><b>ระบบหยุดการประมวลผลเนื่องจากข้อผิดพลาดภายใน</b><br>${esc(msg)}<br><small>ข้อมูลเดิมยังไม่ถูกลบ กรุณาตรวจสอบรูปแบบข้อมูลแล้วลองใหม่</small></div>`;
+      root.innerHTML=`<div class="errorbox"><b>ระบบหยุดการประมวลผลเนื่องจากข้อผิดพลาดภายใน</b><br>${esc(msg)}<br><small>ข้อมูลประวัติเดิมยังคงเก็บไว้ และหน้าผลลัพธ์ถูกล้างเพื่อป้องกันข้อมูลค้าง</small></div>`;
     }
     return null;
   }
