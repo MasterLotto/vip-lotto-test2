@@ -1387,7 +1387,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 .m2d-capture-button{display:inline-flex;}
 
 </style>
-<!-- V42: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
+<!-- V43: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
 </head>
 
 
@@ -3860,7 +3860,10 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     const counter=Math.min(a.raw.counterfactualStability||50,b.raw.counterfactualStability||50);
     const empirical=Math.min(a.raw.empiricalPrecision||50,b.raw.empiricalPrecision||50);
     const shared=Number(pc.sharedFormulaFamilies)||0;
-    return (qa+qb)/2+pc.pairScore*.10+independence*.045+persistence*.055+counter*.055+empirical*.045-shared*3.5;
+    const rankMargin=Math.max(0,Math.min(10,Math.abs((a.selectionQuality||0)-(b.selectionQuality||0))));
+    const complementarity=Math.min(a.raw.evidenceComplement||50,b.raw.evidenceComplement||50);
+    const stressStability=Math.min(a.raw.adversarialTop2||50,b.raw.adversarialTop2||50);
+    return (qa+qb)/2+pc.pairScore*.10+independence*.045+persistence*.055+counter*.055+empirical*.045+complementarity*.035+stressStability*.025-rankMargin*.025-shared*3.5;
   };
   const optimizedPairs=pairCandidates.map(pc=>({...pc,precisionPairScore:precisionPairScore(pc)}))
     .sort((a,b)=>b.precisionPairScore-a.precisionPairScore||b.pairScore-a.pairScore);
@@ -7051,14 +7054,37 @@ function m2dParse(text){
   }
   return {records,errors};
 }
-const M2D_FIXED_ROUNDS=30;
-function m2dFixed30(arr){return Array.isArray(arr)?arr.filter(Boolean).slice(-M2D_FIXED_ROUNDS):[];}
-function m2dValidSeq(records,session){return m2dFixed30(records.map(r=>r[session]).filter(Boolean));}
+const M2D_CORE_ROUNDS=30;
+const M2D_MIN_INPUT_ROUNDS=25;
+const M2D_MAX_INPUT_ROUNDS=35;
+function m2dInputRange(arr){return Array.isArray(arr)?arr.filter(Boolean).slice(-M2D_MAX_INPUT_ROUNDS):[];}
+function m2dFixed30(arr){return m2dInputRange(arr).slice(-M2D_CORE_ROUNDS);}
+function m2dAuxiliaryRounds(arr){const d=m2dInputRange(arr);return d.length>M2D_CORE_ROUNDS?d.slice(0,d.length-M2D_CORE_ROUNDS):[];}
+function m2dValidSeq(records,session){return m2dInputRange(records.map(r=>r[session]).filter(Boolean));}
 function m2dFreq(arr){const c=Array(10).fill(0);arr.forEach(x=>{c[x.tens]++;c[x.units]++});return c;}
 function m2dPositionFreq(arr,pos){const c=Array(10).fill(0);arr.forEach(x=>c[x[pos]]++);return c;}
 function m2dGap(arr,pos,d){let gap=arr.length+1;for(let i=arr.length-1;i>=0;i--){if(arr[i][pos]===d){gap=arr.length-1-i;break}}return gap;}
 function m2dMomentum(arr,pos,d,window=7){const a=arr.slice(-window),b=arr.slice(-Math.min(arr.length,window*2),-window);if(!a.length)return 0;return (a.filter(x=>x[pos]===d).length/a.length)-(b.length?b.filter(x=>x[pos]===d).length/b.length:0);}
 function m2dTransition(arr,pos,d){let score=0;for(let i=1;i<arr.length;i++){if(arr[i][pos]===d){score++;if(arr[i-1][pos]===d)score+=.45}}return score;}
+function m2dInputQuality(arr){
+  const raw=m2dInputRange(arr),n=raw.length,aux=m2dAuxiliaryRounds(raw);
+  const within=n>=M2D_MIN_INPUT_ROUNDS&&n<=M2D_MAX_INPUT_ROUNDS;
+  const distance=Math.abs(n-M2D_CORE_ROUNDS);
+  return {inputRounds:n,coreRounds:Math.min(n,M2D_CORE_ROUNDS),auxiliaryRounds:aux.length,withinRange:within,coreConfidence:m2dClamp01(1-distance*.035)};
+}
+function m2dJointTop3Score(digits,score,base){
+  const chosen=digits.map(d=>d.digit);
+  let diversity=0,spread=0;
+  for(let i=0;i<chosen.length;i++)for(let j=i+1;j<chosen.length;j++){
+    const a=chosen[i],b=chosen[j];
+    const diff=Math.abs(a-b);
+    diversity+=Math.min(1,diff/5);
+    spread+=Math.abs((score[a]||0)-(score[b]||0));
+  }
+  const avg=chosen.reduce((z,d)=>z+(score[d]||0),0)/Math.max(1,chosen.length);
+  const baseAvg=chosen.reduce((z,d)=>z+(base[d]||0),0)/Math.max(1,chosen.length);
+  return avg*100+baseAvg*.35+diversity*3-spread*4;
+}
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
   const windows=[7,14,21,30].filter(w=>n>=Math.min(w,3));
@@ -7149,14 +7175,24 @@ function m2dPrecisionScoreDigits(arr){
     const empirical=m2dClamp01((wf.precision[d]||50)/100);
     const wfStability=m2dClamp01((wf.stability[d]||50)/100);
     const rankConditional=m2dClamp01((selectedWF.byRank?.[0]||50)/100)*.55 + m2dClamp01((selectedWF.byRank?.[1]||50)/100)*.45;
-    out[d]=baseNorm*.40+recent*.13+stability*.09+counterfactual*.06+rankStability*.05+recovery*.02+(1-volatility)*.03+empirical*.08+wfStability*.04+selectedCalibration*.05+rankConditional*.05;
+    const inputQ=m2dInputQuality(data);
+    out[d]=baseNorm*.39+recent*.13+stability*.09+counterfactual*.06+rankStability*.05+recovery*.02+(1-volatility)*.03+empirical*.08+wfStability*.04+selectedCalibration*.05+rankConditional*.05+inputQ.coreConfidence*.01;
   }
   if(Array.isArray(arr)) M2D_PRECISION_CACHE.set(arr,out);
   return out;
 }
 function m2dTop3(arr){
   const base=m2dScoreDigits(arr),score=m2dPrecisionScoreDigits(arr);
-  return [...Array(10).keys()].sort((a,b)=>score[b]-score[a]||base[b]-base[a]||a-b).slice(0,3).map(d=>({digit:d,score:round2(score[d]*100),baseScore:round2(base[d])}));
+  const pool=[...Array(10).keys()].sort((a,b)=>score[b]-score[a]||base[b]-base[a]||a-b).slice(0,7);
+  let best=null;
+  for(let i=0;i<pool.length;i++)for(let j=i+1;j<pool.length;j++)for(let k=j+1;k<pool.length;k++){
+    const ds=[pool[i],pool[j],pool[k]].map(d=>({digit:d,score:score[d],baseScore:base[d]}));
+    const joint=m2dJointTop3Score(ds,score,base);
+    if(!best||joint>best.joint)best={ds,joint};
+  }
+  const chosen=(best?.ds||pool.slice(0,3).map(d=>({digit:d,score:score[d],baseScore:base[d]})))
+    .sort((a,b)=>b.score-a.score||b.baseScore-a.baseScore||a.digit-b.digit);
+  return chosen.slice(0,3).map(d=>({digit:d.digit,score:round2(d.score*100),baseScore:round2(d.baseScore)}));
 }
 function m2dClamp01(v){return Math.max(0,Math.min(1,Number.isFinite(v)?v:0));}
 function m2dCanonicalPair(a,b){const x=String(a)+String(b),y=String(b)+String(a);return x<=y?x:y;}
@@ -7329,18 +7365,48 @@ function m2dPairWalkForwardQuality(arr,target,partner){
   const stability=rankObs?((rankSum/rankObs)*.70+rankStability*.30):50;
   return {precision,stability:Math.max(0,Math.min(100,stability)),tested,selectedPrecision,selectedTests};
 }
+function m2dShadowFinalTop3(arr){
+  const data=m2dFixed30(arr),base=m2dScoreDigits(data),n=data.length;if(!n)return [];
+  const maxBase=Math.max(...base,1);
+  const ranks=[];
+  for(const cut of [1,2,3]){
+    if(n-cut<3)continue;
+    const r=m2dScoreDigits(data.slice(0,n-cut));
+    ranks.push([...Array(10).keys()].sort((a,b)=>r[b]-r[a]||a-b).slice(0,3));
+  }
+  return [...Array(10).keys()].map(d=>{
+    const recent=(m2dFreq(data.slice(-Math.min(7,n)))[d]/Math.max(1,Math.min(7,n)*2))*.55+
+      (m2dFreq(data.slice(-Math.min(14,n)))[d]/Math.max(1,Math.min(14,n)*2))*.30+
+      (m2dFreq(data.slice(-Math.min(30,n)))[d]/Math.max(1,Math.min(30,n)*2))*.15;
+    const survive=ranks.length?ranks.filter(r=>r.includes(d)).length/ranks.length:.5;
+    const pos=ranks.length?ranks.reduce((z,r)=>z+(r.includes(d)?1-r.indexOf(d)/3:0),0)/ranks.length:.5;
+    const q=(base[d]/maxBase)*.48+recent*.22+survive*.18+pos*.12;
+    return {digit:d,score:q};
+  }).sort((a,b)=>b.score-a.score||a.digit-b.digit).slice(0,3);
+}
 function m2dSelectedTop3WalkForward(arr){
   const data=m2dFixed30(arr),n=data.length;
   if(n<16)return {precision:50,coverage:50,tested:0,byRank:[50,50,50]};
-  const tests=Math.min(12,n-12),start=n-tests;
-  let hits=0,tested=0;const rankHits=[0,0,0];
+  const tests=Math.min(12,n-12),start=n-tests;let hits=0,tested=0;const rankHits=[0,0,0];
   for(let cut=start;cut<n;cut++){
-    const train=data.slice(0,cut),actual=data[cut];
-    const ranked=m2dScoreDigits(train).map((score,digit)=>({digit,score})).sort((a,b)=>b.score-a.score||a.digit-b.digit).slice(0,3);
+    const train=data.slice(0,cut),actual=data[cut],ranked=m2dShadowFinalTop3(train);
     const actualDigits=[actual.tens,actual.units];
-    ranked.forEach((x,i)=>{if(actualDigits.includes(x.digit)){hits++;rankHits[i]++;}}); tested++;
+    ranked.forEach((x,i)=>{if(actualDigits.includes(x.digit)){hits++;rankHits[i]++;}});tested++;
   }
   return {precision:tested?hits/(tested*3)*100:50,coverage:tested?hits/tested*100:50,tested,byRank:rankHits.map(x=>tested?x/tested*100:50)};
+}
+function m2dFinal15PairWalkForward(arr,top){
+  const data=m2dFixed30(arr),n=data.length;
+  if(n<16)return {precision:50,coverage:50,tested:0};
+  const tests=Math.min(10,n-12),start=n-tests;let hits=0,tested=0;
+  for(let cut=start;cut<n;cut++){
+    const train=data.slice(0,cut),actual=data[cut],raw={};
+    (top||[]).forEach(t=>raw[t.digit]=m2dPairScores(train,t.digit,true,9));
+    const selected=m2dSelectCoveredPairs(top,raw),pairs=Object.values(selected).flat();
+    const hit=pairs.some(p=>{const a=Number(p.pair[0]),b=Number(p.pair[1]);return (a===actual.tens&&b===actual.units)||(a===actual.units&&b===actual.tens);});
+    if(hit)hits++;tested++;
+  }
+  return {precision:tested?hits/tested*100:50,coverage:tested?hits/tested*100:50,tested};
 }
 function m2dSelectedPairWalkForward(arr,target){
   const data=m2dFixed30(arr),n=data.length;
@@ -7460,7 +7526,8 @@ function m2dSelectCoveredPairs(top,pairsByTarget){
 function m2dAnalyzeSession(records,session){
   const arr=m2dValidSeq(records,session),top=m2dTop3(arr);const raw={};
   top.forEach(t=>raw[t.digit]=m2dPairScores(arr,t.digit,false,9));
-  return {session,arr,top,pairsByTarget:m2dSelectCoveredPairs(top,raw)};
+  const pairsByTarget=m2dSelectCoveredPairs(top,raw);
+  return {session,arr,top,pairsByTarget,inputQuality:m2dInputQuality(arr),pairSetWF:m2dFinal15PairWalkForward(arr,top)};
 }
 function m2dConsensus(noon,evening){
   const ns=m2dPrecisionScoreDigits(noon.arr),es=m2dPrecisionScoreDigits(evening.arr);
@@ -7475,7 +7542,8 @@ function m2dConsensus(noon,evening){
       const as=(a.score||0),bs=(b.score||0);return bs-as||((b.meta?.confidence||0)-(a.meta?.confidence||0))||a.pair.localeCompare(b.pair);
     });
   });
-  return {top:combined,pairsByTarget:m2dSelectCoveredPairs(combined,raw)};
+  const pairsByTarget=m2dSelectCoveredPairs(combined,raw);
+  return {top:combined,pairsByTarget,inputQuality:{noon:m2dInputQuality(noon.arr),evening:m2dInputQuality(evening.arr)},pairSetWF:m2dFinal15PairWalkForward(noon.arr,combined)};
 }
 function m2dRenderBlock(title,time,emoji,data,cardId,dateLabel){
   const top=(data.top||[]).slice(0,3);
