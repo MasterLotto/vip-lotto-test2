@@ -1652,6 +1652,14 @@ function getTrend(history){
     value:diff
   };
 }
+function safeTrend(value){
+  if(value&&typeof value==='object') return {
+    label:String(value.label||'→ ทรงตัว'),
+    cls:String(value.cls||'trend-flat'),
+    value:Number(value.value)||0
+  };
+  return {label:'ข้อมูลยังน้อย',cls:'trend-flat',value:0};
+}
 /* =========================================================
    7. RECENCY WEIGHT
 ========================================================= */
@@ -2544,7 +2552,11 @@ function buildEndToEndWalkForward(recs,auditData,formulaNames){
   const rows=[]; let hits=0,top1Hits=0,top2Hits=0;
   for(let cut=start;cut<arr.length;cut++){
     const train=arr.slice(0,cut),target=arr[cut];
-    const shadow=buildDigitIntelligence(train,auditData,formulaNames,{skipEndToEnd:true});
+    const trainAudit={};
+    formulaNames.forEach(fName=>{
+      try{ trainAudit[fName]=auditFormula(train,fName); }catch(e){ trainAudit[fName]=auditData?.[fName]||{}; }
+    });
+    const shadow=buildDigitIntelligence(train,trainAudit,formulaNames,{skipEndToEnd:true});
     const selected=(shadow.selected||[]).map(x=>x.digit).slice(0,2);
     const actual=[...String(target.n3||''),...String(target.n2||'')].map(Number).filter(Number.isFinite);
     const top1Hit=selected.length>0&&actual.includes(selected[0]);
@@ -2784,6 +2796,7 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
   const formulaNames=Object.keys(formulas);
   const data=Array.isArray(records)?records:[];
   const target=Number(mainDigit),other=Number(otherDigit);
+  const governor=buildAdaptiveFormulaWeights(data,formulaNames);
   const candidates=[...Array(10).keys()].filter(u=>u!==target&&u!==other);
   const recentN=Math.min(10,data.length),midN=Math.min(20,data.length),longN=Math.min(30,data.length);
   const contains=(r,d)=>String(r?.n3??'').includes(String(d))||String(r?.n2??'').includes(String(d));
@@ -2808,7 +2821,11 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
       const fs=auditMap?.[lotteryName]?.[f];
       if(!fs)return;
       const digits=Array.isArray(fs.latestDigits)?fs.latestDigits:[];
-      if(digits.includes(target)||digits.includes(unit)){formulaSupport+=Number(fs.hitRate)||0;formulaHits++;}
+      if(digits.includes(target)||digits.includes(unit)){
+        const fw=Number(governor?.weights?.[f]||1);
+        formulaSupport+=(Number(fs.hitRate)||0)*fw;
+        formulaHits+=fw;
+      }
     });
     const formulaScore=formulaHits?clampEvidence(formulaSupport/formulaHits):50;
     const interaction=mainPairInteractionQuality(data,target,unit);
@@ -3366,7 +3383,7 @@ function renderGlobalTable(
           <td>${g.rolling20}%</td>
           <td>${g.recencyRate}%</td>
           <td>${g.stability}%</td>
-          <td class="${g.trend.cls}">
+          <td class="${safeTrend(g.trend).cls}">
             ${g.trend.label}
           </td>
         </tr>
@@ -3584,7 +3601,7 @@ function renderLotteryAuditTable(
           <td>${f.rolling20}%</td>
           <td>${f.recencyRate}%</td>
           <td>${f.stability}%</td>
-          <td class="${f.trend.cls}">
+          <td class="${safeTrend(f.trend).cls}">
             ${f.trend.label}
           </td>
           <td style="color:#2e7d32;font-weight:700">
@@ -4939,30 +4956,16 @@ function runEngineCore(){
          ORIGINAL PAIR / DIGIT GENERATION
          *** V52 — LEGACY TARGET-PAIR FORMULA REMOVED ***
       ----------------------------------------- */
-      const d1Pairs=
-        generateFormulaPairs(
-          d1,
-          d2,
-          auditDataMap,
-          lotteryName,
-          resultRecs
-        );
-      const d2Pairs=
-        generateFormulaPairs(
-          d2,
-          d1,
-          auditDataMap,
-          lotteryName,
-          resultRecs
-        );
-      /* -----------------------------------------
-         INTELLIGENT SCORE SELECTION
-         22-25: isolated dataset + multi-angle intelligence
-      ----------------------------------------- */
       const intelligence=buildDigitIntelligence(resultRecs,auditDataMap[lotteryName],formulaNames);
       if(auditDataMap[lotteryName]&&intelligence?.formulaGovernor){
         auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
       }
+      const d1Pairs=generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs);
+      const d2Pairs=generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs);
+      /* -----------------------------------------
+         INTELLIGENT SCORE SELECTION
+         22-25: isolated dataset + multi-angle intelligence
+      ----------------------------------------- */
       const consensus=intelligence.consensus;
       const selectedRows=intelligence.selected||[];
       const scoreD1=selectedRows[0]?.digit;
