@@ -2701,63 +2701,153 @@ function mainPairCalibratedPrecision(wfPrecision,tests,empirical){
 function adaptiveMainPairCandidates(mainDigit,otherDigit,anchor,auditMap,lotteryName,records){
   const formulaNames=Object.keys(formulas);
   const data=Array.isArray(records)?records:[];
-  const normalPool=[-2,-1,0,1,2].map(off=>norm(anchor+off));
-  const collision=normalPool.some(u=>u===mainDigit||u===otherDigit);
+  const target=Number(mainDigit),other=Number(otherDigit),anc=Number(anchor);
+  const normalPool=[-2,-1,0,1,2].map(off=>norm(anc+off));
+  const collision=normalPool.some(u=>u===target||u===other);
   const offsets=collision?[-3,-2,-1,0,1,2,3]:[-2,-1,0,1,2];
-  const baselinePool=Array.from(new Set(offsets.map(off=>norm(anchor+off))))
-    .filter(u=>u!==mainDigit&&u!==otherDigit);
-  const allUnits=[...Array(10).keys()].filter(u=>u!==mainDigit&&u!==otherDigit&&u!==mainDigit);
+  const baselinePool=Array.from(new Set(offsets.map(off=>norm(anc+off))))
+    .filter(u=>u!==target&&u!==other);
+  const allUnits=[...Array(10).keys()].filter(u=>u!==target&&u!==other);
   const candidates=Array.from(new Set([...baselinePool,...allUnits]));
   const recentN=Math.min(10,data.length),midN=Math.min(20,data.length),longN=Math.min(30,data.length);
-  const rate=(arr,u)=>arr.length?arr.filter(r=>String(r.n3||'').includes(String(mainDigit))&&String(r.n3||'').includes(String(u))||String(r.n2||'').includes(String(mainDigit))&&String(r.n2||'').includes(String(u))).length/arr.length*100:50;
+  const contains=(r,d)=>String(r?.n3??'').includes(String(d))||String(r?.n2??'').includes(String(d));
+  const pairHit=(r,a,b)=>{
+    const n2=String(r?.n2??'').padStart(2,'0'), n3=String(r?.n3??'').padStart(3,'0');
+    const p=String(a)+String(b), rev=String(b)+String(a);
+    return n2===p||n2===rev||n3.includes(p)||n3.includes(rev);
+  };
+  const rate=(arr,u)=>arr.length?arr.filter(r=>pairHit(r,target,u)).length/arr.length*100:50;
+  const digitRate=(arr,d)=>arr.length?arr.filter(r=>contains(r,d)).length/arr.length*100:50;
+  const mean=arr=>arr.length?arr.reduce((a,v)=>a+v,0)/arr.length:50;
+  const clampEvidence=v=>clamp(Number.isFinite(v)?v:50,0,100);
   const out=candidates.map(unit=>{
+    const pair=String(target)+String(unit);
+    /* GROUP 1 — occurrence: one combined empirical estimate, avoiding four
+       separate votes for the same underlying hit event. */
+    const empirical=clampEvidence(rate(data,unit)*0.45+rate(data.slice(-recentN),unit)*0.35+rate(data.slice(-midN),unit)*0.20);
+    const longRate=rate(data.slice(-longN),unit);
+    const recentRate=rate(data.slice(-recentN),unit);
+    const midRate=rate(data.slice(-midN),unit);
+    const momentum=clampEvidence(50+(recentRate-longRate)*0.9+(recentRate-midRate)*0.45);
+    const temporal=clampEvidence(recentRate*0.45+midRate*0.30+longRate*0.15+momentum*0.10);
+    /* GROUP 2 — formula support: distinct formula families contribute their
+       audited hit-rate once, then are capped so correlated formulas cannot
+       dominate the pair engine. */
     let formulaSupport=0,formulaHits=0;
     formulaNames.forEach(f=>{
       const fs=auditMap?.[lotteryName]?.[f];
       if(!fs)return;
       const digits=Array.isArray(fs.latestDigits)?fs.latestDigits:[];
-      if(digits.includes(mainDigit)||digits.includes(unit)){formulaSupport+=Number(fs.hitRate)||0;formulaHits++;}
+      if(digits.includes(target)||digits.includes(unit)){formulaSupport+=Number(fs.hitRate)||0;formulaHits++;}
     });
-    const pair=String(mainDigit)+String(unit);
-    const exactAll=rate(data,unit);
-    const recent=rate(data.slice(-recentN),unit);
-    const mid=rate(data.slice(-midN),unit);
-    const long=rate(data.slice(-longN),unit);
-    const wf=mainPairWalkForwardQuality(data,mainDigit,unit);
-    const interaction=mainPairInteractionQuality(data,mainDigit,unit);
-    const perturb=mainPairPerturbationQuality(data,mainDigit,unit);
-    const anchorScore=clamp(100-Math.abs(unit-anchor)*25,0,100);
-    const baselineBonus=baselinePool.includes(unit)?6:0;
-    const empirical=clamp(exactAll*.35+recent*.30+mid*.20+long*.15,0,100);
+    const formulaScore=formulaHits?clampEvidence(formulaSupport/formulaHits):50;
+    /* GROUP 3 — interaction: reward pair lift over independent digit rates,
+       but cap the effect because interaction and empirical precision share data. */
+    const interaction=mainPairInteractionQuality(data,target,unit);
+    const interactionScore=clampEvidence(interaction.synergy);
+    /* GROUP 4 — validation: chronological pair precision + stability +
+       perturbation. These are validation dimensions, not extra hit-rate votes. */
+    const wf=mainPairWalkForwardQuality(data,target,unit);
+    const perturb=mainPairPerturbationQuality(data,target,unit);
+    const validation=clampEvidence(
+      (clampEvidence(wf.precision))*0.55 +
+      (clampEvidence(wf.stability))*0.25 +
+      (clampEvidence(perturb.stability))*0.20
+    );
     const calibrated=mainPairCalibratedPrecision(wf.precision,wf.tested,empirical);
-    const formulaScore=formulaHits?clamp(formulaSupport/formulaHits,0,100):50;
-    const risk=clamp(100-(recent<20?20:0)-(exactAll<15?12:0)-Math.abs(recent-long)*.35-(100-perturb.stability)*.18,0,100);
-    const score=empirical*.20+calibrated*.20+formulaScore*.10+interaction.synergy*.12+
-      anchorScore*.06+clamp(wf.precision*3.0,0,100)*.18+wf.stability*.07+perturb.stability*.07+risk*.10+baselineBonus;
-    return {pair,val:parseInt(pair,10),score:round2(score),meta:{empiricalPrecision:round2(empirical),calibratedPrecision:calibrated,formulaSupport:round2(formulaScore),anchorScore:round2(anchorScore),pairInteraction:interaction.synergy,exactPairPrecision:interaction.exactPairPrecision,pairObservations:interaction.observations,pairPerturbationStability:perturb.stability,pairPerturbationSensitivity:perturb.sensitivity,pairWalkForwardPrecision:wf.precision,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,risk:round2(risk),baseline:baselinePool.includes(unit)}};
-  }).sort((a,b)=>b.score-a.score||b.meta.pairWalkForwardPrecision-a.meta.pairWalkForwardPrecision||a.val-b.val);
-  const baseline=baselinePool.slice(0,5).map(unit=>out.find(x=>x.pair===String(mainDigit)+String(unit))).filter(Boolean);
+    /* GROUP 5 — structural / target relationship. Anchor is a prior, not a
+       decision. It can be beaten by stronger historical evidence. */
+    const anchorScore=clampEvidence(100-Math.abs(unit-anc)*25);
+    const targetStrength=clampEvidence(digitRate(data,target));
+    const partnerStrength=clampEvidence(digitRate(data,unit));
+    const structural=clampEvidence(anchorScore*0.45+targetStrength*0.25+partnerStrength*0.30);
+    /* Risk is deliberately a penalty family. Low recent support, high drift,
+       and unstable perturbation reduce selection quality instead of becoming
+       another positive evidence vote. */
+    const drift=Math.abs(recentRate-longRate);
+    const risk=clampEvidence(100-(recentRate<20?18:0)-(empirical<15?14:0)-drift*0.30-(100-perturb.stability)*0.22);
+    /* Evidence independence: reward candidates supported by different groups,
+       without inventing new UI fields. */
+    const groupScores=[empirical,temporal,formulaScore,interactionScore,validation,structural];
+    const strongGroups=groupScores.filter(v=>v>=62).length;
+    const evidenceDiversity=clampEvidence(50+strongGroups*8);
+    /* Systemized score: each family has one role, preventing the V49-style
+       double-counting of near-identical historical metrics. */
+    const baseScore=
+      empirical*0.24+
+      temporal*0.16+
+      formulaScore*0.12+
+      interactionScore*0.10+
+      validation*0.22+
+      structural*0.06+
+      risk*0.06+
+      evidenceDiversity*0.04;
+    const novelty=baselinePool.includes(unit)?0:1.5;
+    const score=round2(clampEvidence(baseScore+novelty));
+    return {
+      pair,val:parseInt(pair,10),score,
+      meta:{
+        empiricalPrecision:round2(empirical),
+        temporalEvidence:round2(temporal),
+        recentPrecision:round2(recentRate),
+        midPrecision:round2(midRate),
+        longPrecision:round2(longRate),
+        formulaSupport:round2(formulaScore),
+        pairInteraction:round2(interactionScore),
+        exactPairPrecision:interaction.exactPairPrecision,
+        pairObservations:interaction.observations,
+        pairWalkForwardPrecision:round2(wf.precision),
+        pairWalkForwardStability:round2(wf.stability),
+        pairWalkForwardTests:wf.tested,
+        pairPerturbationStability:round2(perturb.stability),
+        pairPerturbationSensitivity:perturb.sensitivity,
+        calibratedPrecision:calibrated,
+        anchorScore:round2(anchorScore),
+        structuralScore:round2(structural),
+        targetStrength:round2(targetStrength),
+        partnerStrength:round2(partnerStrength),
+        risk:round2(risk),
+        evidenceDiversity:round2(evidenceDiversity),
+        evidenceGroups:strongGroups,
+        baseline:baselinePool.includes(unit)
+      }
+    };
+  }).sort((a,b)=>b.score-a.score||b.meta.pairWalkForwardPrecision-a.meta.pairWalkForwardPrecision||b.meta.pairWalkForwardStability-a.meta.pairWalkForwardStability||a.val-b.val);
+  const baseline=baselinePool.slice(0,5)
+    .map(unit=>out.find(x=>x.pair===String(target)+String(unit)))
+    .filter(Boolean);
   const adaptive=out.slice(0,5);
-  const baselineScore=baseline.length?baseline.reduce((a,x)=>a+x.score,0)/baseline.length:0;
-  const adaptiveScore=adaptive.length?adaptive.reduce((a,x)=>a+x.score,0)/adaptive.length:0;
-  /* Evolution Guard: replace the baseline only when the broader candidate
-     search has enough chronological evidence and a meaningful advantage. */
-  const tested=adaptive.reduce((m,x)=>Math.max(m,x.meta.pairWalkForwardTests||0),0);
-  const adaptiveRobustness=adaptive.length?adaptive.reduce((a,x)=>a+(Number(x.meta?.pairPerturbationStability)||50),0)/adaptive.length:50;
-  const useAdaptive=adaptive.length>=5 && (data.length<14 || (tested>=4 && adaptiveScore>=baselineScore+2.0 && adaptiveRobustness>=58));
-  const chosen=(useAdaptive?adaptive:baseline.length>=5?baseline:adaptive).slice(0,5);
+  const avg=arr=>arr.length?arr.reduce((a,x)=>a+x.score,0)/arr.length:0;
+  const baselineScore=avg(baseline),adaptiveScore=avg(adaptive);
+  const tested=adaptive.reduce((m,x)=>Math.max(m,Number(x.meta?.pairWalkForwardTests)||0),0);
+  const adaptiveValidation=adaptive.length?mean(adaptive.map(x=>Number(x.meta?.pairWalkForwardStability)||50)):50;
+  const adaptiveEvidence=adaptive.length?mean(adaptive.map(x=>Number(x.meta?.evidenceGroups)||0)):0;
+  /* Guarded evolution: with enough data, broader candidates must beat the
+     formula-era baseline on score AND validation. With sparse data, preserve
+     the deterministic baseline prior. */
+  const enoughData=data.length>=14;
+  const useAdaptive=adaptive.length>=5 && (
+    !enoughData ||
+    (tested>=4 && adaptiveScore>=baselineScore+1.5 && adaptiveValidation>=58 && adaptiveEvidence>=2.5)
+  );
+  const chosen=(useAdaptive?adaptive:(baseline.length>=5?baseline:adaptive)).slice(0,5);
   const chosenSorted=[...chosen].sort((a,b)=>b.score-a.score||a.val-b.val);
   const r1=chosenSorted[0]?.pair,r2=chosenSorted[1]?.pair,r3=chosenSorted[2]?.pair;
-  return chosen.sort((a,b)=>a.val-b.val).map(x=>({...x,selectionMode:useAdaptive?'ADAPTIVE_GUARDED':'BASELINE_GUARDED',rankClass:x.pair===r1?'rank-gold':x.pair===r2?'rank-silver':x.pair===r3?'rank-rosegold':''}));
+  return chosen.sort((a,b)=>a.val-b.val).map(x=>({...x,selectionMode:useAdaptive?'ADAPTIVE_VALIDATED':'BASELINE_VALIDATED',rankClass:x.pair===r1?'rank-gold':x.pair===r2?'rank-silver':x.pair===r3?'rank-rosegold':''}));
 }
 /* =========================================================
    13. TARGET-PAIR INTELLIGENCE
-   Baseline method is preserved as the reference. The unlocked selection
-   layer may replace it only after a bounded chronological advantage test.
+   PAIR SELECTION IS UNLOCKED. Baseline remains only as a controlled prior;
+   adaptive selection can replace it when evidence and validation support it.
 ========================================================= */
-function generateFormulaPairs(mainDigit,otherDigit,anchor,auditMap,lotteryName){
-  const records=(typeof window!=='undefined'&&Array.isArray(window.__LOTTO_RESULT_RECS__))?window.__LOTTO_RESULT_RECS__:[];
-  return adaptiveMainPairCandidates(mainDigit,otherDigit,anchor,auditMap,lotteryName,records);
+function generateFormulaPairs(mainDigit,otherDigit,anchor,auditMap,lotteryName,records){
+  /* UNLOCKED PAIR ENGINE V50
+     Pair selection is deliberately separated from the locked standout formulas.
+     The engine receives the actual historical records explicitly; no hidden/global
+     record dependency is allowed. This makes the same intelligence path usable by
+     both main cards while preserving their locked standout digits and UI. */
+  const data=Array.isArray(records)?records:[];
+  return adaptiveMainPairCandidates(mainDigit,otherDigit,anchor,auditMap,lotteryName,data);
 }
 /* =========================================================
    14. BUILD FORMULA CARD
@@ -2789,13 +2879,18 @@ function buildFormulaPrediction(
     Math.abs(
       7-p.hundredsDigit
     )%10;
+  const pairRecords=
+    Array.isArray(p.recordsForFrequency)
+      ? p.recordsForFrequency
+      : [];
   const d1Pairs=
     generateFormulaPairs(
       d1,
       d2,
       anchor,
       currentAuditDataMap,
-      lotteryName
+      lotteryName,
+      pairRecords
     );
   const d2Pairs=
     generateFormulaPairs(
@@ -2803,7 +2898,8 @@ function buildFormulaPrediction(
       d1,
       anchor,
       currentAuditDataMap,
-      lotteryName
+      lotteryName,
+      pairRecords
     );
   return{
     lotteryName,
@@ -4944,8 +5040,8 @@ function runEngineCore(){
       const secondScore=scoreData.find(x=>x.digit===scoreD2)||scoreData.find(x=>x.digit!==scoreD1);
       if(scoreD1===undefined||scoreD2===undefined) return;
       const confidence=getConfidence(selectedScore,secondScore,auditDataMap[lotteryName],formulaNames,intelligence);
-      const scoreD1Pairs=generateFormulaPairs(scoreD1,scoreD2,anchor,auditDataMap,lotteryName);
-      const scoreD2Pairs=generateFormulaPairs(scoreD2,scoreD1,anchor,auditDataMap,lotteryName);
+      const scoreD1Pairs=generateFormulaPairs(scoreD1,scoreD2,anchor,auditDataMap,lotteryName,resultRecs);
+      const scoreD2Pairs=generateFormulaPairs(scoreD2,scoreD1,anchor,auditDataMap,lotteryName,resultRecs);
       /* -----------------------------------------
          SAVE PREDICTION DATA
       ----------------------------------------- */
