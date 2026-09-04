@@ -4530,7 +4530,7 @@ function v85PlusApplyResolution(intelligence,records){
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const core=buildDigitIntelligenceV84Core(records,auditData,formulaNames,options);
   const v85=v85ApplyFinalDecisionGovernor(core,records,auditData,formulaNames);
-  return v85ApplyResolution(v85,records);
+  return v85PlusApplyResolution(v85,records);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
 
@@ -4713,8 +4713,21 @@ function v73LatestFormulaVote(auditData,names){
     fam[source].weight=Math.max(fam[source].weight,weight);
     if(Array.isArray(f.latestDigits)) fam[source].digits.push(...f.latestDigits.map(Number).filter(d=>d>=0&&d<=9));
   });
-  const out=Array(10).fill(0),den=Object.values(fam).reduce((s,x)=>s+x.weight,0)||1;
-  Object.values(fam).forEach(x=>new Set(x.digits).forEach(d=>{out[d]+=x.weight;}));
+  /* FAIRNESS LAYER: repeated formula agreement is useful evidence, but it is
+     correlated evidence. Give the first independent family full credit and
+     progressively smaller marginal credit to additional families selecting
+     the same digit. This changes ranking pressure only; formula bodies stay
+     completely locked. */
+  const out=Array(10).fill(0);
+  const familyList=Object.values(fam);
+  const den=familyList.reduce((s,x)=>s+x.weight,0)||1;
+  const marginal=[1,.74,.55,.40,.30,.24,.20,.18,.16,.15];
+  const perDigit=Array.from({length:10},()=>[]);
+  familyList.forEach(x=>new Set(x.digits).forEach(d=>perDigit[d].push(Number(x.weight)||0)));
+  perDigit.forEach((weights,d)=>{
+    weights.sort((a,b)=>b-a);
+    out[d]=weights.reduce((sum,w,i)=>sum+w*(marginal[i]??marginal[marginal.length-1]),0);
+  });
   return out.map(x=>x/den*100);
 }
 function v73DigitOOS(recs,names,auditData){
@@ -4754,8 +4767,19 @@ function v73LatestFormulaVoteFromTrain(train,names){
     const vals=fn(Number(n3[0]),Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1]))||[];
     fam[source].digits=(fam[source].digits||[]).concat(vals.slice(0,2).map(v=>((Number(v)%10)+10)%10));
   });
-  const den=Object.values(fam).reduce((s,x)=>s+x.weight,0)||1;
-  Object.values(fam).forEach(x=>new Set(x.digits||[]).forEach(d=>out[d]+=x.weight));
+  /* FAIRNESS LAYER (chronological replay): correlated formula collisions get
+     diminishing marginal credit per independent formula body. This keeps
+     consensus useful while preventing a crowded digit from overwhelming
+     empirical/temporal evidence. */
+  const familyList=Object.values(fam);
+  const den=familyList.reduce((s,x)=>s+x.weight,0)||1;
+  const marginal=[1,.74,.55,.40,.30,.24,.20,.18,.16,.15];
+  const perDigit=Array.from({length:10},()=>[]);
+  familyList.forEach(x=>new Set(x.digits||[]).forEach(d=>perDigit[d].push(Number(x.weight)||0)));
+  perDigit.forEach((weights,d)=>{
+    weights.sort((a,b)=>b-a);
+    out[d]=weights.reduce((sum,w,i)=>sum+w*(marginal[i]??marginal[marginal.length-1]),0);
+  });
   return out.map(x=>x/den*100);
 }
 function v73Refine(base,recs,auditData,names){
