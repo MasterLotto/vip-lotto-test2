@@ -1199,8 +1199,27 @@ function getLotteryFlag(name){
   /* V56 — deterministic market-first flag resolver.
      Never infer country from a generic time word such as "เช้า" or "บ่าย".
      Market identity must win before time-of-day identity. */
-  const n=String(name||'').trim().toLowerCase().replace(/\s+/g,'');
+  /* Normalize zero-width/invisible characters as well as whitespace.
+     Some imported dataset keys can carry hidden Unicode separators, which
+     previously could bypass the market matcher and fall through to 🌐. */
+  const n=String(name||'')
+    .replace(/[\u200B-\u200D\uFEFF\u2060\u2063]/g,'')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g,'');
   if(!n)return'🌐';
+  /* Canonical Japan/Nikkei sessions — hard-stop before generic routing.
+     These are the four official display forms used by this engine. */
+  if(
+    n==='นิเคอิเช้า'||
+    n==='นิเคอิบ่าย'||
+    n==='นิเคอิvipเช้า'||
+    n==='นิเคอิvipบ่าย'||
+    n==='หุ้นนิเคอิเช้า'||
+    n==='หุ้นนิเคอิบ่าย'||
+    n==='หุ้นนิเคอิvipเช้า'||
+    n==='หุ้นนิเคอิvipบ่าย'
+  )return'🇯🇵';
   /* Thailand — exact/strong market identity first. */
   if(n.includes('หุ้นไทย')||n.includes('__thai_round__')||n.includes('__thai_allday__')||n.includes('__thai_top__')||n.includes('ไทยเย็น')||n.includes('ไทยเช้า')||n.includes('ไทยเที่ยง')||n.includes('ไทยบ่าย')||n.includes('ตลาดหุ้นไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส'))return'🇹🇭';
   /* Vietnam / Hanoi. */
