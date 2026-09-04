@@ -1419,7 +1419,7 @@ function updateIndicator(){
    AI STATISTICS HELPERS
 ========================================================= */
 function buildDigitIntelligence(records,auditData,ignoredNames,options={}){
-  const recs=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const recs=(Array.isArray(records)?records:[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
   const n=recs.length,digits=[0,1,2,3,4,5,6,7,8,9];
   const chars=r=>[...String(r?.n3??'').padStart(3,'0'),...String(r?.n2??'').padStart(2,'0')].map(Number).filter(Number.isFinite);
   const has=(r,d)=>chars(r).includes(d);
