@@ -876,7 +876,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 .m2d-capture-button{display:inline-flex;}
 </style>
 <!-- V54 PLUS+ baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
-<!-- V63 AI-ONLY: chronological statistical learning, adaptive windows, pair evidence, validation. -->
+<!-- V64 ADAPTIVE AI: chronological statistical learning, adaptive windows, pair evidence, validation. -->
 </head>
 <body>
 <canvas id="snow"></canvas>
@@ -921,7 +921,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
       placeholder="นิเคอิ เช้า | 30 ส.ค. 69&#10;244&#10;43&#10;&#10;นิเคอิ บ่าย | 29 ส.ค. 69&#10;276&#10;87&#10;&#10;พม่า 2D&#10;🗓 1 ก.ย. 69 : 06 -- 25&#10;🗓 2 ก.ย. 69 : 17 -- ××"></textarea>
   </div>
   <div class="actions">
-    <button id="run" class="run">
+    <button id="run" class="run" type="button" onclick="window.__runEngineSafe && window.__runEngineSafe()">
       ⚡ ประมวลผล V32.4 + 2D
     </button>
     <button id="clearInput" class="clear">
@@ -1422,21 +1422,48 @@ function buildDigitIntelligence(records,auditData,ignoredNames,options={}){
   const recs=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
   const n=recs.length,digits=[0,1,2,3,4,5,6,7,8,9];
   const chars=r=>[...String(r?.n3??'').padStart(3,'0'),...String(r?.n2??'').padStart(2,'0')].map(Number).filter(Number.isFinite);
-  const has=(r,d)=>chars(r).includes(d), rate=(a,d)=>a.length?a.filter(r=>has(r,d)).length/a.length:0;
-  const recency=(a,d)=>{if(!a.length)return .5;let hit=0,sum=0;for(let i=0;i<a.length;i++){const w=Math.exp(-Math.log(2)*(a.length-1-i)/AI_MODEL_CONFIG.recencyHalfLife);sum+=w;if(has(a[i],d))hit+=w;}return hit/sum;};
-  const wr=(a,d,w)=>rate(a.slice(-Math.min(w,a.length)),d);
-  const transition=(a,d)=>{let den=0,hit=0;for(let i=0;i<a.length-1;i++){if(has(a[i],d)){den++;if(has(a[i+1],d))hit++;}}return den?(hit+1)/(den+2)*100:50;};
-  const gap=(a,d)=>{let last=-1;const gs=[];for(let i=0;i<a.length;i++){if(has(a[i],d)){if(last>=0)gs.push(i-last-1);last=i;}}if(last<0||!gs.length)return 50;const mean=avg(gs),sd=Math.sqrt(avg(gs.map(x=>(x-mean)**2)))||1,z=Math.abs((a.length-1-last)-mean)/sd;return clamp(72-z*10,15,90);};
-  const stability=(a,d)=>{const x=[5,9,15,30,60].filter(w=>a.length>=w).map(w=>wr(a,d,w));if(x.length<2)return 50;const m=avg(x),sd=Math.sqrt(avg(x.map(v=>(v-m)**2)));return clamp(100-sd*180,0,100);};
-  const position=(a,d)=>{if(!a.length)return 50;const c=[r=>String(r.n3||'').padStart(3,'0')[0],r=>String(r.n3||'').padStart(3,'0')[1],r=>String(r.n3||'').padStart(3,'0')[2],r=>String(r.n2||'').padStart(2,'0')[0],r=>String(r.n2||'').padStart(2,'0')[1]];return avg(c.map(f=>a.filter(r=>Number(f(r))===d).length/a.length))*100;};
-  const oos=(a,d)=>{if(a.length<13)return 50;let t=0,h=0;for(let i=Math.max(8,a.length-36);i<a.length;i++){const tr=a.slice(0,i),s=wr(tr,d,15)*.45+rate(tr,d)*100*.2+recency(tr,d)*100*.35;if(s>=14.5){t++;if(has(a[i],d))h++;}}return t?h/t*100:50;};
-  const rows=digits.map(d=>{const long=rate(recs,d)*100,med=wr(recs,d,30)*100,short=wr(recs,d,9)*100,r5=wr(recs,d,5)*100,r60=wr(recs,d,60)*100,rc=recency(recs,d)*100,tr=transition(recs,d),gp=gap(recs,d),ps=position(recs,d),st=stability(recs,d),emp=oos(recs,d);const trend=clamp(50+(r5-med)*1.5+(short-r60)*.8,0,100),persist=st*.55+emp*.45,div=avg([long,med,rc,trend,tr,gp,ps,st,emp]),risk=clamp(50+Math.abs(rc-long)*.45+Math.abs(trend-long)*.2+Math.abs(emp-rc)*.15-(st<35?15:0)-(emp<45?10:0),0,100),score=clamp(long*.12+med*.13+rc*.16+trend*.13+tr*.13+gp*.07+ps*.08+st*.08+emp*.10+Math.min(5,Math.max(0,(div-55)*.08))-Math.max(0,(risk-60)*.18),0,100);return{digit:d,score:round2(score),selectionQuality:round2(score),agreement:0,raw:{frequencyEvidence:round2(long),mediumFrequency:round2(med),trendEvidence:round2(trend),timingEvidence:round2(tr),structuralEvidence:round2(ps),historicalEvidence:round2(long),robustnessSurvival:round2(st),signalPersistence:round2(persist),counterfactualStability:round2(emp),empiricalPrecision:round2(emp),gapEvidence:round2(gp),recencyStrength:round2(rc),evidenceDiversity:round2(div),falsePositiveRisk:round2(risk),conflict:round2(Math.abs(rc-long)+Math.abs(emp-rc)),smartObjective:round2(score),smartAdjusted:round2(score)}};});
-  const ranked=rows.sort((a,b)=>b.selectionQuality-a.selectionQuality||b.raw.signalPersistence-a.raw.signalPersistence||a.digit-b.digit);ranked.forEach((r,i)=>r.raw.smartRank=i+1);
-  const pool=ranked.slice(0,AI_MODEL_CONFIG.candidatePool);let best=null;for(let i=0;i<pool.length;i++)for(let j=i+1;j<pool.length;j++){const a=pool[i],b=pool[j],s=a.selectionQuality*.44+b.selectionQuality*.44+Math.min(a.raw.robustnessSurvival,b.raw.robustnessSurvival)*.06+Math.min(a.raw.signalPersistence,b.raw.signalPersistence)*.06+(Math.abs(a.digit-b.digit)>=3?5:0);if(!best||s>best.s)best={a,b,s};}
-  const selected=(best?[best.a,best.b]:ranked.slice(0,2)).sort((a,b)=>b.selectionQuality-a.selectionQuality);const wf=(!options.skipEndToEnd&&n>=13)?buildEndToEndWalkForward(recs):{tested:0,hits:0,hitRate:50,top1Rate:50,top2Rate:50,leakageIssues:0,rows:[]};const margin=selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0;const gate=round2(clamp(avg(selected.map(x=>x.selectionQuality))*.72+(wf.tested?wf.hitRate:50)*.28,0,100));
-  return{aiOnly:true,version:AI_ENGINE_VERSION,frequency:{rates:Object.fromEntries(digits.map(d=>[d,round2(rate(recs,d)*100)]))},consensus:[],historicalConsensus:[],rows:ranked,selected,margin,qualityGate:gate,smartObjective:{version:AI_ENGINE_VERSION,primaryEvidenceWeight:1,fixedRuleSupportWeight:0,selectedDigits:selected.map(x=>x.digit),candidatePool:pool.map(x=>({digit:x.digit,score:x.selectionQuality}))},endToEndWalkForward:wf,finalGate:{passed:selected.length===2,decision:selected.length===2?'SELECT':'INSUFFICIENT_CANDIDATES',decisionConfidence:gate,empiricalWalkForwardRate:wf.hitRate,leakageIssues:wf.leakageIssues||0}};
+  const has=(r,d)=>chars(r).includes(d);
+  const safeRate=(a,d)=>a.length?a.filter(r=>has(r,d)).length/a.length:.5;
+  const ewma=(a,d,hl)=>{if(!a.length)return .5;const w=a.map((_,i)=>Math.exp(-Math.log(2)*(a.length-1-i)/hl));let z=0,q=0;for(let i=0;i<a.length;i++){q+=w[i];if(has(a[i],d))z+=w[i];}return q?z/q:.5;};
+  const posTransition=(a,d)=>{if(a.length<2)return .5;const last=chars(a[a.length-1]),vals=[];for(let p=0;p<5;p++){const x=last[p],den=a.slice(0,-1).filter(r=>chars(r)[p]===x).length;if(!den)continue;const num=a.slice(0,-1).reduce((s,r,i)=>s+(chars(r)[p]===x&&chars(a[i+1])[p]===d?1:0),0);vals.push((num+1)/(den+10));}return vals.length?Math.max(...vals):.5;};
+  const gapResonance=(a,d)=>{const idx=[];for(let i=0;i<a.length;i++)if(has(a[i],d))idx.push(i);if(idx.length<2)return .5;const gs=[];for(let i=1;i<idx.length;i++)gs.push(idx[i]-idx[i-1]);const mean=avg(gs),sd=Math.sqrt(avg(gs.map(x=>(x-mean)**2)))||1,gap=a.length-1-idx[idx.length-1];return clamp(Math.exp(-Math.abs(gap-mean)/(sd+1)),.15,.95);};
+  const featureRows=digits.map(d=>{
+    const f5=safeRate(recs.slice(-5),d),f9=safeRate(recs.slice(-9),d),f15=safeRate(recs.slice(-15),d),f20=safeRate(recs.slice(-20),d),f30=safeRate(recs.slice(-30),d),f60=safeRate(recs.slice(-60),d),e6=ewma(recs,d,6),e12=ewma(recs,d,12),e20=ewma(recs,d,20),pt=posTransition(recs,d),gp=gapResonance(recs,d);
+    const trend=clamp(.5+(f5-f30)*1.5+(f9-f60)*.8,0,1),stability=clamp(1-Math.sqrt(avg([f5,f9,f15,f20,f30,f60].map(v=>(v-avg([f5,f9,f15,f20,f30,f60]))**2)))*2,0,1);
+    return{digit:d,features:{f5,f9,f15,f20,f30,f60,e6,e12,e20,pt,gp,trend,stability}};
+  });
+  const strategies=[
+    x=>x.f5*.60+x.f9*.20+x.e6*.20,
+    x=>x.f9*.55+x.f15*.20+x.e12*.25,
+    x=>x.f15*.45+x.f20*.25+x.e12*.30,
+    x=>x.f20*.45+x.f30*.25+x.e20*.30,
+    x=>x.f30*.45+x.f60*.20+x.e20*.35,
+    x=>x.e6*.45+x.e12*.35+x.f5*.20,
+    x=>x.e12*.50+x.e20*.30+x.f15*.20,
+    x=>x.e20*.50+x.f30*.30+x.f60*.20,
+    x=>x.pt*.55+x.f15*.20+x.e12*.25,
+    x=>x.gp*.45+x.f20*.25+x.e12*.30,
+    x=>x.trend*.45+x.e6*.30+x.pt*.25,
+    x=>x.stability*.35+x.f20*.30+x.e12*.35
+  ];
+  const strategyPast=Array.from({length:strategies.length},()=>[]);
+  if(n>=14){
+    const lo=Math.max(8,n-24);
+    for(let t=lo;t<n;t++){
+      const tr=recs.slice(0,t),target=recs[t];
+      const tf=digits.map(d=>{const f5=safeRate(tr.slice(-5),d),f9=safeRate(tr.slice(-9),d),f15=safeRate(tr.slice(-15),d),f20=safeRate(tr.slice(-20),d),f30=safeRate(tr.slice(-30),d),f60=safeRate(tr.slice(-60),d),e6=ewma(tr,d,6),e12=ewma(tr,d,12),e20=ewma(tr,d,20),pt=posTransition(tr,d),gp=gapResonance(tr,d),trend=clamp(.5+(f5-f30)*1.5+(f9-f60)*.8,0,1),stability=1;return{digit:d,f5,f9,f15,f20,f30,f60,e6,e12,e20,pt,gp,trend,stability};});
+      for(let j=0;j<strategies.length;j++){const ss=tf.map(x=>strategies[j](x));const pick=ss.map((v,d)=>({v,d})).sort((a,b)=>b.v-a.v||a.d-b.d).slice(0,2);strategyPast[j].push(pick.some(x=>has(target,x.d))?1:0);}
+    }
+  }
+  const weights=strategyPast.map(o=>{if(!o.length)return 1;let z=0,q=0;for(let i=0;i<o.length;i++){const w=Math.exp(-.5*(o.length-1-i));q+=w;z+=o[i]*w;}return .35+(z/q);});
+  const scored=featureRows.map(r=>{const vals=strategies.map(fn=>fn(r.features));let total=0,wTotal=0;for(let j=0;j<vals.length;j++){total+=vals[j]*weights[j];wTotal+=weights[j];}const ensemble=wTotal?total/wTotal:.5;const robust=avg([r.features.f9,r.features.f15,r.features.f20,r.features.f30,r.features.e12,r.features.e20,r.features.pt]);const score=clamp(ensemble*.72+robust*.18+r.features.trend*.06+r.features.stability*.04,0,1)*100;return{digit:r.digit,score:round2(score),selectionQuality:round2(score),agreement:0,raw:{frequencyEvidence:round2(r.features.f30*100),mediumFrequency:round2(r.features.f20*100),trendEvidence:round2(r.features.trend*100),timingEvidence:round2(r.features.pt*100),structuralEvidence:round2(r.features.stability*100),historicalEvidence:round2(safeRate(recs,r.digit)*100),robustnessSurvival:round2(robust*100),signalPersistence:round2(ensemble*100),counterfactualStability:round2(robust*100),empiricalPrecision:round2(ensemble*100),gapEvidence:round2(r.features.gp*100),recencyStrength:round2(r.features.e12*100),evidenceDiversity:round2(robust*100),falsePositiveRisk:round2((1-robust)*100),conflict:round2(Math.abs(r.features.e6-r.features.e20)*100),smartObjective:round2(score),smartAdjusted:round2(score)}};});
+  const ranked=scored.sort((a,b)=>b.selectionQuality-a.selectionQuality||b.raw.signalPersistence-a.raw.signalPersistence||a.digit-b.digit);ranked.forEach((r,i)=>r.raw.smartRank=i+1);
+  const selected=ranked.slice(0,2);const pool=ranked.slice(0,AI_MODEL_CONFIG.candidatePool);
+  const wf=(!options.skipEndToEnd&&n>=13)?buildEndToEndWalkForward(recs):{tested:0,hits:0,hitRate:50,top1Rate:50,top2Rate:50,leakageIssues:0,rows:[]};
+  const margin=selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0;const gate=round2(clamp(avg(selected.map(x=>x.selectionQuality))*.72+(wf.tested?wf.hitRate:50)*.28,0,100));
+  return{aiOnly:true,version:AI_ENGINE_VERSION,frequency:{rates:Object.fromEntries(digits.map(d=>[d,round2(safeRate(recs,d)*100)]))},consensus:[],historicalConsensus:[],rows:ranked,selected,margin,qualityGate:gate,smartObjective:{version:AI_ENGINE_VERSION,primaryEvidenceWeight:1,fixedRuleSupportWeight:0,selectedDigits:selected.map(x=>x.digit),candidatePool:pool.map(x=>({digit:x.digit,score:x.selectionQuality}))},endToEndWalkForward:wf,finalGate:{passed:selected.length===2,decision:selected.length===2?'SELECT':'INSUFFICIENT_CANDIDATES',decisionConfidence:gate,empiricalWalkForwardRate:wf.hitRate,leakageIssues:wf.leakageIssues||0}};
 }
-function buildEndToEndWalkForward(recs){const arr=(recs||[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0)),rows=[];let hits=0,t1=0,t2=0;for(let i=12;i<arr.length;i++){const model=buildDigitIntelligence(arr.slice(0,i),null,null,{skipEndToEnd:true}),sel=(model.selected||[]).map(x=>x.digit).slice(0,2),actual=[...String(arr[i].n3||''),...String(arr[i].n2||'')].map(Number),h1=actual.includes(sel[0]),h2=actual.includes(sel[1]);if(h1)t1++;if(h2)t2++;if(h1||h2)hits++;rows.push({sourceDate:arr[i-1].date,targetDate:arr[i].date,trainSize:i,predicted:sel,actualN3:arr[i].n3,actualN2:arr[i].n2,hit:h1||h2,top1Hit:h1,top2Hit:h2,chronological:true,leakageFree:true})}const tested=rows.length,hitRate=percent(hits,tested),interval=wilsonInterval(hits,tested);return{tested,hits,misses:tested-hits,hitRate,top1Rate:percent(t1,tested),top2Rate:percent(t2,tested),ciLow:interval.low,ciHigh:interval.high,leakageIssues:0,rows}}
+function buildEndToEndWalkForward(recs){const arr=(recs||[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0)),rows=[];let hits=0,t1=0,t2=0;for(let i=12;i<arr.length;i++){const model=buildDigitIntelligence(arr.slice(0,i),null,null,{skipEndToEnd:true}),sel=(model.selected||[]).map(x=>x.digit).slice(0,2),actual=[...String(arr[i].n3||'').padStart(3,'0'),...String(arr[i].n2||'').padStart(2,'0')].map(Number),h1=actual.includes(sel[0]),h2=actual.includes(sel[1]);if(h1)t1++;if(h2)t2++;if(h1||h2)hits++;rows.push({sourceDate:arr[i-1].date,targetDate:arr[i].date,trainSize:i,predicted:sel,actualN3:arr[i].n3,actualN2:arr[i].n2,hit:h1||h2,top1Hit:h1,top2Hit:h2,chronological:true,leakageFree:true})}const tested=rows.length,hitRate=percent(hits,tested),interval=wilsonInterval(hits,tested);return{tested,hits,misses:tested-hits,hitRate,top1Rate:percent(t1,tested),top2Rate:percent(t2,tested),ciLow:interval.low,ciHigh:interval.high,leakageIssues:0,rows}}
 function buildDigitScore(digit,ignoredNames,auditData,consensusMap,frequency,intelligence){const r=(intelligence?.rows||[]).find(x=>x.digit===Number(digit));return r?{digit:r.digit,score:r.score,selectionQuality:r.selectionQuality,agreement:0,frequencyRate:intelligence.frequency.rates[digit]||0,features:r.raw,gap:r.raw.gapEvidence||50}:{digit:Number(digit),score:0,selectionQuality:0,agreement:0,frequencyRate:0,features:{},gap:0}}
 /* =========================================================
    11. CONFIDENCE
@@ -1625,7 +1652,7 @@ function renderScoreAuditSummary(
           <b>${scoreCard.secondScore}</b>
         </div>
         <div class="score-audit-summary-item">
-          <small>สูตรเห็นตรงกัน</small>
+          <small>AI เห็นตรงกัน</small>
           <b>${scoreCard.agreement}</b>
         </div>
         <div class="score-audit-summary-item gap">
@@ -2731,6 +2758,15 @@ function renderWalkForwardAudit(groups){const root=$('walkForwardPanel');if(!roo
 function runEngine(){
   return runEngineCore();
 }
+window.__runEngineSafe=function(){
+  try{ return runEngine(); }
+  catch(err){
+    console.error('Mester Lotto V64 run error:',err);
+    try{ showToast('❌ ระบบประมวลผลขัดข้อง: '+(err&&err.message?err.message:'Unknown error')); }catch(e){}
+    return null;
+  }
+};
+window.runEngine=runEngine;
 /* =========================================================
    DOM READY
 ========================================================= */
@@ -2739,7 +2775,7 @@ window.addEventListener(
   ()=>{
     if($('run')){
       $('run').onclick=
-        runEngine;
+        window.__runEngineSafe;
     }
     if($('clearInput')){
       $('clearInput').onclick=()=>{
@@ -2801,9 +2837,9 @@ window.addEventListener(
 })();
 
 /* =========================================================
-   V63 AI-ONLY INTEGRITY METADATA
+   V64 ADAPTIVE AI INTEGRITY METADATA
 ========================================================= */
-(function(){try{window.__V63_AI_AUDIT={version:AI_ENGINE_VERSION,fixedRuleCount:0,targetedRuleCount:0,productionSelector:'AI_STATISTICAL_ONLY',fixedRuleSupportWeight:0,walkForward:'chronological',cardsChanged:false}}catch(e){}})();
+(function(){try{window.__V64_AI_AUDIT={version:'V64-ADAPTIVE-AI',fixedRuleCount:0,targetedRuleCount:0,productionSelector:'AI_STATISTICAL_ONLY',fixedRuleSupportWeight:0,walkForward:'chronological',cardsChanged:false}}catch(e){}})();
 </script>
 </body>
-</html>
+  </html>
