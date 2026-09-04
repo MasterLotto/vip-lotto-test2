@@ -2775,8 +2775,8 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     longRate:x.raw.frequency,
     rawScore:x.selectionQuality
   }));
-  const v71Decision=typeof V70Precision!=='undefined'
-    ?V70Precision.arbitrate(v71Input,recs)
+  const v71Decision=typeof window.V70Precision!=='undefined'
+    ?window.V70Precision.arbitrate(v71Input,recs)
     :{finalTop3:finalTop3.map(String),rawTop3:shadowTop3.map(String),removedFromTop3:removedFromTop3.map(String),noForcedPrediction:false,core:[],support:[],shadow:[]};
   const v71Top3=v71Decision.noForcedPrediction
     ?finalTop3
@@ -2884,8 +2884,8 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   else if(totalConflict>=6) finalGate.decision='CONFLICT_REVIEWED_SELECT';
   if(finalGate.abstain&&finalGate.decision==='SELECT') finalGate.decision='LOW_CONFIDENCE_REVIEWED_SELECT';
   /* V72 bounded refinement: audits the existing candidates without creating formulas. */
-  const v72Refinement=typeof V72Precision!=='undefined'
-    ?V72Precision.refineTop3(integratedTop3,adversarialRanked,recs)
+  const v72Refinement=typeof window.V72Precision!=='undefined'
+    ?window.V72Precision.refineTop3(integratedTop3,adversarialRanked,recs)
     :{finalTop3:integratedTop3,rawTop3:integratedTop3,removedFromTop3:[],audit:{status:'SKIPPED'},enriched:[],margin:{},regime:{}};
   const finalTop3V72=v72Refinement.finalTop3.length===3?v72Refinement.finalTop3:integratedTop3;
   return{
@@ -4045,10 +4045,34 @@ function v90PPFullSet(rec){
   if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2))return new Set();
   return new Set((n3+n2).split('').map(Number));
 }
+/* DUAL-MISS SEMANTICS
+   Target Hit = digit appears in one of the 4 formal target positions:
+   top-tens, top-units, bottom-tens, bottom-units.
+   Human Miss = NOT a Target Hit. A digit appearing only in hundreds is therefore
+   a human/full miss, while the hundreds occurrence is retained as structural evidence.
+   This deliberately prevents a hundreds-only occurrence from becoming a formal hit. */
+function v90PPHumanMissClass(rec,d){
+  const n=Number(d);
+  if(!Number.isInteger(n)||n<0||n>9)return 'invalid';
+  if(v90PlusTargetSet(rec).has(n))return 'target-hit';
+  const n3=String(rec?.n3??'').trim();
+  if(/^\d{3}$/.test(n3)&&Number(n3[0])===n)return 'hundreds-only';
+  return 'absent';
+}
 function v90PPHumanMissStreak(arr,d){
   const a=Array.isArray(arr)?arr:[]; let streak=0;
-  for(let i=a.length-1;i>=0;i--){const full=v90PPFullSet(a[i]); if(!full.size)continue; if(full.has(Number(d)))break; streak++;}
+  for(let i=a.length-1;i>=0;i--){
+    const cls=v90PPHumanMissClass(a[i],d);
+    if(cls==='invalid')continue;
+    if(cls==='target-hit')break;
+    streak++;
+  }
   return Math.min(streak,12);
+}
+function v90PPHundredsOnlyRate(arr,d,window=25){
+  const a=(Array.isArray(arr)?arr:[]).filter(isResultRecord).slice(-Math.max(1,window));
+  if(!a.length)return 0;
+  return 100*a.filter(r=>v90PPHumanMissClass(r,d)==='hundreds-only').length/a.length;
 }
 function v90PPLastPosition(arr,d){
   const a=Array.isArray(arr)?arr:[];
@@ -4068,13 +4092,14 @@ function v90PPHumanRecoveryForDigit(arr,d,formulaNames,formulaGovernor=null){
     const hist=getFormulaHistory(arr,name); if(!hist.length)return;
     const bins=Array.from({length:7},()=>({total:0,hits:0})); let miss=0;
     hist.forEach(item=>{
-      const actual={n3:item.actualN3,n2:item.actualN2}, full=v90PPFullSet(actual), k=Math.min(6,miss);
+      const actual={n3:item.actualN3,n2:item.actualN2}, k=Math.min(6,miss);
       const predicted=new Set((item.predicted||[]).map(Number));
-      if(k>=2&&predicted.has(d)){bins[k].total++;if(full.has(d))bins[k].hits++;}
-      if(full.size){if(full.has(d))miss=0;else miss++;}
+      const humanHit=v90PPHumanMissClass(actual,d)==='target-hit';
+      if(k>=2&&predicted.has(d)){bins[k].total++;if(humanHit)bins[k].hits++;}
+      if(/\d{3}/.test(String(actual.n3||''))&&/\d{2}/.test(String(actual.n2||''))){if(humanHit)miss=0;else miss++;}
     });
     const k=Math.min(6,currentMiss), b=bins[k]; if(!b.total)return;
-    const humanHits=hist.reduce((n,x)=>n+(v90PPFullSet({n3:x.actualN3,n2:x.actualN2}).has(d)?1:0),0);
+    const humanHits=hist.reduce((n,x)=>n+(v90PPHumanMissClass({n3:x.actualN3,n2:x.actualN2},d)==='target-hit'?1:0),0);
     const baseline=betaSmoothedRate(humanHits,hist.length,50,V90_PP_CONFIG.priorN);
     const cond=betaSmoothedRate(b.hits,b.total,baseline,V90_PP_CONFIG.priorN), rel=clamp(b.total/12,0,1), fw=clamp(Number(formulaGovernor?.weights?.[name]||(arr.__formulaWeights||{})[name]||1),.70,1.30), w=rel*fw;
     weighted+=cond*w;wt+=w;samples+=b.total;formulas++;
@@ -4104,11 +4129,11 @@ function v90PPGap(arr,d){const a=Array.isArray(arr)?arr:[];for(let i=a.length-1;
 function v90PPRate(arr,d){const a=Array.isArray(arr)?arr:[];return a.length?a.filter(r=>v90PlusTargetSet(r).has(d)).length/a.length*100:50;}
 function v90PPPositionRates(arr,d){const a=Array.isArray(arr)?arr:[];if(!a.length)return [50,50,50,50];let c=[0,0,0,0];a.forEach(r=>{const t=String(r?.n3??'').trim(),b=String(r?.n2??'').trim();if(/^\d{3}$/.test(t)&&+t[1]===d)c[0]++;if(/^\d{3}$/.test(t)&&+t[2]===d)c[1]++;if(/^\d{2}$/.test(b)&&+b[0]===d)c[2]++;if(/^\d{2}$/.test(b)&&+b[1]===d)c[3]++;});return c.map(x=>100*x/a.length);}
 function v90PPState(arr,d){
-  const a=(Array.isArray(arr)?arr:[]).filter(isResultRecord), windows=[3,5,9,15,25].filter(w=>a.length>=w), rates=windows.map(w=>v90PPRate(a.slice(-w),d)), pos=v90PPPositionRates(a,d), gap=v90PPGap(a,d), miss=v88DigitMissStreak(a,d), humanMiss=v90PPHumanMissStreak(a,d), lastPosition=v90PPLastPosition(a,d), transition=v90PPPositionTransitionEvidence(a,d);
-  return {rates,pos,gap:Math.min(gap,30),miss:Math.min(miss,12),humanMiss:Math.min(humanMiss,12),lastPosition,long:v90PPRate(a,d),recent:rates[0]??v90PPRate(a,d),transitionScore:transition.score,transitionSamples:transition.samples};
+  const a=(Array.isArray(arr)?arr:[]).filter(isResultRecord), windows=[3,5,9,15,25].filter(w=>a.length>=w), rates=windows.map(w=>v90PPRate(a.slice(-w),d)), pos=v90PPPositionRates(a,d), gap=v90PPGap(a,d), miss=v88DigitMissStreak(a,d), humanMiss=v90PPHumanMissStreak(a,d), hundredsOnly=v90PPHundredsOnlyRate(a,d,25), lastPosition=v90PPLastPosition(a,d), transition=v90PPPositionTransitionEvidence(a,d);
+  return {rates,pos,gap:Math.min(gap,30),miss:Math.min(miss,12),humanMiss:Math.min(humanMiss,12),hundredsOnly:round2(hundredsOnly),lastPosition,long:v90PPRate(a,d),recent:rates[0]??v90PPRate(a,d),transitionScore:transition.score,transitionSamples:transition.samples};
 }
 function v90PPStateDistance(a,b){
-  const rr=Math.min(a.rates.length,b.rates.length),rd=rr?avg(a.rates.slice(0,rr).map((v,i)=>Math.abs(v-b.rates[i]))):Math.abs(a.long-b.long); const pd=avg(a.pos.map((v,i)=>Math.abs(v-(b.pos[i]??50)))); const gd=Math.abs(a.gap-b.gap)*1.8,md=Math.abs(a.miss-b.miss)*1.6,hm=Math.abs((a.humanMiss??a.miss)-(b.humanMiss??b.miss))*1.8,lp=(a.lastPosition>=0&&b.lastPosition>=0&&a.lastPosition!==b.lastPosition)?1.8:0,ld=Math.abs(a.long-b.long)*.30; return (rr?rd:0)*.48+pd*.17+gd*.11+md*.07+hm*.10+lp*.03+ld*.04;}
+  const rr=Math.min(a.rates.length,b.rates.length),rd=rr?avg(a.rates.slice(0,rr).map((v,i)=>Math.abs(v-b.rates[i]))):Math.abs(a.long-b.long); const pd=avg(a.pos.map((v,i)=>Math.abs(v-(b.pos[i]??50)))); const gd=Math.abs(a.gap-b.gap)*1.8,md=Math.abs(a.miss-b.miss)*1.6,hm=Math.abs((a.humanMiss??a.miss)-(b.humanMiss??b.miss))*1.8,ho=Math.abs((a.hundredsOnly??0)-(b.hundredsOnly??0))*.55,lp=(a.lastPosition>=0&&b.lastPosition>=0&&a.lastPosition!==b.lastPosition)?1.8:0,ld=Math.abs(a.long-b.long)*.30; return (rr?rd:0)*.46+pd*.17+gd*.11+md*.07+hm*.10+ho*.03+lp*.03+ld*.03;}
 function v90PPAnalogicalState(records,digit){
   const arr=(Array.isArray(records)?records:[]).filter(isResultRecord), minPrefix=8;
   if(arr.length<minPrefix+2)return {score:50,coverage:0,effectiveSamples:0,nearest:[]};
@@ -4146,7 +4171,7 @@ function v90PPApply(intelligence,records,auditData,formulaNames){
   const base=intelligence||{},arr=(Array.isArray(records)?records:[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0)||(Number(a.sequence)||0)-(Number(b.sequence)||0));
   if(arr.length<V90_PP_CONFIG.minHistory||!Array.isArray(base.rows)||base.rows.length!==10)return {...base,finalGate:{...(base.finalGate||{}),v90PlusPlusSkipped:true}};
   const rows0=base.rows.map(r=>({...r})), staged=rows0.map(row=>{const d=Number(row.digit),analogy=v90PPAnalogicalState(arr,d),contradiction=v90PPContradiction(row,analogy),loo=v90PPLeaveOneFamily(rows0,d),humanRecovery=v90PPHumanRecoveryForDigit(arr,d,formulaNames,base.formulaGovernor),transition=v90PPPositionTransitionEvidence(arr,d),baseEvidence=v90PPClamp(row.v90Plus?.evidenceScore),horizon=v90PPClamp(row.v90Plus?.horizonCoherence),formula=v90PPClamp(row.v90Plus?.formulaEvidence),robust=v90PPClamp(row.v90Plus?.top3Robustness),looS=v90PPClamp(row.v90Plus?.leaveOneOutStability),recovery=v90PPClamp(row.v90Plus?.recoveryEvidence),consensus=v90PPClamp(row.v90Plus?.baseIndependentConsensus),transitionScore=v90PPClamp(transition.score),humanRecoveryScore=v90PPClamp(humanRecovery.evidence),resolution=analogy.score*V90_PP_CONFIG.stateWeight+(100-contradiction)*V90_PP_CONFIG.contradictionWeight+horizon*V90_PP_CONFIG.horizonWeight+formula*V90_PP_CONFIG.formulaWeight+robust*V90_PP_CONFIG.robustnessWeight+looS*V90_PP_CONFIG.looWeight+recovery*V90_PP_CONFIG.recoveryWeight+humanRecoveryScore*V90_PP_CONFIG.humanRecoveryWeight+transitionScore*V90_PP_CONFIG.transitionWeight+consensus*V90_PP_CONFIG.consensusWeight,centered=(resolution-50)/50,sampleTrust=clamp((arr.length-V90_PP_CONFIG.minHistory+1)/25,0,1),adj=centered*V90_PP_CONFIG.maxAdjustment*sampleTrust;
-    return {...row,selectionQuality:round2(clamp(v90PlusNum(row.selectionQuality,row.score)+adj,0,110)),v90PlusPlus:{version:'V90 Plus+ Dual-Miss / Resolution Max',analogicalState:analogy.score,analogicalCoverage:analogy.coverage,analogicalEffectiveSamples:analogy.effectiveSamples,contradiction:contradiction,humanMissStreak:humanRecovery.bonus===0?v90PPHumanMissStreak(arr,d):v90PPHumanMissStreak(arr,d),humanRecoveryBonus:round2(humanRecovery.bonus),humanRecoveryEvidence:round2(humanRecovery.evidence),humanRecoverySamples:humanRecovery.samples,positionTransitionScore:round2(transition.score),positionTransitionSamples:transition.samples,leaveOneFamilyStability:loo.score,leaveOneFamilySensitivity:loo.sensitivity,resolutionScore:round2(resolution),adjustment:round2(adj),sampleTrust:round2(sampleTrust),baseEvidence:baseEvidence}};});
+    return {...row,selectionQuality:round2(clamp(v90PlusNum(row.selectionQuality,row.score)+adj,0,110)),v90PlusPlus:{version:'V90 Plus+ Dual-Miss / Resolution Max / Full-Miss Corrected',analogicalState:analogy.score,analogicalCoverage:analogy.coverage,analogicalEffectiveSamples:analogy.effectiveSamples,contradiction:contradiction,humanMissStreak:v90PPHumanMissStreak(arr,d),hundredsOnlyRate:v90PPHundredsOnlyRate(arr,d,25),humanRecoveryBonus:round2(humanRecovery.bonus),humanRecoveryEvidence:round2(humanRecovery.evidence),humanRecoverySamples:humanRecovery.samples,positionTransitionScore:round2(transition.score),positionTransitionSamples:transition.samples,leaveOneFamilyStability:loo.score,leaveOneFamilySensitivity:loo.sensitivity,resolutionScore:round2(resolution),adjustment:round2(adj),sampleTrust:round2(sampleTrust),baseEvidence:baseEvidence}};});
   const robustness=v90PPRobustness(staged); staged.forEach(r=>{r.v90PlusPlus.top3RobustnessPlus=round2(robustness.score);});
   const reg=v90PlusRegime(staged), penalty=reg.state==='CONTRADICTORY'?.82:reg.state==='UNCERTAIN'?.90:1; staged.forEach(r=>{r.selectionQuality=round2(clamp(50+(r.selectionQuality-50)*penalty,0,110));});
   let ranked=staged.slice().sort((a,b)=>v90PlusNum(b.selectionQuality,b.score)-v90PlusNum(a.selectionQuality,a.score)||v90PlusNum(b.v90PlusPlus?.resolutionScore,50)-v90PlusNum(a.v90PlusPlus?.resolutionScore,50)||a.digit-b.digit);
@@ -5115,6 +5140,8 @@ function v87FinalFairArbitration(intelligence,records,auditData,formulaNames){
   const baseScores=rows.map(r=>Number(r.selectionQuality??r.score??50));
   const baseMean=avg(baseScores);
   const ranked=rows.slice().sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(a.digit)-Number(b.digit));
+  const baseRankMap={};
+  ranked.forEach((r,i)=>{baseRankMap[Number(r.digit)]=i+1;});
   const out=rows.map(row=>{
     const d=Number(row.digit), s=stab[d]||{};
     const hist=clamp(Number(s.stability)||50,0,100);
@@ -5133,7 +5160,7 @@ function v87FinalFairArbitration(intelligence,records,auditData,formulaNames){
     const adj=clamp(stabilityLift-crowdPenalty,-2.75,2.75);
     return {...row,
       selectionQuality:round2(clamp(Number(row.selectionQuality??row.score??50)+adj,0,100)),
-      v87Fairness:{historicalStability:round2(hist),recentStability:round2(recent),resolutionEvidence:round2(resolution),evidenceScore:round2(evidence),consensus:round2(consensus),consensusSaturated:round2(consensusSat),crowdExcess:round2(crowdExcess),stabilityLift:round2(stabilityLift),crowdPenalty:round2(crowdPenalty),adjustment:round2(adj),baseRank:baseRank+1}
+      v87Fairness:{historicalStability:round2(hist),recentStability:round2(recent),resolutionEvidence:round2(resolution),evidenceScore:round2(evidence),consensus:round2(consensus),consensusSaturated:round2(consensusSat),crowdExcess:round2(crowdExcess),stabilityLift:round2(stabilityLift),crowdPenalty:round2(crowdPenalty),adjustment:round2(adj),baseRank:baseRankMap[d]||10}
     };
   }).sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(b.v87Fairness?.evidenceScore||0)-Number(a.v87Fairness?.evidenceScore||0)||Number(a.digit)-Number(b.digit));
   const top3=rows.length?out.slice(0,3).map(x=>x.digit):[];
@@ -7406,8 +7433,8 @@ function m2dConsensus(noon,evening){
   /* V72 M2D refinement: conditional anti-repeat + temporal survival. The
      session split remains authoritative; this only re-ranks the existing 0-9 candidates. */
   const m2dV72Ranked=(combined||[]).map(t=>{
-    const d=Number(t.digit),all=noon.arr.concat(evening.arr),temp=V72Precision.temporal(all.map(r=>({n3:r.top?.value?.slice(0,2)||r.noon?.value||'',n2:r.bottom?.value||r.evening?.value||'',timestamp:r.timestamp})),d);
-    const rep=V72Precision.antiRepeat(all.map(r=>({n3:r.top?.value?.slice(0,2)||r.noon?.value||'',n2:r.bottom?.value||r.evening?.value||'',timestamp:r.timestamp})),d);
+    const d=Number(t.digit),all=noon.arr.concat(evening.arr),temp=window.V72Precision.temporal(all.map(r=>({n3:r.top?.value?.slice(0,2)||r.noon?.value||'',n2:r.bottom?.value||r.evening?.value||'',timestamp:r.timestamp})),d);
+    const rep=window.V72Precision.antiRepeat(all.map(r=>({n3:r.top?.value?.slice(0,2)||r.noon?.value||'',n2:r.bottom?.value||r.evening?.value||'',timestamp:r.timestamp})),d);
     return {...t,v72Quality:round2(Number(t.score||0)+Math.min(3,temp.score*.03)-rep.penalty),v72Temporal:temp,v72Repeat:rep};
   }).sort((a,b)=>b.v72Quality-a.v72Quality||Number(b.score||0)-Number(a.score||0)||a.digit-b.digit).slice(0,3);
   const raw={};
@@ -7954,7 +7981,7 @@ function runEngineCore(){
          ORIGINAL PAIR / DIGIT GENERATION
          *** V52 — LEGACY TARGET-PAIR FORMULA REMOVED ***
       ----------------------------------------- */
-      const intelligence=v90PlusPlusApply(v90PlusApply(v88ApplyFairArbitration(v75ReconcileAfterFinalLayer(v87FinalFairArbitration(v55ApplyMainPrecisionLayer(buildDigitIntelligenceV78(resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames)),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames);
+      const intelligence=v90PPApply(v90PlusApply(v88ApplyFairArbitration(v75ReconcileAfterFinalLayer(v87FinalFairArbitration(v55ApplyMainPrecisionLayer(buildDigitIntelligenceV78(resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames)),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames);
       if(auditDataMap[lotteryName]&&intelligence?.formulaGovernor){
         auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
       }
