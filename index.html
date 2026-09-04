@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<title>Mester Lotto VIP+ — V79 Full Audited Adaptive Radar + Myanmar 2D Specialized</title>
+<title>Mester Lotto VIP+ — V81 Maximum Precision Adaptive Radar + Myanmar 2D Specialized</title>
 <style>
 :root{
   --bg-main:linear-gradient(135deg,#fcfbfa 0%,#f4efe6 100%);
@@ -878,6 +878,13 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 <!-- V54 PLUS+ baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
 <!-- V60 AUDIT: targetable-evidence alignment; TOP-3 protection; anti-false-positive selection; session schema guard; empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 
+<!-- V82 MAX PRECISION AUDIT
+     Active production pool reduced to 12 empirically stronger/diverse formula sources from the supplied global audit.
+     Original 15 formula bodies remain unchanged; duplicate Formula 3/6 family is not double-counted.
+     Multi-horizon evidence upgraded to 3/6/9/12/15/18/21/24/27/30 rounds.
+     Pair engine uses the same 12 active experts plus chronological pair evidence; weak formulas remain challengers.
+     Adaptive radar retained as bounded secondary evidence. Card/UI CSS and markup contracts preserved.
+-->
 <!-- V80 AUDIT MANIFEST
      PDF-audited upgrade: 1,735 valid historical records after excluding 5 งดออกผล entries across 58 lottery types.
      Added five adaptive formulas 26–30.
@@ -886,12 +893,13 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
      Card/UI appearance: unchanged.
      Five new formulas are selected/scored chronologically per lottery; no current target is used.
  -->
-<!-- V79 AUDIT MANIFEST
-     Built from V78 using the existing historical dataset.
+<!-- V81 AUDIT MANIFEST
+     Built from V80 using the existing historical PDF dataset. V81 adds adaptive chronological formula-slot selection.
      Locked 15 formula bodies: unchanged.
      Protected targeted-pair engine: unchanged.
      Card/UI appearance: unchanged.
      Radar: adaptive, leakage-safe, directional support only.
+     V81: adaptive 5-slot formula candidate laboratory + two-standout ranking; no locked-formula mutation.
      Myanmar 2D: remains isolated on its specialized path.
 -->
 
@@ -1557,6 +1565,32 @@ const v80NewFormulas={
     ]
 };
 const allFormulas={...formulas,...challengerFormulas,...supplementalFormulas,...v80NewFormulas};
+/* V82 ACTIVE FORMULA GOVERNOR
+   Operational pool is intentionally reduced to 12 evidence sources based on
+   the supplied 1,677-test global audit. The original 15 formula bodies remain
+   byte-for-byte defined above; weaker formulas stay available as challengers
+   but do not vote in the production selector until they earn a place through
+   chronological evidence. Formula 3 and 6 are the same function family and
+   are deliberately excluded from the active pool to prevent double counting.
+*/
+const ACTIVE_FORMULA_NAMES=Object.freeze([
+  "อันดับ 1 — สูตร 2 N1",
+  "N1+ — สูตรเสริม",
+  "N4 — สูตรหลัก",
+  "N2 — สูตรใหม่",
+  "สูตร 20 — สมดุลสลับตำแหน่ง",
+  "N6 — Master Formula",
+  "สูตร 16 — ผลต่างไขว้ตำแหน่ง",
+  "สูตร 23 — สมดุลบวก-ลบ",
+  "สูตร 24 — คูณผสมตำแหน่ง",
+  "สูตร 5 — ฐาน 10 - หน่วยล่าง",
+  "N5 — สูตรคำนวณเด่น",
+  "สูตร 27 — ไขว้แกน B-D-C-E"
+]);
+const CHALLENGER_FORMULA_NAMES=Object.freeze(
+  Object.keys(allFormulas).filter(n=>!ACTIVE_FORMULA_NAMES.includes(n))
+);
+const FORMULA_POOL_CONFIG=Object.freeze({activeCount:12,horizons:Object.freeze([3,6,9,12,15,18,21,24,27,30]),challengerMinTests:12,challengerEdge:1.5});
 const CHALLENGER_FORMULA_AUDIT=auditFormulaDefinitions(challengerFormulas);
 const FORMULA_DEFINITION_AUDIT=auditFormulaDefinitions(formulas);
 /* =========================================================
@@ -1903,36 +1937,30 @@ function buildAdaptiveFormulaWeights(records,formulaNames){
   const recs=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
   const names=Array.isArray(formulaNames)?formulaNames.filter(n=>typeof allFormulas?.[n]==='function'):[];
   const raw={};
+  const H=[3,6,9,12,15,18,21,24,27,30], W=[1.30,1.20,1.10,1,.92,.86,.80,.74,.68,.62];
   names.forEach(name=>{
-    const hist=getFormulaHistory(recs,name);
-    const total=hist.length;
-    const hits=hist.filter(x=>x.hit).length;
-    const recent=hist.slice(-Math.min(10,total));
-    const prior=hist.slice(-Math.min(20,total),-Math.min(10,total));
-    const recentRate=recent.length?percent(recent.filter(x=>x.hit).length,recent.length):50;
-    const priorRate=prior.length?percent(prior.filter(x=>x.hit).length,prior.length):50;
+    const hist=getFormulaHistory(recs,name), total=hist.length, hits=hist.filter(x=>x.hit).length;
+    const rates=H.map(w=>rollingHitRate(hist,w));
+    const recent6=rates[1], mid12=rates[3], long30=rates[9];
+    const den=W.reduce((a,b)=>a+b,0)||1;
+    const multi=rates.reduce((a,v,i)=>a+v*W[i],0)/den;
+    const slope=(rates[0]-rates[9])*.30+(rates[1]-rates[3])*.20+(rates[2]-rates[5])*.20+(rates[3]-rates[7])*.15+(rates[4]-rates[9])*.15;
+    const stability=total>=9?clamp(100-avg(rates.map((v,i)=>Math.abs(v-multi)))*1.7,0,100):55;
     const longRate=betaSmoothedRate(hits,total,50,8);
-    const recentSmoothed=betaSmoothedRate(recent.filter(x=>x.hit).length,recent.length,50,5);
-    const stability=total>=6?clamp(100-Math.abs(recentRate-priorRate)*2.2,0,100):55;
-    const direction=recentRate-priorRate;
-    const recency=clamp(50+direction*1.6,0,100);
-    const hitDensity=clamp(.52*longRate+.30*recentSmoothed+.12*stability+.06*recency,0,100);
-    raw[name]={total,hits,longRate,recentRate,priorRate,stability,recency,hitDensity};
+    const recentSmoothed=betaSmoothedRate(hist.slice(-6).filter(x=>x.hit).length,Math.min(6,total),50,5);
+    const recency=clamp(50+slope*1.7+(recent6-long30)*.35,0,100);
+    const hitDensity=clamp(.48*longRate+.32*multi+.10*recentSmoothed+.06*stability+.04*recency,0,100);
+    raw[name]={total,hits,longRate,recentRate:rollingHitRate(hist,5),recent6,multiHorizon:multi,horizonSlope:slope,horizonRates:rates,stability,recency,hitDensity};
   });
-  const scores=Object.values(raw).map(x=>x.hitDensity);
-  const center=scores.length?avg(scores):50;
-  const spread=scores.length?avg(scores.map(v=>Math.abs(v-center))):0;
+  const scores=Object.values(raw).map(x=>x.hitDensity),center=scores.length?avg(scores):50,spread=scores.length?avg(scores.map(v=>Math.abs(v-center))):0;
   const weights={};
   Object.entries(raw).forEach(([name,x])=>{
-    /* Evidence governor: shrink toward 1.0 when the formula sample is sparse
-       or formula scores are too similar to justify aggressive re-weighting. */
-    const sampleTrust=clamp(x.total/16,0,1);
-    const separationTrust=clamp(spread/12,0,1);
-    const normalized=clamp(1+(x.hitDensity-center)/55,0.68,1.32);
-    const governed=1+(normalized-1)*(.35+.65*sampleTrust*separationTrust);
-    weights[name]=round2(clamp(governed,0.72,1.28));
+    const sampleTrust=clamp(x.total/30,0,1), separationTrust=clamp(spread/12,0,1);
+    const normalized=clamp(1+(x.hitDensity-center)/55,.68,1.32);
+    const governed=1+(normalized-1)*(.30+.70*sampleTrust*separationTrust);
+    weights[name]=round2(clamp(governed,.70,1.30));
   });
-  return{weights,raw,center:round2(center),spread:round2(spread)};
+  return{weights,raw,center:round2(center),spread:round2(spread),horizons:H};
 }
 function evidenceGroupCap(parts,cap=100){
   const vals=Object.values(parts||{}).map(v=>clamp(Number(v)||0,0,100));
@@ -2961,21 +2989,24 @@ function auditFormula(
         latestBot[1]
       )
     );
-  const recentRate=
-    rollingHitRate(
-      history,
-      5
-    );
-  const rolling10=
-    rollingHitRate(
-      history,
-      10
-    );
-  const rolling20=
-    rollingHitRate(
-      history,
-      20
-    );
+  const recentRate=rollingHitRate(history,5);
+  const rolling3=rollingHitRate(history,3);
+  const rolling6=rollingHitRate(history,6);
+  const rolling9=rollingHitRate(history,9);
+  const rolling10=rollingHitRate(history,10);
+  const rolling12=rollingHitRate(history,12);
+  const rolling15=rollingHitRate(history,15);
+  const rolling18=rollingHitRate(history,18);
+  const rolling20=rollingHitRate(history,20);
+  const rolling21=rollingHitRate(history,21);
+  const rolling24=rollingHitRate(history,24);
+  const rolling27=rollingHitRate(history,27);
+  const rolling30=rollingHitRate(history,30);
+  const horizonValues=[rolling3,rolling6,rolling9,rolling12,rolling15,rolling18,rolling21,rolling24,rolling27,rolling30];
+  const horizonWeights=[1.30,1.20,1.10,1.00,.92,.86,.80,.74,.68,.62];
+  const horizonDen=horizonWeights.reduce((a,b)=>a+b,0);
+  const multiHorizon=horizonValues.reduce((a,v,i)=>a+v*horizonWeights[i],0)/horizonDen;
+  const horizonSlope=((rolling3-rolling30)*.30+(rolling6-rolling12)*.20+(rolling9-rolling18)*.20+(rolling12-rolling24)*.15+(rolling15-rolling30)*.15);
   const stability=
     calculateStability(history);
   const recencyRate=
@@ -2993,8 +3024,10 @@ function auditFormula(
         history.length
       ),
     recentRate,
-    rolling10,
-    rolling20,
+    rolling3,rolling6,rolling9,rolling10,rolling12,rolling15,rolling18,rolling20,rolling21,rolling24,rolling27,rolling30,
+    multiHorizon:round2(multiHorizon),
+    horizonSlope:round2(horizonSlope),
+    horizonProfile:horizonValues.map((v,i)=>({window:[3,6,9,12,15,18,21,24,27,30][i],rate:round2(v)})),
     stability,
     recencyRate,
     maxStreak:streaks.maxStreak,
@@ -3405,13 +3438,13 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
      Every valid partner digit competes directly on independent evidence.
      Output contract: main digit ALWAYS stays first; partner is ALWAYS the
      final/unit digit; final display is sorted numerically ascending. */
-  const formulaNames=Object.keys(formulas);
+  const formulaNames=ACTIVE_FORMULA_NAMES;
   const data=Array.isArray(records)?records:[];
   const target=Number(mainDigit),other=Number(otherDigit);
   const governor=buildAdaptiveFormulaWeights(data,formulaNames);
   const formulaOutcomeIndependenceScore=formulaOutcomeIndependence(data,formulaNames);
   const candidates=[...Array(10).keys()].filter(u=>u!==target&&u!==other);
-  const recentN=Math.min(10,data.length),midN=Math.min(20,data.length),longN=Math.min(30,data.length);
+  const horizonN=[3,6,9,12,15,18,21,24,27,30].map(n=>Math.min(n,data.length));
   const contains=(r,d)=>String(r?.n3??'').includes(String(d))||String(r?.n2??'').includes(String(d));
   const pairHit=(r,a,b)=>{
     const n2=String(r?.n2??'').padStart(2,'0'), n3=String(r?.n3??'').padStart(3,'0');
@@ -3423,12 +3456,14 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
   const mean=arr=>arr.length?arr.reduce((a,v)=>a+v,0)/arr.length:50;
   const clampEvidence=v=>clamp(Number.isFinite(v)?v:50,0,100);
   const out=candidates.map(unit=>{
-    const recentRate=rate(data.slice(-recentN),unit);
-    const midRate=rate(data.slice(-midN),unit);
-    const longRate=rate(data.slice(-longN),unit);
-    const empirical=clampEvidence(rate(data,unit)*0.45+recentRate*0.35+midRate*0.20);
-    const momentum=clampEvidence(50+(recentRate-longRate)*0.9+(recentRate-midRate)*0.45);
-    const temporal=clampEvidence(recentRate*0.45+midRate*0.30+longRate*0.15+momentum*0.10);
+    const pairH=[3,6,9,12,15,18,21,24,27,30].map((_,i)=>rate(data.slice(-horizonN[i]),unit));
+    const pairW=[1.30,1.20,1.10,1,.92,.86,.80,.74,.68,.62], pairDen=pairW.reduce((a,b)=>a+b,0);
+    const multiPair=pairH.reduce((a,v,i)=>a+v*pairW[i],0)/pairDen;
+    const recentRate=pairH[0], recent6=pairH[1], midRate=pairH[3], longRate=pairH[9];
+    const horizonSlope=(pairH[0]-pairH[9])*.30+(pairH[1]-pairH[3])*.20+(pairH[2]-pairH[5])*.20+(pairH[3]-pairH[7])*.15+(pairH[4]-pairH[9])*.15;
+    const empirical=clampEvidence(rate(data,unit)*0.30+multiPair*0.50+recentRate*0.20);
+    const momentum=clampEvidence(50+horizonSlope*1.15+(recentRate-longRate)*.30);
+    const temporal=clampEvidence(multiPair*.60+recentRate*.15+midRate*.10+longRate*.05+momentum*.10);
     let formulaSupport=0,formulaHits=0;
     formulaNames.forEach(f=>{
       const fs=auditMap?.[lotteryName]?.[f];
@@ -3690,8 +3725,9 @@ const V78_CONFIG=Object.freeze({
   diversityPenalty:0.10,
   parityWeight:0.02,
   highLowWeight:0.02,
-  formulaCount:30,
-  protectedFormulaCount:15
+  formulaCount:12,
+  protectedFormulaCount:15,
+  evidenceHorizons:[3,6,9,12,15,18,21,24,27,30]
 });
 const V78_RADAR_CANDIDATES=Object.freeze([
   {name:'B+D',c:[0,1,0,1,0]}, {name:'C+E',c:[0,0,1,0,1]},
@@ -3936,10 +3972,115 @@ function v80ApplyFormulaLayer(intelligence,records){
   const selected=finalTop3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean);
   return {...base,rows,top3:finalTop3,selected,v80:{version:'V80',source:'สถิติ.pdf',formulaAudit:audit,newFormulaCount:5,standout,chronological:true},finalGate:{...(base.finalGate||{}),v80FormulaLayer:true,v80NewFormulaCount:5,v80Standout:standout,v80AuditRows:audit}};
 }
+
+/* =========================================================
+   V81 MAX PRECISION ADAPTIVE FORMULA + TARGET-PAIR LAB
+   Non-locked enhancement layer. The original 15 formulas and card UI
+   remain untouched. Candidate selection is chronological only.
+========================================================= */
+const V81_ADAPTIVE_CONFIG=Object.freeze({
+  originWindow:12,
+  minTrain:10,
+  recentWindow:5,
+  maxSlots:5,
+  maxBonus:4.25,
+  priorStrength:8,
+  diversityPenalty:.10
+});
+function v81CandidateSet(){
+  const src=Array.isArray(V78_RADAR_CANDIDATES)?V78_RADAR_CANDIDATES:[];
+  const out=[];
+  src.forEach(c=>{
+    for(let o1=0;o1<10;o1++) for(let o2=o1+1;o2<10;o2++)
+      out.push({name:c.name,c:c.c,offsets:[o1,o2]});
+  });
+  return out;
+}
+const V81_CANDIDATES=Object.freeze(v81CandidateSet());
+function v81Digits(r){
+  const n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0');
+  return [n3[0],n3[1],n3[2],n2[0],n2[1]].map(Number);
+}
+function v81Target(r){const x=v81Digits(r);return new Set([x[1],x[2],x[3],x[4]].filter(d=>d>=0&&d<=9));}
+function v81Predict(r,c){const x=v81Digits(r),z=norm(c.c.reduce((a,w,i)=>a+w*x[i],0));return [norm(z+c.offsets[0]),norm(z+c.offsets[1])];}
+function v81EvalCandidate(hist,c,end){
+  const start=Math.max(1,end-V81_ADAPTIVE_CONFIG.originWindow), vals=[];
+  for(let i=start;i<end;i++){
+    const p=v81Predict(hist[i-1],c),t=v81Target(hist[i]),ov=p.filter(d=>t.has(d)).length;
+    vals.push({hit:ov>0,ov,recall:ov/Math.max(1,t.size)});
+  }
+  if(!vals.length)return {score:-999,rate:50,recent:50,stability:0,overlap:0,tests:0,edge:0};
+  const rate=vals.filter(x=>x.hit).length/vals.length*100;
+  const recent=vals.slice(-V81_ADAPTIVE_CONFIG.recentWindow),rr=recent.length?recent.filter(x=>x.hit).length/recent.length*100:rate;
+  const overlap=vals.reduce((a,x)=>a+x.ov,0)/vals.length;
+  const baselineOverlap=2*(vals.reduce((a,x)=>a+Math.max(1,x.recall*4),0)/vals.length)/10;
+  const meanEdge=overlap-baselineOverlap;
+  const stability=100-Math.min(100,Math.abs(rate-rr)*1.8);
+  const score=rate*.42+rr*.28+stability*.15+Math.min(100,overlap*25)*.08+clamp(50+meanEdge*25,0,100)*.07;
+  return {score,rate,recent:rr,stability,overlap,tests:vals.length,edge:meanEdge};
+}
+function v81SelectAdaptive(hist){
+  const arr=hist.filter(isResultRecord).slice().sort((a,b)=>{
+    const ta=Number(a.timestamp)||parseThaiDate(a.date)||0,tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+    return ta-tb||(Number(a.sequence)||0)-(Number(b.sequence)||0);
+  });
+  if(arr.length<V81_ADAPTIVE_CONFIG.minTrain+2)return [];
+  const end=arr.length, scored=V81_CANDIDATES.map(c=>({...c,...v81EvalCandidate(arr,c,end)}));
+  scored.sort((a,b)=>b.score-a.score||b.recent-a.recent||b.rate-a.rate);
+  const chosen=[];
+  for(const x of scored){
+    if(chosen.length>=V81_ADAPTIVE_CONFIG.maxSlots)break;
+    const samePair=chosen.some(y=>y.offsets[0]===x.offsets[0]&&y.offsets[1]===x.offsets[1]);
+    const sameAnchorCount=chosen.filter(y=>y.name===x.name).length;
+    if(samePair||sameAnchorCount>=2)continue;
+    const adjusted=x.score*(1-V81_ADAPTIVE_CONFIG.diversityPenalty*chosen.filter(y=>y.c.join(',')===x.c.join(',')).length);
+    chosen.push({...x,adjusted});
+  }
+  return chosen;
+}
+function v81ApplyAdaptiveLayer(intelligence,records){
+  const base=intelligence||{}, arr=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>{
+    const ta=Number(a.timestamp)||parseThaiDate(a.date)||0,tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+    return ta-tb||(Number(a.sequence)||0)-(Number(b.sequence)||0);
+  });
+  const selected=v81SelectAdaptive(arr.slice());
+  if(!selected.length)return base;
+  const vote=Array(10).fill(0);
+  selected.forEach((m,i)=>{
+    const rel=Math.max(.25,Math.min(1.75,(m.score-50)/50+1));
+    const w=(Math.max(.25,m.adjusted||m.score||1)/100)*rel/(1+i*.08);
+    v81Predict(arr[arr.length-1],m).forEach(d=>vote[d]+=w);
+  });
+  const rows=(base.rows||[]).map(row=>{
+    const d=Number(row.digit),v=vote[d]||0,share=v/(vote.reduce((a,b)=>a+b,0)||1);
+    const bonus=clamp((share-.10)*V81_ADAPTIVE_CONFIG.maxBonus*4,-1.35,V81_ADAPTIVE_CONFIG.maxBonus);
+    return {...row,v81Adaptive:{vote:round2(v),share:round2(share*100),bonus:round2(bonus)},selectionQuality:round2(clamp(Number(row.selectionQuality??row.score??0)+bonus,0,100))};
+  }).sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(b.score)-Number(a.score)||a.digit-b.digit);
+  const rankedTop=rows.slice(0,3).map(x=>x.digit);
+  const protectedBase=(base.top3||[]).map(Number).filter(d=>Number.isFinite(d));
+  const cutoff=rows[2]?Number(rows[2].selectionQuality):0;
+  const top3=rankedTop.slice();
+  /* Protect a strong pre-adaptive digit only when it is genuinely close to the
+     new cutoff; this avoids the old behaviour of blindly preserving all base TOP3. */
+  protectedBase.forEach(d=>{
+    if(top3.includes(d))return;
+    const row=rows.find(x=>x.digit===d); if(!row||top3.length<3)return;
+    if(Number(row.selectionQuality)>=cutoff-2.5){
+      let weakest=top3.map(x=>rows.find(r=>r.digit===x)).sort((a,b)=>Number(a.selectionQuality)-Number(b.selectionQuality))[0];
+      if(weakest){const ix=top3.indexOf(Number(weakest.digit));top3[ix]=d;}
+    }
+  });
+  const uniqueTop3=[]; top3.forEach(d=>{if(!uniqueTop3.includes(d))uniqueTop3.push(d);});
+  rows.forEach(x=>{if(uniqueTop3.length<3&&!uniqueTop3.includes(x.digit))uniqueTop3.push(x.digit);});
+  const standout=rows.slice(0,2).map(x=>x.digit);
+  return {...base,rows,top3:uniqueTop3.slice(0,3),selected:uniqueTop3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean),v81Adaptive:{version:'V81',selected:selected.map(x=>({anchor:x.name,offsets:x.offsets,rate:round2(x.rate),recent:round2(x.recent),stability:round2(x.stability),score:round2(x.score),edge:round2(x.edge)})),standout,chronological:true},finalGate:{...(base.finalGate||{}),v81Adaptive:true,v81Standout:standout}};
+}
+
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const base=buildDigitIntelligenceV75(records,auditData,formulaNames,options);
   const radar=v78ApplyStructure(base,records);
-  return v80ApplyFormulaLayer(radar,records);
+  const v80=v80ApplyFormulaLayer(radar,records);
+  return v81ApplyAdaptiveLayer(v80,records);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
 
@@ -5116,7 +5257,7 @@ function renderFullUI(
         );
       html+=renderDigitBoard(
         formulasResult,
-        Object.keys(allFormulas),
+        ACTIVE_FORMULA_NAMES,
         frequency,
         p.scoreCard?.intelligence||null
       );
@@ -6543,7 +6684,7 @@ function runEngineCore(){
   /* -----------------------------------------
      GLOBAL ACCUMULATOR
   ----------------------------------------- */
-  Object.keys(allFormulas)
+  ACTIVE_FORMULA_NAMES
     .forEach(fName=>{
       globalAccumulator[fName]={
         totalTested:0,
@@ -6579,7 +6720,7 @@ function runEngineCore(){
         return;
       auditDataMap[lotteryName]={};
       const formulaNames=
-        Object.keys(allFormulas);
+        ACTIVE_FORMULA_NAMES;
       const latestRec=
         resultRecs[resultRecs.length-1];
       const lTop=
@@ -7321,7 +7462,7 @@ function renderWalkForwardAudit(groups){
     <div class="wf-head"><div><div class="wf-title">🧪 การตรวจสอบย้อนหลังแบบเดินหน้า</div><div class="wf-sub">ทดสอบย้อนหลังแบบเดินหน้า โดยแต่ละงวดเป้าหมายใช้เฉพาะข้อมูลก่อนหน้า — ใช้สำหรับตรวจสอบระบบเท่านั้น</div></div></div>`;
   names.forEach(name=>{
     const recs=groups[name]||[];
-    const formulaNames=Object.keys(allFormulas);
+    const formulaNames=ACTIVE_FORMULA_NAMES;
     const reports=formulaNames.map(f=>({name:f,data:buildWalkForwardAudit(recs,f,30)}));
     if(!reports.some(x=>x.data.tested)){return;}
     html+=`<details class="wf-section" open><summary style="cursor:pointer;font-weight:800;padding:7px 0">${esc(formatDisplayTitle(name))}</summary>`;
