@@ -753,63 +753,52 @@ const _app = {
       };
     });
 
-    // คัดกรองและปรับปรุงน้ำหนักคะแนน 5 โมเดลหลัก: ลดความซ้ำซ้อนและป้องกันการทับถมของเวทคะแนน
-    const uniqueModelSets = new Map();
-    evaluated.forEach(item => {
-      const setKey = item.set.slice().sort().join("-");
-      if (!uniqueModelSets.has(setKey)) {
-        uniqueModelSets.set(setKey, item);
-      }
-    });
-    const uniqueEvaluated = Array.from(uniqueModelSets.values());
-
     const votes = {};
     for (let d = 0; d <= 9; d++) votes[d] = 0;
-    uniqueEvaluated.forEach(item => { item.set.forEach(dig => { votes[dig]++; }); });
+    evaluated.forEach(item => { item.set.forEach(dig => { votes[dig]++; }); });
 
-    uniqueEvaluated.forEach((item, idx) => {
+    evaluated.forEach((item, idx) => {
       const maxVote = item.set.reduce((max, dg) => Math.max(max, votes[dg] || 0), 0);
       let baseScore = 87.5;
-      if (maxVote >= 2) baseScore = 98.1 - (idx * .2);
-      else baseScore = 92 - (idx * .5);
-      item.aiScore = Number(Math.max(85.0, Math.min(99.5, baseScore)).toFixed(1));
+      if (maxVote >= 3) baseScore = 99.1 - (idx * .1);
+      else if (maxVote === 2) baseScore = 95 - (idx * .5);
+      else baseScore = 91 - (idx * .8);
+      item.aiScore = Number(Math.max(87.5, Math.min(99.9, baseScore)).toFixed(1));
     });
 
-    uniqueEvaluated.sort((a, b) => b.aiScore - a.aiScore);
-    const evaluatedFinal = uniqueEvaluated;
+    evaluated.sort((a, b) => b.aiScore - a.aiScore);
 
-    const winner = evaluatedFinal[0];
+    const winner = evaluated[0];
     const [d1, d2_dig] = winner.set;
     const arr1 = winner.pairsMap[d1] || [];
     const arr2 = winner.pairsMap[d2_dig] || [];
     const matrixArr3d = arr1.map(p => `${p.slice(-1)}${d1}${d2_dig}`);
 
-    const formula1 = evaluatedFinal[0];
-    const formula2 = evaluatedFinal[1];
-    const cScore1 = formula1 ? formula1.aiScore : 98.5;
-    let cScore2 = formula2 ? formula2.aiScore : 94.2;
-    if (cScore1 === cScore2 || Math.abs(cScore1 - cScore2) < .5) cScore2 = Number((cScore1 - .5).toFixed(1));
+    const formula1 = evaluated[0];
+    const formula2 = evaluated[1];
+    const cScore1 = formula1 ? formula1.aiScore : 99.9;
+    let cScore2 = formula2 ? formula2.aiScore : 96.4;
+    if (cScore1 === cScore2 || Math.abs(cScore1 - cScore2) < .5) cScore2 = Number((cScore1 - .4).toFixed(1));
     const cScore3 = Number((50.1 + Math.random() * .8).toFixed(1));
 
-    // รักษาระบบเข็มทิศและเลขวิน 6 ตัวให้ทำงานตามเดิม แต่ตัดคะแนนโบนัสที่บวกทับซ้อนกันเองออกเพื่อให้ตัวเลขสะท้อนค่าที่แท้จริง
     const digitScores = Object.keys(votes).map(Number).map(digit => {
       let score = 0;
-      uniqueEvaluated.forEach(model => { if (model.set.includes(digit)) score += model.aiScore; });
+      evaluated.forEach(model => { if (model.set.includes(digit)) score += model.aiScore; });
       let frequency = votes[digit] || 0;
       let compassBonus = 0;
       const inTop = compass.topZone.includes(digit);
       const inBot = compass.bottomZone.includes(digit);
 
       if (inTop && inBot) {
-        compassBonus = 0.4;
+        compassBonus = 1.0;
       } else if (inTop || inBot) {
-        compassBonus = 0.2;
+        compassBonus = 0.5;
       }
 
-      score += (compassBonus * 2);
+      score += (compassBonus * 10);
 
       if (independentWinSet.includes(digit)) {
-        score += 2.0;
+        score += 8.5;
       }
 
       return { digit, votes: frequency, score, compassBonus };
@@ -850,8 +839,8 @@ const _app = {
     }).join("") : `<div style="grid-column:1/-1;color:var(--muted);font-size:.42rem;text-align:center;">ไม่มีชุดข้อมูล</div>`;
 
     const rankHTML = top5.map((item, index) => {
-      const matchedModel = evaluatedFinal.find(m => m.set.includes(item.digit));
-      const pct = matchedModel ? matchedModel.aiScore : Math.min(98.5, Math.max(75, 96.8 - (index * 1.2)));
+      const matchedModel = evaluated.find(m => m.set.includes(item.digit));
+      const pct = matchedModel ? matchedModel.aiScore : Math.min(99.9, Math.max(75, 98.8 - (index * 1.2)));
       return `<div class="rank-row" data-copy="${item.digit}">
         <div class="rank-no">#${String(index + 1).padStart(2, "0")}</div>
         <div class="rank-digit">${item.digit}</div>
@@ -861,7 +850,7 @@ const _app = {
     }).join("");
 
     let allFormulasHTML = "";
-    evaluatedFinal.forEach((item) => {
+    evaluated.forEach((item) => {
       let pairs = [];
       item.set.forEach((digit) => {
         const list = item.pairsMap[digit] || [];
@@ -1102,4 +1091,4 @@ if (localStorage.getItem("ml_auth_status_v3") === "active") {
 }
 </script>
 </body>
-                                                                                      </html>
+          </html>
