@@ -1458,9 +1458,11 @@ const FORMULA_DEFINITION_AUDIT=auditFormulaDefinitions(formulas);
    ORIGINAL SANITIZER
 ========================================================= */
 function sanitizeFormulaResult(rawRes){
-  /* V58+ DATA INTEGRITY: never mutate a protected formula's raw output.
-     Duplicate/double-digit restrictions belong to Pair Eligibility, not here. */
-  return [norm(rawRes?.[0]), norm(rawRes?.[1])];
+  let d1=norm(rawRes[0]);
+  let d2=norm(rawRes[1]);
+  if(d1===d2)
+    d2=norm(d2+1);
+  return[d1,d2];
 }
 /* =========================================================
    ORIGINAL HIT CHECK
@@ -1827,20 +1829,14 @@ function adaptiveWindowBlend(rates,weights){
 }
 
 function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null){
-  /* V58+ FORMULA INDEPENDENCE: exact duplicate formula bodies count once.
-     Original definitions remain untouched; only evidence aggregation changes. */
   const data=Array.from({length:10},(_,digit)=>({digit,agreement:0,weightedAgreement:0,formulas:[],score:0,independentWeight:0}));
-  const seenSources=new Set();
-  (Array.isArray(formulaNames)?formulaNames:[]).forEach(fName=>{
-    const f=auditData?.[fName];
+  formulaNames.forEach(fName=>{
+    const f=auditData[fName];
     if(!f||!Array.isArray(f.latestDigits)) return;
-    const source=String(allFormulas?.[fName]||'').replace(/\s+/g,'');
-    const familyKey=source||fName;
-    if(seenSources.has(familyKey)) return;
-    seenSources.add(familyKey);
     const fw=Number(formulaGovernor?.weights?.[fName]||1);
     f.latestDigits.forEach(digit=>{
-      const d=Number(digit); if(d<0||d>9)return;
+      const d=Number(digit);
+      if(d<0||d>9)return;
       data[d].agreement++;
       data[d].weightedAgreement+=(Number(f.hitRate)||0)*fw;
       data[d].independentWeight+=fw;
@@ -1855,12 +1851,7 @@ function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null){
 }
 function buildHistoricalDigitConsensus(recs,formulaNames,formulaGovernor=null){
   const out=Array.from({length:10},(_,digit)=>({digit,predicted:0,hitSupport:0,weightedSupport:0,formulas:[]}));
-  const seenSources=new Set();
   formulaNames.forEach(fName=>{
-    const source=String(allFormulas?.[fName]||'').replace(/\s+/g,'');
-    const familyKey=source||fName;
-    if(seenSources.has(familyKey)) return;
-    seenSources.add(familyKey);
     const history=getFormulaHistory(recs,fName);
     const fHit=history.length?percent(history.filter(x=>x.hit).length,history.length):50;
     const fw=Number(formulaGovernor?.weights?.[fName]||1);
@@ -3164,14 +3155,7 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
      Every valid partner digit competes directly on independent evidence.
      Output contract: main digit ALWAYS stays first; partner is ALWAYS the
      final/unit digit; final display is sorted numerically ascending. */
-  const allPairFormulaNames=Object.keys(formulas);
-  const seenPairSources=new Set();
-  const formulaNames=allPairFormulaNames.filter(f=>{
-    const key=String(formulas[f]||'').replace(/\s+/g,'')||f;
-    if(seenPairSources.has(key)) return false;
-    seenPairSources.add(key);
-    return true;
-  });
+  const formulaNames=Object.keys(formulas);
   const data=Array.isArray(records)?records:[];
   const target=Number(mainDigit),other=Number(otherDigit);
   const governor=buildAdaptiveFormulaWeights(data,formulaNames);
@@ -4381,9 +4365,8 @@ function reconcileDatasetIds(masterRecords,newRecords){
    Strictly isolated from the main lottery engine/formulas.
 ========================================================= */
 const M2D_STORAGE_KEY='MESTER_M2D_SPECIALIZED_V2';
-const M2D_WINDOWS=[7,14,21,30,60,90,120];
+const M2D_WINDOWS=[7,14,30,60,90,120];
 const M2D_MAIN_WINDOW=30;
-/* V58+ long-memory envelope: 30 remains the core; 60/90/120 are auxiliary evidence. */
 function m2dEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function m2dCleanText(v){return String(v??'').replace(/[\uFEFF\u200B-\u200D\u2060]/g,'').replace(/\r/g,'');}
 function m2dNorm10(v){return ((Number(v)%10)+10)%10;}
@@ -4436,7 +4419,7 @@ function m2dParse(text){
 }
 const M2D_CORE_ROUNDS=30;
 const M2D_MIN_INPUT_ROUNDS=25;
-const M2D_MAX_INPUT_ROUNDS=120;
+const M2D_MAX_INPUT_ROUNDS=35;
 function m2dInputRange(arr){return Array.isArray(arr)?arr.filter(Boolean).slice(-M2D_MAX_INPUT_ROUNDS):[];}
 function m2dFixed30(arr){return m2dInputRange(arr).slice(-M2D_CORE_ROUNDS);}
 function m2dAuxiliaryRounds(arr){const d=m2dInputRange(arr);return d.length>M2D_CORE_ROUNDS?d.slice(0,d.length-M2D_CORE_ROUNDS):[];}
@@ -4624,6 +4607,7 @@ function m2dPrecisionScoreDigits(arr){
   return out;
 }
 function m2dTop3(arr){
+  m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   const base=m2dScoreDigits(arr),score=m2dPrecisionScoreDigits(arr);
   const pool=[...Array(10).keys()].sort((a,b)=>score[b]-score[a]||base[b]-base[a]||a-b).slice(0,7);
@@ -5145,15 +5129,11 @@ function m2dNextTargetDate(records){
 function renderMyanmar2DModule(text){
   const parsed=m2dParse(text);if(!parsed.records.length)return null;
   const usable=parsed.records.some(r=>r.noon||r.evening);if(!usable)return null;
-  /* V58+ DATASET ISOLATION: analyze the current input only. Persisted history is
-     retained as a separate memory store and never silently contaminates a run. */
+  let stored=[];try{stored=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){stored=[]}
   const keyify=r=>`${r.date}|${r.noon?.value||'××'}|${r.evening?.value||'××'}|${r.timestamp||0}`;
-  let persisted=[];
-  try{persisted=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){persisted=[]}
-  const historyMap=new Map(persisted.map(r=>[keyify(r),r]));
-  parsed.records.forEach(r=>historyMap.set(keyify(r),r));
-  try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify([...historyMap.values()]))}catch(e){}
-  const use=parsed.records.map((r,i)=>({...r,timestamp:r.timestamp||m2dThaiDate(r.date),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a.seq||0)-(b.seq||0)||(a._m2i-b._m2i));
+  const map=new Map(stored.map(r=>[keyify(r),r]));parsed.records.forEach(r=>map.set(keyify(r),r));
+  stored=[...map.values()];try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify(stored))}catch(e){}
+  const use=stored.map((r,i)=>({...r,timestamp:r.timestamp||m2dThaiDate(r.date),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a.seq||0)-(b.seq||0)||(a._m2i-b._m2i));
   const noon=m2dAnalyzeSession(use,'noon'),evening=m2dAnalyzeSession(use,'evening'),cons=m2dConsensus(noon,evening);
   const targetDate=m2dNextTargetDate(parsed.records);
   const dateLabel=targetDate||parsed.records[parsed.records.length-1]?.date||use[use.length-1]?.date||'';
@@ -5537,9 +5517,8 @@ function runEngineCore(){
       if(resultRecs.length<1)
         return;
       auditDataMap[lotteryName]={};
-      /* V58+ PRODUCTION UNIVERSE: protected original 15 formulas drive the
-         actual decision. Challengers remain audit/shadow evidence only. */
-      const formulaNames=Object.keys(formulas);
+      const formulaNames=
+        Object.keys(allFormulas);
       const latestRec=
         resultRecs[resultRecs.length-1];
       const lTop=
@@ -6376,24 +6355,6 @@ window.addEventListener(
       );
     }
   });
-})();
-
-/* =========================================================
-   V58+ FINAL INTEGRITY GUARDS
-========================================================= */
-(function(){
-  try{
-    const dup=(Object.keys(formulas).map(k=>[k,String(formulas[k]).replace(/\s+/g,'')]))
-      .reduce((m,[k,v])=>{(m[v]||(m[v]=[])).push(k);return m;},{});
-    window.__V58PLUS_AUDIT={
-      version:'V58+',
-      protectedFormulaCount:Object.keys(formulas).length,
-      challengerFormulaCount:Object.keys(challengerFormulas).length,
-      duplicateFormulaFamilies:Object.values(dup).filter(v=>v.length>1),
-      m2dCoreRounds:M2D_CORE_ROUNDS,
-      m2dAuxiliaryMaxRounds:M2D_MAX_INPUT_ROUNDS
-    };
-  }catch(e){ console.warn('V58+ integrity metadata unavailable',e); }
 })();
 </script>
 </body>
