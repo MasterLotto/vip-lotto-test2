@@ -4527,10 +4527,125 @@ function v85PlusApplyResolution(intelligence,records){
     finalGate:{...(base.finalGate||{}),v85PlusResolution:true}
   };
 }
+/* =========================================================
+   V86 EQUAL OPPORTUNITY EQUALIZER — STABILITY FIRST, CONSENSUS SECOND
+   Backend-only. Locked formula bodies, pair engine, output contract and UI/CSS
+   remain unchanged.
+   Principle:
+     - Historical formula stability is primary evidence.
+     - Current formula consensus remains useful, but is a bounded bonus.
+     - Repeated agreement cannot create unlimited ranking pressure.
+     - Every digit 0..9 is evaluated by the same evidence pipeline.
+========================================================= */
+const V86_EQUALIZER_CONFIG=Object.freeze({
+  minHistory:18,
+  stabilityWeight:.46,
+  resolutionWeight:.24,
+  empiricalWeight:.16,
+  consensusWeight:.14,
+  maxAdjustment:2.10,
+  consensusCap:68,
+  consensusSaturation:2.35,
+  minFamilyEvidence:2
+});
+function v86BuildDigitStability(arr,names,auditData){
+  const data=Array.isArray(arr)?arr.filter(isResultRecord):[];
+  const out=Array.from({length:10},()=>({support:0,hits:0,recentSupport:0,recentHits:0,families:new Set(),familyScores:[]}));
+  const familySeen=new Map();
+  (Array.isArray(names)?names:ACTIVE_FORMULA_NAMES).forEach(name=>{
+    const fn=allFormulas?.[name]; if(typeof fn!=='function')return;
+    const source=String(fn).replace(/\s+/g,'');
+    const fam=source;
+    const hist=getFormulaHistory(data,name)||[];
+    const audit=auditData?.[name]||{};
+    const reliability=clamp(betaSmoothedRate(Number(audit.hits??audit.hitCount??0),Number(audit.tests??audit.total??0),Number(audit.hitRate??50),10),35,90);
+    const famMap=familySeen.get(fam)||Array.from({length:10},()=>({s:0,h:0,rs:0,rh:0}));
+    hist.forEach((h,idx)=>{
+      const age=hist.length-1-idx;
+      const recW=Math.pow(.965,age);
+      const actual=v85TargetSet({n3:h.actualN3,n2:h.actualN2});
+      const preds=new Set((h.predicted||[]).map(Number).filter(d=>d>=0&&d<=9));
+      preds.forEach(d=>{
+        famMap[d].s+=recW*reliability/100;
+        if(actual.has(d))famMap[d].h+=recW*reliability/100;
+        if(age<8){famMap[d].rs+=reliability/100;if(actual.has(d))famMap[d].rh+=reliability/100;}
+      });
+    });
+    familySeen.set(fam,famMap);
+  });
+  familySeen.forEach((famMap)=>famMap.forEach((x,d)=>{
+    if(x.s<=0)return;
+    const longRate=100*x.h/x.s;
+    const recentRate=x.rs?100*x.rh/x.rs:longRate;
+    const conditional=betaSmoothedRate(x.h,x.s,50,6)*.72+betaSmoothedRate(x.rh,x.rs,longRate,3)*.28;
+    out[d].support+=x.s; out[d].hits+=x.h; out[d].recentSupport+=x.rs; out[d].recentHits+=x.rh;
+    out[d].familyScores.push(conditional);
+  }));
+  return out.map(x=>{
+    const valid=x.familyScores.filter(Number.isFinite).sort((a,b)=>b-a);
+    const independent=valid.length?avg(valid.slice(0,Math.min(5,valid.length))):50;
+    const longRate=x.support?100*x.hits/x.support:50;
+    const recentRate=x.recentSupport?100*x.recentHits/x.recentSupport:longRate;
+    return {stability:round2(clamp(independent,0,100)),longRate:round2(clamp(longRate,0,100)),recentRate:round2(clamp(recentRate,0,100)),familyCount:valid.length};
+  });
+}
+function v86ConsensusStrength(row){
+  const agreement=Math.max(0,Number(row?.agreement)||0);
+  /* Saturating transform: consensus stays valuable, but the 5th/6th/7th
+     agreement is not allowed to behave like five/six/seven independent proofs. */
+  return clamp(100*(1-Math.exp(-agreement/V86_EQUALIZER_CONFIG.consensusSaturation)),0,100);
+}
+function v86ApplyEqualOpportunity(intelligence,records,auditData,formulaNames){
+  const base=intelligence||{}, arr=getResultRecords(records).filter(isResultRecord);
+  if(arr.length<V86_EQUALIZER_CONFIG.minHistory||!Array.isArray(base.rows))return base;
+  const names=Array.isArray(formulaNames)&&formulaNames.length?formulaNames:ACTIVE_FORMULA_NAMES;
+  const stability=v86BuildDigitStability(arr,names,auditData);
+  const empirical=Array.from({length:10},(_,d)=>{
+    const a=arr.slice(-Math.min(30,arr.length));
+    return a.length?100*a.filter(r=>v85TargetSet(r).has(d)).length/a.length:50;
+  });
+  const rows=base.rows.map(row=>{
+    const d=Number(row.digit), s=stability[d]||{};
+    const hist=Number(s.stability)||50;
+    const recent=Number(s.recentRate)||50;
+    const emp=Number(empirical[d])||50;
+    const res=Number(row.v85PlusResolution?.resolutionScore??row.v85Decision?.evidenceScore??50);
+    const consensus=v86ConsensusStrength(row);
+    /* Consensus is capped and blended after stability. If consensus is much
+       stronger than historical stability, its excess is compressed rather than
+       rewarded again. If stability is stronger, the digit keeps its advantage. */
+    const consensusBalanced=Math.min(consensus,V86_EQUALIZER_CONFIG.consensusCap);
+    const stabilityCore=hist*.72+recent*.28;
+    const fairEvidence=clamp(
+      stabilityCore*V86_EQUALIZER_CONFIG.stabilityWeight+
+      res*V86_EQUALIZER_CONFIG.resolutionWeight+
+      emp*V86_EQUALIZER_CONFIG.empiricalWeight+
+      consensusBalanced*V86_EQUALIZER_CONFIG.consensusWeight,
+      0,100
+    );
+    const crowdExcess=Math.max(0,consensusBalanced-stabilityCore);
+    const crowdPenalty=clamp(crowdExcess*.045,0,1.65);
+    const stabilityLift=clamp((stabilityCore-consensusBalanced)*.018,0,.85);
+    const centered=(fairEvidence-50)/50;
+    const baseAdj=clamp(centered*V86_EQUALIZER_CONFIG.maxAdjustment*1.35,-V86_EQUALIZER_CONFIG.maxAdjustment,V86_EQUALIZER_CONFIG.maxAdjustment);
+    const adj=clamp(baseAdj-crowdPenalty+stabilityLift,-V86_EQUALIZER_CONFIG.maxAdjustment,V86_EQUALIZER_CONFIG.maxAdjustment);
+    return {...row,
+      selectionQuality:round2(clamp(Number(row.selectionQuality??row.score??50)+adj,0,100)),
+      v86Fairness:{historicalStability:round2(hist),recentStability:round2(recent),empiricalRate:round2(emp),resolutionEvidence:round2(res),rawConsensus:round2(Number(row.agreement)||0),saturatedConsensus:round2(consensusBalanced),stabilityCore:round2(stabilityCore),fairEvidence:round2(fairEvidence),crowdExcess:round2(crowdExcess),crowdPenalty:round2(crowdPenalty),stabilityLift:round2(stabilityLift),adjustment:round2(adj),familyEvidence:Number(s.familyCount)||0}
+    };
+  }).sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(b.v86Fairness?.historicalStability||0)-Number(a.v86Fairness?.historicalStability||0)||a.digit-b.digit);
+  const top3=rows.slice(0,3).map(x=>x.digit);
+  const selected=top3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean);
+  return {...base,rows,top3,selected,
+    v86EqualOpportunity:{version:'V86 Equal Opportunity',principles:['historical-stability-first','bounded-consensus','equal-evidence-pipeline','anti-crowding'],activeFormulaCount:names.length,consensusCap:V86_EQUALIZER_CONFIG.consensusCap,maxAdjustment:V86_EQUALIZER_CONFIG.maxAdjustment,ranked:rows.map((x,i)=>({rank:i+1,digit:x.digit,score:x.selectionQuality,stability:x.v86Fairness?.historicalStability??50,consensus:x.v86Fairness?.rawConsensus??0,penalty:x.v86Fairness?.crowdPenalty??0}))},
+    finalGate:{...(base.finalGate||{}),v86EqualOpportunity:true,v86StabilityFirst:true,v86ConsensusBounded:true}
+  };
+}
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const core=buildDigitIntelligenceV84Core(records,auditData,formulaNames,options);
   const v85=v85ApplyFinalDecisionGovernor(core,records,auditData,formulaNames);
-  return v85PlusApplyResolution(v85,records);
+  const v85Plus=v85PlusApplyResolution(v85,records);
+  return v86ApplyEqualOpportunity(v85Plus,records,auditData,formulaNames);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
 
