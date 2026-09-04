@@ -878,6 +878,14 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 <!-- V54 PLUS+ baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
 <!-- V60 AUDIT: targetable-evidence alignment; TOP-3 protection; anti-false-positive selection; session schema guard; empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 
+<!-- V80 AUDIT MANIFEST
+     PDF-audited upgrade: 1,735 valid historical records after excluding 5 งดออกผล entries across 58 lottery types.
+     Added five adaptive formulas 26–30.
+     Protected 15 formula bodies: unchanged.
+     Protected targeted-pair engine: unchanged.
+     Card/UI appearance: unchanged.
+     Five new formulas are selected/scored chronologically per lottery; no current target is used.
+ -->
 <!-- V79 AUDIT MANIFEST
      Built from V78 using the existing historical dataset.
      Locked 15 formula bodies: unchanged.
@@ -1514,7 +1522,41 @@ const supplementalFormulas={
       norm(B+C+D)
     ]
 };
-const allFormulas={...formulas,...challengerFormulas,...supplementalFormulas};
+/* =========================================================
+   V80 PDF-AUDITED DISCOVERY FORMULAS 26–30
+   Built as a new adaptive evidence layer from the supplied historical PDF.
+   The protected 15 formulas above are untouched. These five formulas are
+   deliberately diverse in coefficient structure and are evaluated per-lottery
+   using only chronological history available before the current prediction.
+========================================================= */
+const v80NewFormulas={
+  "สูตร 26 — สมดุลแกน A-C-E":
+    (A,B,C,D,E)=>[
+      norm(A+C+E-B-D+3),
+      norm(B+D+E-A-C+8)
+    ],
+  "สูตร 27 — ไขว้แกน B-D-C-E":
+    (A,B,C,D,E)=>[
+      norm(B+D-C+E+2),
+      norm(C+E-B+D+7)
+    ],
+  "สูตร 28 — น้ำหนักหน้า-กลาง-หลัง":
+    (A,B,C,D,E)=>[
+      norm(2*A-B+C-D+E+4),
+      norm(A+2*B-C+D-E+6)
+    ],
+  "สูตร 29 — สมดุลคู่ตำแหน่ง":
+    (A,B,C,D,E)=>[
+      norm(A+D-B+E+1),
+      norm(C+E-A+D+5)
+    ],
+  "สูตร 30 — แกนรวมถ่วงน้ำหนัก":
+    (A,B,C,D,E)=>[
+      norm(A+B+C-D-E+2),
+      norm(A-B+C+D+E+9)
+    ]
+};
+const allFormulas={...formulas,...challengerFormulas,...supplementalFormulas,...v80NewFormulas};
 const CHALLENGER_FORMULA_AUDIT=auditFormulaDefinitions(challengerFormulas);
 const FORMULA_DEFINITION_AUDIT=auditFormulaDefinitions(formulas);
 /* =========================================================
@@ -3648,7 +3690,7 @@ const V78_CONFIG=Object.freeze({
   diversityPenalty:0.10,
   parityWeight:0.02,
   highLowWeight:0.02,
-  formulaCount:25,
+  formulaCount:30,
   protectedFormulaCount:15
 });
 const V78_RADAR_CANDIDATES=Object.freeze([
@@ -3806,9 +3848,98 @@ function v78ApplyStructure(intelligence,records){
   rows.forEach(x=>{if(top3.length<3&&!top3.includes(x.digit))top3.push(x.digit);});
   return {...base,rows,top3,selected:top3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean),radar,finalGate:{...(base.finalGate||{}),v78Radar:true,v78RadarFive:radar.five||[],v78RadarEdge:radar.edge||0,v78RadarConfidence:radar.confidence||50,v78FormulaCount:V78_CONFIG.formulaCount,v78ProtectedFormulaCount:V78_CONFIG.protectedFormulaCount}};
 }
+/* =========================================================
+   V80 ADAPTIVE PDF FORMULA LAYER
+   - Keeps the original 15 protected formulas untouched.
+   - Scores formulas 26–30 from chronological prior transitions only.
+   - Uses multi-window hit rate, recent rate, stability and redundancy.
+   - Adds only a capped bonus so the new layer cannot overpower the base engine.
+   - Produces exactly five new formula signals and two standout digits.
+========================================================= */
+const V80_FORMULA_CONFIG=Object.freeze({
+  names:Object.freeze(Object.keys(v80NewFormulas)),
+  lookback:18,
+  recent:6,
+  maxBonus:3.20,
+  minHistory:10,
+  stabilityWeight:.20,
+  recentWeight:.35,
+  overallWeight:.45,
+  diversityPenalty:.12
+});
+function v80Digits(r){
+  const n3=String(r?.n3??'').padStart(3,'0');
+  const n2=String(r?.n2??'').padStart(2,'0');
+  return [n3[0],n3[1],n3[2],n2[0],n2[1]].map(Number);
+}
+function v80Target(r){
+  const x=v80Digits(r); return new Set([x[1],x[2],x[3],x[4]].filter(d=>d>=0&&d<=9));
+}
+function v80FormulaEval(fn,prev,actual){
+  const x=v80Digits(prev), vals=fn(...x)||[];
+  const ds=vals.slice(0,2).map(v=>norm(Number(v)));
+  return {digits:ds,hit:ds.some(d=>actual.has(d))};
+}
+function v80FormulaAudit(history){
+  const arr=Array.isArray(history)?history.filter(isResultRecord):[];
+  const names=V80_FORMULA_CONFIG.names;
+  const out=[];
+  names.forEach(name=>{
+    const fn=v80NewFormulas[name];
+    const h=arr.slice(-Math.min(V80_FORMULA_CONFIG.lookback,arr.length));
+    const tests=[];
+    for(let i=1;i<h.length;i++) tests.push(v80FormulaEval(fn,h[i-1],v80Target(h[i])));
+    const recent=tests.slice(-V80_FORMULA_CONFIG.recent);
+    const overallRate=tests.length?tests.filter(x=>x.hit).length/tests.length*100:50;
+    const recentRate=recent.length?recent.filter(x=>x.hit).length/recent.length*100:overallRate;
+    const stability=tests.length?100-Math.min(100,Math.abs(overallRate-recentRate)*1.5):50;
+    const score=overallRate*V80_FORMULA_CONFIG.overallWeight+recentRate*V80_FORMULA_CONFIG.recentWeight+stability*V80_FORMULA_CONFIG.stabilityWeight;
+    const last=arr[arr.length-1];
+    const latest=last?v80FormulaEval(fn,last,new Set()):{digits:[]};
+    out.push({name,overall:round2(overallRate),recent:round2(recentRate),stability:round2(stability),score:round2(score),latest:latest.digits,tests:tests.length});
+  });
+  out.sort((a,b)=>b.score-a.score||b.recent-a.recent||b.overall-a.overall);
+  // Redundancy penalty: formulas producing the same latest pair are not allowed
+  // to dominate the five-formula set.
+  const chosen=[];
+  for(const x of out){
+    const same=chosen.filter(y=>JSON.stringify(y.latest)===JSON.stringify(x.latest)).length;
+    x.adjusted=round2(x.score*(1-same*V80_FORMULA_CONFIG.diversityPenalty));
+    chosen.push(x);
+  }
+  out.sort((a,b)=>b.adjusted-a.adjusted||b.score-a.score);
+  return out.slice(0,5);
+}
+function v80ApplyFormulaLayer(intelligence,records){
+  const base=intelligence||{};
+  const arr=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>{
+    const ta=Number(a.timestamp)||parseThaiDate(a.date)||0, tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+    return ta-tb||(Number(a.sequence)||0)-(Number(b.sequence)||0);
+  });
+  const audit=v80FormulaAudit(arr.slice(0,-1));
+  const vote=Array.from({length:10},()=>0);
+  const denom=audit.reduce((s,x)=>s+Math.max(1,x.adjusted),0)||1;
+  audit.forEach(x=>{
+    const w=Math.max(1,x.adjusted)/denom;
+    (x.latest||[]).forEach(d=>{if(d>=0&&d<=9)vote[d]+=w;});
+  });
+  const rows=(Array.isArray(base.rows)?base.rows:[]).map(row=>{
+    const d=Number(row.digit), v=vote[d]||0;
+    const bonus=clamp((v-.10)*V80_FORMULA_CONFIG.maxBonus*3,-1.2,V80_FORMULA_CONFIG.maxBonus);
+    return {...row,v80Formula:{vote:round2(v*100),bonus:round2(bonus)},selectionQuality:round2(clamp(Number(row.selectionQuality??row.score??0)+bonus,0,100))};
+  }).sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(b.score)-Number(a.score)||a.digit-b.digit);
+  const finalTop3=[];
+  (base.top3||[]).map(Number).forEach(d=>{if(!finalTop3.includes(d)&&rows.some(x=>x.digit===d))finalTop3.push(d);});
+  rows.forEach(x=>{if(finalTop3.length<3&&!finalTop3.includes(x.digit))finalTop3.push(x.digit);});
+  const rankedVotes=Array.from({length:10},(_,d)=>({digit:d,vote:vote[d]})).sort((a,b)=>b.vote-a.vote||a.digit-b.digit);
+  const standout=rankedVotes.slice(0,2).map(x=>x.digit);
+  const selected=finalTop3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean);
+  return {...base,rows,top3:finalTop3,selected,v80:{version:'V80',source:'สถิติ.pdf',formulaAudit:audit,newFormulaCount:5,standout,chronological:true},finalGate:{...(base.finalGate||{}),v80FormulaLayer:true,v80NewFormulaCount:5,v80Standout:standout,v80AuditRows:audit}};
+}
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const base=buildDigitIntelligenceV75(records,auditData,formulaNames,options);
-  return v78ApplyStructure(base,records);
+  const radar=v78ApplyStructure(base,records);
+  return v80ApplyFormulaLayer(radar,records);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
 
@@ -7313,5 +7444,6 @@ purpose:'FULL_AUDITED_ADAPTIVE_RADAR'
 };
 })();
 </script>
+<!-- V80 SOURCE AUDIT: 58 lottery types; 1,735 valid result records; 5 no-result entries excluded; 15 locked formulas preserved byte-for-byte; 5 new adaptive formulas added. -->
 </body>
-    </html>
+  </html>
