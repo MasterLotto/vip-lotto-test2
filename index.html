@@ -4145,8 +4145,17 @@ function v83Transition(arr,d){
   return clamp(50+(hit-priorBase)*.55,0,100);
 }
 function v83IndependentFamilies(row){
-  const fs=new Set();
-  (row?.formulaHits||[]).forEach(name=>{const f=familyIdByFormula[name]; if(f)fs.add(f);});
+  /* V85 Plus scope-safe family resolver. The old implementation referenced
+     familyIdByFormula from inside another function's local scope, which caused
+     a ReferenceError during live processing. Resolve families locally from the
+     same locked formula bodies; family index 0 is valid and must not be dropped. */
+  const fs=new Set(), sourceToId=new Map();
+  let nextId=0;
+  (row?.formulaHits||[]).forEach(name=>{
+    const source=String((allFormulas&&allFormulas[name])||name).replace(/\s+/g,'');
+    if(!sourceToId.has(source))sourceToId.set(source,nextId++);
+    fs.add(sourceToId.get(source));
+  });
   return fs.size;
 }
 function v83FormulaLocalScore(row,auditData,names){
@@ -4352,8 +4361,8 @@ function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}
 ========================================================= */
 const V85_CONFIG=Object.freeze({
   minHistory:18,
-  maxTests:12,
-  recentTests:6,
+  maxTests:6,
+  recentTests:4,
   priorStrength:10,
   maxAdjustment:3.25,
   selectionFloor:3,
@@ -4422,7 +4431,7 @@ function v85ApplyFinalDecisionGovernor(intelligence,records,auditData,formulaNam
       separation*V85_CONFIG.separationWeight+
       top3Coverage*V85_CONFIG.top3Weight+
       coverage*V85_CONFIG.coverageWeight,0,100);
-    const sampleGate=selected<V85_CONFIG.selectionFloor?.90:1;
+    const sampleGate=selected<V85_CONFIG.selectionFloor ? .90 : 1;
     const centered=(evidence-50)/50;
     const adj=clamp(centered*V85_CONFIG.maxAdjustment*2*sampleGate,-V85_CONFIG.maxAdjustment,V85_CONFIG.maxAdjustment);
     return {...row,selectionQuality:round2(clamp(Number(row.selectionQuality??row.score??50)+adj,0,100)),
@@ -4438,9 +4447,90 @@ function v85ApplyFinalDecisionGovernor(intelligence,records,auditData,formulaNam
     finalGate:{...(base.finalGate||{}),v85DecisionIntegrity:true,v85EndToEndSelection:true}
   };
 }
+/* =========================================================
+   V85 PLUS — PRECISION RESOLUTION LAYER
+   No new formula bodies. Uses only the existing result history and the
+   already-ranked production rows. Think of this as increasing sensor
+   resolution: finer windows, positional detail, stability and separation.
+   All adjustments are bounded and are applied only to ranking quality.
+========================================================= */
+const V85_PLUS_CONFIG=Object.freeze({
+  windows:[3,5,7,10,15,20,30],
+  maxBonus:1.35,
+  minHistory:12,
+  positionWeight:.34,
+  windowWeight:.36,
+  stabilityWeight:.18,
+  separationWeight:.12
+});
+function v85PlusDigits(rec){
+  const n3=String(rec?.n3??'').padStart(3,'0');
+  const n2=String(rec?.n2??'').padStart(2,'0');
+  return [Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1])].filter(Number.isFinite);
+}
+function v85PlusWindowRate(arr,d,w){
+  const a=arr.slice(Math.max(0,arr.length-w));
+  if(!a.length)return 50;
+  let hits=0,total=0;
+  a.forEach(r=>{v85PlusDigits(r).forEach(x=>{total++;if(x===d)hits++;});});
+  return total?100*hits/total:50;
+}
+function v85PlusPositionRate(arr,d,w){
+  const a=arr.slice(Math.max(0,arr.length-w));
+  if(!a.length)return 50;
+  const pos=[0,0,0,0],hit=[0,0,0,0];
+  a.forEach(r=>{
+    const ds=v85PlusDigits(r);
+    ds.forEach((x,i)=>{if(i<4){pos[i]++;if(x===d)hit[i]++;}});
+  });
+  const rates=pos.map((n,i)=>n?100*hit[i]/n:50);
+  const sorted=rates.slice().sort((a,b)=>b-a);
+  return sorted[0]*.42+sorted[1]*.28+sorted[2]*.18+sorted[3]*.12;
+}
+function v85PlusApplyResolution(intelligence,records){
+  const base=intelligence||{};
+  const arr=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>{
+    const ta=Number(a.timestamp)||parseThaiDate(a.date)||0,tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
+    return ta-tb||(Number(a.sequence)||0)-(Number(b.sequence)||0);
+  });
+  if(arr.length<V85_PLUS_CONFIG.minHistory||!Array.isArray(base.rows))return base;
+  const rows=base.rows.map(row=>{
+    const d=Number(row.digit);
+    const rates=V85_PLUS_CONFIG.windows.map(w=>v85PlusWindowRate(arr,d,w));
+    const mean=avg(rates);
+    const spread=Math.sqrt(avg(rates.map(x=>(x-mean)*(x-mean))));
+    const stability=clamp(100-spread*2.4,0,100);
+    const position=v85PlusPositionRate(arr,d,Math.min(20,arr.length));
+    const windowScore=avg([rates[0],rates[1],rates[2],rates[3]*.9,rates[4]*.8,rates[5]*.65,rates[6]*.5].map(Number));
+    const quality=Number(row.selectionQuality??row.score??50);
+    const peers=base.rows.filter(x=>Number(x.digit)!==d).map(x=>Number(x.selectionQuality??x.score??50)).filter(Number.isFinite);
+    const separation=clamp(50+(quality-avg(peers||[50]))*1.8,0,100);
+    const resolution=position*V85_PLUS_CONFIG.positionWeight+windowScore*V85_PLUS_CONFIG.windowWeight+stability*V85_PLUS_CONFIG.stabilityWeight+separation*V85_PLUS_CONFIG.separationWeight;
+    const centered=(resolution-50)/50;
+    const bonus=clamp(centered*V85_PLUS_CONFIG.maxBonus*2,-V85_PLUS_CONFIG.maxBonus,V85_PLUS_CONFIG.maxBonus);
+    return {...row,selectionQuality:round2(clamp(quality+bonus,0,100)),
+      v85PlusResolution:{windows:V85_PLUS_CONFIG.windows.map((w,i)=>({window:w,rate:round2(rates[i])})),windowMean:round2(mean),windowSpread:round2(spread),stability:round2(stability),positionScore:round2(position),separation:round2(separation),resolutionScore:round2(resolution),bonus:round2(bonus)}};
+  }).sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(b.score)-Number(a.score)||a.digit-b.digit);
+  const prior=(base.top3||[]).map(Number).filter(Number.isFinite);
+  let top3=rows.slice(0,3).map(x=>x.digit);
+  const cutoff=rows[2]?.selectionQuality??0;
+  prior.forEach(d=>{
+    if(top3.includes(d))return;
+    const x=rows.find(z=>z.digit===d);
+    if(x&&Number(x.selectionQuality)>=cutoff-0.9)top3[top3.length-1]=d;
+  });
+  top3=Array.from(new Set(top3));
+  rows.forEach(x=>{if(top3.length<3&&!top3.includes(x.digit))top3.push(x.digit);});
+  const selected=top3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean);
+  return {...base,rows,top3:top3.slice(0,3),selected,
+    v85PlusResolution:{version:'V85 Plus',windows:[...V85_PLUS_CONFIG.windows],positional:true,stability:true,separation:true,bounded:true},
+    finalGate:{...(base.finalGate||{}),v85PlusResolution:true}
+  };
+}
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const core=buildDigitIntelligenceV84Core(records,auditData,formulaNames,options);
-  return v85ApplyFinalDecisionGovernor(core,records,auditData,formulaNames);
+  const v85=v85ApplyFinalDecisionGovernor(core,records,auditData,formulaNames);
+  return v85ApplyResolution(v85,records);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
 
