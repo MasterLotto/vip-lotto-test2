@@ -4335,6 +4335,10 @@ function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}
   const v80=v80ApplyFormulaLayer(radar,records);
   const v81=v81ApplyAdaptiveLayer(v80,records);
   const v83=v83ApplyEvidenceStack(v81,records,auditData,formulaNames);
+  /* V85 shadow replay: skip the nested V84 OOS audit because V85 itself
+     performs the chronological end-to-end replay. This avoids an expensive
+     OOS-inside-OOS recursion while leaving the production path unchanged. */
+  if(options&&options.skipV84OOS) return v83;
   return v84ApplyDecisionGovernor(v83,records,auditData,formulaNames);
 }
 
@@ -4381,7 +4385,7 @@ function v85EndToEndSelectionAudit(records,names){
   for(let cut=start;cut<data.length;cut++){
     const train=data.slice(0,cut),target=data[cut],trainAudit=v85TrainAudit(train,names);
     let shadow;
-    try{shadow=buildDigitIntelligenceV84Core(train,trainAudit,names,{skipEndToEnd:true});}catch(e){shadow=null;}
+    try{shadow=buildDigitIntelligenceV84Core(train,trainAudit,names,{skipEndToEnd:true,skipV84OOS:true});}catch(e){shadow=null;}
     const selected=(shadow?.selected||[]).map(x=>Number(x.digit)).filter(Number.isFinite).slice(0,2);
     const top3=(shadow?.top3||selected).map(Number).filter(Number.isFinite).slice(0,3);
     const actual=v85TargetSet(target);
@@ -7873,7 +7877,18 @@ function renderWalkForwardAudit(groups){
   root.innerHTML=html;
 }
 function runEngine(){
-  return runEngineCore();
+  const btn=$('run');
+  try{
+    if(btn){btn.disabled=true;btn.dataset.busy='1';btn.textContent='⏳ กำลังประมวลผล V85...';}
+    return runEngineCore();
+  }catch(err){
+    console.error('[V85 ENGINE ERROR]',err);
+    const root=$('result');
+    if(root) root.innerHTML=`<div class="errorbox"><b>ระบบหยุดการประมวลผลเนื่องจากข้อผิดพลาดภายใน</b><br>${esc(String(err?.message||err||'ไม่ทราบสาเหตุ'))}<br><small>ข้อมูลที่กรอกยังไม่ถูกลบ กรุณาลองใหม่</small></div>`;
+    return null;
+  }finally{
+    if(btn){btn.disabled=false;delete btn.dataset.busy;btn.textContent='⚡ ประมวลผล V32.4 + 2D';}
+  }
 }
 /* =========================================================
    DOM READY
