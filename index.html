@@ -7706,16 +7706,81 @@ function v92EvidenceVector(arr,allRecords,session,d){
 function v92EvidenceDiversity(a,b){
   if(!a||!b)return 0;let same=0;for(let i=0;i<Math.min(a.length,b.length);i++){if(Math.abs(a[i]-b[i])<4)same++;}return same/Math.max(1,Math.min(a.length,b.length));
 }
+/* =========================================================
+   V93 METHOD PERFORMANCE LEDGER / CHAMPION-CHALLENGER GOVERNOR
+   Purpose: promote evidence families that repeatedly survive
+   chronological out-of-sample replay; demote unstable families.
+   This is a selection/weighting layer only — formula bodies unchanged.
+   ========================================================= */
+const V93_M2D_LEDGER_CONFIG={tests:30,minTrain:18,prior:50,shrink:8,coreFloor:56,supportFloor:52,maxWeight:1.65,minWeight:.55,blend:.30};
+const V93_M2D_METHODS=['family','slot','presence','recent','momentum','transition','cross','stability','joint','long'];
+function v93MethodValue(method,arr,allRecords,session,d,cutoff){
+  const data=v92Rows(arr).filter(r=>(Number(r.timestamp)||0)<=Number(cutoff));
+  if(!data.length)return 50;
+  switch(method){
+    case 'family':return v92FamilyScore(data,d).score;
+    case 'slot':return v92SlotRate(data,d,45);
+    case 'presence':return v92PresenceRate(data,d,45);
+    case 'recent':return v92RecentRate(data,d,9);
+    case 'momentum':return v92Momentum(data,d);
+    case 'transition':return v92TransitionScore(data,d).score;
+    case 'cross':return v92CrossSession(allRecords,d,session,cutoff);
+    case 'stability':return v92Stability(data,d);
+    case 'joint':return v92JointScore(allRecords,d,cutoff);
+    case 'long':return v92LongConfirmation(allRecords?.filter?.(r=>r&&r[session]&&(Number(r.timestamp)||0)<=Number(cutoff))?.map?.(r=>r[session])||data,d);
+    default:return 50;
+  }
+}
+function v93LedgerMetric(method,arr,allRecords,session,tests){
+  const data=v92Rows(arr),n=Math.min(tests,Math.max(0,data.length-V93_M2D_LEDGER_CONFIG.minTrain));
+  if(n<6)return {coverage:50,top1:50,rank:50,tested:n};
+  const start=data.length-n;let cov=0,t1=0,rankSum=0;
+  for(let cut=start;cut<data.length;cut++){
+    const actual=data[cut],cutoff=Number(actual.timestamp)||0;
+    const scores=Array.from({length:10},(_,d)=>v93MethodValue(method,data,allRecords,session,d,cutoff));
+    const ranked=[...Array(10).keys()].sort((a,b)=>scores[b]-scores[a]||a-b),top3=new Set(ranked.slice(0,3));
+    const actualDigits=[actual.tens,actual.units];
+    if(actualDigits.some(d=>top3.has(d)))cov++;
+    if(ranked[0]===actual.tens)t1++;
+    rankSum+=actualDigits.reduce((sum,d)=>sum+(10-ranked.indexOf(d)),0)/2;
+  }
+  return {coverage:cov/n*100,top1:t1/n*100,rank:rankSum/n*10,tested:n};
+}
+function v93BuildMethodLedger(arr,allRecords,session){
+  const ledger={version:'V93 Champion-Challenger',session,methods:{},weights:{},tested:0};
+  let totalTests=0;
+  for(const method of V93_M2D_METHODS){
+    const m=v93LedgerMetric(method,arr,allRecords,session,V93_M2D_LEDGER_CONFIG.tests);totalTests=Math.max(totalTests,m.tested);
+    const performance=.55*m.coverage+.25*m.top1+.20*m.rank;
+    const weight=v92Clamp(1+(performance-50)/70,V93_M2D_LEDGER_CONFIG.minWeight,V93_M2D_LEDGER_CONFIG.maxWeight);
+    const status=performance>=V93_M2D_LEDGER_CONFIG.coreFloor?'CORE':performance>=V93_M2D_LEDGER_CONFIG.supportFloor?'SUPPORT':'CHALLENGER';
+    ledger.methods[method]={...m,performance:round2(performance),status,weight:round2(weight)};
+    ledger.weights[method]=weight;
+  }
+  ledger.tested=totalTests;return ledger;
+}
+function v93LedgerScore(ledger,method,score){
+  const w=Number(ledger?.weights?.[method]);return v92Clamp(Number(score)||50)*(Number.isFinite(w)?w:1);
+}
+function v93PromotedScore(arr,allRecords,session,d,ledger){
+  const vals={family:v92FamilyScore(arr,d).score,slot:v92SlotRate(arr,d,45),presence:v92PresenceRate(arr,d,45),recent:v92RecentRate(arr,d,9),momentum:v92Momentum(arr,d),transition:v92TransitionScore(arr,d).score,cross:v92CrossSession(allRecords,d,session),stability:v92Stability(arr,d),joint:v92JointScore(allRecords,d),long:v92LongConfirmation(allRecords?.filter?.(r=>r&&r[session])?.map?.(r=>r[session])||arr,d)};
+  let num=0,den=0;for(const method of V93_M2D_METHODS){const w=Number(ledger?.weights?.[method])||1;num+=v93LedgerScore(ledger,method,vals[method]);den+=w;}
+  const promoted=den?num/den:50;
+  return {score:v92Clamp(promoted),methods:vals};
+}
 function v92DecisionDigitScores(arr,allRecords,session){
-  const data=v92Rows(arr),base=v92BaseDigitScores(data,allRecords,session),oos=v92ReplayDigitOOS(data,allRecords,session),raw=Array(10).fill(50),trust=v92Clamp(data.length/60,0,1);
+  const data=v92Rows(arr),base=v92BaseDigitScores(data,allRecords,session),oos=v92ReplayDigitOOS(data,allRecords,session),raw=Array(10).fill(50),trust=v92Clamp(data.length/60,0,1),ledger=v93BuildMethodLedger(data,allRecords,session);
   for(let d=0;d<10;d++){
     const o=oos.coverage[d],r=oos.rank[d],stable=v92Stability(data,d),moment=v92Momentum(data,d),gap=v92Gap(data,d);
     const contradiction=Math.max(0,50-Math.min(base[d],stable,o));
-    const x=base[d]*.68+o*.20+r*.06+moment*.04-gap*.00-contradiction*.08;
+    const promoted=v93PromotedScore(data,allRecords,session,d,ledger).score;
+    const x=base[d]*.55+promoted*V93_M2D_LEDGER_CONFIG.blend+o*.15+r*.05+moment*.05-gap*.00-contradiction*.06;
     raw[d]=50+(x-50)*(.55+.45*trust);
   }
+  window.__V93_M2D_LEDGER__=ledger;
   return raw;
 }
+
 function v92SelectTop3(arr,allRecords,session){
   const scores=v92DecisionDigitScores(arr,allRecords,session),base=v92BaseDigitScores(arr,allRecords,session),selected=[];
   const candidates=[...Array(10).keys()];
@@ -7812,10 +7877,10 @@ function v92Consensus(noon,evening,records){
     [...n,...e].forEach(p=>{const old=m.get(p.pair);if(!old||p.score>old.score)m.set(p.pair,p);});
     pairsByTarget[t.digit]=v92RenderSortPairs([...m.values()].sort((a,b)=>b.score-a.score||a.pair.localeCompare(b.pair)).slice(0,5));
   });
-  return {top:ranked,pairsByTarget,inputQuality:{noon:noon.inputQuality,evening:evening.inputQuality},pairSetWF:{tested:Math.max(noon.pairSetWF?.tested||0,evening.pairSetWF?.tested||0),precision:50,coverage:50},precisionLayer:{version:'V92 M2D Specialized Brain',jointEvidence:true,exactOrientedPairs:true,walkForward:true,longHistoryConfirmation:true}};
+  return {top:ranked,pairsByTarget,inputQuality:{noon:noon.inputQuality,evening:evening.inputQuality},pairSetWF:{tested:Math.max(noon.pairSetWF?.tested||0,evening.pairSetWF?.tested||0),precision:50,coverage:50},precisionLayer:{version:'V93 M2D Specialized Brain + Method Performance Ledger',jointEvidence:true,exactOrientedPairs:true,walkForward:true,longHistoryConfirmation:true,championChallenger:true,methodLedger:window.__V93_M2D_LEDGER__||null}};
 }
 
-const V92_M2D_AUDIT={version:'V92 M2D Specialized Brain — 45-round regime + long-history confirmation + exact oriented pair + chronological OOS',sessions:['12:01 PM','4:30 PM'],activeCore:45,maxHistory:240,horizons:V92_M2D_CONFIG.horizons,chronologicalOOS:true,separateSessions:true,jointDayEvidence:true,directedTransitions:['T→T','T→U','U→T','U→U'],pairMode:'exact-oriented (12 != 21)',pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'exclude ambiguous duplicate dates from training and flag them',externalData:false};
+const V92_M2D_AUDIT={version:'V93 M2D Specialized Brain — V92 + Method Performance Ledger / Champion-Challenger',sessions:['12:01 PM','4:30 PM'],activeCore:45,maxHistory:240,horizons:V92_M2D_CONFIG.horizons,chronologicalOOS:true,separateSessions:true,jointDayEvidence:true,directedTransitions:['T→T','T→U','U→T','U→U'],pairMode:'exact-oriented (12 != 21)',pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'exclude ambiguous duplicate dates from training and flag them',externalData:false};
 window.__V92_M2D_AUDIT__=V92_M2D_AUDIT;
 window.__V91_M2D_AUDIT__=V92_M2D_AUDIT;
 
