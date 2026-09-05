@@ -4750,7 +4750,7 @@ function v99ApplyConditionalDecision(intelligence,records,auditData,formulaNames
     const f=profile.formula[name],audit=auditData?.[name],pred=[...new Set((audit?.latestDigits||[]).map(Number).filter(d=>d>=0&&d<=9))].slice(0,2);
     pred.forEach(d=>{
       const stateMatch=f.byDigit[d]||{score:50,sample:0},rankWeight=V99_CONDITIONAL_CONFIG.rankWeights[Math.min(f.rank-1,4)]||.5,
-        quality=v99Clamp(f.quality.strength),transition=v99Clamp(stateMatch.score),weight=(.30+.70*rankWeight)*(0.58+quality/250)*(0.55+transition/180);
+        quality=clamp(f.quality.strength),transition=clamp(stateMatch.score),weight=(.30+.70*rankWeight)*(0.58+quality/250)*(0.55+transition/180);
       if(!support[d])support[d]=[];support[d].push({name,rank:f.rank,weight,quality,transition,sample:stateMatch.sample});
     });
   });
@@ -4760,11 +4760,11 @@ function v99ApplyConditionalDecision(intelligence,records,auditData,formulaNames
       matched=items.length?avg(items.slice(0,3).map(x=>x.sample>0?x.transition:50)):50;
     rawByDigit[d]={sum,best,quality,matched,items};
   });
-  const sorted=rows.map(row=>{const d=Number(row.digit),r=rawByDigit[d]||{sum:0,best:50,quality:50,matched:50,items:[]},old=v99Clamp(row.selectionQuality??row.score??50),
-      readiness=v99Clamp(r.best*.50+r.matched*.18+r.quality*.17+v99Clamp(row?.v97Precision?.readiness??50)*.15),
+  const sorted=rows.map(row=>{const d=Number(row.digit),r=rawByDigit[d]||{sum:0,best:50,quality:50,matched:50,items:[]},old=clamp(row.selectionQuality??row.score??50),
+      readiness=clamp(r.best*.50+r.matched*.18+r.quality*.17+clamp(row?.v97Precision?.readiness??50)*.15),
       consensusPenalty=Math.max(0,(r.items.length-1)*4)+Math.max(0,(Number(row.agreement)||0)-2)*1.25,
       adjustmentRaw=(readiness-50)*.075+(Math.min(1.5,r.sum)-.45)*2.25-consensusPenalty,
-      adjustment=Math.max(-V99_CONDITIONAL_CONFIG.maxAdjustment,Math.min(V99_CONDITIONAL_CONFIG.maxAdjustment,adjustmentRaw)),final=v99Clamp(old+adjustment,0,100);
+      adjustment=Math.max(-V99_CONDITIONAL_CONFIG.maxAdjustment,Math.min(V99_CONDITIONAL_CONFIG.maxAdjustment,adjustmentRaw)),final=clamp(old+adjustment,0,100);
     return{...row,selectionQuality:round2(final),v99Conditional:{state:currentState(d),transition:round2(r.best),matchedTransition:round2(r.matched),formulaQuality:round2(r.quality),support:round2(r.sum),supportCount:r.items.length,consensusPenalty:round2(consensusPenalty),readiness:round2(readiness),previousQuality:round2(old),adjustment:round2(final-old),contributors:r.items.slice(0,5).map(x=>({name:x.name,rank:x.rank,weight:round2(x.weight),quality:round2(x.quality),transition:round2(x.transition),sample:x.sample}))}};
   }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.v99Conditional.readiness-a.v99Conditional.readiness||a.digit-b.digit);
   const top3=sorted.slice(0,3).map(x=>x.digit),selected=top3.slice(0,2).map(d=>sorted.find(x=>x.digit===d)).filter(Boolean);
