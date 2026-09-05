@@ -622,7 +622,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 .score-audit-summary-item.gap b{
   color:#3569a8
 }
-.pairs-grid-container{
+.thai-focus-digits{margin:0 auto 12px;padding:9px 12px;border:1px solid rgba(212,175,55,.28);border-radius:14px;background:rgba(255,250,235,.72);text-align:center}.thai-focus-title{font-weight:800;font-size:13px;margin-bottom:7px}.thai-focus-list{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.thai-focus-list span{min-width:34px;padding:5px 8px;border-radius:9px;background:#fff;border:1px solid rgba(170,124,17,.24);font-weight:800;font-family:'IBM Plex Mono',monospace}..pairs-grid-container{
   display:flex;
   flex-direction:column;
   gap:9px;
@@ -2189,7 +2189,7 @@ function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null,records
     item.score=item.consensusQuality;
     item.weightedAgreement=round2(item.weightedAgreement);
   });
-  return data.sort((a,b)=>b.score-a.score||b.independentConsensus-a.independentConsensus||b.agreement-a.agreement||a.digit-b.digit);
+  return data.sort((a,b)=>b.score-a.score||b.independentConsensus-a.independentConsensus||a.digit-b.digit);
 }
 function buildHistoricalDigitConsensus(recs,formulaNames,formulaGovernor=null){
   const out=Array.from({length:10},(_,digit)=>({digit,predicted:0,hitSupport:0,weightedSupport:0,formulas:[]}));
@@ -2524,7 +2524,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
       Math.min(8,r.conflict*2)-
       Math.min(6,r.falsePositiveRisk*.06),0,110));
   });
-  const ranked=[...rows].sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
+  const ranked=[...rows].sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
   const qualityGate={
     sampleSize:n,
     minRecommended:10,
@@ -2861,7 +2861,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
      strong #3 candidate. Keep the pre-selection rank and record why a candidate
      was rejected. */
   const selectionRanked=[...rows].sort((a,b)=>
-    b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
+    b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
   selectionRanked.forEach((r,i)=>{
     r.raw.preSelectionRank=i+1;
     r.raw.top3Eligible=(i<3);
@@ -3102,6 +3102,60 @@ function buildDigitScore(digit,formulaNames,auditData,consensusMap,frequency,int
   });
   total+=((consensusMap.find(x=>x.digit===digit)?.agreement||0)*6)+(frequency.rates[digit]*2);
   return{digit,score:round2(total),selectionQuality:round2(total),agreement,frequencyRate:(frequency.targetableRates?.[digit]??frequency.rates[digit]??0)};
+}
+/* =========================================================
+   V96 — STABILITY-FIRST DIGIT ARBITRATION
+   Consensus Digit Board is tertiary evidence only.
+   Primary: empirical precision + multi-window consistency/stability.
+   Secondary: recent/rolling/historical/robustness evidence.
+   Tertiary: consensus, with strong diminishing returns.
+   Protected formula bodies are untouched.
+========================================================= */
+const V96_STABILITY_CONFIG=Object.freeze({
+  empirical:.24, stability:.20, robustness:.16, historical:.13,
+  frequency:.09, trend:.06, timing:.05, structure:.04, consensus:.03,
+  maxConsensusBonus:1.8, minSampleForStrong:12
+});
+function v96Num(v,d=50){const n=Number(v);return Number.isFinite(n)?n:d;}
+function v96StableScore(row){
+  const r=row?.raw||{}, c=v96Num(row?.agreement,0);
+  const consensus=Math.min(100,Math.max(0,50+(c-50)*.18));
+  const score=
+    v96Num(r.empiricalPrecision)*V96_STABILITY_CONFIG.empirical+
+    v96Num(r.windowConsistency)*V96_STABILITY_CONFIG.stability+
+    v96Num(r.robustnessSurvival)*V96_STABILITY_CONFIG.robustness+
+    v96Num(r.historicalEvidence)*V96_STABILITY_CONFIG.historical+
+    v96Num(r.frequencyEvidence)*V96_STABILITY_CONFIG.frequency+
+    v96Num(r.trendEvidence)*V96_STABILITY_CONFIG.trend+
+    v96Num(r.timingEvidence)*V96_STABILITY_CONFIG.timing+
+    v96Num(r.structuralEvidence)*V96_STABILITY_CONFIG.structure+
+    consensus*V96_STABILITY_CONFIG.consensus;
+  const penalty=Math.min(18,v96Num(r.falsePositiveRisk)*.12)+Math.min(10,v96Num(r.conflict)*1.8);
+  return Math.max(0,Math.min(100,score-penalty));
+}
+function v96RankDigits(intelligence,candidates=null){
+  const rows=Array.isArray(intelligence?.rows)?intelligence.rows:[];
+  const allowed=candidates?new Set(candidates.map(Number).filter(Number.isFinite)):null;
+  return rows.filter(r=>!allowed||allowed.has(Number(r.digit))).map(r=>({
+    ...r,v96StableScore:v96StableScore(r)
+  })).sort((a,b)=>b.v96StableScore-a.v96StableScore||
+    v96Num(b.raw?.empiricalPrecision)-v96Num(a.raw?.empiricalPrecision)||
+    v96Num(b.raw?.windowConsistency)-v96Num(a.raw?.windowConsistency)||
+    v96Num(b.raw?.robustnessSurvival)-v96Num(a.raw?.robustnessSurvival)||
+    Number(a.digit)-Number(b.digit));
+}
+function v96SelectMainDigits(intelligence,preferred=[]){
+  const ranked=v96RankDigits(intelligence);
+  const preferredSet=new Set(preferred.map(Number).filter(Number.isFinite));
+  const preferredRanked=ranked.filter(x=>preferredSet.has(Number(x.digit)));
+  const pool=preferredRanked.length>=2?preferredRanked:ranked;
+  return pool.slice(0,3);
+}
+function v96SelectFormulaDigits(intelligence,formulaDigits=[]){
+  const ranked=v96RankDigits(intelligence,formulaDigits);
+  if(ranked.length>=2)return ranked.slice(0,2);
+  const fallback=(formulaDigits||[]).map(Number).filter(Number.isFinite);
+  return fallback.slice(0,2).map((digit,i)=>({digit,v96StableScore:0,raw:{}}));
 }
 /* =========================================================
    11. CONFIDENCE
@@ -5967,6 +6021,11 @@ function renderCardHTML(
       </div>
     </div>
     ${scoreSummary}
+    ${Array.isArray(card.focusDigits)&&card.focusDigits.length ? `
+      <div class="thai-focus-digits">
+        <div class="thai-focus-title">🎯 เลขเน้น</div>
+        <div class="thai-focus-list">${card.focusDigits.map(d=>`<span>${d}</span>`).join('')}</div>
+      </div>` : ''}
     <div class="hero-digits-wrap">
       <div class="hero-digit-badge hero-gold">
         <div class="hero-circle">
@@ -6674,10 +6733,10 @@ function renderFullUI(
               lotteryName,
               formatDisplayTitle(lotteryName)
             ),
-          d1:p.d1,
-          d2:p.d2,
-          d1Pairs:p.d1Pairs,
-          d2Pairs:p.d2Pairs,
+          d1:p.originalD1??p.d1,
+          d2:p.originalD2??p.d2,
+          d1Pairs:p.originalD1Pairs??p.d1Pairs,
+          d2Pairs:p.originalD2Pairs??p.d2Pairs,
           type:'formula'
         },
         false,
@@ -8354,7 +8413,7 @@ function v55ApplyMainPrecisionLayer(intelligence,records,auditData,formulaNames)
     const calibrated=v55SafeNum(row.selectionQuality,row.score||0)*cal.factor;
     const finalScore=round2(clamp(calibrated+stabilityBoost+independenceBoost+robustnessBoost-errorPenalty-shiftPenalty-riskPenalty-multiplePenalty-trapPenalty,0,100));
     return{...row,selectionQuality:finalScore,score:round2(clamp(v55SafeNum(row.score,0)*cal.factor,0,100)),raw:{...raw,v56ConsensusTrapPenalty:trapPenalty,v55WindowStability:ws.score,v55RankStability:ws.rankStability,v55DistributionShift:shift.score,v55FormulaDigitPrecision:er.precision,v55EnsembleDiversity:div,v55ErrorPenalty:errorPenalty,v55MultipleTestingPenalty:multiplePenalty,v55CalibrationFactor:cal.factor,v55QualityGate:quality.gate,v55Perturbation:perturb.score}};
-  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
+  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
   const champion=(base.selected||[]).map(x=>Number(x.digit));
   const challenger=scored.slice(0,2).map(x=>x.digit);
   const lookup=d=>scored.find(x=>x.digit===d);
@@ -8525,6 +8584,10 @@ function runEngineCore(){
   });
   const thaiAllDay=v57ThaiRecords(masterRecords);
   if(thaiAllDay.length) groups.__THAI_ALLDAY__=thaiAllDay;
+  /* V96.1 ROUTING CONTRACT: Thai Stock เช้า/เที่ยง/บ่าย/เย็น and ทั้งวัน use
+     the exact MAIN_SYSTEM_V96 pipeline. Only หุ้นไทย บนตรง ๆ is exceptional
+     and remains on the legacy direct-top specialist. */
+  const thaiMainPipelineKeys=new Set(['__THAI_ROUND__เช้า','__THAI_ROUND__เที่ยง','__THAI_ROUND__บ่าย','__THAI_ROUND__เย็น','__THAI_ALLDAY__']);
   const
     auditDataMap={},
     predictionDataMap={},
@@ -8554,6 +8617,7 @@ function runEngineCore(){
     .forEach(lotteryName=>{
       const recs=
         groups[lotteryName];
+      const thaiMainPipeline=thaiMainPipelineKeys.has(lotteryName);
       /* TEMPORAL INTEGRITY: use one chronological result snapshot. */
       const resultRecs=
         recs
@@ -8644,6 +8708,8 @@ function runEngineCore(){
         ][rank1FormulaName];
       const rank1Digits=
         rank1Audit.latestDigits;
+      /* V96: the original-formula card keeps the rank-1 formula identity,
+         but its two displayed digits are filtered by empirical/stability evidence. */
       let rawD1=
         rank1Digits[0];
       let rawD2=
@@ -8694,9 +8760,17 @@ function runEngineCore(){
         auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
       }
       const governedV94=v94ApplyMainGovernor(intelligence,resultRecs);
-      const finalTop3=Array.isArray(governedV94.top3)?governedV94.top3.map(Number).filter(Number.isFinite):[];
       intelligence=governedV94;
+      /* V96: stability/empirical arbitration outranks consensus. */
+      const v96Ranked=v96SelectMainDigits(intelligence,[...((governedV94.top3||[]).map(Number)),d1,d2]);
+      const finalTop3=v96Ranked.length? v96Ranked.map(x=>Number(x.digit)).slice(0,3) :
+        (Array.isArray(governedV94.top3)?governedV94.top3.map(Number).filter(Number.isFinite):[]);
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
+      const v96FormulaPick=v96SelectFormulaDigits(intelligence,rank1Digits);
+      if(v96FormulaPick.length>=2){ rawD1=Number(v96FormulaPick[0].digit); rawD2=Number(v96FormulaPick[1].digit); }
+      const originalD1Pairs=v94RefinePairSet(generateFormulaPairs(rawD1,rawD2,auditDataMap,lotteryName,resultRecs),resultRecs,rawD1);
+      const originalD2Pairs=v94RefinePairSet(generateFormulaPairs(rawD2,rawD1,auditDataMap,lotteryName,resultRecs),resultRecs,rawD2);
+      intelligence.v96StabilityFirst={version:'V96',ranked:v96Ranked.slice(0,10).map((x,i)=>({rank:i+1,digit:x.digit,score:round2(x.v96StableScore),empirical:round2(v96Num(x.raw?.empiricalPrecision)),consistency:round2(v96Num(x.raw?.windowConsistency)),robustness:round2(v96Num(x.raw?.robustnessSurvival)),consensus:round2(v96Num(x.agreement,0))})),principles:['EMPIRICAL-FIRST','STABILITY-FIRST','ROBUSTNESS-SECOND','CONSENSUS-TERTIARY']};
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
       /* -----------------------------------------
@@ -8708,7 +8782,7 @@ function runEngineCore(){
       const scoreD1=selectedRows[0]?.digit;
       const scoreD2=selectedRows[1]?.digit;
       const scoreData=intelligence.rows.map(row=>buildDigitScore(row.digit,formulaNames,auditDataMap[lotteryName],intelligence.consensus,intelligence.frequency,intelligence))
-        .sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
+        .sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
       const selectedScore=scoreData.find(x=>x.digit===scoreD1)||scoreData[0];
       const secondScore=scoreData.find(x=>x.digit===scoreD2)||scoreData.find(x=>x.digit!==scoreD1);
       if(scoreD1===undefined||scoreD2===undefined) return;
@@ -8727,6 +8801,10 @@ function runEngineCore(){
           ),
         d1,
         d2,
+        originalD1:rawD1,
+        originalD2:rawD2,
+        originalD1Pairs,
+        originalD2Pairs,
         d1Pairs,
         d2Pairs,
         hundredsDigit,
@@ -8779,7 +8857,8 @@ function runEngineCore(){
           top3:intelligence.top3||[],
           top3Audit:intelligence.top3Audit||[],
           shadowTop3:intelligence.shadowTop3||[],
-          removedFromTop3:intelligence.removedFromTop3||[]
+          removedFromTop3:intelligence.removedFromTop3||[],
+          pipelineMode:thaiMainPipeline?'MAIN_SYSTEM_V96':'MAIN_SYSTEM_V96'
         }
       };
     });
@@ -8792,11 +8871,12 @@ function runEngineCore(){
     const top= v95ThaiBuildSpecialTop(thaiAllDay);
     const topPairs1=top.thaiV95?.pairs?.d1||[];
     const topPairs2=top.thaiV95?.pairs?.d2||[];
+    const thaiFocusDigits=[top.d1,top.d2,...(top.thaiV95?.selectedNeedles||[]).map(x=>x.digit)].filter((v,i,a)=>Number.isFinite(Number(v))&&a.indexOf(v)===i).slice(0,4);
     predictionDataMap.__THAI_TOP__={
       nextDate:top.nextDate,d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,
       rank1Formula:'V95 THAI DIRECT',rank1Rate:0,recordCount:top.recordCount,recordsForFrequency:thaiAllDay,
       topAgreement:0,scoreGap:round2((top.scores[top.d1]||0)-(top.scores[top.d2]||0)),
-      scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรง ๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{thaiV95:top.thaiV95},thaiV95:top.thaiV95}
+      scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรง ๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{thaiV95:top.thaiV95},thaiV95:top.thaiV95,focusDigits:thaiFocusDigits,pipelineMode:'THAI_DIRECT_TOP_LEGACY'}
     };
   }
   /* =====================================================
