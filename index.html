@@ -3095,8 +3095,8 @@ function buildEndToEndWalkForward(recs,auditData,formulaNames){
     const shadow=buildDigitIntelligence(train,trainAudit,formulaNames,{skipEndToEnd:true});
     const selected=(shadow.selected||[]).map(x=>x.digit).slice(0,2);
     const actual=v94TargetSet(target);
-    const top1Hit=selected.length>0&&actual.includes(selected[0]);
-    const top2Hit=selected.length>1&&actual.includes(selected[1]);
+    const top1Hit=selected.length>0&&actual.has(selected[0]);
+    const top2Hit=selected.length>1&&actual.has(selected[1]);
     const hit=top1Hit||top2Hit;
     if(hit)hits++; if(top1Hit)top1Hits++; if(top2Hit)top2Hits++;
     rows.push({trainSize:train.length,targetDate:target.date||'',selected,actual,hit,top1Hit,top2Hit,chronological:true});
