@@ -2942,7 +2942,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     const consensusSupport=clamp(Number(row.agreement||0)*1.5,0,6);
     v95SupportByDigit[d]={digit:d,formulaSignal,oos,stability,recent,
       formulaCount:supporting.length,independentFamilies:fams.size,consensusSupport,
-      sourceNames:supporting.slice(),rankSpread:supporting.length?avg(supporting.map(n=>v95RankMap[n]||N)):N};
+      sourceNames:supporting.slice(),rankSpread:supporting.length?avg(supporting.map(n=>v95RankMap[n]||v95FormulaRanked.length)):v95FormulaRanked.length};
   });
   const v95PrimaryCandidates=v95SupportByDigit.filter(x=>x.formulaCount>0);
   const v95FallbackCandidates=v95SupportByDigit.filter(x=>x.formulaCount===0);
