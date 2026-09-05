@@ -1029,16 +1029,10 @@ function cleanDatasetKey(rawName){
 function formatDisplayTitle(rawName){
   rawName=cleanDatasetKey(rawName);
   let name=String(rawName||'').trim();
-  const thaiSynthetic=String(rawName||'').trim();
-  if(/^__THAI_ROUND__/.test(thaiSynthetic)){
-    const r=thaiSynthetic.replace(/^__THAI_ROUND__/,'').trim();
-    return `หุ้นไทย ${r}`.trim();
-  }
-  if(thaiSynthetic==='__THAI_ALLDAY__') return 'หุ้นไทย ทั้งวัน';
-  if(thaiSynthetic==='__THAI_TOP__') return 'หุ้นไทย บนตรง ๆ';
   name=name
     .replace(/^สถิติหุ้น\s*/,'')
     .replace(/^สถิติ\s*/,'')
+    .replace(/^หุ้น\s*/,'')
     .replace(/\s*ย้อนหลัง$/,'')
     .trim();
   if(name==='อินเดีย'||name==='หุ้นอินเดีย')
@@ -1098,88 +1092,28 @@ function formatDisplayTitle(rawName){
   return name.replace(/\s+/g,' ').trim();
 }
 /* =========================================================
-   V57 THAI STOCK DAILY MODE
-   Input keeps the original round names, but the backend groups them into
-   one Thai-stock market with four round-specific datasets plus one all-day
-   dataset. No duplicate all-day input is required.
-========================================================= */
-function v57ThaiRound(name){
-  const n=String(name||'').toLowerCase().replace(/\s+/g,'');
-  if(!n.includes('หุ้นไทย')) return '';
-  if(n.includes('เช้า')) return 'เช้า';
-  if(n.includes('เที่ยง')) return 'เที่ยง';
-  if(n.includes('บ่าย')) return 'บ่าย';
-  if(n.includes('เย็น')) return 'เย็น';
-  return '';
-}
-function v57IsThaiStockName(name){
-  return String(name||'').toLowerCase().replace(/\s+/g,'').includes('หุ้นไทย');
-}
-function v57ThaiRoundOrder(round){
-  return ({'เช้า':0,'เที่ยง':1,'บ่าย':2,'เย็น':3})[round]??9;
-}
-function v57ThaiRecords(records){
-  return (Array.isArray(records)?records:[])
-    .filter(r=>v57IsThaiStockName(r.name)&&isResultRecord(r))
-    .slice()
-    .sort((a,b)=>{
-      const ta=Number(a.timestamp)||parseThaiDate(a.date)||0;
-      const tb=Number(b.timestamp)||parseThaiDate(b.date)||0;
-      if(ta!==tb)return ta-tb;
-      return v57ThaiRoundOrder(v57ThaiRound(a.name))-v57ThaiRoundOrder(v57ThaiRound(b.name));
-    });
-}
-function v57ThaiDisplayRecords(records,round){
-  return v57ThaiRecords(records).filter(r=>v57ThaiRound(r.name)===round);
-}
-function v57ThaiBuildSpecialTop(records){
-  const data=v57ThaiRecords(records), n=data.length;
-  if(!n)return {d1:0,d2:1,d1Pairs:[],d2Pairs:[],nextDate:'',recordCount:0};
-  const windows=[7,14,21,30].filter(w=>n>=Math.min(w,3));
-  const score=Array(10).fill(0);
-  const topFreq=arr=>{
-    const c=Array(10).fill(0); arr.forEach(r=>String(r.n3||'').split('').forEach(ch=>c[+ch]++));
-    return c;
-  };
-  const latest=data.slice(-Math.min(7,n)), prior=data.slice(-Math.min(14,n),-Math.min(7,n));
-  for(let d=0;d<10;d++){
-    const longCount=data.reduce((z,r)=>z+(String(r.n3||'').split('').filter(x=>+x===d).length),0);
-    const recentCount=latest.reduce((z,r)=>z+(String(r.n3||'').split('').filter(x=>+x===d).length),0);
-    const priorCount=prior.reduce((z,r)=>z+(String(r.n3||'').split('').filter(x=>+x===d).length),0);
-    const longRate=longCount/Math.max(1,n*3)*100;
-    const recentRate=recentCount/Math.max(1,latest.length*3)*100;
-    const priorRate=prior.length?priorCount/(prior.length*3)*100:longRate;
-    const momentum=clamp(50+(recentRate-priorRate)*1.2,0,100);
-    const gap=(()=>{for(let i=data.length-1;i>=0;i--){if(String(data[i].n3||'').includes(String(d)))return data.length-1-i;}return n+1;})();
-    const recency=clamp(100-gap*6,0,100);
-    score[d]=longRate*.38+recentRate*.28+momentum*.18+recency*.16;
-  }
-  const ranked=[...Array(10).keys()].sort((a,b)=>score[b]-score[a]||a-b);
-  let d1=ranked[0]??0,d2=ranked.find(d=>d!==d1)??((d1+1)%10);
-  if(d1===d2)d2=(d1+1)%10;
-  return {d1,d2,nextDate:getNextDateStr(data[data.length-1].date),recordCount:n,scores:score,records:data};
-}
-
-/* =========================================================
    FLAGS
 ========================================================= */
 function getLotteryFlag(name){
-  /* V56 — deterministic market-first flag resolver.
-     Never infer country from a generic time word such as "เช้า" or "บ่าย".
-     Market identity must win before time-of-day identity. */
-  const n=String(name||'').trim().toLowerCase().replace(/\s+/g,'');
-  if(!n)return'🌐';
-  /* Thailand — exact/strong market identity first. */
-  if(n.includes('หุ้นไทย')||n.includes('__thai_round__')||n.includes('__thai_allday__')||n.includes('__thai_top__')||n.includes('ไทยเย็น')||n.includes('ไทยเช้า')||n.includes('ไทยเที่ยง')||n.includes('ไทยบ่าย')||n.includes('ตลาดหุ้นไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส'))return'🇹🇭';
-  /* Vietnam / Hanoi. */
-  if(n.includes('ฮานอย')||n.includes('เวียดนาม'))return'🇻🇳';
-  /* Laos. */
-  if(n.includes('ลาว')||n.includes('ประชาชนลาว'))return'🇱🇦';
-  /* Japan / Nikkei. */
-  if(n.includes('นิเคอิ')||n.includes('นิกเคอิ')||n.includes('ญี่ปุ่น'))return'🇯🇵';
-  /* China / Hong Kong. */
-  if(n.includes('ฮั่งเส็ง')||n.includes('ฮ่องกง'))return'🇭🇰';
+  const n=String(name||'').toLowerCase();
+  if(
+    n.includes('นิเคอิ')||
+    n.includes('นิกเคอิ')||
+    n.includes('ญี่ปุ่น')||
+    (
+      n.includes('เช้า') &&
+      !n.includes('จีน') &&
+      !n.includes('ฮั่งเส็ง')
+    )||
+    (
+      n.includes('บ่าย') &&
+      !n.includes('จีน') &&
+      !n.includes('ฮั่งเส็ง')
+    )
+  )
+    return'🇯🇵';
   if(n.includes('จีน'))return'🇨🇳';
+  if(n.includes('ฮั่งเส็ง')||n.includes('ฮ่องกง'))return'🇭🇰';
   if(n.includes('ดาวโจนส์')||n.includes('อเมริกา')||n.includes('usa'))return'🇺🇸';
   if(n.includes('ไต้หวัน'))return'🇹🇼';
   if(n.includes('เกาหลี'))return'🇰🇷';
@@ -1189,8 +1123,16 @@ function getLotteryFlag(name){
   if(n.includes('อังกฤษ'))return'🇬🇧';
   if(n.includes('อินเดีย'))return'🇮🇳';
   if(n.includes('อียิปต์'))return'🇪🇬';
-  if(n.includes('มาเลย์')||n.includes('มาเลเซีย'))return'🇲🇾';
-  /* No country inference from generic "เช้า/บ่าย/เย็น". */
+  if(n.includes('ลาว'))return'🇱🇦';
+  if(n.includes('ฮานอย')||n.includes('เวียดนาม'))return'🇻🇳';
+  if(
+    n.includes('ไทย')||
+    n.includes('รัฐบาล')||
+    n.includes('ออมสิน')||
+    n.includes('ธกส')
+  )
+    return'🇹🇭';
+  if(n.includes('มาเลย์'))return'🇲🇾';
   return'🌐';
 }
 /* =========================================================
@@ -1458,9 +1400,11 @@ const FORMULA_DEFINITION_AUDIT=auditFormulaDefinitions(formulas);
    ORIGINAL SANITIZER
 ========================================================= */
 function sanitizeFormulaResult(rawRes){
-  /* V58+ DATA INTEGRITY: never mutate a protected formula's raw output.
-     Duplicate/double-digit restrictions belong to Pair Eligibility, not here. */
-  return [norm(rawRes?.[0]), norm(rawRes?.[1])];
+  let d1=norm(rawRes[0]);
+  let d2=norm(rawRes[1]);
+  if(d1===d2)
+    d2=norm(d2+1);
+  return[d1,d2];
 }
 /* =========================================================
    ORIGINAL HIT CHECK
@@ -1827,20 +1771,14 @@ function adaptiveWindowBlend(rates,weights){
 }
 
 function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null){
-  /* V58+ FORMULA INDEPENDENCE: exact duplicate formula bodies count once.
-     Original definitions remain untouched; only evidence aggregation changes. */
   const data=Array.from({length:10},(_,digit)=>({digit,agreement:0,weightedAgreement:0,formulas:[],score:0,independentWeight:0}));
-  const seenSources=new Set();
-  (Array.isArray(formulaNames)?formulaNames:[]).forEach(fName=>{
-    const f=auditData?.[fName];
+  formulaNames.forEach(fName=>{
+    const f=auditData[fName];
     if(!f||!Array.isArray(f.latestDigits)) return;
-    const source=String(allFormulas?.[fName]||'').replace(/\s+/g,'');
-    const familyKey=source||fName;
-    if(seenSources.has(familyKey)) return;
-    seenSources.add(familyKey);
     const fw=Number(formulaGovernor?.weights?.[fName]||1);
     f.latestDigits.forEach(digit=>{
-      const d=Number(digit); if(d<0||d>9)return;
+      const d=Number(digit);
+      if(d<0||d>9)return;
       data[d].agreement++;
       data[d].weightedAgreement+=(Number(f.hitRate)||0)*fw;
       data[d].independentWeight+=fw;
@@ -1855,12 +1793,7 @@ function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null){
 }
 function buildHistoricalDigitConsensus(recs,formulaNames,formulaGovernor=null){
   const out=Array.from({length:10},(_,digit)=>({digit,predicted:0,hitSupport:0,weightedSupport:0,formulas:[]}));
-  const seenSources=new Set();
   formulaNames.forEach(fName=>{
-    const source=String(allFormulas?.[fName]||'').replace(/\s+/g,'');
-    const familyKey=source||fName;
-    if(seenSources.has(familyKey)) return;
-    seenSources.add(familyKey);
     const history=getFormulaHistory(recs,fName);
     const fHit=history.length?percent(history.filter(x=>x.hit).length,history.length):50;
     const fw=Number(formulaGovernor?.weights?.[fName]||1);
@@ -2657,9 +2590,8 @@ function getConfidence(selected,second,auditData,formulaNames,intelligence){
   const conflict=Number(f.conflict)||0;
   const sample=Number(intelligence?.qualityGate?.sampleSize)||0;
   const formulaReliability=Number(f.formulaReliability)||0;
-  const v55Cal=Number(intelligence?.precisionLayer?.calibration?.factor||1);
   const digitConfidence=clamp(
-    (Number(a.selectionQuality)||0)*.55*v55Cal+
+    (Number(a.selectionQuality)||0)*.55+
     Math.min(15,diversity*2)+
     Math.min(10,Math.max(0,gap)*.8)-
     Math.min(18,risk*.18)-
@@ -2977,38 +2909,6 @@ function m2dPositionConditional(arr,target,partner){
   });
   return betaSmoothedRate(both,t,50,8);
 }
-const V58_M2D_SEL_OOS_CACHE=new WeakMap();
-function v58M2DPairSelectionOOSMap(arr,target){
-  const source=Array.isArray(arr)?arr:[];
-  if(V58_M2D_SEL_OOS_CACHE.has(source))return V58_M2D_SEL_OOS_CACHE.get(source);
-  const data=m2dFixed30(source),n=data.length,map={};
-  if(n<18){for(let d=0;d<10;d++)if(d!==Number(target))map[d]=.94;V58_M2D_SEL_OOS_CACHE.set(source,map);return map;}
-  const tests=Math.min(10,n-12),start=n-tests,t=Number(target);
-  const hits=Array(10).fill(0);
-  for(let cut=start;cut<n;cut++){
-    const train=data.slice(0,cut),actual=data[cut];
-    const ds=m2dScoreDigits(train),max=Math.max(...ds,1);
-    const ranked=[...Array(10).keys()].filter(d=>d!==t).map(d=>{
-      const st=m2dPairStats(train,t,d);
-      const score=(ds[t]/max)*.25+(ds[d]/max)*.20+st.cooccur*.30+
-        m2dClamp01(st.exact/Math.max(1,train.length))*.15+
-        m2dClamp01(st.transition/Math.max(1,st.exact*2))*.10;
-      return {d,score};
-    }).sort((a,b)=>b.score-a.score||a.d-b.d);
-    const selected=ranked.slice(0,5).map(x=>x.d);
-    const actualT=actual.tens,actualU=actual.units;
-    for(const d of selected){
-      if((d===actualT&&t===actualU)||(d===actualU&&t===actualT))hits[d]++;
-    }
-  }
-  for(let d=0;d<10;d++)if(d!==t)map[d]=selectionOOSGate(hits[d]/Math.max(1,tests)*100,tests,60);
-  V58_M2D_SEL_OOS_CACHE.set(source,map);
-  return map;
-}
-function v58M2DPairSelectionOOSGate(arr,target,partner){
-  const map=v58M2DPairSelectionOOSMap(arr,target);
-  return Number(map[Number(partner)]??.94);
-}
 function m2dPairOOSGate(arr,target,partner){
   const data=m2dFixed30(arr),n=data.length;
   if(n<16)return .92;
@@ -3093,85 +2993,13 @@ function partnerConcentrationPenalty(selected){
   const max=Math.max(...Object.values(c),1);
   return max>=4?.90:max===3?.96:1;
 }
-/* =========================================================
-   V58 DATA-AUDITED DECISION HARDENING
-   Backend-only. Card/UI markup intentionally unchanged.
-   1) Selection-OOS validates the act of choosing a pair, not merely a
-      pre-selected pair.
-   2) Pair gates may now fall below the legacy .50 floor when evidence is weak.
-   3) M2D TOP3 no longer receives a synthetic (digit+1)%10 partner signal.
-   4) M2D TOP3 uses empirical position predictability from chronological OOS.
-========================================================= */
-function v58PairSelectionOOSGate(records,target,partner){
-  const data=Array.isArray(records)?records.filter(isResultRecord):[];
-  const t=Number(target),u=Number(partner),n=data.length;
-  if(n<18)return .94;
-  const tests=Math.min(10,n-12),start=n-tests;
-  let hit=0,tested=0;
-  const pairHit=(r,a,b)=>{
-    const n2=String(r?.n2??'').padStart(2,'0'),n3=String(r?.n3??'').padStart(3,'0');
-    const p=String(a)+String(b),rev=String(b)+String(a);
-    return n2===p||n2===rev||n3.includes(p)||n3.includes(rev);
-  };
-  for(let cut=start;cut<n;cut++){
-    const train=data.slice(0,cut),actual=data[cut];
-    const candidates=[...Array(10).keys()].filter(d=>d!==t&&d!==u).map(d=>{
-      const w10=train.slice(-Math.min(10,train.length));
-      const w20=train.slice(-Math.min(20,train.length));
-      const w30=train.slice(-Math.min(30,train.length));
-      const rate=a=>a.length?a.filter(r=>pairHit(r,t,d)).length/a.length*100:50;
-      const empirical=rate(train)*.45+rate(w10)*.35+rate(w20)*.20;
-      const rec=rate(w10),long=rate(w30);
-      const momentum=rec-long;
-      return {d,score:empirical+momentum*.35};
-    }).sort((a,b)=>b.score-a.score||a.d-b.d);
-    const selected=candidates.slice(0,5).map(x=>x.d);
-    if(selected.includes(Number(u)) && pairHit(actual,t,u))hit++;
-    tested++;
-  }
-  const precision=tested?hit/tested*100:50;
-  return selectionOOSGate(precision,tested,Math.max(45,precision));
-}
-function v58M2DPositionPredictability(arr,digit){
-  const data=m2dFixed30(arr),wf=m2dPositionWalkForwardQuality(data);
-  if(!data.length)return 50;
-  const direct=avg([
-    m2dPositionFreq(data,'tens')[digit]/Math.max(1,data.length)*100,
-    m2dPositionFreq(data,'units')[digit]/Math.max(1,data.length)*100
-  ]);
-  const empirical=avg([
-    Number(wf.precision?.[digit]??50),
-    Number(wf.stability?.[digit]??50)
-  ]);
-  return clamp(direct*.35+empirical*.65,0,100);
-}
-function v58M2DJointEvidence(arr,digits,score,base){
-  const chosen=(digits||[]).map(x=>Number(x.digit)).filter(d=>d>=0&&d<=9);
-  if(!chosen.length)return 50;
-  const pos=avg(chosen.map(d=>v58M2DPositionPredictability(arr,d)));
-  const vals=chosen.map(d=>clamp(Number(score[d])||0,0,100));
-  const baseVals=chosen.map(d=>clamp(Number(base[d])||0,0,100));
-  const meanScore=avg(vals),baseMean=avg(baseVals);
-  let overlapPenalty=0;
-  for(let i=0;i<chosen.length;i++)for(let j=i+1;j<chosen.length;j++){
-    overlapPenalty+=Math.abs(vals[i]-vals[j])*.04;
-  }
-  return clamp(pos*.34+meanScore*.42+baseMean*.14+Math.max(0,10-overlapPenalty)*1.0,0,100);
-}
 function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,records){
   /* V52 — FULLY UNLOCKED TARGET-PAIR INTELLIGENCE
      All legacy target-pair rules, anchors, offsets and formula fallbacks are removed from target selection.
      Every valid partner digit competes directly on independent evidence.
      Output contract: main digit ALWAYS stays first; partner is ALWAYS the
      final/unit digit; final display is sorted numerically ascending. */
-  const allPairFormulaNames=Object.keys(formulas);
-  const seenPairSources=new Set();
-  const formulaNames=allPairFormulaNames.filter(f=>{
-    const key=String(formulas[f]||'').replace(/\s+/g,'')||f;
-    if(seenPairSources.has(key)) return false;
-    seenPairSources.add(key);
-    return true;
-  });
+  const formulaNames=Object.keys(formulas);
   const data=Array.isArray(records)?records:[];
   const target=Number(mainDigit),other=Number(otherDigit);
   const governor=buildAdaptiveFormulaWeights(data,formulaNames);
@@ -3254,9 +3082,7 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
     const oosGate=selectionOOSGate(wf.precision,wf.tested,wf.stability);
     const finalSanity=finalPairSanityGate({conflict,uncertainty:Math.max(0,50-negativeEvidence),pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,pairObservations:interaction.observations});
     const perturbGate=selectionPerturbationGate({pairPerturbationStability:perturb.stability,pairPerturbationSensitivity:perturb.sensitivity});
-    const v56PairGate=v56MainPairConfidenceGate({pairWalkForwardPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,conditionalPair, pairPerturbationStability:perturb.stability,conflict});
-    const selectionOOS=v58PairSelectionOOSGate(data,target,unit);
-    const finalGate=clamp(gate*oosGate*selectionOOS*driftGuard*regimeGuard*(reverseSymmetry/100)*sampleReliability*finalSanity*perturbGate*v56PairGate,.28,1);
+    const finalGate=clamp(gate*oosGate*driftGuard*regimeGuard*(reverseSymmetry/100)*sampleReliability*finalSanity*perturbGate,.52,1);
     return {
       pair:String(target)+String(unit),
       val:target*10+unit,
@@ -3271,8 +3097,8 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
         pairPerturbationSensitivity:perturb.sensitivity,calibratedPrecision:calibrated,
         structuralScore:round2(structural),targetStrength:round2(targetStrength),partnerStrength:round2(partnerStrength),
         conditionalPair:round2(conditionalPair),conditionalForward:round2(conditionalRaw.forward),conditionalReverse:round2(conditionalRaw.reverse),formulaFamily:round2(formulaFamily),temporalFamily:round2(temporalFamily),validationFamily:round2(validationFamily),
-        formulaOutcomeIndependence:round2(formulaOutcomeIndependenceScore),independentEvidence:round2(independentEvidence),negativeEvidence:round2(negativeEvidence),conflict:round2(conflict),selectionGate:round2(finalGate),oosSelectionGate:round2(oosGate),selectionOOSGate:round2(selectionOOS),
-        risk:round2(risk),evidenceDiversity:round2(evidenceDiversity),evidenceGroups:strongGroups,driftGuard:round2(driftGuard),regimeGuard:round2(regimeGuard),reverseSymmetry:round2(reverseSymmetry),sampleReliability:round2(sampleReliability),finalSanity:round2(finalSanity),perturbationGate:round2(perturbGate),v56PairConfidenceGate:round2(v56PairGate)
+        formulaOutcomeIndependence:round2(formulaOutcomeIndependenceScore),independentEvidence:round2(independentEvidence),negativeEvidence:round2(negativeEvidence),conflict:round2(conflict),selectionGate:round2(finalGate),oosSelectionGate:round2(oosGate),
+        risk:round2(risk),evidenceDiversity:round2(evidenceDiversity),evidenceGroups:strongGroups,driftGuard:round2(driftGuard),regimeGuard:round2(regimeGuard),reverseSymmetry:round2(reverseSymmetry),sampleReliability:round2(sampleReliability),finalSanity:round2(finalSanity),perturbationGate:round2(perturbGate)
       }
     };
   }).sort((a,b)=>b.score-a.score||b.meta.pairWalkForwardPrecision-a.meta.pairWalkForwardPrecision||b.meta.pairWalkForwardStability-a.meta.pairWalkForwardStability||a.val-b.val);
@@ -4248,7 +4074,6 @@ function renderFullUI(
   `;
   let cardIdx=0;
   Object.keys(predictionDataMap)
-    .filter(lotteryName=>!String(lotteryName).startsWith('__THAI_'))
     .forEach(lotteryName=>{
       const p=
         predictionDataMap[
@@ -4299,7 +4124,6 @@ function renderFullUI(
   `;
   let scoreIdx=0;
   Object.keys(predictionDataMap)
-    .filter(lotteryName=>!String(lotteryName).startsWith('__THAI_'))
     .forEach(lotteryName=>{
       const scoreCard=
         predictionDataMap[
@@ -4319,22 +4143,11 @@ function renderFullUI(
     });
   html+=`
     </div>
-    <div id="thaiStockCards" class="thai-stock-card-set">`;
-  ['เช้า','เที่ยง','บ่าย','เย็น'].forEach((round,idx)=>{
-    const key=`__THAI_ROUND__${round}`;
-    const sc=predictionDataMap[key]?.scoreCard;
-    if(sc) html+=renderCardHTML(sc,false,700+idx);
-  });
-  const allDay=predictionDataMap.__THAI_ALLDAY__?.scoreCard;
-  if(allDay) html+=renderCardHTML({...allDay,displayTitle:'หุ้นไทย ทั้งวัน',flag:'🇹🇭'},false,704);
-  const topCard=predictionDataMap.__THAI_TOP__?.scoreCard;
-  if(topCard) html+=renderCardHTML(topCard,false,705);
-  html+=`</div>
     <div id="manualCards"></div>
     <div class="brand-footer">
       <span class="brand-star">✦</span>
       <span>
-        ระบบบ้านเงินกอง V58.0
+        ระบบบ้านเงินกอง V47.0
         Multi-Angle Audit Layer
       </span>
       <span class="brand-star">✦</span>
@@ -4381,9 +4194,8 @@ function reconcileDatasetIds(masterRecords,newRecords){
    Strictly isolated from the main lottery engine/formulas.
 ========================================================= */
 const M2D_STORAGE_KEY='MESTER_M2D_SPECIALIZED_V2';
-const M2D_WINDOWS=[7,14,21,30,60,90,120];
+const M2D_WINDOWS=[7,14,30,60,90,120];
 const M2D_MAIN_WINDOW=30;
-/* V58+ long-memory envelope: 30 remains the core; 60/90/120 are auxiliary evidence. */
 function m2dEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function m2dCleanText(v){return String(v??'').replace(/[\uFEFF\u200B-\u200D\u2060]/g,'').replace(/\r/g,'');}
 function m2dNorm10(v){return ((Number(v)%10)+10)%10;}
@@ -4436,7 +4248,7 @@ function m2dParse(text){
 }
 const M2D_CORE_ROUNDS=30;
 const M2D_MIN_INPUT_ROUNDS=25;
-const M2D_MAX_INPUT_ROUNDS=120;
+const M2D_MAX_INPUT_ROUNDS=35;
 function m2dInputRange(arr){return Array.isArray(arr)?arr.filter(Boolean).slice(-M2D_MAX_INPUT_ROUNDS):[];}
 function m2dFixed30(arr){return m2dInputRange(arr).slice(-M2D_CORE_ROUNDS);}
 function m2dAuxiliaryRounds(arr){const d=m2dInputRange(arr);return d.length>M2D_CORE_ROUNDS?d.slice(0,d.length-M2D_CORE_ROUNDS):[];}
@@ -4471,9 +4283,8 @@ function m2dJointTop3Score(digits,score,base){
      objective is formed; this prevents any raw score scale from dominating. */
   const diversityScore=clamp(diversity/Math.max(1,chosen.length),0,1)*100;
   const arr=Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[];
-  const positionAvg=arr.length?avg(chosen.map(d=>v58M2DPositionPredictability(arr,d))):50;
-  const empiricalJoint=v58M2DJointEvidence(arr,digits,score,base);
-  return meanScore*.28+baseMeanScore*.12+wfAvg*.20+wfStable*.14+positionAvg*.10+empiricalJoint*.10+diversityScore*.04-spreadPenalty*.02;
+  const positionAvg=arr.length?avg(chosen.map(d=>clamp((m2dPositionConditional(arr,d,(d+1)%10))/100,0,1)))*100:50;
+  return meanScore*.32+baseMeanScore*.14+wfAvg*.20+wfStable*.14+positionAvg*.06+diversityScore*.08-spreadPenalty*.06;
 }
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
@@ -4624,6 +4435,7 @@ function m2dPrecisionScoreDigits(arr){
   return out;
 }
 function m2dTop3(arr){
+  m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   const base=m2dScoreDigits(arr),score=m2dPrecisionScoreDigits(arr);
   const pool=[...Array(10).keys()].sort((a,b)=>score[b]-score[a]||base[b]-base[a]||a-b).slice(0,7);
@@ -4895,7 +4707,6 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
   const pairWF=new Map();
   const maxDigitScore=Math.max(...digitScores,1);
   const targetStrength=m2dClamp01(digitScores[target]/maxDigitScore);
-  const selectionOOSMap=v58M2DPairSelectionOOSMap(arr,target);
   for(let x=0;x<10;x++){
     if(x===target)continue;
     const key=m2dPairKey(target,x);
@@ -4920,7 +4731,6 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
     const partnerQuality=m2dClamp01(partnerStrength*.55+evidence.persistence*.25+evidence.recencyDecay*.20);
     const positionConditional=m2dClamp01(m2dPositionConditional(arr,target,x)/100);
     const pairOOSGate=m2dPairOOSGate(arr,target,x);
-    const selectionPairOOSGate=Number(selectionOOSMap[x]??.94);
     const reverseSymmetry=m2dReverseSymmetry(arr,target,x);
     const sampleGate=m2dSmallSampleGate(arr.length);
     const diversityBonus=m2dClamp01((evidence.evidenceCount/8)*.70+(st.cooccur>=.25?.15:0)+(st.transition>0?.15:0));
@@ -4967,11 +4777,10 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
     const qualified=(arr.length<10)||(evidence.evidenceCount>=3&&stability.score>=.35);
     const gatePenalty=qualified?1:(.72+evidence.evidence*.18);
     const sanityGate=m2dPairSanityGate({noise,uncertainty:evidence.uncertainty,perturbationStability:perturb.stability});
-    const v56PairGate=v56M2DPairConfidenceGate({empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,confidence:evidence.confidence,noise,uncertainty:evidence.uncertainty});
-    const gatedScore=score*gatePenalty*pairOOSGate*selectionPairOOSGate*sampleGate*sanityGate*v56PairGate;
+    const gatedScore=score*gatePenalty*pairOOSGate*sampleGate*sanityGate;
     const prior=map.get(key);
     if(!prior||gatedScore>prior.score){
-      map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,positionConditional,pairOOSGate,selectionPairOOSGate,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,reverseSymmetry,sampleGate,sanityGate,v56PairConfidenceGate:v56PairGate,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
+      map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,positionConditional,pairOOSGate,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,reverseSymmetry,sampleGate,sanityGate,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
     }
   }
   const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||a.pair.localeCompare(b.pair));
@@ -5097,15 +4906,10 @@ function m2dSelectCoveredPairs(top,pairsByTarget){
   return out;
 }
 function m2dAnalyzeSession(records,session){
-  const arr=m2dValidSeq(records,session),baseTop=m2dTop3(arr),challengerTop=m2dV55AdvancedTop3(arr,baseTop);
-  const baseScore=avg(baseTop.slice(0,3).map(x=>Number(x.score)||0)),challengerScore=avg(challengerTop.slice(0,3).map(x=>Number(x.score)||0));
-  const q=m2dV55DataQuality(m2dFixed30(arr));
-  const promote=challengerTop.length===3&&challengerScore>=baseScore+0.75&&q.gate>=80;
-  const top=(promote?challengerTop:baseTop).slice(0,3);
-  const raw={};
+  const arr=m2dValidSeq(records,session),top=m2dTop3(arr);const raw={};
   top.forEach(t=>raw[t.digit]=m2dPairScores(arr,t.digit,false,9));
   const pairsByTarget=m2dJointSelect15Pairs(top,raw);
-  return {session,arr,top,pairsByTarget,inputQuality:m2dInputQuality(arr),pairSetWF:m2dFinal15PairWalkForward(arr,top),precisionLayer:{...(challengerTop._v55||{}),champion:baseTop,challenger:challengerTop,shadow:{champion:baseTop,challenger:challengerTop},championScore:round2(baseScore),challengerScore:round2(challengerScore),promoted:promote}};
+  return {session,arr,top,pairsByTarget,inputQuality:m2dInputQuality(arr),pairSetWF:m2dFinal15PairWalkForward(arr,top)};
 }
 function m2dConsensus(noon,evening){
   const ns=m2dPrecisionScoreDigits(noon.arr),es=m2dPrecisionScoreDigits(evening.arr);
@@ -5113,8 +4917,7 @@ function m2dConsensus(noon,evening){
   const nr=m2dClamp01(noon.arr.length/30)*m2dClamp01(nq/100),er=m2dClamp01(evening.arr.length/30)*m2dClamp01(eq/100),sum=Math.max(.001,nr+er);
   const nw=nr/sum,ew=er/sum;
   const agreementBoost=d=>ns[d]>0&&es[d]>0?10:0;
-  const combinedRaw=[...Array(10).keys()].map(d=>({digit:d,score:ns[d]*nw+es[d]*ew+agreementBoost(d)})).sort((a,b)=>b.score-a.score||a.digit-b.digit);
-  const combined=m2dV55AdvancedTop3(noon.arr.concat(evening.arr),combinedRaw.slice(0,3));
+  const combined=[...Array(10).keys()].map(d=>({digit:d,score:ns[d]*nw+es[d]*ew+agreementBoost(d)})).sort((a,b)=>b.score-a.score||a.digit-b.digit).slice(0,3);
   const raw={};
   combined.forEach(t=>{
     const a=m2dPairScores(noon.arr,t.digit,false,9),b=m2dPairScores(evening.arr,t.digit,false,9),map=new Map();
@@ -5126,7 +4929,7 @@ function m2dConsensus(noon,evening){
   const pairsByTarget=m2dJointSelect15Pairs(combined,raw);
   const wfNoon=m2dFinal15PairWalkForward(noon.arr,combined),wfEvening=m2dFinal15PairWalkForward(evening.arr,combined);
   const pairSetWF={precision:round2(((wfNoon.precision||50)+(wfEvening.precision||50))/2),coverage:round2(((wfNoon.coverage||50)+(wfEvening.coverage||50))/2),tested:Math.min(wfNoon.tested||0,wfEvening.tested||0),noon:wfNoon,evening:wfEvening};
-  return {top:combined,pairsByTarget,inputQuality:{noon:m2dInputQuality(noon.arr),evening:m2dInputQuality(evening.arr)},pairSetWF,precisionLayer:{noon:noon.precisionLayer||null,evening:evening.precisionLayer||null,consensus:combined._v55||null}};
+  return {top:combined,pairsByTarget,inputQuality:{noon:m2dInputQuality(noon.arr),evening:m2dInputQuality(evening.arr)},pairSetWF};
 }
 function m2dRenderBlock(title,time,emoji,data,cardId,dateLabel){
   const top=(data.top||[]).slice(0,3);
@@ -5145,15 +4948,11 @@ function m2dNextTargetDate(records){
 function renderMyanmar2DModule(text){
   const parsed=m2dParse(text);if(!parsed.records.length)return null;
   const usable=parsed.records.some(r=>r.noon||r.evening);if(!usable)return null;
-  /* V58+ DATASET ISOLATION: analyze the current input only. Persisted history is
-     retained as a separate memory store and never silently contaminates a run. */
+  let stored=[];try{stored=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){stored=[]}
   const keyify=r=>`${r.date}|${r.noon?.value||'××'}|${r.evening?.value||'××'}|${r.timestamp||0}`;
-  let persisted=[];
-  try{persisted=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){persisted=[]}
-  const historyMap=new Map(persisted.map(r=>[keyify(r),r]));
-  parsed.records.forEach(r=>historyMap.set(keyify(r),r));
-  try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify([...historyMap.values()]))}catch(e){}
-  const use=parsed.records.map((r,i)=>({...r,timestamp:r.timestamp||m2dThaiDate(r.date),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a.seq||0)-(b.seq||0)||(a._m2i-b._m2i));
+  const map=new Map(stored.map(r=>[keyify(r),r]));parsed.records.forEach(r=>map.set(keyify(r),r));
+  stored=[...map.values()];try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify(stored))}catch(e){}
+  const use=stored.map((r,i)=>({...r,timestamp:r.timestamp||m2dThaiDate(r.date),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a.seq||0)-(b.seq||0)||(a._m2i-b._m2i));
   const noon=m2dAnalyzeSession(use,'noon'),evening=m2dAnalyzeSession(use,'evening'),cons=m2dConsensus(noon,evening);
   const targetDate=m2dNextTargetDate(parsed.records);
   const dateLabel=targetDate||parsed.records[parsed.records.length-1]?.date||use[use.length-1]?.date||'';
@@ -5161,219 +4960,6 @@ function renderMyanmar2DModule(text){
   const err=parsed.errors.length?`<div class="m2d-note m2d-error">⚠️ ${parsed.errors.map(m2dEsc).join(' • ')}</div>`:'';
   return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('နေ့လယ်ပိုင်း','12.01 P.M.','☀️',noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('ညနေပိုင်း','4.30 P.M.','🌙',evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('တစ်နေ့တာ','12.01 P.M. + 4.30 P.M.','📅',all,'m2d-card-all',dateLabel)}</div>${err}</div>`;
 }
-
-/* =========================================================
-   V55 PRECISION CONTROL LAYER
-   Decision-only upgrade. Protected formula definitions are untouched.
-   Purpose: improve selection discipline with data quality, regime/shift
-   detection, error learning, ensemble independence, window stability,
-   calibration, champion/challenger and conservative complexity controls.
-========================================================= */
-function v55SafeNum(v,d=0){const n=Number(v);return Number.isFinite(n)?n:d;}
-function v55DataQualityGate(records){
-  const arr=Array.isArray(records)?records.filter(isResultRecord):[];
-  const keys=new Set(); let dup=0,bad=0,order=0;
-  let prev=-Infinity;
-  arr.forEach(r=>{
-    const k=[r.date,r.n3,r.n2].join('|');
-    if(keys.has(k))dup++; else keys.add(k);
-    if(!/^\d{3}$/.test(String(r.n3||''))||!/^\d{2}$/.test(String(r.n2||'')))bad++;
-    const t=v55SafeNum(r.timestamp,parseThaiDate(r.date)||0); if(t<prev)order++; prev=t;
-  });
-  const n=arr.length;
-  const penalty=clamp(1-(dup*0.05+bad*0.12+order*0.04),0.72,1);
-  return{sample:n,duplicates:dup,invalid:bad,orderIssues:order,gate:round2(penalty*100),passed:bad===0&&order===0};
-}
-function v55DistributionShift(records,window=10,baseline=30){
-  const arr=Array.isArray(records)?records.filter(isResultRecord):[];
-  if(arr.length<Math.min(8,window+2))return{score:50,direction:'neutral',shift:0};
-  const recent=arr.slice(-Math.min(window,arr.length));
-  const prior=arr.slice(-Math.min(window+baseline,arr.length),-Math.min(window,arr.length));
-  if(!prior.length)return{score:50,direction:'neutral',shift:0};
-  const freq=a=>{const c=Array(10).fill(0);a.forEach(r=>(String(r.n3||'')+String(r.n2||'')).split('').forEach(ch=>{const d=Number(ch);if(d>=0&&d<=9)c[d]++;}));return c.map(x=>x/Math.max(1,a.length*5));};
-  const a=freq(recent),b=freq(prior);
-  const shift=a.reduce((sum,v,i)=>sum+Math.abs(v-b[i]),0)/2;
-  const score=clamp(100-shift*100,0,100);
-  const recentMean=avg(a),priorMean=avg(b);
-  return{score:round2(score),shift:round2(shift*100),direction:recentMean>priorMean?'up':recentMean<priorMean?'down':'neutral',recent,prior};
-}
-function v55DigitWindowStability(records,digit){
-  const arr=Array.isArray(records)?records.filter(isResultRecord):[];
-  const windows=[5,10,15,20,30].filter(w=>arr.length>=w);
-  if(!windows.length)return{score:50,dispersion:0,rankStability:50};
-  const rates=windows.map(w=>{const a=arr.slice(-w);return percent(a.filter(r=>(String(r.n3||'')+String(r.n2||'')).includes(String(digit))).length,a.length);});
-  const mean=avg(rates),disp=avg(rates.map(v=>Math.abs(v-mean)));
-  const rankLists=windows.map(w=>{const a=arr.slice(-w);return [...Array(10).keys()].sort((x,y)=>{
-    const rx=a.filter(r=>(String(r.n3||'')+String(r.n2||'')).includes(String(x))).length;
-    const ry=a.filter(r=>(String(r.n3||'')+String(r.n2||'')).includes(String(y))).length;
-    return ry-rx||x-y;
-  });});
-  const pos=rankLists.map(r=>r.indexOf(digit)).filter(x=>x>=0);
-  const rankStability=pos.length?clamp(100-avg(pos)*9,0,100):50;
-  return{score:round2(clamp(100-disp*3.0,0,100)),dispersion:round2(disp),rankStability:round2(rankStability),rates};
-}
-function v55FormulaErrorLearning(records,formulaNames){
-  const arr=Array.isArray(records)?records.filter(isResultRecord):[];
-  const byDigit=Array.from({length:10},()=>({support:0,hits:0,tests:0,precision:50,formulas:0}));
-  const names=Array.isArray(formulaNames)?formulaNames:[];
-  names.forEach(name=>{
-    const hist=getFormulaHistory(arr,name); const seen=new Set();
-    hist.forEach((h,idx)=>{
-      const age=hist.length-1-idx,w=Math.pow(.94,age);
-      const actual=new Set((String(h.actualN3||'')+String(h.actualN2||'')).split('').map(Number));
-      (h.predicted||[]).forEach(d=>{
-        const x=Number(d); if(x<0||x>9)return;
-        byDigit[x].support+=w; byDigit[x].tests+=w; if(actual.has(x))byDigit[x].hits+=w; seen.add(x);
-      });
-    });
-    seen.forEach(d=>byDigit[d].formulas++);
-  });
-  byDigit.forEach(x=>{x.precision=x.tests?round2(betaSmoothedRate(x.hits,x.tests,50,8)):50;});
-  return byDigit;
-}
-function v55EnsembleDiversity(row,intelligence){
-  const f=Array.isArray(row?.raw?.formulaNames)?row.raw.formulaNames:[];
-  const family=Number(row?.raw?.evidenceDiversity||0);
-  const independence=Number(row?.raw?.evidenceIndependence||50);
-  const corrPenalty=Number(row?.raw?.formulaCorrelation||0);
-  const familyBonus=clamp(family*12,0,48);
-  return round2(clamp(independence*.55+familyBonus*.35+(100-corrPenalty)*.10,0,100));
-}
-function v55MultipleTestingPenalty(sample,tests){
-  const n=Math.max(1,v55SafeNum(sample)); const k=Math.max(1,v55SafeNum(tests));
-  const complexity=Math.log2(k+1)*3.2;
-  const sampleRel=clamp(n/30,0,1);
-  return round2(clamp(complexity*(1-sampleRel*.65),0,10));
-}
-function v55CalibrationFactor(intelligence){
-  const wf=intelligence?.endToEndWalkForward||{};
-  const tested=v55SafeNum(wf.tested);
-  if(tested<4)return{factor:1,score:50,tested};
-  const rate=clamp(v55SafeNum(wf.hitRate,50),0,100);
-  const rank=clamp(v55SafeNum(wf.top1Rate,50)*.55+v55SafeNum(wf.top2Rate,50)*.45,0,100);
-  const score=round2(rate*.60+rank*.40);
-  return{factor:clamp(.82+score/100*.36,.82,1.18),score,tested};
-}
-function v55SelectionPerturbation(rows){
-  const ranked=Array.isArray(rows)?rows.slice(0,10):[];
-  if(ranked.length<3)return{score:50,margin:0};
-  const q=ranked.map(x=>v55SafeNum(x.selectionQuality,x.score||0));
-  const top=q[0], alt=q[1];
-  const margin=Math.max(0,top-alt);
-  const tail=q.slice(0,Math.min(6,q.length));
-  const spread=tail.length?Math.max(...tail)-Math.min(...tail):0;
-  return{score:round2(clamp(100-Math.abs(margin-3)*8-spread*.35,0,100)),margin:round2(margin)};
-}
-function v56ConsensusTrapPenalty(row,errorDigit,diversity){
-  const r=row||{}, raw=r.raw||{};
-  const agreement=Math.max(0,Number(r.agreement)||0);
-  const precision=clamp(Number(errorDigit?.precision)||50,0,100);
-  const div=clamp(Number(diversity)||50,0,100);
-  const corr=clamp(Number(raw.formulaCorrelation)||0,0,100);
-  if(agreement<3)return 0;
-  const consensusExcess=clamp((agreement-2)/6,0,1);
-  const weakDigit=clamp((50-precision)/25,0,1);
-  const lowDiversity=clamp((58-div)/35,0,1);
-  const highCorrelation=clamp(corr/100,0,1);
-  return round2(clamp(consensusExcess*(weakDigit*.55+lowDiversity*.25+highCorrelation*.20)*7.5,0,7.5));
-}
-function v56MainPairConfidenceGate(meta){
-  const m=meta||{};
-  const wf=clamp(Number(m.pairWalkForwardPrecision)||50,0,100);
-  const sel=clamp(Number(m.selectedPairPrecision)||50,0,100);
-  const stab=clamp(Number(m.pairWalkForwardStability)||50,0,100);
-  const cond=clamp(Number(m.conditionalPair)||50,0,100);
-  const perturb=clamp(Number(m.pairPerturbationStability)||50,0,100);
-  const conflict=clamp(Number(m.conflict)||0,0,100);
-  const evidence=wf*.26+sel*.22+stab*.18+cond*.18+perturb*.16;
-  const penalty=conflict*.0022;
-  return clamp(.74+evidence/100*.26-penalty,.72,1);
-}
-function v56M2DPairConfidenceGate(meta){
-  const m=meta||{};
-  const wf=clamp(Number(m.empiricalPairPrecision)||50,0,100);
-  const sel=clamp(Number(m.selectedPairPrecision)||50,0,100);
-  const stab=clamp(Number(m.pairWalkForwardStability)||50,0,100);
-  const conf=clamp(Number(m.confidence)||0,0,1)*100;
-  const evidence=wf*.28+sel*.22+stab*.22+conf*.28;
-  const noise=clamp(Number(m.noise)||0,0,1);
-  const uncertainty=clamp(Number(m.uncertainty)||0,0,1);
-  return clamp(.76+evidence/100*.24-noise*.08-uncertainty*.08,.72,1);
-}
-function v55ApplyMainPrecisionLayer(intelligence,records,auditData,formulaNames){
-  const base=intelligence||{}; const rows=Array.isArray(base.rows)?base.rows.slice():[];
-  if(!rows.length)return base;
-  const quality=v55DataQualityGate(records),shift=v55DistributionShift(records);
-  const error=v55FormulaErrorLearning(records,formulaNames);
-  const cal=v55CalibrationFactor(base),perturb=v55SelectionPerturbation(rows);
-  const sample=rows.length?Math.max(1,records.length):1;
-  const scored=rows.map(row=>{
-    const d=Number(row.digit), er=error[d]||{precision:50,support:0,tests:0,formulas:0};
-    const ws=v55DigitWindowStability(records,d);
-    const div=v55EnsembleDiversity(row,base);
-    const trapPenalty=v56ConsensusTrapPenalty(row,er,div);
-    const raw=row.raw||{};
-    const independence=v55SafeNum(raw.evidenceIndependence,50);
-    const robustness=v55SafeNum(raw.robustnessSurvival,50);
-    const falseRisk=v55SafeNum(raw.falsePositiveRisk,50);
-    const conflict=v55SafeNum(raw.conflict,0);
-    const multiplePenalty=v55MultipleTestingPenalty(records.length,Math.max(1,formulaNames.length*10));
-    const errorPenalty=clamp((50-er.precision)*.10, -3, 5);
-    const shiftPenalty=clamp((100-shift.score)*.035,0,3.5);
-    const stabilityBoost=(ws.score-50)*.055+(ws.rankStability-50)*.025;
-    const independenceBoost=(div-50)*.045;
-    const robustnessBoost=(robustness-50)*.025;
-    const riskPenalty=Math.max(0,falseRisk-50)*.035+conflict*.55;
-    const calibrated=v55SafeNum(row.selectionQuality,row.score||0)*cal.factor;
-    const finalScore=round2(clamp(calibrated+stabilityBoost+independenceBoost+robustnessBoost-errorPenalty-shiftPenalty-riskPenalty-multiplePenalty-trapPenalty,0,100));
-    return{...row,selectionQuality:finalScore,score:round2(clamp(v55SafeNum(row.score,0)*cal.factor,0,100)),raw:{...raw,v56ConsensusTrapPenalty:trapPenalty,v55WindowStability:ws.score,v55RankStability:ws.rankStability,v55DistributionShift:shift.score,v55FormulaDigitPrecision:er.precision,v55EnsembleDiversity:div,v55ErrorPenalty:errorPenalty,v55MultipleTestingPenalty:multiplePenalty,v55CalibrationFactor:cal.factor,v55QualityGate:quality.gate,v55Perturbation:perturb.score}};
-  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
-  const champion=(base.selected||[]).map(x=>Number(x.digit));
-  const challenger=scored.slice(0,2).map(x=>x.digit);
-  const lookup=d=>scored.find(x=>x.digit===d);
-  const champScore=champion.length?avg(champion.map(d=>lookup(d)?.selectionQuality||0)):0;
-  const challScore=challenger.length?avg(challenger.map(d=>lookup(d)?.selectionQuality||0)):0;
-  const champRob=champion.length?avg(champion.map(d=>lookup(d)?.raw?.robustnessSurvival??50)):50;
-  const challRob=challenger.length?avg(challenger.map(d=>lookup(d)?.raw?.robustnessSurvival??50)):50;
-  const promote=challenger.length===2&&(challScore>=champScore+.75)&&(challRob>=champRob-3)&&(quality.gate>=80);
-  const selected=promote?challenger.map(d=>lookup(d)).filter(Boolean):champion.map(d=>lookup(d)).filter(Boolean);
-  const finalSelected=selected.length===2?selected:scored.slice(0,2);
-  const margin=finalSelected.length===2?round2(finalSelected[0].selectionQuality-finalSelected[1].selectionQuality):0;
-  const minStability=finalSelected.length?Math.min(...finalSelected.map(x=>v55SafeNum(x.raw?.v55WindowStability,50))):50;
-  const precisionAbstain=quality.gate<70||minStability<28||(margin<0.5&&finalSelected.length===2);
-  const finalGate={...(base.finalGate||{}),v55DataQuality:quality.gate,v55DistributionShift:shift.score,v55WindowStability:minStability,v55Calibration:cal.score,v55Perturbation:perturb.score,v55ChampionChallengerPromoted:promote,v55PrecisionAbstain:precisionAbstain};
-  if(precisionAbstain&&finalGate.decision==='SELECT')finalGate.decision='V58_PRECISION_REVIEW';
-  return{...base,rows:scored,selected:finalSelected,margin,finalGate,precisionLayer:{version:'V58',dataQuality:quality,distributionShift:shift,formulaErrorLearning:error,calibration:cal,perturbation:perturb,champion:champion,challenger:challenger,shadow:{champion,challenger},championScore:round2(champScore),challengerScore:round2(challScore),promoted:promote,selectedMargin:margin,abstain:precisionAbstain}};
-}
-function m2dV55DataQuality(arr){
-  const data=Array.isArray(arr)?arr:[]; const keys=new Set(); let dup=0;
-  data.forEach(r=>{const k=[r.timestamp,r.date,r.tens,r.units].join('|');if(keys.has(k))dup++;else keys.add(k);});
-  return{sample:data.length,duplicates:dup,gate:round2(clamp(1-dup*.05,.75,1)*100)};
-}
-function m2dV55AdvancedTop3(arr,baseTop){
-  const data=m2dFixed30(arr); if(!data.length)return baseTop||[];
-  const quality=m2dV55DataQuality(data),shift=v55DistributionShift(data,7,23);
-  const scores=m2dPrecisionScoreDigits(data); const base=m2dScoreDigits(data); const wf=m2dDigitWalkForwardQuality(data);
-  const ranked=[...Array(10).keys()].map(d=>{
-    const ws=v55DigitWindowStability(data,d); const empirical=clamp(v55SafeNum(wf.precision?.[d],50),0,100);
-    const recent=clamp(v55SafeNum(scores[d])*100,0,100); const baseN=clamp(v55SafeNum(base[d])*100,0,100);
-    const shiftPenalty=clamp((100-shift.score)*.05,0,5);
-    const multiple=v55MultipleTestingPenalty(data.length,10);
-    const score=clamp(recent*.48+baseN*.12+empirical*.16+v55SafeNum(wf.stability?.[d],50)*.10+ws.score*.08+ws.rankStability*.04-shiftPenalty-multiple,0,100);
-    return{digit:d,score,baseScore:base[d],windowStability:ws.score,rankStability:ws.rankStability,empirical,distributionShift:shift.score};
-  }).sort((a,b)=>b.score-a.score||b.baseScore-a.baseScore||a.digit-b.digit);
-  const pool=ranked.slice(0,7),chosen=[]; let best=null;
-  for(let i=0;i<pool.length;i++)for(let j=i+1;j<pool.length;j++)for(let k=j+1;k<pool.length;k++){
-    const ds=[pool[i],pool[j],pool[k]]; const diversity=ds.reduce((z,x,ix)=>z+ds.slice(ix+1).reduce((q,y)=>q+Math.min(1,Math.abs(x.digit-y.digit)/5),0),0);
-    const spread=ds.reduce((z,x)=>z+Math.abs(x.score-avg(ds.map(y=>y.score))),0);
-    const joint=avg(ds.map(x=>x.score))*.86+diversity*2.2-spread*.10;
-    if(!best||joint>best.joint)best={ds,joint};
-  }
-  const out=(best?.ds||pool.slice(0,3)).sort((a,b)=>b.score-a.score||a.digit-b.digit).slice(0,3).map(x=>({digit:x.digit,score:round2(x.score),baseScore:round2(x.baseScore)}));
-  out._v55={quality,distributionShift:shift,ranked:ranked.slice(0,10),multipleTestingPenalty:v55MultipleTestingPenalty(data.length,10)};
-  return out;
-}
-
 function runEngineCore(){
   const textVal=
     $('bulkInput')
@@ -5477,24 +5063,14 @@ function runEngineCore(){
   ----------------------------------------- */
   const groups={};
   masterRecords.forEach(r=>{
-    /* V57: Thai Stock is one market with four internal rounds. Input names
-       remain intact; grouping ignores datasetId so daily blocks merge safely. */
-    if(v57IsThaiStockName(r.name)){
-      const round=v57ThaiRound(r.name);
-      const groupKey=round?`__THAI_ROUND__${round}`:`__THAI_UNKNOWN__`;
-      if(!groups[groupKey]) groups[groupKey]=[];
-      groups[groupKey].push(r);
-      return;
-    }
-    /* Existing dataset isolation remains unchanged for every other market. */
+    /* Item 22: isolate every parsed input block. The zero-width separator
+       keeps the internal key unique without changing visible lottery text. */
     const groupKey=r.datasetId
       ? `${r.name}\u2063${r.datasetId}`
       : r.name;
     if(!groups[groupKey]) groups[groupKey]=[];
     groups[groupKey].push(r);
   });
-  const thaiAllDay=v57ThaiRecords(masterRecords);
-  if(thaiAllDay.length) groups.__THAI_ALLDAY__=thaiAllDay;
   const
     auditDataMap={},
     predictionDataMap={},
@@ -5537,9 +5113,8 @@ function runEngineCore(){
       if(resultRecs.length<1)
         return;
       auditDataMap[lotteryName]={};
-      /* V58+ PRODUCTION UNIVERSE: protected original 15 formulas drive the
-         actual decision. Challengers remain audit/shadow evidence only. */
-      const formulaNames=Object.keys(formulas);
+      const formulaNames=
+        Object.keys(allFormulas);
       const latestRec=
         resultRecs[resultRecs.length-1];
       const lTop=
@@ -5660,7 +5235,7 @@ function runEngineCore(){
          ORIGINAL PAIR / DIGIT GENERATION
          *** V52 — LEGACY TARGET-PAIR FORMULA REMOVED ***
       ----------------------------------------- */
-      const intelligence=v55ApplyMainPrecisionLayer(buildDigitIntelligence(resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames);
+      const intelligence=buildDigitIntelligence(resultRecs,auditDataMap[lotteryName],formulaNames);
       if(auditDataMap[lotteryName]&&intelligence?.formulaGovernor){
         auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
       }
@@ -5745,22 +5320,6 @@ function runEngineCore(){
         }
       };
     });
-  /* =====================================================
-     V57 THAI SPECIALIST — DIRECT 3-DIGIT-TOP CARD
-     This is deliberately separate from the all-day card. It uses n3 only,
-     so bottom digits cannot distort the specialist ranking.
-  ===================================================== */
-  if(thaiAllDay.length){
-    const top= v57ThaiBuildSpecialTop(thaiAllDay);
-    const topPairs1=generateFormulaPairs(top.d1,top.d2,auditDataMap,'__THAI_ALLDAY__',thaiAllDay);
-    const topPairs2=generateFormulaPairs(top.d2,top.d1,auditDataMap,'__THAI_ALLDAY__',thaiAllDay);
-    predictionDataMap.__THAI_TOP__={
-      nextDate:top.nextDate,d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,
-      rank1Formula:'V58 TOP DIRECT',rank1Rate:0,recordCount:top.recordCount,recordsForFrequency:thaiAllDay,
-      topAgreement:0,scoreGap:round2((top.scores[top.d1]||0)-(top.scores[top.d2]||0)),
-      scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรง ๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{}}
-    };
-  }
   /* =====================================================
      GLOBAL AUDIT
   ===================================================== */
@@ -5866,7 +5425,6 @@ function runEngineCore(){
   Object.keys(
     predictionDataMap
   )
-  .filter(lotteryName=>lotteryName!=='__THAI_TOP__')
   .forEach(lotteryName=>{
     const p=
       predictionDataMap[
@@ -5906,7 +5464,7 @@ function runEngineCore(){
     );
   });
   showToast(
-    '✓ ประมวลผล V58 Data-Audited Precision Audit สำเร็จ'
+    '✓ ประมวลผล V32.4 Multi-Angle Audit สำเร็จ'
   );
 }
 /* =========================================================
@@ -6271,7 +5829,97 @@ function renderWalkForwardAudit(groups){
     <style>
       .walkforward-panel{margin:18px 0;padding:16px;border:1px solid #e5e7eb;border-radius:18px;background:#ffffff;color:#1f2937;box-shadow:0 8px 24px rgba(15,23,42,.08)}
       .wf-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}.wf-title{font-size:17px;font-weight:800;color:#111827}.wf-sub{font-size:12px;color:#6b7280;margin-top:4px}.wf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.wf-card{padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e5e7eb}.wf-card h4{margin:0 0 9px;font-size:13px;color:#111827}.wf-kpi{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:11px;color:#4b5563}.wf-kpi b{font-size:12px;color:#111827}.wf-pass{color:#15803d}.wf-warn{color:#b45309}.wf-fail{color:#b91c1c}.wf-table{width:100%;border-collapse:collapse;font-size:11px;background:#fff}.wf-table th,.wf-table td{padding:7px 6px;border-bottom:1px solid #edf0f3;text-align:left;white-space:nowrap}.wf-table th{font-size:10px;color:#374151;background:#f3f4f6;font-weight:800}.wf-table td{color:#374151}.wf-table tr:nth-child(even) td{background:#fafafa}.wf-wrap{overflow:auto;border:1px solid #e5e7eb;border-radius:12px}.wf-note{font-size:11px;color:#6b7280;line-height:1.5;margin-top:9px}
-    </style>
+    
+/* ============================================================
+   VVIP CARD REDESIGN V2 — VISUAL ONLY
+   Same information + same JS logic; complete card visual pass.
+   ============================================================ */
+:root{
+  --vv-bg:#0b0f0e;
+  --vv-surface:#111715;
+  --vv-surface-2:#151c19;
+  --vv-line:rgba(210,221,213,.12);
+  --vv-ivory:#f4f1e8;
+  --vv-muted:#a8b0aa;
+  --vv-gold:#d8b56a;
+  --vv-gold-soft:rgba(216,181,106,.16);
+  --vv-emerald:#56c59a;
+  --vv-emerald-soft:rgba(86,197,154,.14);
+  --vv-platinum:#c8d0cc;
+  --vv-platinum-soft:rgba(200,208,204,.12);
+  --vv-copper:#c68a67;
+  --vv-copper-soft:rgba(198,138,103,.13);
+  --vv-shadow:0 18px 45px rgba(0,0,0,.22);
+}
+body{background:radial-gradient(circle at 12% 0%,rgba(86,197,154,.08),transparent 32%),radial-gradient(circle at 90% 12%,rgba(216,181,106,.07),transparent 28%),linear-gradient(145deg,#080b0a,#101513 58%,#0a0e0d)!important;color:var(--vv-ivory)}
+.panel{background:linear-gradient(145deg,rgba(20,27,24,.97),rgba(11,16,14,.98))!important;border-color:var(--vv-line)!important;box-shadow:var(--vv-shadow)!important}
+
+/* Main prediction family — hero / decision card */
+.prediction-card{
+  padding:22px 24px!important;margin-bottom:22px!important;
+  border:1px solid rgba(216,181,106,.24)!important;border-radius:22px!important;
+  background:linear-gradient(145deg,#171d1a 0%,#0f1512 72%,#0c110f 100%)!important;
+  box-shadow:0 20px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  overflow:hidden;
+}
+.prediction-card:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.035),transparent 22%,transparent 76%,rgba(216,181,106,.025));}
+.prediction-card.formula-selected{border-color:rgba(216,181,106,.55)!important;box-shadow:0 22px 55px rgba(0,0,0,.32),0 0 0 1px rgba(216,181,106,.08),inset 0 1px 0 rgba(255,255,255,.05)!important}
+.prediction-card.score-card{border-color:rgba(86,197,154,.26)!important;background:linear-gradient(145deg,#141d19,#0d1512 75%,#0b110f)!important}
+.card-top-bar{border-bottom:1px solid var(--vv-line)!important;padding-bottom:13px!important;margin-bottom:14px!important}
+.card-info small,.card-info b{color:var(--vv-ivory)!important}.card-info small{color:var(--vv-muted)!important}
+.card-brand-tag{color:var(--vv-gold)!important;background:var(--vv-gold-soft)!important;border-color:rgba(216,181,106,.24)!important}
+.card-action-btn{background:#151c19!important;border-color:var(--vv-line)!important;color:#e2c987!important}
+
+/* Consensus — emerald intelligence board */
+.consensus-panel{padding:17px!important;margin-bottom:18px!important;border:1px solid rgba(86,197,154,.22)!important;border-radius:20px!important;background:linear-gradient(145deg,#121b18,#0c1311)!important;box-shadow:var(--vv-shadow)!important}
+.consensus-head b{color:var(--vv-emerald)!important}
+.digit-cell{min-height:68px!important;border-color:rgba(200,208,204,.11)!important;border-radius:13px!important;background:linear-gradient(145deg,#18201d,#101613)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important}
+.digit-cell.hot{border-color:rgba(86,197,154,.62)!important;background:linear-gradient(145deg,rgba(86,197,154,.19),rgba(12,22,18,.98))!important;box-shadow:0 8px 22px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.04)!important}
+.digit-cell b{color:#f2f4ef!important}.digit-cell small{color:#9fa9a3!important}.digit-cell span{color:var(--vv-emerald)!important}
+
+/* Pair intelligence — warm copper accent, same dark material */
+.pairs-grid-container{padding:14px 16px!important;border:1px solid rgba(198,138,103,.19)!important;border-radius:17px!important;background:linear-gradient(145deg,#171816,#111311)!important}
+.floating-pill{height:36px!important;background:#1a1d1b!important;border-color:rgba(200,208,204,.12)!important;color:#edf0eb!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important}
+.floating-pill.rank-gold{background:linear-gradient(145deg,rgba(216,181,106,.23),rgba(66,51,25,.55))!important;border-color:rgba(216,181,106,.65)!important;color:#f4d895!important}
+.floating-pill.rank-silver{background:linear-gradient(145deg,rgba(200,208,204,.17),rgba(43,49,46,.65))!important;border-color:rgba(200,208,204,.32)!important;color:#eef1ef!important}
+.floating-pill.rank-rosegold{background:linear-gradient(145deg,rgba(198,138,103,.20),rgba(61,39,30,.58))!important;border-color:rgba(198,138,103,.48)!important;color:#efc0a7!important}
+
+/* Score audit summary — platinum analytical instrument */
+.score-audit-summary{margin:0 0 17px!important;padding:14px!important;border:1px solid rgba(200,208,204,.15)!important;border-radius:16px!important;background:linear-gradient(145deg,#171c1a,#101513)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important}
+.score-audit-summary-head{color:var(--vv-platinum)!important}.score-audit-summary-item{background:#111715!important;border-color:rgba(200,208,204,.10)!important}.score-audit-summary-item small{color:#8f9993!important}.score-audit-summary-item b,.score-audit-summary-item.gap b{color:#e8ece9!important}
+
+/* Audit blocks — executive report treatment */
+.lottery-audit-block{margin-bottom:19px!important;padding:15px!important;border:1px solid rgba(216,181,106,.16)!important;border-radius:18px!important;background:linear-gradient(145deg,#141a17,#0e1311)!important;box-shadow:0 14px 35px rgba(0,0,0,.20)!important}
+.lottery-audit-block-head,.lottery-audit-title{color:#e3c47d!important}.lottery-audit-sub{color:#9ea79f!important}
+.ea-matrix-guide{background:#151b18!important;color:#aeb7b1!important;border-color:rgba(200,208,204,.09)!important}
+.expanded-audit-panel,.walkforward-panel{background:linear-gradient(145deg,#131917,#0d1210)!important;color:var(--vv-ivory)!important;border-color:rgba(200,208,204,.13)!important;box-shadow:var(--vv-shadow)!important}
+.ea-card{background:#151b18!important;border-color:rgba(200,208,204,.10)!important}.ea-card h4,.ea-kpi b{color:#edf0ec!important}.ea-kpi{color:#a5aea8!important}
+.ea-table-wrap,.ea-table{background:#0f1412!important;border-color:rgba(200,208,204,.10)!important}.ea-table th{background:#18201d!important;color:#dce2de!important}.ea-table td{color:#d4dbd6!important}.ea-table tr:nth-child(even) td{background:#121816!important}
+
+/* Tables — high contrast, no washed-out number colors */
+table.audit-table{background:#0f1412!important;color:#e6ebe7!important;border-color:rgba(200,208,204,.10)!important}
+table.audit-table th{background:#18201d!important;color:#e2c47e!important;border-color:rgba(200,208,204,.12)!important}
+table.audit-table td{color:#e3e8e4!important;border-color:rgba(200,208,204,.08)!important}
+table.audit-table tr:nth-child(even){background:#121816!important}
+.summary-table-container{background:#0d1210!important;border-color:rgba(200,208,204,.10)!important}
+
+/* Myanmar 2D — jade specialist module */
+.m2d-shell{margin-top:20px!important;border:1px solid rgba(86,197,154,.24)!important;border-radius:20px!important;background:linear-gradient(145deg,#101916,#0b110f)!important;box-shadow:var(--vv-shadow)!important;padding:15px!important}
+.m2d-card{border:1px solid rgba(86,197,154,.20)!important;border-radius:17px!important;background:linear-gradient(145deg,#17201c,#0f1512)!important;box-shadow:0 12px 30px rgba(0,0,0,.24)!important}
+.m2d-card-head{border-bottom-color:rgba(86,197,154,.13)!important}.m2d-name{color:#bce8d5!important}.m2d-time,.m2d-date{color:#99aaa1!important}.m2d-label,.m2d-rank-label{color:#a9b8b0!important}.m2d-main-digit{color:#edf3ef!important}
+.m2d-rank-row{border-bottom-color:rgba(200,208,204,.09)!important}.m2d-rank-row.rank-1 .m2d-rank-label,.m2d-rank-row.rank-1 .m2d-main-digit{color:#e2c47e!important}.m2d-rank-row.rank-2 .m2d-rank-label,.m2d-rank-row.rank-2 .m2d-main-digit{color:#cbd4cf!important}.m2d-rank-row.rank-3 .m2d-rank-label,.m2d-rank-row.rank-3 .m2d-main-digit{color:#c9a28e!important}
+
+/* Shared micro-language: precision separators + crisp number treatment */
+.prediction-card,.consensus-panel,.m2d-shell,.lottery-audit-block,.expanded-audit-panel,.walkforward-panel{isolation:isolate}
+.prediction-card b,.digit-cell b,.floating-pill,.m2d-main-digit,table.audit-table td{font-variant-numeric:tabular-nums}
+@media(max-width:700px){
+  .prediction-card{padding:17px!important;border-radius:18px!important}
+  .consensus-panel{padding:13px!important}.digit-board{gap:5px}.digit-cell{min-height:56px!important;border-radius:10px!important}
+  .pairs-grid-container{padding:11px!important}.floating-pill{height:33px!important}
+  .lottery-audit-block{padding:11px!important;border-radius:15px!important}
+  .m2d-shell{padding:10px!important;border-radius:16px!important}.m2d-card{border-radius:14px!important}
+}
+</style>
     <div class="wf-head"><div><div class="wf-title">🧪 การตรวจสอบย้อนหลังแบบเดินหน้า</div><div class="wf-sub">ทดสอบย้อนหลังแบบเดินหน้า โดยแต่ละงวดเป้าหมายใช้เฉพาะข้อมูลก่อนหน้า — ใช้สำหรับตรวจสอบระบบเท่านั้น</div></div></div>`;
   names.forEach(name=>{
     const recs=groups[name]||[];
@@ -6376,24 +6024,6 @@ window.addEventListener(
       );
     }
   });
-})();
-
-/* =========================================================
-   V58+ FINAL INTEGRITY GUARDS
-========================================================= */
-(function(){
-  try{
-    const dup=(Object.keys(formulas).map(k=>[k,String(formulas[k]).replace(/\s+/g,'')]))
-      .reduce((m,[k,v])=>{(m[v]||(m[v]=[])).push(k);return m;},{});
-    window.__V58PLUS_AUDIT={
-      version:'V58+',
-      protectedFormulaCount:Object.keys(formulas).length,
-      challengerFormulaCount:Object.keys(challengerFormulas).length,
-      duplicateFormulaFamilies:Object.values(dup).filter(v=>v.length>1),
-      m2dCoreRounds:M2D_CORE_ROUNDS,
-      m2dAuxiliaryMaxRounds:M2D_MAX_INPUT_ROUNDS
-    };
-  }catch(e){ console.warn('V58+ integrity metadata unavailable',e); }
 })();
 </script>
 </body>
