@@ -1059,11 +1059,11 @@ function cleanDatasetKey(rawName){
 }
 function formatDisplayTitle(rawName){
   rawName=cleanDatasetKey(rawName);
-  let name=String(rawName||'').trim();
-  const thaiSynthetic=String(rawName||'').trim();
-  // Nikkei display titles must never carry the generic Thai word 'หุ้น'.
-  // Keep input aliases accepted, but normalize every Nikkei title to 'นิเคอิ ...'.
-  name=name.replace(/^หุ้น\s*(นิเคอิ|นิกเคอิ)/i,'$1').trim();
+  let name=String(rawName||'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim();
+  const thaiSynthetic=String(rawName||'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim();
+  // NIKKEI DISPLAY HARDENING: the visible title must NEVER start with the
+  // generic Thai word 'หุ้น'. Input aliases may still contain it.
+  name=name.replace(/^หุ้น\s*(?=นิเคอิ|นิกเคอิ)/,'').trim();
   if(/^__THAI_ROUND__/.test(thaiSynthetic)){
     const r=thaiSynthetic.replace(/^__THAI_ROUND__/,'').trim();
     return `หุ้นไทย ${r}`.trim();
@@ -6100,6 +6100,15 @@ window.__V102_THAI_PAIR_RANK_DISPLAY__={
   selectionChanged:false
 };
 
+/* V103 DISPLAY AUDIT — Nikkei title invariant. */
+window.__V103_NIKKEI_DISPLAY_AUDIT__={
+  version:'V103',
+  rule:'Nikkei card titles must never contain a leading generic หุ้น prefix',
+  canonicalExamples:['นิเคอิ เช้า','นิเคอิ บ่าย','นิเคอิ VIP เช้า','นิเคอิ VIP บ่าย'],
+  originalFormulaCardVisible:false,
+  scoreAuditCardVisible:true
+};
+
 window.__V91_CARD_ORDER_AUDIT__={
   version:'V91 Plus++ Card Order Patch',
   scope:'general lottery cards only',
@@ -6142,6 +6151,12 @@ function renderCardHTML(
     );
   const isScore=
     card.type==='score';
+  // FINAL DISPLAY TITLE GUARD: every rendered card goes through the canonical
+  // formatter so stale/generated titles such as 'หุ้นนิเคอิ เช้า' can never
+  // reach the visible card or its copy/capture payload.
+  const displayTitle=formatDisplayTitle(
+    card.displayTitle||card.lotteryName||''
+  );
   /*
      Audit presentation rule:
      Keep the card visually clean. Formula names, audit labels,
@@ -6200,7 +6215,7 @@ function renderCardHTML(
      title at render time. This prevents a stale/misclassified card.flag value
      from reaching the visible card. */
   const resolvedFlag=getLotteryFlag(
-    card.displayTitle||card.lotteryName||'',
+    displayTitle,
     card.lotteryName||card.displayTitle||''
   );
   return`
@@ -6218,7 +6233,7 @@ function renderCardHTML(
             ${esc(card.nextDate)}
           </small>
           <b>
-            ${esc(card.displayTitle)}
+            ${esc(displayTitle)}
           </b>
         </div>
       </div>
@@ -6231,7 +6246,7 @@ function renderCardHTML(
             class="card-action-btn"
             onclick="copyCardText(
               '${cardId}',
-              '${esc(card.displayTitle)}',
+              '${esc(displayTitle)}',
               '${esc(card.nextDate)}',
               ${d1Json},
               ${d2Json}
@@ -6242,7 +6257,7 @@ function renderCardHTML(
             class="card-action-btn"
             onclick="captureCardImage(
               '${cardId}',
-              '${esc(card.displayTitle)}'
+              '${esc(displayTitle)}'
             )">
             📸 แคปภาพ
           </button>
@@ -6935,58 +6950,11 @@ function renderFullUI(
       html+=`</section>`;
     });
   /* -----------------------------------------
-     AUTO CARDS
+     SCORE CARDS — single visible selection card
   ----------------------------------------- */
   html+=`
     <div class="section-title">
-      🎯 2. การ์ดสูตรดั้งเดิมอันดับ 1
-    </div>
-    <div class="selected-cards-note">
-      การ์ดนี้คือผลจากสูตรเดิมโดยตรง
-      ระบบตั้งใจเก็บไว้เพื่อให้เห็นว่า “สูตรต้นฉบับอันดับ 1”
-      ให้เลขอะไร โดยไม่ถูกชั้นคัดกรองใหม่ทับ
-    </div>
-    <div id="originalCards">
-  `;
-  let cardIdx=0;
-  Object.keys(predictionDataMap)
-    .filter(lotteryName=>!String(lotteryName).startsWith('__THAI_'))
-    .forEach(lotteryName=>{
-      const p=
-        predictionDataMap[
-          lotteryName
-        ];
-      html+=renderCardHTML(
-        {
-          lotteryName,
-          fName:p.rank1Formula,
-          nextDate:p.nextDate,
-          displayTitle:
-            formatDisplayTitle(
-              lotteryName
-            ),
-          flag:
-            getLotteryFlag(
-              lotteryName,
-              formatDisplayTitle(lotteryName)
-            ),
-          d1:p.d1,
-          d2:p.d2,
-          d1Pairs:p.d1Pairs,
-          d2Pairs:p.d2Pairs,
-          type:'formula'
-        },
-        false,
-        cardIdx++
-      );
-    });
-  html+=`</div>`;
-  /* -----------------------------------------
-     SCORE CARDS
-  ----------------------------------------- */
-  html+=`
-    <div class="section-title">
-      🧠 3. การ์ดเลขเด่นตามคะแนนออดิท
+      🧠 2. การ์ดเลขเด่นตามคะแนนออดิท
     </div>
     <div class="selected-cards-note">
       ใบนี้เป็นชั้นคัดกรองเพิ่มเติม
