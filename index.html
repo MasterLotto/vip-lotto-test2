@@ -3158,6 +3158,17 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
       if(best){selected=[best.a,best.b];bestPair=best;}
     }
   }
+  /* V97 FINAL AUTHORITY LOCK
+     Pair arbitration may score pairs for diagnostics, but it is NOT allowed to
+     replace the digit decision produced by the Stability-Confluence governor.
+     This closes the last path where an upstream agreement/pair layer could
+     silently swap the final BEST-2 after V97 has already selected it. */
+  const v97AuthoritySelected=v95Selected.slice(0,2).map(x=>rows[x.digit]).filter(Boolean);
+  if(v97AuthoritySelected.length===2){
+    selected=v97AuthoritySelected.slice().sort((a,b)=>
+      Number(b.raw?.v95DecisionScore??b.selectionQuality??0)-Number(a.raw?.v95DecisionScore??a.selectionQuality??0)||
+      Number(a.digit)-Number(b.digit));
+  }
   const margin=selected.length>=2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0;
   const secondGapRatio=selected.length>=2?clamp(margin/Math.max(1,Math.abs(selected[0].selectionQuality)),0,1):0;
   const selectedPersistence=selected.length?round2(avg(selected.map(x=>x.raw.signalPersistence??50))):0;
@@ -3232,7 +3243,9 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   const v72Refinement=typeof window.V72Precision!=='undefined'
     ?window.V72Precision.refineTop3(integratedTop3,adversarialRanked,recs)
     :{finalTop3:integratedTop3,rawTop3:integratedTop3,removedFromTop3:[],audit:{status:'SKIPPED'},enriched:[],margin:{},regime:{}};
-  const finalTop3V72=v95Top3.length===3?v95Top3:(v72Refinement.finalTop3.length===3?v72Refinement.finalTop3:integratedTop3);
+  const finalTop3V72=(v95Top3.length===3?v95Top3:(v72Refinement.finalTop3.length===3?v72Refinement.finalTop3:integratedTop3));
+  /* V97 BEST-2 is the same decision contract used by the prediction card. */
+  const v97FinalBest2=selected.slice(0,2).map(x=>Number(x.digit)).filter(Number.isFinite);
   return{
     frequency,
     consensus,
@@ -3242,12 +3255,13 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     robustnessSnapshots:rankSnapshots,
     adversarialSnapshots:stressSnapshots,
     selected,
+    best2:v97FinalBest2,
     top3:finalTop3V72,
     top3Audit,
     shadowTop3,
     removedFromTop3:[...new Set([...(v71Decision.removedFromTop3||removedFromTop3),...(v72Refinement.removedFromTop3||[])])],
     v71Arbitration:{accepted:v71Accepted,top3:integratedTop3,rawTop3:v71Decision.rawTop3||shadowTop3,core:v71Decision.core||[],support:v71Decision.support||[],shadow:v71Decision.shadow||[],noForcedPrediction:!!v71Decision.noForcedPrediction,audit:v71Decision.audit||[]},
-    v97DecisionGovernor:{version:'V97',consensusAuthority:'ZERO',formulaCandidatesOnly:true,digitSpecificOOS:true,multiHorizon:true,horizons:[3,6,9,10,12,15,18,21,24,27,30],temporalSegments:['EARLY','MIDDLE','LATE'],rankWeighting:'SMOOTH_1_TO_N',primaryWeights:{formulaSignal:.43,digitOOS:.27,stability:.18,recent:.07,independentFamilies:.05},consensusCap:0},
+    v97DecisionGovernor:{version:'V97.1',consensusAuthority:'ZERO',formulaCandidatesOnly:true,digitSpecificOOS:true,multiHorizon:true,horizons:[3,6,9,10,12,15,18,21,24,27,30],temporalSegments:['EARLY','MIDDLE','LATE'],rankWeighting:'SMOOTH_1_TO_N',primaryWeights:{formulaSignal:.43,digitOOS:.27,stability:.18,recent:.07,independentFamilies:.05},consensusCap:0,finalAuthority:'V97_STABILITY_CONFLUENCE',pairOverride:false,consensusLeakageGuard:true},
     margin,
     qualityGate,
     finalGate,
