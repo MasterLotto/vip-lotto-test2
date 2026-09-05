@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+
 <title>Mester Lotto VIP+ — V85 Maximum Precision Decision Intelligence + Myanmar 2D Specialized</title>
 <style>
 :root{
@@ -878,6 +879,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 <!-- V54 PLUS+ baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
 <!-- V60 AUDIT: targetable-evidence alignment; TOP-3 protection; anti-false-positive selection; session schema guard; empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 
+
 <!-- V85 MAX PRECISION DECISION INTELLIGENCE (V84 + end-to-end OOS decision integrity)
      Added end-to-end chronological selection audit after V84, selection-conditioned precision,
      top-3 coverage, rank separation, beta shrinkage and bounded final decision adjustment.
@@ -907,6 +909,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
      V81: adaptive 5-slot formula candidate laboratory + two-standout ranking; no locked-formula mutation.
      Myanmar 2D: remains isolated on its specialized path.
 -->
+
 
 </head>
 <body>
@@ -1192,9 +1195,29 @@ function v57ThaiBuildSpecialTop(records){
 }
 
 
+
+
 /* =========================================================
    FLAGS
 ========================================================= */
+function isNikkeiJapanSession(name){
+  const n=String(name||'')
+    .replace(/[\u200B-\u200D\uFEFF\u2060\u2063]/g,'')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g,'');
+  return (
+    n==='นิเคอิเช้า'||
+    n==='นิเคอิบ่าย'||
+    n==='นิเคอิvipเช้า'||
+    n==='นิเคอิvipบ่าย'||
+    n==='หุ้นนิเคอิเช้า'||
+    n==='หุ้นนิเคอิบ่าย'||
+    n==='หุ้นนิเคอิvipเช้า'||
+    n==='หุ้นนิเคอิvipบ่าย'
+  );
+}
+
 function getLotteryFlag(name){
   /* V56 — deterministic market-first flag resolver.
      Never infer country from a generic time word such as "เช้า" or "บ่าย".
@@ -1210,16 +1233,7 @@ function getLotteryFlag(name){
   if(!n)return'🌐';
   /* Canonical Japan/Nikkei sessions — hard-stop before generic routing.
      These are the four official display forms used by this engine. */
-  if(
-    n==='นิเคอิเช้า'||
-    n==='นิเคอิบ่าย'||
-    n==='นิเคอิvipเช้า'||
-    n==='นิเคอิvipบ่าย'||
-    n==='หุ้นนิเคอิเช้า'||
-    n==='หุ้นนิเคอิบ่าย'||
-    n==='หุ้นนิเคอิvipเช้า'||
-    n==='หุ้นนิเคอิvipบ่าย'
-  )return'🇯🇵';
+  if(isNikkeiJapanSession(n))return'🇯🇵';
   /* Thailand — exact/strong market identity first. */
   if(n.includes('หุ้นไทย')||n.includes('__thai_round__')||n.includes('__thai_allday__')||n.includes('__thai_top__')||n.includes('ไทยเย็น')||n.includes('ไทยเช้า')||n.includes('ไทยเที่ยง')||n.includes('ไทยบ่าย')||n.includes('ตลาดหุ้นไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส'))return'🇹🇭';
   /* Vietnam / Hanoi. */
@@ -2003,6 +2017,8 @@ function adaptiveWindowBlend(rates,weights){
   const den=ws.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0)||1;
   return clamp(rates.reduce((a,v,i)=>a+clamp(Number(v)||0,0,100)*(ws[i]||0),0)/den,0,100);
 }
+
+
 
 
 function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null,records=[]){
@@ -3202,6 +3218,10 @@ function pairBayesPrecision(hits,total,priorRate=50,priorN=10){
 
 
 
+
+
+
+
 /* =========================================================
    V53.1 FINAL DECISION HARDENING
    - Evidence families prevent correlated evidence from being counted as
@@ -3251,6 +3271,10 @@ function targetSelectionGate(meta){
   if(conflict>60)gate*=.88;
   return clamp(gate,.62,1);
 }
+
+
+
+
 
 
 
@@ -3379,6 +3403,8 @@ function m2dPairOOSGate(arr,target,partner){
   const p=hit/Math.max(1,tests)*100;
   return selectionOOSGate(p,tests,60);
 }
+
+
 
 
 function lastMinuteDriftGuard(records,target,partner){
@@ -3680,6 +3706,7 @@ function generateFormulaPairs(mainDigit,otherDigit,auditMap,lotteryName,records)
   return v90PPRefinePairs(adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,data),data,mainDigit,otherDigit);
 }
 
+
 /* =========================================================
    V75 PRECISION LOOP — TRUE END-TO-END OOS + EVIDENCE LEDGER
    Backend-only. No new formula. Locked 15 formulas and card/UI untouched.
@@ -3941,6 +3968,7 @@ function v88ApplyFairArbitration(intelligence,records,auditData=null,formulaName
   };
 }
 
+
 /* =========================================================
    V90 PLUS — EVIDENCE RESOLUTION / CONTRADICTION / ROBUSTNESS GOVERNOR
    Backend-only. No new prediction formula. Locked formula bodies, targeted
@@ -4047,6 +4075,7 @@ function v90PlusApply(intelligence,records,auditData,formulaNames){
   return {...base,rows:ranked,top3:finalTop3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v90Plus:{version:'V90 Plus — Evidence Resolution Governor',principles:['formula-lottery-digit-shrinkage','contradiction-aware-selection','horizon-coherence','leave-one-out-contribution','top3-robustness','data-sufficiency-gate','no-new-formula','locked-formulas-unchanged'],regime,ranked:ranked.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,evidence:r.v90Plus?.evidenceScore??50,formula:r.v90Plus?.formulaEvidence??50,contradiction:r.v90Plus?.contradiction??50,horizon:r.v90Plus?.horizonCoherence??50,loo:r.v90Plus?.leaveOneOutStability??50,robustness:r.v90Plus?.top3Robustness??50}))},finalGate:{...(base.finalGate||{}),v90Plus:true,v90PlusFormulaLotteryDigit:true,v90PlusContradiction:true,v90PlusHorizonCoherence:true,v90PlusLeaveOneOut:true,v90PlusTop3Robustness:true,v90PlusDataSufficiency:arr.length>=V90_PLUS_CONFIG.minHistory}};
 }
 
+
 /* =========================================================
    V90 PLUS+ — RESOLUTION MAX / STATE ANALOGY / COUNTERFACTUAL GOVERNOR
    This is an evidence-resolution layer, not a formula layer. It does not
@@ -4136,6 +4165,7 @@ function v90PPPositionTransitionEvidence(arr,d){
   return {score:round2(clamp(50+(concentration-.20)*80*clamp(support*3,0,1),0,100)),lastPosition:last,samples:total,transition:row.map(x=>x)};
 }
 
+
 const V90_PP_CONFIG=Object.freeze({
   minHistory:15, priorN:10, knnK:7, maxAdjustment:3.25,
   stateWeight:.20, contradictionWeight:.15, horizonWeight:.11,
@@ -4198,11 +4228,13 @@ function v90PPApply(intelligence,records,auditData,formulaNames){
   return {...base,rows:ranked,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v90PlusPlus:{version:'V90 Plus+ — Resolution Max Governor',regime:reg,globalRobustness:robustness,ranked:ranked.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,resolution:r.v90PlusPlus?.resolutionScore??50,analogy:r.v90PlusPlus?.analogicalState??50,contradiction:r.v90PlusPlus?.contradiction??50,loo:r.v90PlusPlus?.leaveOneFamilyStability??50,robustness:r.v90PlusPlus?.top3RobustnessPlus??50}))},finalGate:{...(base.finalGate||{}),v90PlusPlus:true,v90PlusPlusAnalogicalState:true,v90PlusPlusContradiction:true,v90PlusPlusRobustness:true,v90PlusPlusDualMiss:true,v90PlusPlusPositionTransition:true,v90PlusPlusNoNewFormula:true}};
 }
 
+
 function buildDigitIntelligenceV75(records,auditData,formulaNames,options={}){
   const v74=buildDigitIntelligenceV74(records,auditData,formulaNames,options);
   return v75Finalize(v74,records,auditData,formulaNames);
 }
 /* ========================================================= END V75 PRECISION LOOP ========================================================= */
+
 
 /* =========================================================
    V78 ADAPTIVE RADAR — LEAKAGE-SAFE 5-DIGIT CONSENSUS
@@ -4477,6 +4509,7 @@ function v80ApplyFormulaLayer(intelligence,records){
   return {...base,rows,top3:finalTop3,selected,v80:{version:'V80',source:'สถิติ.pdf',formulaAudit:audit,newFormulaCount:5,standout,chronological:true},finalGate:{...(base.finalGate||{}),v80FormulaLayer:true,v80NewFormulaCount:5,v80Standout:standout,v80AuditRows:audit}};
 }
 
+
 /* =========================================================
    V81 MAX PRECISION ADAPTIVE FORMULA + TARGET-PAIR LAB
    Non-locked enhancement layer. The original 15 formulas and card UI
@@ -4579,6 +4612,7 @@ function v81ApplyAdaptiveLayer(intelligence,records){
   const standout=rows.slice(0,2).map(x=>x.digit);
   return {...base,rows,top3:uniqueTop3.slice(0,3),selected:uniqueTop3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean),v81Adaptive:{version:'V81',selected:selected.map(x=>({anchor:x.name,offsets:x.offsets,rate:round2(x.rate),recent:round2(x.recent),stability:round2(x.stability),score:round2(x.score),edge:round2(x.edge)})),standout,chronological:true},finalGate:{...(base.finalGate||{}),v81Adaptive:true,v81Standout:standout}};
 }
+
 
 /* =========================================================
    V83 EVIDENCE STACK — MAX PRECISION DECISION LAYER
@@ -4734,6 +4768,8 @@ function v83ApplyEvidenceStack(intelligence,records,auditData,formulaNames){
 }
 
 
+
+
 /* =========================================================
    V84 DECISION INTELLIGENCE — CHRONOLOGICAL OOS GOVERNOR
    Backend-only. No formula bodies or card/UI/CSS mutation.
@@ -4837,6 +4873,7 @@ function v84ApplyDecisionGovernor(intelligence,records,auditData,formulaNames){
   };
 }
 
+
 function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}){
   const base=buildDigitIntelligenceV75(records,auditData,formulaNames,options);
   const radar=v78ApplyStructure(base,records);
@@ -4849,6 +4886,7 @@ function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}
   if(options&&options.skipV84OOS) return v83;
   return v84ApplyDecisionGovernor(v83,records,auditData,formulaNames);
 }
+
 
 /* =========================================================
    V85 FINAL DECISION INTEGRITY — END-TO-END OOS SELECTION AUDIT
@@ -5188,6 +5226,7 @@ function v87FinalFairArbitration(intelligence,records,auditData,formulaNames){
   return {...base,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v87Fairness:fairness,finalGate:{...(base.finalGate||{}),v87FinalFairness:true,v87StabilityFirstFinal:true,v87ConsensusBoundedFinal:true}};
 }
 
+
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const core=buildDigitIntelligenceV84Core(records,auditData,formulaNames,options);
   const v85=v85ApplyFinalDecisionGovernor(core,records,auditData,formulaNames);
@@ -5195,6 +5234,7 @@ function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   return v86ApplyEqualOpportunity(v85Plus,records,auditData,formulaNames);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
+
 
 /* =========================================================
    V74 PRECISION AUDIT — LEAKAGE-SAFE GLOBAL ENSEMBLE
@@ -5343,6 +5383,7 @@ function buildDigitIntelligenceV74(records,auditData,formulaNames,options={}){
   return v74Refine(base,records,auditData,formulaNames);
 }
 /* ========================================================= END V74 PRECISION AUDIT ========================================================= */
+
 
 /* =========================================================
    V73 PRECISION SELECTION — EMPIRICAL ENSEMBLE + FINAL CONSISTENCY
@@ -5695,6 +5736,8 @@ function renderCardHTML(
     .replace(/\s+/g,'');
   const nikkeiFinal=(
     isNikkeiJapan||
+    isNikkeiJapanSession(flagSource)||
+    isNikkeiJapanSession(card.lotteryName)||
     rawFlagNorm.includes('นิเคอิ')||
     rawFlagNorm.includes('นิกเคอิ')||
     rawFlagNorm.includes('หุ้นนิเคอิ')||
@@ -6563,6 +6606,7 @@ function v70Arbitrate(scoreData,records){const ranked=Array.isArray(scoreData)?s
 window.V70Precision=Object.freeze({config:V70_CONFIG,lifecycle:v70Lifecycle,regime:v70Regime,overfit:v70Overfit,classify:v70Classify,arbitrate:v70Arbitrate});
 /* ========================================================= END V70 BIG UPGRADE ========================================================= */
 
+
 /* =========================================================
    V72 PRECISION REFINEMENT — DECISION HARDENING
    No new prediction formula. No card/UI changes.
@@ -6687,6 +6731,8 @@ function v72RefineTop3(baseTop3,rows,records){
 }
 window.V72Precision=Object.freeze({config:V72_CONFIG,temporal:v72TemporalSurvival,antiRepeat:v72ConditionalAntiRepeat,margin:v72MarginQuality,compression:v72EvidenceCompression,regimeTransition:v72RegimeTransition,finalAudit:v72FinalAudit,refineTop3:v72RefineTop3});
 /* ========================================================= END V72 PRECISION REFINEMENT ========================================================= */
+
+
 
 
 /* =========================================================
@@ -6968,6 +7014,7 @@ function m2dPrecisionScoreDigits(arr){
   return out;
 }
 
+
 /* V84 Myanmar 2D Decision Governor — specialized, isolated from general lottery engine. */
 function m2dV84DecisionScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;
@@ -6990,6 +7037,7 @@ function m2dV84DecisionScoreDigits(arr){
   }
   return out;
 }
+
 
 function m2dTop3(arr){
   m2dTop3._activeArr=Array.isArray(arr)?arr:[];
@@ -7534,6 +7582,8 @@ function renderMyanmar2DModule(text){
 }
 
 
+
+
 /* =========================================================
    V55 PRECISION CONTROL LAYER
    Decision-only upgrade. Protected formula definitions are untouched.
@@ -7745,6 +7795,8 @@ function m2dV55AdvancedTop3(arr,baseTop){
   out._v55={quality,distributionShift:shift,ranked:ranked.slice(0,10),multipleTestingPenalty:v55MultipleTestingPenalty(data.length,10)};
   return out;
 }
+
+
 
 
 function runEngineCore(){
