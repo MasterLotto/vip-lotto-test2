@@ -2871,6 +2871,138 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
       if(quality(alt)>quality(top)) bestPair=alt,selected=[alt.a,alt.b];
     }
   }
+  /* ================================================================
+     V95 FINAL DECISION GOVERNOR — STABILITY CONFLUENCE
+     Purpose: make the formula pool the primary signal, while converting all
+     other intelligence layers into bounded validation/support. Formula rank
+     is useful (rank 1 > rank 2 > ...), but no rank is allowed to monopolize
+     the decision. Consensus is deliberately NOT used as a direct selector.
+     The core question is: do the formulas supporting a digit remain stable
+     across 3/6/9/10/12/18/24/30-round horizons and across early/middle/late
+     portions of history?
+     ================================================================ */
+  const v95StableFormulaRows={};
+  const v95FormulaRanked=names.map(name=>{
+    const g=formulaGovernor.raw?.[name]||{};
+    const h=Array.isArray(g.horizonRates)?g.horizonRates:[];
+    const valid=h.filter(v=>Number.isFinite(v));
+    const hMean=valid.length?avg(valid):Number(g.hitDensity)||50;
+    const hDisp=valid.length?avg(valid.map(v=>Math.abs(v-hMean))):0;
+    const horizonConsistency=clamp(100-hDisp*1.65,0,100);
+    const hist=getFormulaHistory(recs,name);
+    const len=hist.length;
+    const segRates=[];
+    if(len>=9){
+      const a=Math.max(1,Math.floor(len/3));
+      const b=Math.max(a+1,Math.floor(len*2/3));
+      segRates.push(percent(hist.slice(0,a).filter(x=>x.hit).length,a));
+      segRates.push(percent(hist.slice(a,b).filter(x=>x.hit).length,b-a));
+      segRates.push(percent(hist.slice(b).filter(x=>x.hit).length,len-b));
+    }
+    const segMean=segRates.length?avg(segRates):Number(g.multiHorizon)||50;
+    const segDisp=segRates.length?avg(segRates.map(v=>Math.abs(v-segMean))):0;
+    const segmentConsistency=clamp(100-segDisp*1.55,0,100);
+    const multiStability=clamp(horizonConsistency*.58+segmentConsistency*.42,0,100);
+    return {name,hitDensity:Number(g.hitDensity)||50,stability:Number(g.stability)||50,
+      recency:Number(g.recency)||50,multiStability,horizonConsistency,segmentConsistency,total:len};
+  }).sort((a,b)=>b.hitDensity-a.hitDensity||b.multiStability-a.multiStability||a.name.localeCompare(b.name));
+  const v95RankMap={};
+  v95FormulaRanked.forEach((x,i)=>v95RankMap[x.name]=i+1);
+  v95FormulaRanked.forEach(x=>{
+    /* Smooth rank advantage: rank 1 is better, but the whole 1..N pool remains
+       meaningful. The gap is intentionally small so stability can overturn rank. */
+    const r=v95RankMap[x.name], N=Math.max(1,v95FormulaRanked.length);
+    x.rankWeight=round2(clamp(1.14-0.34*((r-1)/Math.max(1,N-1)),.80,1.14));
+    v95StableFormulaRows[x.name]=x;
+  });
+  const v95SupportByDigit=Array.from({length:10},(_,digit)=>({digit,formulaSignal:0,digitOOS:50,stability:50,
+    recent:50,formulaCount:0,independentFamilies:0,consensusSupport:0,sourceNames:[],rankSpread:0}));
+  rows.forEach(row=>{
+    const d=row.digit;
+    const supporting=(row.formulaHits||[]).filter(n=>names.includes(n));
+    const parts=[]; const fams=new Set();
+    supporting.forEach(name=>{
+      const f=v95StableFormulaRows[name]; if(!f)return;
+      const rankW=f.rankWeight;
+      const reliability=clamp(.34*f.hitDensity+.20*f.stability+.16*f.recency+.30*f.multiStability,0,100);
+      const q=clamp(reliability*rankW,0,100);
+      parts.push(q); fams.add(familyIdByFormula[name]);
+    });
+    const formulaSignal=parts.length
+      ?clamp(avg(parts)*.78+Math.max(...parts)*.22,0,100)
+      :0;
+    const oos=Number(row.raw.empiricalPrecision)||50;
+    const recent=Number(row.raw.recencyStrength)||50;
+    const stability=clamp(
+      Number(row.raw.signalPersistence||50)*.30+
+      Number(row.raw.rankStability||50)*.22+
+      Number(row.raw.robustnessSurvival||50)*.18+
+      Number(row.raw.survivalTop5||50)*.10+
+      Number(row.raw.counterfactualStability||50)*.20,0,100);
+    const consensusSupport=clamp(Number(row.agreement||0)*1.5,0,6);
+    v95SupportByDigit[d]={digit:d,formulaSignal,oos,stability,recent,
+      formulaCount:supporting.length,independentFamilies:fams.size,consensusSupport,
+      sourceNames:supporting.slice(),rankSpread:supporting.length?avg(supporting.map(n=>v95RankMap[n]||N)):N};
+  });
+  const v95PrimaryCandidates=v95SupportByDigit.filter(x=>x.formulaCount>0);
+  const v95FallbackCandidates=v95SupportByDigit.filter(x=>x.formulaCount===0);
+  const v95ScoreCandidate=(x,isFallback=false)=>{
+    const r=rows[x.digit]?.raw||{};
+    const familySupport=clamp(x.independentFamilies>=3?100:x.independentFamilies===2?78:x.independentFamilies===1?58:35,0,100);
+    /* Consensus is capped at 6 points and can never substitute for formula/OOS
+       evidence. It is support only, exactly as the live-use audit requested. */
+    const support=clamp(
+      x.formulaSignal*.43+
+      x.oos*.27+
+      x.stability*.18+
+      x.recent*.07+
+      familySupport*.05,
+      0,100);
+    const boundedConsensus=x.consensusSupport;
+    const conflictPenalty=Math.min(10,(Number(r.conflict)||0)*1.35);
+    const fpPenalty=Math.min(10,(Number(r.falsePositiveRisk)||50)*.08);
+    const lowEvidencePenalty=(x.formulaCount===1&&x.oos<45&&x.stability<45)?5:0;
+    const fallbackPenalty=isFallback?12:0;
+    return round2(clamp(support+boundedConsensus-conflictPenalty-fpPenalty-lowEvidencePenalty-fallbackPenalty,0,100));
+  };
+  v95SupportByDigit.forEach(x=>{
+    const fallback=x.formulaCount===0;
+    const score=v95ScoreCandidate(x,fallback);
+    const row=rows[x.digit];
+    row.raw.v95FormulaRankScore=round2(x.formulaSignal);
+    row.raw.v95DigitOOS=round2(x.oos);
+    row.raw.v95StabilityConfluence=round2(x.stability);
+    row.raw.v95RecentStability=round2(x.recent);
+    row.raw.v95FormulaCount=x.formulaCount;
+    row.raw.v95IndependentFamilies=x.independentFamilies;
+    row.raw.v95RankSpread=round2(x.rankSpread);
+    row.raw.v95ConsensusSupport=round2(x.consensusSupport);
+    row.raw.v95DecisionScore=score;
+    /* Preserve the existing score fields for UI compatibility, but make the
+       V95 decision score the final backend authority. */
+    row.selectionQuality=score;
+    row.score=round2(clamp(x.formulaSignal*.50+x.oos*.25+x.stability*.15+x.recent*.10,0,100));
+  });
+  const v95Ranked=[...v95SupportByDigit].sort((a,b)=>
+    v95ScoreCandidate(b,b.formulaCount===0)-v95ScoreCandidate(a,a.formulaCount===0)||
+    b.formulaSignal-a.formulaSignal||b.stability-a.stability||b.oos-a.oos||a.digit-b.digit);
+  const v95Selected=v95Ranked.filter(x=>x.formulaCount>0).slice(0,2);
+  /* A rescue digit is allowed only when the primary pool cannot supply two
+     candidates. It is never allowed to displace a formula-generated candidate
+     merely because a support indicator likes it. */
+  if(v95Selected.length<2){
+    v95FallbackCandidates.sort((a,b)=>v95ScoreCandidate(b,true)-v95ScoreCandidate(a,true));
+    while(v95Selected.length<2&&v95FallbackCandidates.length) v95Selected.push(v95FallbackCandidates.shift());
+  }
+  selected=v95Selected.slice(0,2).map(x=>rows[x.digit]).filter(Boolean);
+  selected=selected.sort((a,b)=>b.raw.v95DecisionScore-a.raw.v95DecisionScore||a.digit-b.digit);
+  /* Primary Top-3 is now based on stability confluence, not raw repeated-digit
+     consensus. This remains backend-only; all existing cards consume the same
+     top3 contract. */
+  const v95Top3=v95Ranked.slice(0,3).map(x=>x.digit);
+  v95Ranked.forEach((x,i)=>{ rows[x.digit].raw.v95FinalRank=i+1; });
+  rows.forEach(row=>{ row.raw.v95PrimaryCandidate=row.formulaHits?.length>0; });
+
   /* V60 TOP-3 PROTECTION / ANTI-FALSE-POSITIVE LAYER
      The public board shows three digits, while the legacy prediction card still
      consumes the best two. Never let a pair optimizer silently erase a genuinely
@@ -3036,7 +3168,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   const v72Refinement=typeof window.V72Precision!=='undefined'
     ?window.V72Precision.refineTop3(integratedTop3,adversarialRanked,recs)
     :{finalTop3:integratedTop3,rawTop3:integratedTop3,removedFromTop3:[],audit:{status:'SKIPPED'},enriched:[],margin:{},regime:{}};
-  const finalTop3V72=v72Refinement.finalTop3.length===3?v72Refinement.finalTop3:integratedTop3;
+  const finalTop3V72=v95Top3.length===3?v95Top3:(v72Refinement.finalTop3.length===3?v72Refinement.finalTop3:integratedTop3);
   return{
     frequency,
     consensus,
@@ -3072,6 +3204,10 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
       v72AuditStatus:v72Refinement.audit?.status||'SKIPPED',
       v72MarginBand:v72Refinement.margin?.band||'UNKNOWN',
       v72Regime:v72Refinement.regime?.state||'UNKNOWN',
+      v95StabilityConfluence:true,
+      v95DecisionAuthority:'formula-generated candidates + multi-horizon stability/OOS validation; support layers bounded',
+      v95HorizonProfile:'3/6/9/12/15/18/21/24/27/30 formula horizons + early/mid/late segment consistency',
+      v95ConsensusRole:'support-only; bounded and never a standalone selector',
       v73PrecisionSelection:true,
       v75EndToEndOOS:true,
       v75FalseRejectionAudit:true,
