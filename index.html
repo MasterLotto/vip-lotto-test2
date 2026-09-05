@@ -6357,51 +6357,20 @@ window.captureCardImage=async function(cardId,lotteryTitle){
 
     /*
        ANDROID SAVE PATCH — capture point only.
-       Prefer the Web Share / Files path on Android-capable browsers.
-       If unavailable or cancelled, fall back to the existing download path.
-       No prediction, scoring, card rendering, or other application logic is touched.
+       IMPORTANT: do NOT use Web Share here. It opens the Android
+       Share Sheet (LINE, apps, etc.), which is not a save action.
+       Restore the original browser download path only.
     */
-    let shared=false;
-    try{
-      if(
-        /Android/i.test(navigator.userAgent||'') &&
-        navigator.share &&
-        navigator.canShare &&
-        typeof File==='function'
-      ){
-        const imageFile=new File(
-          [blob],
-          `BanNgernKong_${safeName}.png`,
-          {type:'image/png'}
-        );
-        if(navigator.canShare({files:[imageFile]})){
-          await navigator.share({
-            files:[imageFile],
-            title:`BanNgernKong_${safeName}`,
-            text:'ภาพการ์ด บ้านเงินกอง'
-          });
-          shared=true;
-        }
-      }
-    }catch(shareErr){
-      console.info('Android image share fallback:',shareErr);
-    }
+    const link=document.createElement('a');
+    link.href=url;
+    link.download=`BanNgernKong_${safeName}.png`;
+    link.style.display='none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 
-    if(!shared){
-      const link=document.createElement('a');
-      link.href=url;
-      link.download=`BanNgernKong_${safeName}.png`;
-      link.style.display='none';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
-
-    setTimeout(()=>URL.revokeObjectURL(url),5000);
-    showToast(shared
-      ? '✓ ส่งภาพไปยังระบบบันทึกของ Android แล้ว'
-      : '✓ บันทึกภาพการ์ดสำเร็จ'
-    );
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    showToast('✓ บันทึกภาพการ์ดสำเร็จ');
   }catch(err){
     cleanup();
     console.error('captureCardImage:',err);
