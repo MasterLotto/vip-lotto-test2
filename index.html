@@ -4274,7 +4274,7 @@ function m2dJointTop3Score(digits,score,base){
   }
   const normVals=chosen.map(d=>clamp(Number(score[d])||0,0,100));
   const baseVals=chosen.map(d=>clamp(Number(base[d])||0,0,100));
-  const meanScore=avg(normVals),baseMeanScore=avg(baseVals);
+  const avg=avg(normVals),baseAvg=avg(baseVals);
   const spreadPenalty=clamp(spread/Math.max(1,chosen.length*2),0,50);
   const wf=m2dDigitWalkForwardQuality(Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[]);
   const wfAvg=avg(chosen.map(d=>clamp(Number(wf.precision?.[d])||50,0,100)));
@@ -4284,7 +4284,7 @@ function m2dJointTop3Score(digits,score,base){
   const diversityScore=clamp(diversity/Math.max(1,chosen.length),0,1)*100;
   const arr=Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[];
   const positionAvg=arr.length?avg(chosen.map(d=>clamp((m2dPositionConditional(arr,d,(d+1)%10))/100,0,1)))*100:50;
-  return meanScore*.32+baseMeanScore*.14+wfAvg*.20+wfStable*.14+positionAvg*.06+diversityScore*.08-spreadPenalty*.06;
+  return avg*.32+baseAvg*.14+wfAvg*.20+wfStable*.14+positionAvg*.06+diversityScore*.08-spreadPenalty*.06;
 }
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
@@ -5829,97 +5829,7 @@ function renderWalkForwardAudit(groups){
     <style>
       .walkforward-panel{margin:18px 0;padding:16px;border:1px solid #e5e7eb;border-radius:18px;background:#ffffff;color:#1f2937;box-shadow:0 8px 24px rgba(15,23,42,.08)}
       .wf-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}.wf-title{font-size:17px;font-weight:800;color:#111827}.wf-sub{font-size:12px;color:#6b7280;margin-top:4px}.wf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.wf-card{padding:12px;border-radius:14px;background:#f8fafc;border:1px solid #e5e7eb}.wf-card h4{margin:0 0 9px;font-size:13px;color:#111827}.wf-kpi{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:11px;color:#4b5563}.wf-kpi b{font-size:12px;color:#111827}.wf-pass{color:#15803d}.wf-warn{color:#b45309}.wf-fail{color:#b91c1c}.wf-table{width:100%;border-collapse:collapse;font-size:11px;background:#fff}.wf-table th,.wf-table td{padding:7px 6px;border-bottom:1px solid #edf0f3;text-align:left;white-space:nowrap}.wf-table th{font-size:10px;color:#374151;background:#f3f4f6;font-weight:800}.wf-table td{color:#374151}.wf-table tr:nth-child(even) td{background:#fafafa}.wf-wrap{overflow:auto;border:1px solid #e5e7eb;border-radius:12px}.wf-note{font-size:11px;color:#6b7280;line-height:1.5;margin-top:9px}
-    
-/* ============================================================
-   VVIP CARD REDESIGN V2 — VISUAL ONLY
-   Same information + same JS logic; complete card visual pass.
-   ============================================================ */
-:root{
-  --vv-bg:#0b0f0e;
-  --vv-surface:#111715;
-  --vv-surface-2:#151c19;
-  --vv-line:rgba(210,221,213,.12);
-  --vv-ivory:#f4f1e8;
-  --vv-muted:#a8b0aa;
-  --vv-gold:#d8b56a;
-  --vv-gold-soft:rgba(216,181,106,.16);
-  --vv-emerald:#56c59a;
-  --vv-emerald-soft:rgba(86,197,154,.14);
-  --vv-platinum:#c8d0cc;
-  --vv-platinum-soft:rgba(200,208,204,.12);
-  --vv-copper:#c68a67;
-  --vv-copper-soft:rgba(198,138,103,.13);
-  --vv-shadow:0 18px 45px rgba(0,0,0,.22);
-}
-body{background:radial-gradient(circle at 12% 0%,rgba(86,197,154,.08),transparent 32%),radial-gradient(circle at 90% 12%,rgba(216,181,106,.07),transparent 28%),linear-gradient(145deg,#080b0a,#101513 58%,#0a0e0d)!important;color:var(--vv-ivory)}
-.panel{background:linear-gradient(145deg,rgba(20,27,24,.97),rgba(11,16,14,.98))!important;border-color:var(--vv-line)!important;box-shadow:var(--vv-shadow)!important}
-
-/* Main prediction family — hero / decision card */
-.prediction-card{
-  padding:22px 24px!important;margin-bottom:22px!important;
-  border:1px solid rgba(216,181,106,.24)!important;border-radius:22px!important;
-  background:linear-gradient(145deg,#171d1a 0%,#0f1512 72%,#0c110f 100%)!important;
-  box-shadow:0 20px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.035)!important;
-  overflow:hidden;
-}
-.prediction-card:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.035),transparent 22%,transparent 76%,rgba(216,181,106,.025));}
-.prediction-card.formula-selected{border-color:rgba(216,181,106,.55)!important;box-shadow:0 22px 55px rgba(0,0,0,.32),0 0 0 1px rgba(216,181,106,.08),inset 0 1px 0 rgba(255,255,255,.05)!important}
-.prediction-card.score-card{border-color:rgba(86,197,154,.26)!important;background:linear-gradient(145deg,#141d19,#0d1512 75%,#0b110f)!important}
-.card-top-bar{border-bottom:1px solid var(--vv-line)!important;padding-bottom:13px!important;margin-bottom:14px!important}
-.card-info small,.card-info b{color:var(--vv-ivory)!important}.card-info small{color:var(--vv-muted)!important}
-.card-brand-tag{color:var(--vv-gold)!important;background:var(--vv-gold-soft)!important;border-color:rgba(216,181,106,.24)!important}
-.card-action-btn{background:#151c19!important;border-color:var(--vv-line)!important;color:#e2c987!important}
-
-/* Consensus — emerald intelligence board */
-.consensus-panel{padding:17px!important;margin-bottom:18px!important;border:1px solid rgba(86,197,154,.22)!important;border-radius:20px!important;background:linear-gradient(145deg,#121b18,#0c1311)!important;box-shadow:var(--vv-shadow)!important}
-.consensus-head b{color:var(--vv-emerald)!important}
-.digit-cell{min-height:68px!important;border-color:rgba(200,208,204,.11)!important;border-radius:13px!important;background:linear-gradient(145deg,#18201d,#101613)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important}
-.digit-cell.hot{border-color:rgba(86,197,154,.62)!important;background:linear-gradient(145deg,rgba(86,197,154,.19),rgba(12,22,18,.98))!important;box-shadow:0 8px 22px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.04)!important}
-.digit-cell b{color:#f2f4ef!important}.digit-cell small{color:#9fa9a3!important}.digit-cell span{color:var(--vv-emerald)!important}
-
-/* Pair intelligence — warm copper accent, same dark material */
-.pairs-grid-container{padding:14px 16px!important;border:1px solid rgba(198,138,103,.19)!important;border-radius:17px!important;background:linear-gradient(145deg,#171816,#111311)!important}
-.floating-pill{height:36px!important;background:#1a1d1b!important;border-color:rgba(200,208,204,.12)!important;color:#edf0eb!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important}
-.floating-pill.rank-gold{background:linear-gradient(145deg,rgba(216,181,106,.23),rgba(66,51,25,.55))!important;border-color:rgba(216,181,106,.65)!important;color:#f4d895!important}
-.floating-pill.rank-silver{background:linear-gradient(145deg,rgba(200,208,204,.17),rgba(43,49,46,.65))!important;border-color:rgba(200,208,204,.32)!important;color:#eef1ef!important}
-.floating-pill.rank-rosegold{background:linear-gradient(145deg,rgba(198,138,103,.20),rgba(61,39,30,.58))!important;border-color:rgba(198,138,103,.48)!important;color:#efc0a7!important}
-
-/* Score audit summary — platinum analytical instrument */
-.score-audit-summary{margin:0 0 17px!important;padding:14px!important;border:1px solid rgba(200,208,204,.15)!important;border-radius:16px!important;background:linear-gradient(145deg,#171c1a,#101513)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important}
-.score-audit-summary-head{color:var(--vv-platinum)!important}.score-audit-summary-item{background:#111715!important;border-color:rgba(200,208,204,.10)!important}.score-audit-summary-item small{color:#8f9993!important}.score-audit-summary-item b,.score-audit-summary-item.gap b{color:#e8ece9!important}
-
-/* Audit blocks — executive report treatment */
-.lottery-audit-block{margin-bottom:19px!important;padding:15px!important;border:1px solid rgba(216,181,106,.16)!important;border-radius:18px!important;background:linear-gradient(145deg,#141a17,#0e1311)!important;box-shadow:0 14px 35px rgba(0,0,0,.20)!important}
-.lottery-audit-block-head,.lottery-audit-title{color:#e3c47d!important}.lottery-audit-sub{color:#9ea79f!important}
-.ea-matrix-guide{background:#151b18!important;color:#aeb7b1!important;border-color:rgba(200,208,204,.09)!important}
-.expanded-audit-panel,.walkforward-panel{background:linear-gradient(145deg,#131917,#0d1210)!important;color:var(--vv-ivory)!important;border-color:rgba(200,208,204,.13)!important;box-shadow:var(--vv-shadow)!important}
-.ea-card{background:#151b18!important;border-color:rgba(200,208,204,.10)!important}.ea-card h4,.ea-kpi b{color:#edf0ec!important}.ea-kpi{color:#a5aea8!important}
-.ea-table-wrap,.ea-table{background:#0f1412!important;border-color:rgba(200,208,204,.10)!important}.ea-table th{background:#18201d!important;color:#dce2de!important}.ea-table td{color:#d4dbd6!important}.ea-table tr:nth-child(even) td{background:#121816!important}
-
-/* Tables — high contrast, no washed-out number colors */
-table.audit-table{background:#0f1412!important;color:#e6ebe7!important;border-color:rgba(200,208,204,.10)!important}
-table.audit-table th{background:#18201d!important;color:#e2c47e!important;border-color:rgba(200,208,204,.12)!important}
-table.audit-table td{color:#e3e8e4!important;border-color:rgba(200,208,204,.08)!important}
-table.audit-table tr:nth-child(even){background:#121816!important}
-.summary-table-container{background:#0d1210!important;border-color:rgba(200,208,204,.10)!important}
-
-/* Myanmar 2D — jade specialist module */
-.m2d-shell{margin-top:20px!important;border:1px solid rgba(86,197,154,.24)!important;border-radius:20px!important;background:linear-gradient(145deg,#101916,#0b110f)!important;box-shadow:var(--vv-shadow)!important;padding:15px!important}
-.m2d-card{border:1px solid rgba(86,197,154,.20)!important;border-radius:17px!important;background:linear-gradient(145deg,#17201c,#0f1512)!important;box-shadow:0 12px 30px rgba(0,0,0,.24)!important}
-.m2d-card-head{border-bottom-color:rgba(86,197,154,.13)!important}.m2d-name{color:#bce8d5!important}.m2d-time,.m2d-date{color:#99aaa1!important}.m2d-label,.m2d-rank-label{color:#a9b8b0!important}.m2d-main-digit{color:#edf3ef!important}
-.m2d-rank-row{border-bottom-color:rgba(200,208,204,.09)!important}.m2d-rank-row.rank-1 .m2d-rank-label,.m2d-rank-row.rank-1 .m2d-main-digit{color:#e2c47e!important}.m2d-rank-row.rank-2 .m2d-rank-label,.m2d-rank-row.rank-2 .m2d-main-digit{color:#cbd4cf!important}.m2d-rank-row.rank-3 .m2d-rank-label,.m2d-rank-row.rank-3 .m2d-main-digit{color:#c9a28e!important}
-
-/* Shared micro-language: precision separators + crisp number treatment */
-.prediction-card,.consensus-panel,.m2d-shell,.lottery-audit-block,.expanded-audit-panel,.walkforward-panel{isolation:isolate}
-.prediction-card b,.digit-cell b,.floating-pill,.m2d-main-digit,table.audit-table td{font-variant-numeric:tabular-nums}
-@media(max-width:700px){
-  .prediction-card{padding:17px!important;border-radius:18px!important}
-  .consensus-panel{padding:13px!important}.digit-board{gap:5px}.digit-cell{min-height:56px!important;border-radius:10px!important}
-  .pairs-grid-container{padding:11px!important}.floating-pill{height:33px!important}
-  .lottery-audit-block{padding:11px!important;border-radius:15px!important}
-  .m2d-shell{padding:10px!important;border-radius:16px!important}.m2d-card{border-radius:14px!important}
-}
-</style>
+    </style>
     <div class="wf-head"><div><div class="wf-title">🧪 การตรวจสอบย้อนหลังแบบเดินหน้า</div><div class="wf-sub">ทดสอบย้อนหลังแบบเดินหน้า โดยแต่ละงวดเป้าหมายใช้เฉพาะข้อมูลก่อนหน้า — ใช้สำหรับตรวจสอบระบบเท่านั้น</div></div></div>`;
   names.forEach(name=>{
     const recs=groups[name]||[];
