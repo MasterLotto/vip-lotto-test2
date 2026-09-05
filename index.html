@@ -5655,6 +5655,20 @@ window.captureCardImage=function(cardId,lotteryTitle){
     });
   });
 };
+/* V91 CARD ORDER AUDIT — presentation-only; no scoring/ranking mutation. */
+window.__V91_CARD_ORDER_AUDIT__={
+  version:'V91 Plus++ Card Order Patch',
+  scope:'general lottery cards only',
+  displayPairOrder:'ascending numeric',
+  backendPairRanking:'UNCHANGED',
+  formulas:'UNCHANGED',
+  scores:'UNCHANGED',
+  top3:'UNCHANGED',
+  myanmar2d:'UNCHANGED',
+  copyPayloadOrder:'UNCHANGED',
+  rankClassPreserved:true
+};
+
 /* =========================================================
    CARD HTML
 ========================================================= */
@@ -5692,6 +5706,28 @@ function renderCardHTML(
   const badge='';
   /* คะแนนออดิทสรุปไว้นอกการ์ด เพื่อให้การ์ดสะอาดสำหรับแคปส่งสมาชิก */
   const scoreSummary='';
+  /* V91 CARD PRESENTATION ONLY — keep backend ranking/score untouched.
+     General lottery cards display each selected pair list numerically ascending.
+     Myanmar 2D keeps its own specialized presentation path unchanged. */
+  const isMyanmar2DCard=/(?:พม่า|myanmar)/i.test(
+    `${card.lotteryName||''} ${card.displayTitle||''}`
+  );
+  const sortPairsForCardDisplay=rows=>{
+    const arr=Array.isArray(rows)?rows.slice():[];
+    return arr.sort((a,b)=>{
+      const av=Number(String(a?.pair??'').replace(/[^0-9]/g,''));
+      const bv=Number(String(b?.pair??'').replace(/[^0-9]/g,''));
+      const an=Number.isFinite(av)?av:Infinity;
+      const bn=Number.isFinite(bv)?bv:Infinity;
+      return an-bn || String(a?.pair??'').localeCompare(String(b?.pair??''));
+    });
+  };
+  const displayD1Pairs=isMyanmar2DCard
+    ? card.d1Pairs
+    : sortPairsForCardDisplay(card.d1Pairs);
+  const displayD2Pairs=isMyanmar2DCard
+    ? card.d2Pairs
+    : sortPairsForCardDisplay(card.d2Pairs);
   /* V90.1 FLAG HARDENING — resolve the flag again from the canonical display
      title at render time. This prevents a stale/misclassified card.flag value
      from reaching the visible card. */
@@ -5780,7 +5816,7 @@ function renderCardHTML(
     <div class="pairs-grid-container">
       <div class="pair-row-inline">
         ${
-          card.d1Pairs
+          displayD1Pairs
             .map(
               item=>
                 `<div class="floating-pill ${item.rankClass||''}">
@@ -5792,7 +5828,7 @@ function renderCardHTML(
       </div>
       <div class="pair-row-inline">
         ${
-          card.d2Pairs
+          displayD2Pairs
             .map(
               item=>
                 `<div class="floating-pill ${item.rankClass||''}">
