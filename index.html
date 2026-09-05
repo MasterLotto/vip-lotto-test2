@@ -4557,6 +4557,91 @@ function v97ApplyPrecisionDecision(intelligence,records){
     finalGate:{...(base.finalGate||{}),v97PrecisionDecision:true,v97NextRoundReadiness:true,v97ShortMidLongGate:true,v97RegimeGate:true,v97ContradictionGate:true,v97BoundedAdjustment:true}};
 }
 
+
+/* =========================================================
+   V98 RANK-TRANSITION INTELLIGENCE — NEXT-ROUND RANK ≠ HISTORICAL RANK
+   Backend-only. No new formulas. No UI/card/CSS changes.
+   Purpose: a formula can be the most stable overall yet lose the next round,
+   while ranks 2/3 can be the better next-round contributors. V98 therefore
+   learns this distinction from chronological out-of-sample transitions and
+   lets the current rank-1/2/3 slots compete on their demonstrated next-round
+   contribution instead of treating rank #1 as an automatic winner.
+========================================================= */
+const V98_RANK_TRANSITION_CONFIG=Object.freeze({
+  minHistory:18,transitionHorizon:24,rankDepth:5,recentTransitions:8,
+  allWeight:.38,recentWeight:.42,rankSlotWeight:.20,maxAdjustment:5.50,
+  challengerLiftCap:1.20,minimumEdge:2.0
+});
+function v98Num(v,d=50){const n=Number(v);return Number.isFinite(n)?n:d;}
+function v98Clamp(v,a=0,b=100){return Math.max(a,Math.min(b,v98Num(v,a)));}
+function v98Hit(predicted,target){
+  if(!Array.isArray(predicted))return false;
+  const c=checkHitDetail(predicted,String(target?.n3??''),String(target?.n2??''));
+  return !!c.hitAny;
+}
+function v98FormulaMetric(a){
+  const hit=v98Clamp(a?.hitRate),recent=v98Clamp(a?.recentRate),stable=v98Clamp(a?.stability),multi=v98Clamp(a?.multiHorizon);
+  return hit*.40+recent*.28+stable*.20+multi*.12;
+}
+function v98CurrentRanks(auditData,names){
+  return (Array.isArray(names)?names:[]).map(name=>({name,metric:v98FormulaMetric(auditData?.[name])}))
+    .sort((a,b)=>b.metric-a.metric||a.name.localeCompare(b.name))
+    .map((x,i)=>({...x,rank:i+1}));
+}
+function v98RankTransitionProfile(records,names,auditData){
+  const arr=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const list=Array.isArray(names)?names.filter(n=>allFormulas[n]):[];
+  const current=v98CurrentRanks(auditData,list), rankStats=Array.from({length:V98_RANK_TRANSITION_CONFIG.rankDepth},()=>({hits:0,total:0,recentHits:0,recentTotal:0}));
+  const formulaStats={}; list.forEach(n=>formulaStats[n]={hits:0,total:0,recentHits:0,recentTotal:0,byRank:{}});
+  const start=Math.max(1,arr.length-V98_RANK_TRANSITION_CONFIG.transitionHorizon-1);
+  for(let i=start;i<arr.length-1;i++){
+    const source=arr.slice(0,i+1),target=arr[i+1], ranked=[];
+    list.forEach(name=>{
+      const h=getFormulaHistory(source,name), last=h[h.length-1];
+      if(!last)return;
+      const prior=h.slice(-10), priorHit=prior.length?prior.filter(x=>x.hit).length/prior.length*100:50;
+      const allHit=h.length?h.filter(x=>x.hit).length/h.length*100:50;
+      ranked.push({name,metric:allHit*.55+priorHit*.45,predicted:last.predicted});
+    });
+    ranked.sort((a,b)=>b.metric-a.metric||a.name.localeCompare(b.name));
+    ranked.slice(0,V98_RANK_TRANSITION_CONFIG.rankDepth).forEach((x,ri)=>{
+      const rank=ri+1,hit=v98Hit(x.predicted,target),rs=rankStats[ri];rs.total++;if(hit)rs.hits++;
+      if(i>=arr.length-V98_RANK_TRANSITION_CONFIG.recentTransitions-1){rs.recentTotal++;if(hit)rs.recentHits++;}
+      const fs=formulaStats[x.name];fs.total++;if(hit)fs.hits++;if(i>=arr.length-V98_RANK_TRANSITION_CONFIG.recentTransitions-1){fs.recentTotal++;if(hit)fs.recentHits++;}
+      if(!fs.byRank[rank])fs.byRank[rank]={hits:0,total:0,recentHits:0,recentTotal:0};fs.byRank[rank].total++;if(hit)fs.byRank[rank].hits++;if(i>=arr.length-V98_RANK_TRANSITION_CONFIG.recentTransitions-1){fs.byRank[rank].recentTotal++;if(hit)fs.byRank[rank].recentHits++;}
+    });
+  }
+  const slot=rankStats.map((x,i)=>{const all=x.total?x.hits/x.total*100:50,recent=x.recentTotal?x.recentHits/x.recentTotal*100:all;return{rank:i+1,all:round2(all),recent:round2(recent),nextRoundScore:round2(all*V98_RANK_TRANSITION_CONFIG.allWeight+recent*V98_RANK_TRANSITION_CONFIG.recentWeight+50*V98_RANK_TRANSITION_CONFIG.rankSlotWeight)};});
+  const formula={};current.forEach(c=>{const fs=formulaStats[c.name]||{},by=fs.byRank[c.rank]||{},all=fs.total?fs.hits/fs.total*100:50,recent=fs.recentTotal?fs.recentHits/fs.recentTotal*100:all,slotScore=slot[c.rank-1]?.nextRoundScore??50,conditional=by.total?by.hits/by.total*100:slotScore;formula[c.name]={rank:c.rank,metric:round2(c.metric),all:round2(all),recent:round2(recent),currentRankScore:round2(slotScore),conditional:round2(conditional),transitionScore:round2(all*.28+recent*.32+slotScore*.25+conditional*.15)};});
+  return{current,slot,formula};
+}
+function v98ApplyRankTransition(intelligence,records,auditData,formulaNames){
+  const base=intelligence||{},rows=Array.isArray(base.rows)?base.rows:[],arr=getResultRecords(records).filter(isResultRecord);
+  if(rows.length!==10||arr.length<V98_RANK_TRANSITION_CONFIG.minHistory||!Array.isArray(formulaNames)||!formulaNames.length)return base;
+  const profile=v98RankTransitionProfile(arr,formulaNames,auditData),rankMap=profile.formula||{};
+  const predictedByDigit={};
+  Object.keys(rankMap).forEach(name=>{
+    const audit=auditData?.[name],pred=Array.isArray(audit?.latestDigits)?audit.latestDigits.map(Number).filter(d=>d>=0&&d<=9):[];
+    const fs=rankMap[name],rankWeight=Math.max(.15,1-(fs.rank-1)*.13),transition=v98Clamp(fs.transitionScore),
+      slotLift=v98Clamp(profile.slot[fs.rank-1]?.nextRoundScore??50),weight=rankWeight*(.45+transition/200)*(0.75+slotLift/200);
+    [...new Set(pred)].forEach(d=>{if(!predictedByDigit[d])predictedByDigit[d]=[];predictedByDigit[d].push({name,rank:fs.rank,weight,transition,slotScore:slotLift});});
+  });
+  const slot12=profile.slot.slice(0,3).map(x=>x.nextRoundScore),best23=Math.max(slot12[1]||50,slot12[2]||50),rank1=slot12[0]||50;
+  const slotPressure=v98Clamp(50+(best23-rank1)*1.25);
+  const enriched=rows.map(row=>{
+    const d=Number(row.digit),hits=predictedByDigit[d]||[],sum=hits.reduce((a,x)=>a+x.weight,0),avgTransition=hits.length?avg(hits.map(x=>x.transition)):50;
+    const rankSignal=v98Clamp(50+(avgTransition-50)*.75+(slotPressure-50)*.25);
+    const current=v98Clamp(row.selectionQuality??row.score??50),stable=v98Clamp(row?.v97Precision?.stableFormulaSignal??row?.v96StableCore?.stableFormulaSignal??50);
+    const adjustment=Math.max(-V98_RANK_TRANSITION_CONFIG.maxAdjustment,Math.min(V98_RANK_TRANSITION_CONFIG.maxAdjustment,(rankSignal-50)*.055+(Math.min(1.5,sum)-.6)*V98_RANK_TRANSITION_CONFIG.challengerLiftCap));
+    const final=v98Clamp(current+adjustment,0,100);
+    return{...row,selectionQuality:round2(final),v98RankTransition:{rankSignal:round2(rankSignal),slotPressure:round2(slotPressure),formulaSupportCount:hits.length,weightedFormulaSupport:round2(sum),averageTransition:round2(avgTransition),stableFormulaSignal:round2(stable),previousQuality:round2(current),adjustment:round2(final-current),contributors:hits.slice().sort((a,b)=>b.weight-a.weight).slice(0,5).map(x=>({name:x.name,rank:x.rank,weight:round2(x.weight),transition:round2(x.transition)}))}};
+  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.v98RankTransition.rankSignal-a.v98RankTransition.rankSignal||a.digit-b.digit);
+  const top3=enriched.slice(0,3).map(x=>x.digit),selected=top3.slice(0,2).map(d=>enriched.find(x=>x.digit===d)).filter(Boolean);
+  return{...base,rows:enriched,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
+    v98RankTransition:{version:'V98 Rank-Transition Intelligence',currentRanks:profile.current.map(x=>({rank:x.rank,name:x.name,metric:round2(x.metric)})),rankSlots:profile.slot,formulaTransition:profile.formula,rank1vs23:{rank1:round2(rank1),bestRank2or3:round2(best23),pressure:round2(slotPressure)},principles:['RANK-1-IS-NOT-AUTOMATIC-NEXT-ROUND-WINNER','CHRONOLOGICAL-OOS-RANK-TRANSITIONS','RANK-2-3-CHALLENGER-RECOVERY','BOUNDED-DIGIT-ADJUSTMENT','NO-NEW-FORMULAS']},
+    finalGate:{...(base.finalGate||{}),v98RankTransition:true,v98Rank1NotAutomatic:true,v98ChronologicalRankTransition:true,v98ChallengerRecovery:true,v98BoundedAdjustment:true}};
+}
+
 function buildDigitIntelligenceV75(records,auditData,formulaNames,options={}){
   const v74=buildDigitIntelligenceV74(records,auditData,formulaNames,options);
   return v75Finalize(v74,records,auditData,formulaNames);
@@ -7719,8 +7804,9 @@ function runEngineCore(){
       const governedV94=v94ApplyMainGovernor(intelligence,resultRecs);
       const governedV96=v96ApplyStableFormulaCore(governedV94,resultRecs,auditDataMap[lotteryName],formulaNames);
       const governedV97=v97ApplyPrecisionDecision(governedV96,resultRecs);
-      const finalTop3=Array.isArray(governedV97.top3)?governedV97.top3.map(Number).filter(Number.isFinite):[];
-      intelligence=governedV97;
+      const governedV98=v98ApplyRankTransition(governedV97,resultRecs,auditDataMap[lotteryName],formulaNames);
+      const finalTop3=Array.isArray(governedV98.top3)?governedV98.top3.map(Number).filter(Number.isFinite):[];
+      intelligence=governedV98;
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
@@ -8451,7 +8537,7 @@ window.addEventListener(
     }
   });
 window.__V91_PLUSPLUS_AUDIT__={
-  version:'V97 Precision Decision + V96 Stable Formula Core + M2D Precision Upgrade',
+  version:'V98 Rank-Transition Intelligence + V97 Precision Decision + V96 Stable Formula Core + M2D Precision Upgrade',
   base:'V54 Plus+ presentation/formula/card contract',
   brain:'V90 Plus / V90 Plus+ evidence-resolution stack',
   flagRouter:'deterministic-market-first-v91',
@@ -8462,7 +8548,7 @@ window.__V91_PLUSPLUS_AUDIT__={
   noNewFormulaLayer:true,
   chronologicalEvidence:true,
   targetLeakageGuard:true,
-  purpose:'V54 + V90 Plus++ integrated stability build; V96 stable-formula core; V97 next-round precision decision; Myanmar 2D session-aware precision upgrade'
+  purpose:'V54 + V90 Plus++ integrated stability build; V96 stable-formula core; V97 next-round precision decision; V98 rank-transition intelligence; Myanmar 2D session-aware precision upgrade'
 };
 window.__V79_AUDIT_META__={
 version:'V79',
