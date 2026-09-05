@@ -4776,6 +4776,140 @@ function v99ApplyConditionalDecision(intelligence,records,auditData,formulaNames
     finalGate:{...(base.finalGate||{}),v99ConditionalDecision:true,v99TargetableDigitsFirst:true,v99StateMatchedTransition:true,v99Shrinkage:true,v99ConsensusDamping:true,v99Rank1NotAutomatic:true,v99BoundedAdjustment:true}};
 }
 
+/* =========================================================
+   V100 CALIBRATED PRECISION / ANTI-BIAS ARBITRATION
+   Backend-only final calibration. Existing formula bodies, AIN1-N5,
+   public percentages and all card/UI/CSS structures remain untouched.
+   Purpose: prevent inherited-score accumulation, duplicate-formula voting,
+   stability worship, and deterministic low-digit tie bias from deciding
+   the final highlighted digits.
+========================================================= */
+const V100_CALIBRATION_CONFIG=Object.freeze({
+  minHistory:18,
+  transitionWeight:.32,
+  stateWeight:.22,
+  formulaDiversityWeight:.18,
+  independentEvidenceWeight:.14,
+  recentWeight:.08,
+  recoveryWeight:.04,
+  consensusWeight:.02,
+  stableCap:.68,
+  duplicateGroupDiminish:[1,.56,.34,.22,.15],
+  maxAdjustment:0,
+  collapseWindow:3,
+  collapseThreshold:.70,
+  tieSeed:'V100-CALIBRATED-2026'
+});
+function v100Num(v,f=50){const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(100,n)):f;}
+function v100Mean(a,f=50){const x=(Array.isArray(a)?a:[]).filter(Number.isFinite);return x.length?x.reduce((p,c)=>p+c,0)/x.length:f;}
+function v100Normalize10(rows,key){
+  const vals=rows.map(r=>v100Num(r[key],50));
+  const sorted=vals.slice().sort((a,b)=>a-b),lo=sorted[0]??50,hi=sorted[sorted.length-1]??50;
+  return rows.map((r,i)=>({...r,[key+'N']:hi-lo<1e-9?50:10+80*((vals[i]-lo)/(hi-lo))}));
+}
+function v100RankPercent(values){
+  const a=values.map((v,i)=>({v:v100Num(v),i})).sort((x,y)=>y.v-x.v||x.i-y.i),out=Array(values.length).fill(50);
+  if(a.length===1)return [50];
+  a.forEach((x,i)=>{out[x.i]=100-(i/(a.length-1))*100;});
+  return out;
+}
+function v100Hash(str){let h=2166136261;for(let i=0;i<String(str).length;i++){h^=String(str).charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;}
+function v100Target(rec){return v99TargetDigits(rec);}
+function v100LatestFormulaGroups(auditData,formulaNames){
+  const groups={};
+  (Array.isArray(formulaNames)?formulaNames:[]).forEach(name=>{
+    const a=auditData?.[name];
+    if(!a||!Array.isArray(a.latestDigits))return;
+    const pred=[...new Set(a.latestDigits.map(Number).filter(d=>Number.isInteger(d)&&d>=0&&d<=9))].slice(0,2);
+    if(!pred.length)return;
+    const key=pred.join('');
+    if(!groups[key])groups[key]={key,pred,names:[],quality:[],transition:[],rank:[]};
+    groups[key].names.push(name);
+    groups[key].quality.push(v100Num(a.hitRate??a.selectionQuality??a.formulaReliability,50));
+    groups[key].transition.push(v100Num(a.recentRate??a.recentPerformance??a.hitRate,50));
+  });
+  return Object.values(groups);
+}
+function v100FormulaDiversityScore(digit,auditData,formulaNames){
+  const groups=v100LatestFormulaGroups(auditData,formulaNames).filter(g=>g.pred.includes(Number(digit)));
+  if(!groups.length)return 50;
+  const ranked=groups.map(g=>({q:v100Mean(g.quality),t:v100Mean(g.transition),n:g.names.length}))
+    .sort((a,b)=>(b.q+b.t)-(a.q+a.t));
+  let total=0;ranked.forEach((g,i)=>{const dim=V100_CALIBRATION_CONFIG.duplicateGroupDiminish[i]||.12;total+=(g.q*.55+g.t*.45)*dim;});
+  const independent=ranked.length;
+  return Math.max(0,Math.min(100,total/Math.max(1,1+.35*(independent-1))));
+}
+function v100CollapseDiagnostic(rows){
+  const ranked=rows.slice().sort((a,b)=>b.rawFinal-a.rawFinal);
+  const top=ranked.slice(0,3).map(x=>x.digit),lowBias=top.every(d=>d<=2);
+  const spread=Math.max(...rows.map(x=>x.rawFinal))-Math.min(...rows.map(x=>x.rawFinal));
+  return{collapsed:lowBias&&spread<18,top3:top,spread:round2(spread),lowDigitShare:round2(top.filter(d=>d<=2).length/3)};
+}
+function v100ApplyCalibration(intelligence,records,auditData,formulaNames,lotteryName){
+  const base=intelligence||{},rows=Array.isArray(base.rows)?base.rows:[],arr=getResultRecords(records).filter(isResultRecord);
+  if(rows.length!==10||arr.length<V100_CALIBRATION_CONFIG.minHistory)return base;
+  const current=arr.slice(-1)[0], targetState={};
+  for(let d=0;d<10;d++)targetState[d]=v99State(arr,d);
+  const groups=v100LatestFormulaGroups(auditData,formulaNames);
+  const raw=[];
+  for(let d=0;d<10;d++){
+    const r=rows.find(x=>Number(x.digit)===d)||{}, state=targetState[d], items=(base.v99ConditionalDecision?.rankProfile||[]);
+    const transition=v100Num(r?.v99Conditional?.matchedTransition??r?.v99Conditional?.transition,50);
+    const stateRead=v100Num((state.short*.45+state.mid*.35+state.long*.20),50);
+    const momentum=v100Num(50+state.momentum*.55,50);
+    const recent=v100Num(state.short*.60+momentum*.40,50);
+    const gap=v100Num(100-Math.min(12,state.gap)*7.5,50);
+    const recovery=v100Num(gap*.55+momentum*.45,50);
+    const diversity=v100FormulaDiversityScore(d,auditData,formulaNames);
+    const evidence=v100Mean([
+      v100Num(r.formulaEvidence,50),v100Num(r.historicalEvidence,50),
+      v100Num(r.trendEvidence,50),v100Num(r.timingEvidence,50),
+      v100Num(r.structuralEvidence,50),v100Num(r.robustnessSurvival??r.robustness,50)
+    ],50);
+    const consensus=v100Num(r.v86Fairness?.independentConsensus??r.v88Fairness?.consensusSignal??50,50);
+    raw.push({digit:d,transition,stateRead,recent,recovery,diversity,evidence,consensus,
+      inherited:v100Num(r.selectionQuality??r.score,50),
+      stable:v100Num(r.v96StableCore?.stableFormulaSignal??50,50),
+      support:(base.v99Conditional?.rank1NextRoundScore??50)});
+  }
+  // Convert each evidence family into relative 0-100 ranks across all ten digits.
+  const keys=['transition','stateRead','recent','recovery','diversity','evidence','consensus'];
+  keys.forEach(k=>{const p=v100RankPercent(raw.map(x=>x[k]));raw.forEach((x,i)=>x[k+'R']=p[i]);});
+  raw.forEach(x=>{
+    // Stability is deliberately capped: stability is evidence, never authority.
+    const stableRelative=Math.max(0,Math.min(100,50+(x.stable-50)*V100_CALIBRATION_CONFIG.stableCap));
+    const independent=
+      x.transitionR*V100_CALIBRATION_CONFIG.transitionWeight+
+      x.stateReadR*V100_CALIBRATION_CONFIG.stateWeight+
+      x.diversityR*V100_CALIBRATION_CONFIG.formulaDiversityWeight+
+      x.evidenceR*V100_CALIBRATION_CONFIG.independentEvidenceWeight+
+      x.recentR*V100_CALIBRATION_CONFIG.recentWeight+
+      x.recoveryR*V100_CALIBRATION_CONFIG.recoveryWeight+
+      x.consensusR*V100_CALIBRATION_CONFIG.consensusWeight;
+    // Stable formula signal may refine but cannot create a winner by itself.
+    const stableBlend=independent*.88+stableRelative*.12;
+    const tieNoise=(v100Hash(`${V100_CALIBRATION_CONFIG.tieSeed}|${lotteryName||''}|${current?.date||''}|${x.digit}`)-.5)*.20;
+    x.rawFinal=Math.max(0,Math.min(100,stableBlend+tieNoise));
+    x.finalScore=x.rawFinal;
+  });
+  const diag=v100CollapseDiagnostic(raw);
+  // If the previous pipeline is collapsed into 0/1/2, do not copy its ordering.
+  // Re-rank exclusively from calibrated evidence; this is an anti-bias repair,
+  // not a forced exclusion of low digits.
+  const ranked=raw.slice().sort((a,b)=>b.finalScore-a.finalScore||b.transitionR-a.transitionR||b.diversityR-a.diversityR||b.stateReadR-a.stateReadR||a.digit-b.digit);
+  const oldRowsByDigit={};rows.forEach(r=>oldRowsByDigit[Number(r.digit)]=r);
+  const calibratedRows=ranked.map((x,i)=>{
+    const old=oldRowsByDigit[x.digit]||{};
+    return{...old,selectionQuality:round2(x.finalScore),v100Calibration:{rank:i+1,finalScore:round2(x.finalScore),transition:round2(x.transitionR),state:round2(x.stateReadR),recent:round2(x.recentR),recovery:round2(x.recoveryR),formulaDiversity:round2(x.diversityR),independentEvidence:round2(x.evidenceR),consensus:round2(x.consensusR),stableCapped:round2(Math.max(0,Math.min(100,50+(x.stable-50)*V100_CALIBRATION_CONFIG.stableCap))),inheritedScore:round2(x.inherited),groups:v100LatestFormulaGroups(auditData,formulaNames).filter(g=>g.pred.includes(x.digit)).map(g=>g.key),antiBiasCollapse:diag.collapsed}};
+  });
+  const top3=calibratedRows.slice(0,3).map(x=>Number(x.digit)),selected=calibratedRows.slice(0,2);
+  const margin=selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0;
+  const trace=calibratedRows.map(r=>({digit:r.digit,rank:r.v100Calibration.rank,final:r.selectionQuality,transition:r.v100Calibration.transition,state:r.v100Calibration.state,recent:r.v100Calibration.recent,recovery:r.v100Calibration.recovery,formulaDiversity:r.v100Calibration.formulaDiversity,evidence:r.v100Calibration.independentEvidence,consensus:r.v100Calibration.consensus,stableCapped:r.v100Calibration.stableCapped,inherited:r.v100Calibration.inheritedScore}));
+  return{...base,rows:calibratedRows,top3,selected,margin,
+    v100Calibration:{version:'V100 Calibrated Precision / Anti-Bias Arbitration',independentEvidenceOnly:true,stabilityCapped:true,duplicateFormulaGroups:groups.map(g=>({key:g.key,count:g.names.length,names:g.names})),collapse:diag,trace,weights:{transition:V100_CALIBRATION_CONFIG.transitionWeight,state:V100_CALIBRATION_CONFIG.stateWeight,formulaDiversity:V100_CALIBRATION_CONFIG.formulaDiversityWeight,independentEvidence:V100_CALIBRATION_CONFIG.independentEvidenceWeight,recent:V100_CALIBRATION_CONFIG.recentWeight,recovery:V100_CALIBRATION_CONFIG.recoveryWeight,consensus:V100_CALIBRATION_CONFIG.consensusWeight},principles:['NO-INHERITED-SELECTIONQUALITY','NO-LOW-DIGIT-TIE-BIAS','DUPLICATE-FORMULA-DE-DUPLICATION','STABILITY-CAPPED-NOT-AUTHORITY','TARGETABLE-DIGITS-FIRST','RELATIVE-0-9-CALIBRATION','RANK-1-NOT-AUTOMATIC','NO-FORMULA-BODY-CHANGES']},
+    finalGate:{...(base.finalGate||{}),v100Calibration:true,v100IndependentRecalibration:true,v100DuplicateFormulaDedup:true,v100StabilityCapped:true,v100LowDigitBiasGuard:true,v100Relative0to9Calibration:true}};
+}
+
 function buildDigitIntelligenceV75(records,auditData,formulaNames,options={}){
   const v74=buildDigitIntelligenceV74(records,auditData,formulaNames,options);
   return v75Finalize(v74,records,auditData,formulaNames);
@@ -7932,16 +8066,14 @@ function runEngineCore(){
          *** V52 — LEGACY TARGET-PAIR FORMULA REMOVED ***
       ----------------------------------------- */
       let intelligence=v90PPApply(v90PlusApply(v88ApplyFairArbitration(v75ReconcileAfterFinalLayer(v87FinalFairArbitration(v55ApplyMainPrecisionLayer(buildDigitIntelligenceV78(resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames)),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames);
-      if(auditDataMap[lotteryName]&&intelligence?.formulaGovernor){
-        auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
-      }
       const governedV94=v94ApplyMainGovernor(intelligence,resultRecs);
       const governedV96=v96ApplyStableFormulaCore(governedV94,resultRecs,auditDataMap[lotteryName],formulaNames);
       const governedV97=v97ApplyPrecisionDecision(governedV96,resultRecs);
       const governedV98=v98ApplyRankTransition(governedV97,resultRecs,auditDataMap[lotteryName],formulaNames);
       const governedV99=v99ApplyConditionalDecision(governedV98,resultRecs,auditDataMap[lotteryName],formulaNames);
-      const finalTop3=Array.isArray(governedV99.top3)?governedV99.top3.map(Number).filter(Number.isFinite):[];
-      intelligence=governedV99;
+      const governedV100=v100ApplyCalibration(governedV99,resultRecs,auditDataMap[lotteryName],formulaNames,lotteryName);
+      const finalTop3=Array.isArray(governedV100.top3)?governedV100.top3.map(Number).filter(Number.isFinite):[];
+      intelligence=governedV100;
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
