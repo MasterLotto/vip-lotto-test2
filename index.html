@@ -4638,8 +4638,142 @@ function v98ApplyRankTransition(intelligence,records,auditData,formulaNames){
   }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.v98RankTransition.rankSignal-a.v98RankTransition.rankSignal||a.digit-b.digit);
   const top3=enriched.slice(0,3).map(x=>x.digit),selected=top3.slice(0,2).map(d=>enriched.find(x=>x.digit===d)).filter(Boolean);
   return{...base,rows:enriched,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
-    v98RankTransition:{version:'V98 Rank-Transition Intelligence',currentRanks:profile.current.map(x=>({rank:x.rank,name:x.name,metric:round2(x.metric)})),rankSlots:profile.slot,formulaTransition:profile.formula,rank1vs23:{rank1:round2(rank1),bestRank2or3:round2(best23),pressure:round2(slotPressure)},principles:['RANK-1-IS-NOT-AUTOMATIC-NEXT-ROUND-WINNER','CHRONOLOGICAL-OOS-RANK-TRANSITIONS','RANK-2-3-CHALLENGER-RECOVERY','BOUNDED-DIGIT-ADJUSTMENT','NO-NEW-FORMULAS']},
+    v98RankTransition:{version:'V99 Conditional State-Matched Decision Engine + V98 Rank-Transition Intelligence',currentRanks:profile.current.map(x=>({rank:x.rank,name:x.name,metric:round2(x.metric)})),rankSlots:profile.slot,formulaTransition:profile.formula,rank1vs23:{rank1:round2(rank1),bestRank2or3:round2(best23),pressure:round2(slotPressure)},principles:['RANK-1-IS-NOT-AUTOMATIC-NEXT-ROUND-WINNER','CHRONOLOGICAL-OOS-RANK-TRANSITIONS','RANK-2-3-CHALLENGER-RECOVERY','BOUNDED-DIGIT-ADJUSTMENT','NO-NEW-FORMULAS']},
     finalGate:{...(base.finalGate||{}),v98RankTransition:true,v98Rank1NotAutomatic:true,v98ChronologicalRankTransition:true,v98ChallengerRecovery:true,v98BoundedAdjustment:true}};
+}
+
+/* =========================================================
+   V99 CONDITIONAL DECISION ENGINE — STATE-MATCHED NEXT-ROUND SELECTION
+   Backend-only. No new formulas. No UI/card/CSS changes.
+   Goal: stop historical hit-rate / maximum-stability / raw-consensus
+   from masquerading as next-round readiness.
+   Principles:
+   - score the targetable digits, never the hundreds-only digit
+   - measure partial-vs-full digit coverage instead of binary hit only
+   - learn formula -> digit next-round transitions chronologically
+   - match historical states to the CURRENT state before trusting a transition
+   - shrink small samples toward neutral instead of overfitting
+   - use diminishing returns for correlated consensus
+   - let rank 2/3 beat rank 1 only when current-state evidence earns it
+========================================================= */
+const V99_CONDITIONAL_CONFIG=Object.freeze({
+  minHistory:18,stateWindow:24,shortWindow:3,midWindow:9,longWindow:18,
+  nearestK:8,priorStrength:6,formulaWeight:.34,stateWeight:.36,
+  recentWeight:.12,qualityWeight:.10,antiConsensusWeight:.08,
+  maxAdjustment:7.5,challengerEdge:2.5,fullHitWeight:1.0,partialHitWeight:.48,
+  supportDiminish:[1,.56,.34,.22,.15],rankWeights:[1,.90,.82,.68,.56],
+  stateDistanceCap:2.75
+});
+function v99TargetDigits(rec){
+  const top=String(rec?.n3??'').split('').map(Number),bot=String(rec?.n2??'').split('').map(Number);
+  return [...new Set([...top.slice(1),...bot].filter(d=>Number.isInteger(d)&&d>=0&&d<=9))];
+}
+function v99DigitHitStrength(d,target){
+  return v99TargetDigits(target).includes(Number(d))?100:0;
+}
+function v99PairCoverage(pred,target){
+  const p=[...new Set((Array.isArray(pred)?pred:[]).map(Number).filter(d=>Number.isInteger(d)&&d>=0&&d<=9))].slice(0,2),t=v99TargetDigits(target);
+  if(!p.length||!t.length)return 0;
+  const hit=p.filter(d=>t.includes(d)).length;
+  return hit>=2?100:hit===1?48:0;
+}
+function v99State(records,digit){
+  const arr=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const rate=w=>{const x=arr.slice(-w),n=x.length;return n?x.filter(r=>v99DigitHitStrength(digit,r)>0).length/n*100:50;};
+  let gap=arr.length+1;for(let i=arr.length-1;i>=0;i--){if(v99DigitHitStrength(digit,arr[i])>0){gap=arr.length-1-i;break;}}
+  const s=rate(Math.min(V99_CONDITIONAL_CONFIG.shortWindow,arr.length)),m=rate(Math.min(V99_CONDITIONAL_CONFIG.midWindow,arr.length)),l=rate(Math.min(V99_CONDITIONAL_CONFIG.longWindow,arr.length));
+  return{short:s,mid:m,long:l,momentum:s-l,gap:Math.min(12,gap)};
+}
+function v99StateFrom(arr,digit){
+  const a=Array.isArray(arr)?arr:[], rate=w=>{const x=a.slice(-w),n=x.length;return n?x.filter(r=>v99DigitHitStrength(digit,r)>0).length/n*100:50;};
+  let gap=a.length+1;for(let i=a.length-1;i>=0;i--){if(v99DigitHitStrength(digit,a[i])>0){gap=a.length-1-i;break;}}
+  const s=rate(Math.min(V99_CONDITIONAL_CONFIG.shortWindow,a.length)),m=rate(Math.min(V99_CONDITIONAL_CONFIG.midWindow,a.length)),l=rate(Math.min(V99_CONDITIONAL_CONFIG.longWindow,a.length));
+  return{short:s,mid:m,long:l,momentum:s-l,gap:Math.min(12,gap)};
+}
+function v99StateDistance(a,b){
+  const ds=Math.abs(a.short-b.short)/100,dm=Math.abs(a.mid-b.mid)/100,dl=Math.abs(a.long-b.long)/100,
+    dmo=Math.abs(a.momentum-b.momentum)/100,dg=Math.abs(a.gap-b.gap)/12;
+  return Math.min(V99_CONDITIONAL_CONFIG.stateDistanceCap,ds*.22+dm*.22+dl*.24+dmo*.18+dg*.14);
+}
+function v99FormulaTransitionQuality(history){
+  const h=Array.isArray(history)?history:[];if(!h.length)return{strength:50,full:50,partial:50,recent:50,sample:0};
+  let full=0,partial=0,recent=0,recentN=0;
+  h.forEach((x,i)=>{
+    const strength=Number.isFinite(x.v99Strength)?x.v99Strength:(x.hit?100:0);partial+=strength;
+    if(strength>=99)full++;if(i>=Math.max(0,h.length-8)){recent+=strength;recentN++;}
+  });
+  const n=h.length,fullRate=full/n*100,partialRate=partial/n,recentRate=recent/(recentN||1),
+    strength=partialRate*.55+fullRate*.20+recentRate*.25;
+  return{strength,full:fullRate,partial:partialRate,recent:recentRate,sample:n};
+}
+function v99BuildTransitionData(records,formulaNames){
+  const arr=getResultRecords(records).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const list=(Array.isArray(formulaNames)?formulaNames:[]).filter(n=>allFormulas[n]),byFormula={};list.forEach(n=>byFormula[n]=[]);
+  const start=Math.max(V99_CONDITIONAL_CONFIG.longWindow,arr.length-V99_CONDITIONAL_CONFIG.stateWindow-1);
+  for(let i=start;i<arr.length-1;i++){
+    const source=arr.slice(0,i+1),target=arr[i+1];
+    list.forEach(name=>{
+      const h=getFormulaHistory(source,name),last=h[h.length-1];if(!last||!Array.isArray(last.predicted))return;
+      const pred=[...new Set(last.predicted.map(Number).filter(d=>d>=0&&d<=9))].slice(0,2);
+      pred.forEach(d=>byFormula[name].push({digit:d,state:v99StateFrom(source,d),strength:v99DigitHitStrength(d,target),pairStrength:v99PairCoverage(pred,target),date:target.date}));
+    });
+  }
+  return{byFormula};
+}
+function v99MatchedTransition(events,currentState){
+  const e=Array.isArray(events)?events:[];if(!e.length)return{score:50,sample:0,nearest:[]};
+  const ranked=e.map(x=>({...x,distance:v99StateDistance(currentState,x.state)})).sort((a,b)=>a.distance-b.distance);
+  const nearest=ranked.slice(0,V99_CONDITIONAL_CONFIG.nearestK).filter(x=>x.distance<=V99_CONDITIONAL_CONFIG.stateDistanceCap);
+  if(!nearest.length)return{score:50,sample:0,nearest:[]};
+  let wsum=0,ysum=0;nearest.forEach((x,i)=>{const recency=1-(i/Math.max(1,nearest.length))*0.25,w=Math.exp(-2.15*x.distance)*recency;wsum+=w;ysum+=w*x.strength;});
+  const raw=wsum?ysum/wsum:50,prior=e.reduce((a,x)=>a+x.strength,0)/e.length;
+  const shrunk=(raw*nearest.length+prior*V99_CONDITIONAL_CONFIG.priorStrength)/(nearest.length+V99_CONDITIONAL_CONFIG.priorStrength);
+  return{score:shrunk,sample:nearest.length,nearest:nearest.slice(0,5).map(x=>({distance:round2(x.distance),strength:round2(x.strength),date:x.date}))};
+}
+function v99RankConditionalProfile(records,auditData,formulaNames,currentState){
+  const list=(Array.isArray(formulaNames)?formulaNames:[]).filter(n=>allFormulas[n]);
+  const ranked=v98CurrentRanks(auditData,list),rankMap={};ranked.forEach(x=>rankMap[x.name]=x.rank);
+  const trans=v99BuildTransitionData(records,list),formula={};
+  list.forEach(name=>{
+    const h=getFormulaHistory(getResultRecords(records).filter(isResultRecord),name),q=v99FormulaTransitionQuality(h),rank=rankMap[name]||list.length+1;
+    const ev=trans.byFormula[name]||[], byDigit={};
+    [...new Set(ev.map(x=>x.digit))].forEach(d=>byDigit[d]=v99MatchedTransition(ev.filter(x=>x.digit===d),currentState(Number(d))));
+    formula[name]={rank,quality:q,byDigit};
+  });
+  return{ranked,formula};
+}
+function v99ApplyConditionalDecision(intelligence,records,auditData,formulaNames){
+  const base=intelligence||{},rows=Array.isArray(base.rows)?base.rows:[],arr=getResultRecords(records).filter(isResultRecord);
+  if(rows.length!==10||arr.length<V99_CONDITIONAL_CONFIG.minHistory)return base;
+  const currentState=d=>v99State(arr,d),profile=v99RankConditionalProfile(arr,auditData,formulaNames,currentState), support={};
+  Object.keys(profile.formula).forEach(name=>{
+    const f=profile.formula[name],audit=auditData?.[name],pred=[...new Set((audit?.latestDigits||[]).map(Number).filter(d=>d>=0&&d<=9))].slice(0,2);
+    pred.forEach(d=>{
+      const stateMatch=f.byDigit[d]||{score:50,sample:0},rankWeight=V99_CONDITIONAL_CONFIG.rankWeights[Math.min(f.rank-1,4)]||.5,
+        quality=v99Clamp(f.quality.strength),transition=v99Clamp(stateMatch.score),weight=(.30+.70*rankWeight)*(0.58+quality/250)*(0.55+transition/180);
+      if(!support[d])support[d]=[];support[d].push({name,rank:f.rank,weight,quality,transition,sample:stateMatch.sample});
+    });
+  });
+  const rawByDigit={};rows.forEach(row=>{
+    const d=Number(row.digit),items=(support[d]||[]).slice().sort((a,b)=>b.weight-a.weight),sum=items.reduce((a,x,i)=>a+x.weight*(V99_CONDITIONAL_CONFIG.supportDiminish[i]||.1),0),
+      best=items.length?avg(items.slice(0,3).map(x=>x.transition)):50,quality=items.length?avg(items.slice(0,3).map(x=>x.quality)):50,
+      matched=items.length?avg(items.slice(0,3).map(x=>x.sample>0?x.transition:50)):50;
+    rawByDigit[d]={sum,best,quality,matched,items};
+  });
+  const sorted=rows.map(row=>{const d=Number(row.digit),r=rawByDigit[d]||{sum:0,best:50,quality:50,matched:50,items:[]},old=v99Clamp(row.selectionQuality??row.score??50),
+      readiness=v99Clamp(r.best*.50+r.matched*.18+r.quality*.17+v99Clamp(row?.v97Precision?.readiness??50)*.15),
+      consensusPenalty=Math.max(0,(r.items.length-1)*4)+Math.max(0,(Number(row.agreement)||0)-2)*1.25,
+      adjustmentRaw=(readiness-50)*.075+(Math.min(1.5,r.sum)-.45)*2.25-consensusPenalty,
+      adjustment=Math.max(-V99_CONDITIONAL_CONFIG.maxAdjustment,Math.min(V99_CONDITIONAL_CONFIG.maxAdjustment,adjustmentRaw)),final=v99Clamp(old+adjustment,0,100);
+    return{...row,selectionQuality:round2(final),v99Conditional:{state:currentState(d),transition:round2(r.best),matchedTransition:round2(r.matched),formulaQuality:round2(r.quality),support:round2(r.sum),supportCount:r.items.length,consensusPenalty:round2(consensusPenalty),readiness:round2(readiness),previousQuality:round2(old),adjustment:round2(final-old),contributors:r.items.slice(0,5).map(x=>({name:x.name,rank:x.rank,weight:round2(x.weight),quality:round2(x.quality),transition:round2(x.transition),sample:x.sample}))}};
+  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.v99Conditional.readiness-a.v99Conditional.readiness||a.digit-b.digit);
+  const top3=sorted.slice(0,3).map(x=>x.digit),selected=top3.slice(0,2).map(d=>sorted.find(x=>x.digit===d)).filter(Boolean);
+  const rank1Digits=[];Object.values(profile.formula).filter(x=>x.rank===1).forEach(f=>Object.keys(f.byDigit||{}).forEach(d=>rank1Digits.push(Number(d))));
+  const rank23Digits=[];Object.values(profile.formula).filter(x=>x.rank===2||x.rank===3).forEach(f=>Object.keys(f.byDigit||{}).forEach(d=>rank23Digits.push(Number(d))));
+  const rank1Score=rank1Digits.length?avg(rank1Digits.map(d=>rawByDigit[d]?.best??50)):50,rank23Score=rank23Digits.length?avg(rank23Digits.map(d=>rawByDigit[d]?.best??50)):50;
+  return{...base,rows:sorted,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
+    v99ConditionalDecision:{version:'V99 Conditional State-Matched Decision Engine',rank1NextRoundScore:round2(rank1Score),rank23NextRoundScore:round2(rank23Score),challengerEdge:round2(rank23Score-rank1Score),rank1NotAutomatic:rank23Score-rank1Score>=V99_CONDITIONAL_CONFIG.challengerEdge,rankProfile:profile.ranked.map(x=>({rank:x.rank,name:x.name,metric:round2(x.metric)})),principles:['TARGETABLE-DIGITS-FIRST','PARTIAL-VS-FULL-HIT','STATE-MATCHED-TRANSITION','SHRINKAGE-AGAINST-OVERFIT','CORRELATED-CONSENSUS-DAMPING','RANK-1-NOT-AUTOMATIC','BOUNDED-ADJUSTMENT','NO-NEW-FORMULAS']},
+    finalGate:{...(base.finalGate||{}),v99ConditionalDecision:true,v99TargetableDigitsFirst:true,v99StateMatchedTransition:true,v99Shrinkage:true,v99ConsensusDamping:true,v99Rank1NotAutomatic:true,v99BoundedAdjustment:true}};
 }
 
 function buildDigitIntelligenceV75(records,auditData,formulaNames,options={}){
@@ -7805,8 +7939,9 @@ function runEngineCore(){
       const governedV96=v96ApplyStableFormulaCore(governedV94,resultRecs,auditDataMap[lotteryName],formulaNames);
       const governedV97=v97ApplyPrecisionDecision(governedV96,resultRecs);
       const governedV98=v98ApplyRankTransition(governedV97,resultRecs,auditDataMap[lotteryName],formulaNames);
-      const finalTop3=Array.isArray(governedV98.top3)?governedV98.top3.map(Number).filter(Number.isFinite):[];
-      intelligence=governedV98;
+      const governedV99=v99ApplyConditionalDecision(governedV98,resultRecs,auditDataMap[lotteryName],formulaNames);
+      const finalTop3=Array.isArray(governedV99.top3)?governedV99.top3.map(Number).filter(Number.isFinite):[];
+      intelligence=governedV99;
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
@@ -8537,7 +8672,7 @@ window.addEventListener(
     }
   });
 window.__V91_PLUSPLUS_AUDIT__={
-  version:'V98 Rank-Transition Intelligence + V97 Precision Decision + V96 Stable Formula Core + M2D Precision Upgrade',
+  version:'V99 Conditional State-Matched Decision + V98 Rank-Transition Intelligence + V97 Precision Decision + V96 Stable Formula Core + M2D Precision Upgrade',
   base:'V54 Plus+ presentation/formula/card contract',
   brain:'V90 Plus / V90 Plus+ evidence-resolution stack',
   flagRouter:'deterministic-market-first-v91',
