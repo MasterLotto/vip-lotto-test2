@@ -1194,25 +1194,30 @@ function v57ThaiBuildSpecialTop(records){
 ========================================================= */
 function getLotteryFlag(name,displayTitle){
   /* =======================================================
-     V91 PLUS++ — DETERMINISTIC MARKET FLAG ROUTER
-     Presentation-only. Market identity wins over time-of-day words.
-     Both raw dataset name and canonical display title are evaluated.
-     No prediction formula, score, pair, or ranking is touched here.
+     V91 PLUS++ — FINAL FLAG RESOLVER / SINGLE SOURCE OF TRUTH
+     Presentation-only. No formula, score, pair, ranking, or data logic.
+     IMPORTANT: the visible card must never trust a stale card.flag value.
+     Resolve from BOTH raw dataset name and display title.
+     V54-compatible market precedence is preserved, with explicit
+     canonical session locks for Nikkei / China / Hang Seng / Dow Jones.
   ======================================================= */
   const norm=v=>String(v??'')
     .replace(/[\u200B-\u200D\uFEFF\u2060\u2063]/g,'')
     .trim()
     .toLowerCase()
+    .normalize('NFC')
     .replace(/\s+/g,'');
-  const raw=norm(name), display=norm(displayTitle);
+  const raw=norm(name);
+  const display=norm(displayTitle);
   const names=[raw,display].filter(Boolean);
   const has=(...tokens)=>names.some(v=>tokens.some(t=>v.includes(norm(t))));
   const exact=(...tokens)=>names.some(v=>tokens.some(t=>v===norm(t)));
   if(!names.length)return'🌐';
 
-  /* Hard canonical sessions first. */
+  /* 1) Hard canonical sessions — exact market identity wins first. */
   const canonical={
     'นิเคอิเช้า':'🇯🇵','นิเคอิบ่าย':'🇯🇵','นิเคอิvipเช้า':'🇯🇵','นิเคอิvipบ่าย':'🇯🇵',
+    'นิเคอิปกติเช้า':'🇯🇵','นิเคอิปกติบ่าย':'🇯🇵','นิเคอิปกติ':'🇯🇵','นิเคอิvip':'🇯🇵',
     'หุ้นนิเคอิเช้า':'🇯🇵','หุ้นนิเคอิบ่าย':'🇯🇵','หุ้นนิเคอิvipเช้า':'🇯🇵','หุ้นนิเคอิvipบ่าย':'🇯🇵',
     'นิกเคอิเช้า':'🇯🇵','นิกเคอิบ่าย':'🇯🇵','นิกเคอิvipเช้า':'🇯🇵','นิกเคอิvipบ่าย':'🇯🇵',
     'จีนเช้า':'🇨🇳','จีนบ่าย':'🇨🇳','หุ้นจีนเช้า':'🇨🇳','หุ้นจีนบ่าย':'🇨🇳',
@@ -1223,37 +1228,26 @@ function getLotteryFlag(name,displayTitle){
   };
   for(const v of names){if(canonical[v])return canonical[v];}
 
-  /* Thailand — strong market identifiers only. */
-  if(has('หุ้นไทย','ตลาดหุ้นไทย','ไทยเช้า','ไทยเที่ยง','ไทยบ่าย','ไทยเย็น',
-         'รัฐบาล','รัฐบาลไทย','ออมสิน','ธกส','หวยหุ้นไทย','thai stock','thailand'))return'🇹🇭';
-
-  /* Vietnam / Hanoi. */
-  if(has('ฮานอย','เวียดนาม','hanoi','vietnam'))return'🇻🇳';
-
-  /* Laos. */
-  if(has('ลาว','ประชาชนลาว','laos','lao'))return'🇱🇦';
-
-  /* Japan / Nikkei. Never infer Japan from generic เช้า/บ่าย alone. */
+  /* 2) Strong market identifiers. */
   if(has('นิเคอิ','นิกเคอิ','ญี่ปุ่น','nikkei','japan') ||
      names.some(v=>/(?:^|หุ้น)ki(?:vip)?(?:เช้า|บ่าย)?$/.test(v)))return'🇯🇵';
-
-  /* Hong Kong / China. */
   if(has('ฮั่งเส็ง','ฮ่องกง','hangseng','hang seng','hongkong','hong kong'))return'🇭🇰';
   if(has('จีน','china','shanghai','หุ้นจีน'))return'🇨🇳';
-
-  /* Other markets. */
-  if(has('ดาวโจนส์','อเมริกา','usa','unitedstates','dowjones'))return'🇺🇸';
+  if(has('ดาวโจนส์','ดาวโจนส์สตาร์','อเมริกา','สหรัฐ','usa','unitedstates','unitedkingdom') && !has('อังกฤษ','uk'))return'🇺🇸';
   if(has('ไต้หวัน','taiwan'))return'🇹🇼';
   if(has('เกาหลี','korea','kospi'))return'🇰🇷';
   if(has('สิงคโปร์','singapore','sti'))return'🇸🇬';
   if(has('รัสเซีย','russia'))return'🇷🇺';
-  if(has('เยอรมัน','germany','dax'))return'🇩🇪';
-  if(has('อังกฤษ','uk','unitedkingdom','ftse'))return'🇬🇧';
+  if(has('เยอรมัน','เยอรมนี','germany','german','dax'))return'🇩🇪';
+  if(has('อังกฤษ','สหราชอาณาจักร','uk','unitedkingdom','england','ftse'))return'🇬🇧';
   if(has('อินเดีย','india','sensex','nifty'))return'🇮🇳';
   if(has('อียิปต์','egypt'))return'🇪🇬';
+  if(has('ฮานอย','เวียดนาม','hanoi','vietnam'))return'🇻🇳';
+  if(has('ลาว','ประชาชนลาว','laos','lao'))return'🇱🇦';
+  if(has('หุ้นไทย','ตลาดหุ้นไทย','ไทย','รัฐบาล','รัฐบาลไทย','ออมสิน','ธกส','หวยหุ้นไทย','thai','thailand'))return'🇹🇭';
   if(has('มาเลย์','มาเลเซีย','มาเล','malaysia','malay'))return'🇲🇾';
 
-  /* Generic time-of-day terms are deliberately NOT country signals. */
+  /* 3) Generic time-of-day alone is intentionally NOT a country signal. */
   return'🌐';
 }
 /* =========================================================
@@ -1272,6 +1266,29 @@ const V91_FLAG_CASES=Object.freeze([
 const V91_FLAG_AUDIT=V91_FLAG_CASES.map(([input,expected])=>({input,expected,actual:getLotteryFlag(input),pass:getLotteryFlag(input)===expected}));
 const V91_FLAG_AUDIT_PASS=V91_FLAG_AUDIT.every(x=>x.pass);
 
+/* =========================================================
+   V91 FINAL FLAG REGRESSION — explicit visible-title cases
+   This is diagnostic only; it never changes prediction output.
+========================================================= */
+const V91_FINAL_FLAG_CASES=Object.freeze([
+  ['นิเคอิ เช้า','🇯🇵'],['นิเคอิ บ่าย','🇯🇵'],
+  ['นิเคอิ VIP เช้า','🇯🇵'],['นิเคอิ VIP บ่าย','🇯🇵'],
+  ['นิเคอิ ปกติ เช้า','🇯🇵'],['นิเคอิ ปกติ บ่าย','🇯🇵'],
+  ['หุ้นนิเคอิ เช้า','🇯🇵'],['หุ้นนิเคอิ VIP เช้า','🇯🇵'],
+  ['นิกเคอิ VIP บ่าย','🇯🇵'],['KI VIP เช้า','🇯🇵'],
+  ['จีน เช้า','🇨🇳'],['จีน บ่าย','🇨🇳'],
+  ['หุ้นจีน เช้า','🇨🇳'],['ฮั่งเส็ง เช้า','🇭🇰'],
+  ['ฮั่งเส็ง บ่าย','🇭🇰'],['ดาวโจนส์','🇺🇸'],
+  ['ไต้หวัน','🇹🇼'],['เกาหลี','🇰🇷'],['สิงคโปร์','🇸🇬'],
+  ['รัสเซีย','🇷🇺'],['เยอรมัน','🇩🇪'],['อังกฤษ','🇬🇧'],
+  ['อินเดีย','🇮🇳'],['อียิปต์','🇪🇬'],['ฮานอย VIP','🇻🇳'],
+  ['ลาว VIP','🇱🇦'],['หุ้นไทย','🇹🇭'],['มาเลเซีย','🇲🇾'],
+  ['สุ่มเช้า','🌐']
+]);
+const V91_FINAL_FLAG_AUDIT=V91_FINAL_FLAG_CASES.map(([input,expected])=>({
+  input,expected,actual:getLotteryFlag(input),pass:getLotteryFlag(input)===expected
+}));
+const V91_FINAL_FLAG_AUDIT_PASS=V91_FINAL_FLAG_AUDIT.every(x=>x.pass);
 /* =========================================================
    THAI DATE
 ========================================================= */
@@ -5668,6 +5685,20 @@ window.__V91_CARD_ORDER_AUDIT__={
   copyPayloadOrder:'UNCHANGED',
   rankClassPreserved:true
 };
+window.__V91_FLAG_FINAL_AUDIT__={
+  version:'V91 Plus++ — Final Flag Lock',
+  scope:'presentation flag layer only',
+  resolver:'single-source-of-truth',
+  sourcePriority:'raw lotteryName + displayTitle',
+  nikkeiSessionsLocked:true,
+  v54ReferenceLogicPreserved:true,
+  staleCardFlagIgnored:true,
+  predictionLogicTouched:false,
+  formulas:'UNCHANGED',
+  scores:'UNCHANGED',
+  pairs:'UNCHANGED',
+  ranking:'UNCHANGED'
+};
 
 /* =========================================================
    CARD HTML
@@ -5731,6 +5762,8 @@ function renderCardHTML(
   /* V90.1 FLAG HARDENING — resolve the flag again from the canonical display
      title at render time. This prevents a stale/misclassified card.flag value
      from reaching the visible card. */
+  /* V91 FLAG FINAL OUTPUT LOCK — visible card resolves from the actual
+     raw dataset name + display title at the last possible presentation step. */
   const resolvedFlag=getLotteryFlag(
     card.lotteryName||'',
     card.displayTitle||''
@@ -8998,6 +9031,15 @@ cardAppearance:'UNCHANGED',
 purpose:'FULL_AUDITED_ADAPTIVE_RADAR_V90_PLUS_PLUS'
 };
 })();
+
+window.__V91_PLUSPLUS_FLAG_AUDIT__={
+  version:'V91 Plus++ Final Flag Lock',
+  cases:V91_FINAL_FLAG_CASES.length,
+  pass:V91_FINAL_FLAG_AUDIT_PASS,
+  failed:V91_FINAL_FLAG_AUDIT.filter(x=>!x.pass).map(x=>x.input),
+  rule:'visible render resolves flag from lotteryName + displayTitle',
+  predictionLayer:'UNCHANGED'
+};
 </script>
 <!-- V91 M2D AUDIT: session-aware 12:01/16:30 separation; 240-round weighted history; chronological OOS digit/pair replay; bounded cross-session evidence; display-only ascending pair ordering. -->
 <!-- V90 PLUS+ SOURCE AUDIT: 58 lottery types; 1,735 valid result records; 5 no-result entries excluded; 15 locked formulas preserved byte-for-byte; 5 new adaptive formulas added. -->
