@@ -1058,18 +1058,21 @@ function cleanDatasetKey(rawName){
   return String(rawName||'').split('\u2063')[0].trim();
 }
 function forceNikkeiVisibleTitle(value){
+  /* V105 ROOT-CAUSE FIX
+     Canonicalize Nikkei at the final display boundary.
+     Do NOT depend on the upstream alias/formatting path.
+     Any leading generic "หุ้น" token is removed only for Nikkei names.
+  */
   let s=String(value||'')
     .replace(/[\u200B-\u200D\uFEFF]/g,'')
+    .replace(/\u2063/g,'')
     .replace(/\u00A0/g,' ')
     .trim();
 
-  // FINAL NIKKEI DISPLAY RULE:
-  // The visible card title must never contain the generic prefix "หุ้น".
-  // Handle attached/spaced/zero-width variants defensively at the final
-  // render boundary, regardless of the upstream dataset alias.
-  const compact=s.replace(/[\s\u00A0]/g,'');
-  if(/^หุ้น(?:นิเคอิ|นิกเคอิ)/i.test(compact)){
-    const isVip=/vip|พิเศษ/i.test(compact);
+  const compact=s.replace(/[\s\u00A0]/g,'').toLowerCase();
+  const isNikkei=compact.includes('นิเคอิ')||compact.includes('นิกเคอิ')||compact.includes('nikkei');
+  if(isNikkei){
+    const isVip=compact.includes('vip')||compact.includes('พิเศษ');
     const isMorning=compact.includes('เช้า');
     const isAfternoon=compact.includes('บ่าย')||compact.includes('เย็น');
     if(isVip){
@@ -1081,12 +1084,17 @@ function forceNikkeiVisibleTitle(value){
     if(isAfternoon)return 'นิเคอิ บ่าย';
     return 'นิเคอิ';
   }
-
-  // Also normalize any remaining leading "หุ้น" when it is immediately
-  // followed by a Nikkei alias after whitespace cleanup.
-  s=s.replace(/^หุ้น\s*(?=นิเคอิ|นิกเคอิ)/,'').trim();
-  return s;
+  return s.replace(/^หุ้น\s*/,'').trim();
 }
+
+/* V105: canonical title from the card's actual lotteryName.
+   This is intentionally independent of card.displayTitle, because a stale
+   upstream displayTitle was the path that allowed "หุ้นนิเคอิ ..." to survive. */
+function canonicalCardVisibleTitle(card){
+  const source=card?.lotteryName||card?.displayTitle||'';
+  return forceNikkeiVisibleTitle(source);
+}
+
 
 function formatDisplayTitle(rawName){
   rawName=cleanDatasetKey(rawName);
@@ -6023,10 +6031,7 @@ function buildFormulaPrediction(
     lotteryName,
     fName,
     nextDate:p.nextDate,
-    displayTitle:
-      formatDisplayTitle(
-        lotteryName
-      ),
+    displayTitle:canonicalCardVisibleTitle({lotteryName}),
     flag:
       getLotteryFlag(
         lotteryName,
@@ -6132,7 +6137,12 @@ window.__V102_THAI_PAIR_RANK_DISPLAY__={
 };
 
 /* V103 DISPLAY AUDIT — Nikkei title invariant. */
-window.__V104_NIKKEI_TITLE_HARD_FIX__={version:'V104',rule:'Final render boundary strips leading หุ้น from every Nikkei title',singleScoreAuditCard:true};
+window.__V105_NIKKEI_TITLE_ROOT_CAUSE_FIX__={version:'V105',rule:'Nikkei title canonicalized from lotteryName and sanitized again after DOM insertion',singleScoreAuditCard:true,visiblePrefixForbidden:'หุ้น'};
+window.__V105_NIKKEI_TITLE_INVARIANT__={
+  sourceOfTruth:'card.lotteryName',
+  forbiddenVisiblePrefix:'หุ้น',
+  canonical:['นิเคอิ','นิเคอิ เช้า','นิเคอิ บ่าย','นิเคอิ VIP','นิเคอิ VIP เช้า','นิเคอิ VIP บ่าย']
+};
 window.__V103_NIKKEI_DISPLAY_AUDIT__={
   version:'V103',
   rule:'Nikkei card titles must never contain a leading generic หุ้น prefix',
@@ -6186,11 +6196,7 @@ function renderCardHTML(
   // FINAL DISPLAY TITLE GUARD: every rendered card goes through the canonical
   // formatter so stale/generated titles such as 'หุ้นนิเคอิ เช้า' can never
   // reach the visible card or its copy/capture payload.
-  let displayTitle=forceNikkeiVisibleTitle(
-    formatDisplayTitle(
-      card.displayTitle||card.lotteryName||''
-    )
-  );
+  let displayTitle=canonicalCardVisibleTitle(card);
   /*
      Audit presentation rule:
      Keep the card visually clean. Formula names, audit labels,
@@ -7046,6 +7052,22 @@ function renderFullUI(
     </div>
   `;
   $('result').innerHTML=html;
+  /* V105 FINAL DOM AUDIT: sanitize every visible Nikkei card title after the
+     HTML is actually inserted. This is the last boundary, so no stale title
+     from any upstream builder can leak into the rendered card. */
+  document.querySelectorAll('#result .prediction-card').forEach(cardEl=>{
+    const titleEl=cardEl.querySelector('.card-info b');
+    if(!titleEl)return;
+    const key=cardEl.getAttribute('data-card-key')||'';
+    let lotteryName='';
+    try{
+      const decoded=decodeURIComponent(key);
+      lotteryName=decoded.split('|||')[0]||'';
+    }catch(e){}
+    const visible=forceNikkeiVisibleTitle(lotteryName||titleEl.textContent||'');
+    if(/นิเคอิ|นิกเคอิ|nikkei/i.test(String(lotteryName||titleEl.textContent||'')))
+      titleEl.textContent=visible;
+  });
   renderManualCards();
   updateIndicator();
 }
@@ -9077,12 +9099,7 @@ function runEngineCore(){
             getNextDateStr(
               latestRec.date
             ),
-          displayTitle:
-            forceNikkeiVisibleTitle(
-              formatDisplayTitle(
-                lotteryName
-              )
-            ),
+          displayTitle:canonicalCardVisibleTitle({lotteryName}),
           flag:
             getLotteryFlag(
               lotteryName,
