@@ -5671,9 +5671,21 @@ function renderCardHTML(
   /* V90.1 FLAG HARDENING — resolve the flag again from the canonical display
      title at render time. This prevents a stale/misclassified card.flag value
      from reaching the visible card. */
-  const resolvedFlag=getLotteryFlag(
-    card.displayTitle||card.lotteryName||''
+  const flagSource=cleanDatasetKey(card.displayTitle||card.lotteryName||'');
+  const flagNorm=String(flagSource||'')
+    .replace(/[\u200B-\u200D\uFEFF\u2060\u2063]/g,'')
+    .toLowerCase()
+    .replace(/\s+/g,'');
+  /* FINAL NIKKEI RENDER GUARD — do not trust a stale card.flag value. */
+  const isNikkeiJapan=(
+    flagNorm.includes('นิเคอิ')||
+    flagNorm.includes('นิกเคอิ')||
+    flagNorm.includes('หุ้นนิเคอิ')||
+    flagNorm.includes('หุ้นนิกเคอิ')||
+    flagNorm.includes('ญี่ปุ่น')||
+    /^หุ้น?ki(?:vip)?(?:เช้า|บ่าย)?$/.test(flagNorm)
   );
+  const resolvedFlag=isNikkeiJapan?'🇯🇵':getLotteryFlag(flagSource);
   return`
   <div
     class="prediction-card ${isScore?'score-card':''} ${manual?'formula-selected':''}"
