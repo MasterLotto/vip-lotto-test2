@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+
 <title>Mester Lotto VIP+ — V94 Plus++ Maximum Precision + Myanmar 2D Specialized</title>
 <style>
 :root{
@@ -875,6 +876,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 <!-- V54 PLUS+ baseline: fixed 30-round Myanmar horizon + global reverse-pair coverage + selection-aware pair calibration -->
 <!-- V60 AUDIT: targetable-evidence alignment; TOP-3 protection; anti-false-positive selection; session schema guard; empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 
+
 <!-- V85 MAX PRECISION DECISION INTELLIGENCE (V84 + end-to-end OOS decision integrity)
      Added end-to-end chronological selection audit after V84, selection-conditioned precision,
      top-3 coverage, rank separation, beta shrinkage and bounded final decision adjustment.
@@ -904,6 +906,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
      V81: adaptive 5-slot formula candidate laboratory + two-standout ranking; no locked-formula mutation.
      Myanmar 2D: remains isolated on its specialized path.
 -->
+
 
 </head>
 <body>
@@ -1283,6 +1286,9 @@ function v95ThaiBuildSpecialTop(records){
 
 
 
+
+
+
 /* =========================================================
    FLAGS
 ========================================================= */
@@ -1300,23 +1306,28 @@ function getLotteryFlag(name,displayTitle){
     .toLowerCase()
     .replace(/\s+/g,'');
 
+
   const raw=norm(name);
   const display=norm(displayTitle);
   const names=[raw,display].filter(Boolean);
   if(!names.length)return'🌐';
+
 
   const has=(...tokens)=>names.some(v=>tokens.some(t=>v.includes(norm(t))));
   const anyTime=names.some(v=>v.includes('เช้า')||v.includes('บ่าย')||v.includes('เย็น'));
   const isChina=has('จีน','china','shanghai','หุ้นจีน');
   const isHongKong=has('ฮั่งเส็ง','ฮ่องกง','hangseng','hang seng','hongkong','hong kong');
 
+
   /* V54 exact principle: canonical Nikkei forms are Japan before any other rule. */
   if(has(
     'นิเคอิ','นิกเคอิ','หุ้นนิเคอิ','หุ้นนิกเคอิ','ญี่ปุ่น','nikkei','japan'
   ))return'🇯🇵';
 
+
   /* KI aliases used by the engine for the four Nikkei sessions. */
   if(names.some(v=>/(?:^|หุ้น)ki(?:vip)?(?:เช้า|บ่าย)?$/.test(v)))return'🇯🇵';
+
 
   /* Named markets must beat V54's generic time fallback. */
   if(has('หุ้นไทย','ตลาดหุ้นไทย','ไทยเช้า','ไทยเที่ยง','ไทยบ่าย','ไทยเย็น',
@@ -1336,6 +1347,7 @@ function getLotteryFlag(name,displayTitle){
   if(has('อียิปต์','egypt'))return'🇪🇬';
   if(has('มาเลย์','มาเลเซีย','มาเล','malaysia','malay'))return'🇲🇾';
 
+
   /*
      V54 compatibility fallback.
      In V54, an otherwise-unclassified morning/afternoon stock session was
@@ -1344,6 +1356,7 @@ function getLotteryFlag(name,displayTitle){
      Named markets above are deliberately excluded first.
   */
   if(anyTime&&!isChina&&!isHongKong)return'🇯🇵';
+
 
   return'🌐';
 }
@@ -1361,6 +1374,7 @@ const V91_FLAG_CASES=Object.freeze([
 ]);
 const V91_FLAG_AUDIT=V91_FLAG_CASES.map(([input,expected])=>({input,expected,actual:getLotteryFlag(input),pass:getLotteryFlag(input)===expected}));
 const V91_FLAG_AUDIT_PASS=V91_FLAG_AUDIT.every(x=>x.pass);
+
 
 /* =========================================================
    THAI DATE
@@ -2117,6 +2131,8 @@ function adaptiveWindowBlend(rates,weights){
   const den=ws.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0)||1;
   return clamp(rates.reduce((a,v,i)=>a+clamp(Number(v)||0,0,100)*(ws[i]||0),0)/den,0,100);
 }
+
+
 
 
 function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null,records=[]){
@@ -3078,7 +3094,7 @@ function buildEndToEndWalkForward(recs,auditData,formulaNames){
     });
     const shadow=buildDigitIntelligence(train,trainAudit,formulaNames,{skipEndToEnd:true});
     const selected=(shadow.selected||[]).map(x=>x.digit).slice(0,2);
-    const actual=[...String(target.n3||''),...String(target.n2||'')].map(Number).filter(Number.isFinite);
+    const actual=v94TargetSet(target);
     const top1Hit=selected.length>0&&actual.includes(selected[0]);
     const top2Hit=selected.length>1&&actual.includes(selected[1]);
     const hit=top1Hit||top2Hit;
@@ -3316,6 +3332,10 @@ function pairBayesPrecision(hits,total,priorRate=50,priorN=10){
 
 
 
+
+
+
+
 /* =========================================================
    V53.1 FINAL DECISION HARDENING
    - Evidence families prevent correlated evidence from being counted as
@@ -3365,6 +3385,10 @@ function targetSelectionGate(meta){
   if(conflict>60)gate*=.88;
   return clamp(gate,.62,1);
 }
+
+
+
+
 
 
 
@@ -3493,6 +3517,8 @@ function m2dPairOOSGate(arr,target,partner){
   const p=hit/Math.max(1,tests)*100;
   return selectionOOSGate(p,tests,60);
 }
+
+
 
 
 function lastMinuteDriftGuard(records,target,partner){
@@ -3795,6 +3821,8 @@ function generateFormulaPairs(mainDigit,otherDigit,auditMap,lotteryName,records)
 }
 
 
+
+
 /* =========================================================
    V94 PRECISION GOVERNOR — TOP-5 FIRST + EMPIRICAL RECOVERY + CONSENSUS DOWNWEIGHT
    Backend-only. Formula bodies, UI/card contracts and original pair formulas remain untouched.
@@ -3874,6 +3902,7 @@ function v94RefinePairs(pairs,records,target){
   }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.meta?.pairWalkForwardPrecision||0)-Number(a.meta?.pairWalkForwardPrecision||0)||a.pair.localeCompare(b.pair));
 }
 function v94RefinePairSet(pairs,records,target){return v94RefinePairs(pairs,records,target);}
+
 
 /* =========================================================
    V75 PRECISION LOOP — TRUE END-TO-END OOS + EVIDENCE LEDGER
@@ -4136,6 +4165,7 @@ function v88ApplyFairArbitration(intelligence,records,auditData=null,formulaName
   };
 }
 
+
 /* =========================================================
    V90 PLUS — EVIDENCE RESOLUTION / CONTRADICTION / ROBUSTNESS GOVERNOR
    Backend-only. No new prediction formula. Locked formula bodies, targeted
@@ -4242,6 +4272,7 @@ function v90PlusApply(intelligence,records,auditData,formulaNames){
   return {...base,rows:ranked,top3:finalTop3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v90Plus:{version:'V90 Plus — Evidence Resolution Governor',principles:['formula-lottery-digit-shrinkage','contradiction-aware-selection','horizon-coherence','leave-one-out-contribution','top3-robustness','data-sufficiency-gate','no-new-formula','locked-formulas-unchanged'],regime,ranked:ranked.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,evidence:r.v90Plus?.evidenceScore??50,formula:r.v90Plus?.formulaEvidence??50,contradiction:r.v90Plus?.contradiction??50,horizon:r.v90Plus?.horizonCoherence??50,loo:r.v90Plus?.leaveOneOutStability??50,robustness:r.v90Plus?.top3Robustness??50}))},finalGate:{...(base.finalGate||{}),v90Plus:true,v90PlusFormulaLotteryDigit:true,v90PlusContradiction:true,v90PlusHorizonCoherence:true,v90PlusLeaveOneOut:true,v90PlusTop3Robustness:true,v90PlusDataSufficiency:arr.length>=V90_PLUS_CONFIG.minHistory}};
 }
 
+
 /* =========================================================
    V90 PLUS+ — RESOLUTION MAX / STATE ANALOGY / COUNTERFACTUAL GOVERNOR
    This is an evidence-resolution layer, not a formula layer. It does not
@@ -4331,6 +4362,7 @@ function v90PPPositionTransitionEvidence(arr,d){
   return {score:round2(clamp(50+(concentration-.20)*80*clamp(support*3,0,1),0,100)),lastPosition:last,samples:total,transition:row.map(x=>x)};
 }
 
+
 const V90_PP_CONFIG=Object.freeze({
   minHistory:15, priorN:10, knnK:7, maxAdjustment:3.25,
   stateWeight:.20, contradictionWeight:.15, horizonWeight:.11,
@@ -4393,11 +4425,13 @@ function v90PPApply(intelligence,records,auditData,formulaNames){
   return {...base,rows:ranked,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v90PlusPlus:{version:'V90 Plus+ — Resolution Max Governor',regime:reg,globalRobustness:robustness,ranked:ranked.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,resolution:r.v90PlusPlus?.resolutionScore??50,analogy:r.v90PlusPlus?.analogicalState??50,contradiction:r.v90PlusPlus?.contradiction??50,loo:r.v90PlusPlus?.leaveOneFamilyStability??50,robustness:r.v90PlusPlus?.top3RobustnessPlus??50}))},finalGate:{...(base.finalGate||{}),v90PlusPlus:true,v90PlusPlusAnalogicalState:true,v90PlusPlusContradiction:true,v90PlusPlusRobustness:true,v90PlusPlusDualMiss:true,v90PlusPlusPositionTransition:true,v90PlusPlusNoNewFormula:true}};
 }
 
+
 function buildDigitIntelligenceV75(records,auditData,formulaNames,options={}){
   const v74=buildDigitIntelligenceV74(records,auditData,formulaNames,options);
   return v75Finalize(v74,records,auditData,formulaNames);
 }
 /* ========================================================= END V75 PRECISION LOOP ========================================================= */
+
 
 /* =========================================================
    V78 ADAPTIVE RADAR — LEAKAGE-SAFE 5-DIGIT CONSENSUS
@@ -4672,6 +4706,7 @@ function v80ApplyFormulaLayer(intelligence,records){
   return {...base,rows,top3:finalTop3,selected,v80:{version:'V80',source:'สถิติ.pdf',formulaAudit:audit,newFormulaCount:5,standout,chronological:true},finalGate:{...(base.finalGate||{}),v80FormulaLayer:true,v80NewFormulaCount:5,v80Standout:standout,v80AuditRows:audit}};
 }
 
+
 /* =========================================================
    V81 MAX PRECISION ADAPTIVE FORMULA + TARGET-PAIR LAB
    Non-locked enhancement layer. The original 15 formulas and card UI
@@ -4774,6 +4809,7 @@ function v81ApplyAdaptiveLayer(intelligence,records){
   const standout=rows.slice(0,2).map(x=>x.digit);
   return {...base,rows,top3:uniqueTop3.slice(0,3),selected:uniqueTop3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean),v81Adaptive:{version:'V81',selected:selected.map(x=>({anchor:x.name,offsets:x.offsets,rate:round2(x.rate),recent:round2(x.recent),stability:round2(x.stability),score:round2(x.score),edge:round2(x.edge)})),standout,chronological:true},finalGate:{...(base.finalGate||{}),v81Adaptive:true,v81Standout:standout}};
 }
+
 
 /* =========================================================
    V83 EVIDENCE STACK — MAX PRECISION DECISION LAYER
@@ -4929,6 +4965,8 @@ function v83ApplyEvidenceStack(intelligence,records,auditData,formulaNames){
 }
 
 
+
+
 /* =========================================================
    V84 DECISION INTELLIGENCE — CHRONOLOGICAL OOS GOVERNOR
    Backend-only. No formula bodies or card/UI/CSS mutation.
@@ -5032,6 +5070,7 @@ function v84ApplyDecisionGovernor(intelligence,records,auditData,formulaNames){
   };
 }
 
+
 function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}){
   const base=buildDigitIntelligenceV75(records,auditData,formulaNames,options);
   const radar=v78ApplyStructure(base,records);
@@ -5044,6 +5083,7 @@ function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}
   if(options&&options.skipV84OOS) return v83;
   return v84ApplyDecisionGovernor(v83,records,auditData,formulaNames);
 }
+
 
 /* =========================================================
    V85 FINAL DECISION INTEGRITY — END-TO-END OOS SELECTION AUDIT
@@ -5383,6 +5423,7 @@ function v87FinalFairArbitration(intelligence,records,auditData,formulaNames){
   return {...base,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v87Fairness:fairness,finalGate:{...(base.finalGate||{}),v87FinalFairness:true,v87StabilityFirstFinal:true,v87ConsensusBoundedFinal:true}};
 }
 
+
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const core=buildDigitIntelligenceV84Core(records,auditData,formulaNames,options);
   const v85=v85ApplyFinalDecisionGovernor(core,records,auditData,formulaNames);
@@ -5390,6 +5431,7 @@ function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   return v86ApplyEqualOpportunity(v85Plus,records,auditData,formulaNames);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
+
 
 /* =========================================================
    V74 PRECISION AUDIT — LEAKAGE-SAFE GLOBAL ENSEMBLE
@@ -5538,6 +5580,7 @@ function buildDigitIntelligenceV74(records,auditData,formulaNames,options={}){
   return v74Refine(base,records,auditData,formulaNames);
 }
 /* ========================================================= END V74 PRECISION AUDIT ========================================================= */
+
 
 /* =========================================================
    V73 PRECISION SELECTION — EMPIRICAL ENSEMBLE + FINAL CONSISTENCY
@@ -5840,6 +5883,7 @@ window.__V91_CARD_ORDER_AUDIT__={
   copyPayloadOrder:'UNCHANGED',
   rankClassPreserved:true
 };
+
 
 /* =========================================================
    CARD HTML
@@ -6769,6 +6813,7 @@ function v70Arbitrate(scoreData,records){const ranked=Array.isArray(scoreData)?s
 window.V70Precision=Object.freeze({config:V70_CONFIG,lifecycle:v70Lifecycle,regime:v70Regime,overfit:v70Overfit,classify:v70Classify,arbitrate:v70Arbitrate});
 /* ========================================================= END V70 BIG UPGRADE ========================================================= */
 
+
 /* =========================================================
    V72 PRECISION REFINEMENT — DECISION HARDENING
    No new prediction formula. No card/UI changes.
@@ -6893,6 +6938,8 @@ function v72RefineTop3(baseTop3,rows,records){
 }
 window.V72Precision=Object.freeze({config:V72_CONFIG,temporal:v72TemporalSurvival,antiRepeat:v72ConditionalAntiRepeat,margin:v72MarginQuality,compression:v72EvidenceCompression,regimeTransition:v72RegimeTransition,finalAudit:v72FinalAudit,refineTop3:v72RefineTop3});
 /* ========================================================= END V72 PRECISION REFINEMENT ========================================================= */
+
+
 
 
 /* =========================================================
@@ -7174,6 +7221,7 @@ function m2dPrecisionScoreDigits(arr){
   return out;
 }
 
+
 /* V84 Myanmar 2D Decision Governor — specialized, isolated from general lottery engine. */
 function m2dV84DecisionScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;
@@ -7196,6 +7244,7 @@ function m2dV84DecisionScoreDigits(arr){
   }
   return out;
 }
+
 
 function m2dTop3(arr){
   m2dTop3._activeArr=Array.isArray(arr)?arr:[];
@@ -7724,6 +7773,7 @@ function m2dNextTargetDate(records){
   return d;
 }
 
+
 /* =========================================================
    V92 MYANMAR 2D SPECIALIZED BRAIN — PRECISION / ROBUSTNESS
    Scope: Myanmar 2D only. Main lottery formulas, scoring, Pair Engine,
@@ -7956,6 +8006,7 @@ function v92DecisionDigitScores(arr,allRecords,session){
   return raw;
 }
 
+
 function v93SelectionDiscipline(arr,allRecords,session,d,scores){
   const data=v92Rows(arr);
   const ledger=window.__V93_M2D_LEDGER__||v93BuildMethodLedger(data,allRecords,session);
@@ -7997,6 +8048,7 @@ function v92SelectTop3(arr,allRecords,session){
   return selected.map((x,i)=>({digit:x.digit,score:round2(v92Clamp(x.meta.score)),baseScore:round2(x.base),rank:i+1}));
 }
 
+
 function v94M2DRecoveryScore(arr,d){
   const data=v92Rows(arr);let streak=0;
   for(let i=data.length-1;i>=0;i--){if(Number(data[i].tens)===Number(d)||Number(data[i].units)===Number(d))break;streak++;}
@@ -8010,6 +8062,7 @@ function v94M2DSelectTop3(arr,allRecords,session){
   window.__V94_M2D_TOP3_AUDIT__={session,ranked:ranked.map((x,i)=>({rank:i+1,digit:x.digit,score:round2(x.score),baseRank:x.baseRank,missStreak:x.missStreak,recoveryBonus:round2(x.recoveryBonus)})),priority:'TOP5 + MISS RECOVERY'};
   return top3;
 }
+
 
 function v92PairStats(arr,a,b){
   const data=v92Rows(arr),recentN=Math.min(18,data.length),recentStart=data.length-recentN;let exact=0,recent=0,target=0,conditional=0;
@@ -8170,9 +8223,11 @@ function v92Consensus(noon,evening,records){
   return {top:ranked,pairsByTarget,inputQuality:{noon:noon.inputQuality,evening:evening.inputQuality},pairSetWF:{tested:Math.max(noon.pairSetWF?.tested||0,evening.pairSetWF?.tested||0),precision:50,coverage:50},precisionLayer:{version:'V94 M2D Precision Governor + Top-5 Recovery + Champion-Challenger + Disjoint Pair Portfolio',jointEvidence:true,exactOrientedPairs:true,walkForward:true,longHistoryConfirmation:true,championChallenger:true,methodLedger:window.__V93_M2D_LEDGER__||null}};
 }
 
+
 const V92_M2D_AUDIT={version:'V94 M2D Specialized Brain — Top-5 Recovery + Precision Governor + Champion-Challenger + Disjoint Pair Portfolio',sessions:['12:01 PM','4:30 PM'],activeCore:45,maxHistory:240,horizons:V92_M2D_CONFIG.horizons,chronologicalOOS:true,separateSessions:true,jointDayEvidence:true,directedTransitions:['T→T','T→U','U→T','U→U'],pairMode:'exact-oriented (12 != 21)',pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'exclude ambiguous duplicate dates from training and flag them',externalData:false};
 window.__V92_M2D_AUDIT__=V92_M2D_AUDIT;
 window.__V91_M2D_AUDIT__=V92_M2D_AUDIT;
+
 
 function renderMyanmar2DModule(text){
   const parsed=m2dParse(text);if(!parsed.records.length)return null;
@@ -8188,6 +8243,7 @@ function renderMyanmar2DModule(text){
   const err=parsed.errors.length?`<div class="m2d-note m2d-error">⚠️ ${parsed.errors.map(m2dEsc).join(' • ')}</div>`:'';
   return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('နေ့လယ်ပိုင်း','12.01 P.M.','☀️',noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('ညနေပိုင်း','4.30 P.M.','🌙',evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('တစ်နေ့တာ','12.01 P.M. + 4.30 P.M.','📅',all,'m2d-card-all',dateLabel)}</div>${err}</div>`;
 }
+
 
 /* =========================================================
    V55 PRECISION CONTROL LAYER
@@ -8400,6 +8456,8 @@ function m2dV55AdvancedTop3(arr,baseTop){
   out._v55={quality,distributionShift:shift,ranked:ranked.slice(0,10),multipleTestingPenalty:v55MultipleTestingPenalty(data.length,10)};
   return out;
 }
+
+
 
 
 function runEngineCore(){
@@ -8694,8 +8752,9 @@ function runEngineCore(){
         auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
       }
       const governedV94=v94ApplyMainGovernor(intelligence,resultRecs);
-      const finalTop3=Array.isArray(governedV94.top3)?governedV94.top3.map(Number).filter(Number.isFinite):[];
-      intelligence=governedV94;
+      const governedV95=v95ApplyPrecisionArchitecture(governedV94,resultRecs,auditDataMap[lotteryName],formulaNames);
+      const finalTop3=Array.isArray(governedV95.top3)?governedV95.top3.map(Number).filter(Number.isFinite):[];
+      intelligence=governedV95;
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
@@ -9425,6 +9484,122 @@ window.addEventListener(
       );
     }
   });
+
+/* =========================================================
+   V95 PRECISION ARCHITECTURE — AUDIT-FIRST SELECTION ENGINE
+   Backend-only. UI/card markup and styles intentionally untouched.
+   Goals: evidence separation, top-formula protection, consensus preservation,
+   anti-suppression, empirical null baseline, partial/strong hit quality,
+   true chronological OOS repair, conflict visibility, correlation awareness,
+   regime-aware shrinkage, counterfactual diagnostics and score/probability separation.
+========================================================= */
+const V95_CONFIG=Object.freeze({
+  formulaTrust:.27,
+  consensus:.18,
+  recent:.13,
+  historical:.10,
+  stability:.12,
+  trend:.07,
+  frequency:.06,
+  oos:.09,
+  structure:.04,
+  riskPenalty:.10,
+  top3Floor:0.74,
+  topConsensusGuard:3,
+  consensusGuardScore:68,
+  maxProtectionBoost:6,
+  correlationPenalty:0.08,
+  minCalibrationN:30
+});
+function v95Num(v,d=0){const n=Number(v);return Number.isFinite(n)?n:d;}
+function v95Clamp(v,a=0,b=100){return Math.max(a,Math.min(b,v95Num(v,50)));}
+function v95Avg(a){const x=(Array.isArray(a)?a:[]).map(Number).filter(Number.isFinite);return x.length?x.reduce((s,v)=>s+v,0)/x.length:50;}
+function v95TargetDigits(rec){return [...v94TargetSet(rec)];}
+function v95EmpiricalNull(records,predicted){
+  const arr=(Array.isArray(records)?records:[]).filter(isResultRecord), ds=new Set((predicted||[]).map(Number));
+  if(!arr.length||!ds.size)return 50;
+  // Position-specific empirical probability of avoiding the predicted set.
+  const pos=[1,2,3,4].map(()=>0), den=[0,0,0,0];
+  arr.forEach(r=>{const n3=String(r.n3||''),n2=String(r.n2||''); const a=[n3[1],n3[2],n2[0],n2[1]]; a.forEach((ch,i)=>{const d=Number(ch);if(Number.isFinite(d)){den[i]++;if(ds.has(d))pos[i]++;}});});
+  let no=1; for(let i=0;i<4;i++) no*=den[i]?1-pos[i]/den[i]:1;
+  return v95Clamp((1-no)*100,0,100);
+}
+function v95DigitHitQuality(records,predicted){
+  const arr=(Array.isArray(records)?records:[]).filter(isResultRecord), ps=new Set((predicted||[]).map(Number));
+  if(!arr.length||!ps.size)return {partial:50,strong:50,mean:50};
+  let partial=0,strong=0,total=0;
+  arr.forEach(r=>{const t=v95TargetDigits(r),hits=t.filter(d=>ps.has(d)).length; total++; if(hits>=1)partial++; if(hits>=2)strong++;});
+  return {partial:percent(partial,total),strong:percent(strong,total),mean:round2(((partial+strong)/2))};
+}
+function v95FormulaTrust(auditData,formulaNames){
+  const vals=(formulaNames||[]).map(f=>{
+    const x=auditData?.[f]||{}; const hr=v95Num(x.hitRate,50),r=v95Num(x.recentRate,hr),w10=v95Num(x.rolling10,hr),st=v95Num(x.stability,50),rec=v95Num(x.recencyRate,hr);
+    return .40*hr+.24*r+.14*w10+.12*st+.10*rec;
+  });
+  return vals.length?v95Avg(vals):50;
+}
+function v95CurrentFormulaEvidence(d,auditData,formulaNames){
+  const hits=[], vals=[];
+  (formulaNames||[]).forEach(f=>{const x=auditData?.[f];if(x?.latestDigits?.includes(Number(d))){hits.push(f);vals.push(.40*v95Num(x.hitRate)+.24*v95Num(x.recentRate)+.14*v95Num(x.rolling10)+.12*v95Num(x.stability)+.10*v95Num(x.recencyRate));}});
+  return {score:v95Avg(vals),count:hits.length,formulas:hits};
+}
+function v95FormulaCorrelationPenalty(d,row,rows){
+  const peers=(row?.formulaHits||[]).map(String); if(peers.length<2)return 0;
+  const same=(rows||[]).filter(x=>Number(x.digit)!==Number(d)).reduce((n,x)=>n+(x.formulaHits||[]).filter(f=>peers.includes(f)).length,0);
+  return v95Clamp(Math.min(12,same*.35),0,12);
+}
+function v95TopFormulaProtection(d,auditData,formulaNames,rows){
+  const ranked=(formulaNames||[]).slice().sort((a,b)=>v95Num(auditData?.[b]?.hitRate)-v95Num(auditData?.[a]?.hitRate));
+  let boost=0,covered=[];
+  ranked.slice(0,3).forEach((f,i)=>{if(auditData?.[f]?.latestDigits?.includes(Number(d))){covered.push({rank:i+1,formula:f});boost+=i===0?2.6:i===1?2.0:1.4;}});
+  return {boost:v95Clamp(boost,0,V95_CONFIG.maxProtectionBoost),covered};
+}
+function v95Consensus(d,consensus){
+  const c=(consensus||[]).find(x=>Number(x.digit)===Number(d))||{};
+  return {score:v95Clamp(c.consensusQuality??c.score??50),count:v95Num(c.formulaCount??c.agreement??0),agreement:v95Num(c.agreement??c.formulas??0)};
+}
+function v95Regime(records){
+  const arr=(Array.isArray(records)?records:[]).filter(isResultRecord); if(arr.length<12)return {state:'UNCERTAIN',factor:.88};
+  const last=arr.slice(-6),prev=arr.slice(-12,-6);
+  const key=r=>String(r.n2||'').padStart(2,'0');
+  const uniq=a=>new Set(a.map(key)).size;
+  const u1=uniq(last),u2=uniq(prev),delta=u1-u2;
+  if(Math.abs(delta)>=2)return {state:delta>0?'VOLATILE':'CONCENTRATED',factor:.92};
+  return {state:'STABLE',factor:1};
+}
+function v95ConfidenceCalibration(records,score){
+  const arr=(Array.isArray(records)?records:[]).filter(isResultRecord); const n=arr.length;
+  if(n<V95_CONFIG.minCalibrationN)return {probability:null,calibrated:false,n,method:'insufficient-history'};
+  // Conservative calibration: shrink heuristic score toward empirical target rate.
+  const rate=v95Num(score,50)/100, shrink=Math.min(1,(n-20)/100);
+  return {probability:round2((.50*(1-shrink)+rate*shrink)*100),calibrated:true,n,method:'conservative-shrinkage'};
+}
+function v95ApplyPrecisionArchitecture(base,records,auditData,formulaNames){
+  const src=base||{}, rows0=Array.isArray(src.rows)?src.rows:[]; if(rows0.length!==10)return src;
+  const arr=(Array.isArray(records)?records:[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const regime=v95Regime(arr), formulaGlobal=v95FormulaTrust(auditData,formulaNames);
+  const out=rows0.map(row=>{
+    const d=Number(row.digit), raw=row.raw||{}, cf=v95CurrentFormulaEvidence(d,auditData,formulaNames), cc=v95Consensus(d,src.consensus), prot=v95TopFormulaProtection(d,auditData,formulaNames,rows0);
+    const frequency=v95Num(raw.frequencyEvidence??raw.frequency??50), recent=v95Num(raw.recentEvidence??raw.momentum??50), historical=v95Num(raw.historicalEvidence??raw.historicalSupport??50), stability=v95Num(raw.stability??raw.robustnessSurvival??50), trend=v95Num(raw.trendEvidence??raw.trend??50), oos=v95Num(raw.oosEvidence??raw.empiricalPrecision??50), structure=v95Num(raw.structuralEvidence??raw.structure??50), risk=v95Num(raw.falsePositiveRisk,50), conflict=v95Num(raw.conflict,0);
+    const nullRate=v95EmpiricalNull(arr,[d]), quality=v95DigitHitQuality(arr,[d]), corr=v95FormulaCorrelationPenalty(d,row,rows0);
+    const consensusBonus=cc.count>=V95_CONFIG.topConsensusGuard&&cc.score>=V95_CONFIG.consensusGuardScore?Math.min(5,(cc.score-60)*.10+cc.count*.65):0;
+    const predictive=.31*cf.score+.17*cc.score+.13*recent+.10*historical+.09*oos+.07*frequency+.06*trend+.04*structure+.03*stability+.04*quality.partial;
+    const penalty=Math.min(12,risk*.06+conflict*1.15+corr);
+    const rawFinal=v95Clamp(predictive-penalty,0,100);
+    const protectedFinal=prot.covered.length?Math.max(rawFinal, v95Clamp(v95Num(row.selectionQuality,row.score)*V95_CONFIG.top3Floor,0,100)):rawFinal;
+    const final=v95Clamp(protectedFinal+prot.boost+consensusBonus,0,100)*regime.factor;
+    const calibration=v95ConfidenceCalibration(arr,final);
+    const counterfactual={noConsensus:round2(v95Clamp(predictive-.17*cc.score-penalty,0,100)),noTop3Protection:round2(rawFinal),noRiskPenalty:round2(v95Clamp(predictive,0,100)),consensusDelta:round2(.17*cc.score),top3ProtectionDelta:round2(prot.boost),riskPenalty:round2(penalty)};
+    return {...row,selectionQuality:round2(v95Clamp(final,0,100)),v95:{formulaTrust:round2(cf.score),formulaCount:cf.count,formulaHits:cf.formulas,globalFormulaTrust:round2(formulaGlobal),consensus:round2(cc.score),consensusCount:cc.count,top3Protected:prot.covered,top3Protection:round2(prot.boost),recent:round2(recent),historical:round2(historical),stability:round2(stability),trend:round2(trend),frequency:round2(frequency),oos:round2(oos),structure:round2(structure),risk:round2(risk),conflict:round2(conflict),correlationPenalty:round2(corr),empiricalNull:round2(nullRate),partialHitRate:quality.partial,strongHitRate:quality.strong,observedLift:round2(v95Num(quality.partial)-nullRate),regime:regime.state,calibration,finalEvidence:round2(predictive),penalty:round2(penalty),counterfactual}};
+  }).sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(b.v95?.consensus)-Number(a.v95?.consensus)||Number(b.score)-Number(a.score)||Number(a.digit)-Number(b.digit));
+  // Top-3 formula coverage is a guard, not a forced pick: if a top-3 formula digit is within 8 points of the current #2, retain it in candidate top-3.
+  const topDigits=new Set(); formulaNames.slice().sort((a,b)=>v95Num(auditData?.[b]?.hitRate)-v95Num(auditData?.[a]?.hitRate)).slice(0,3).forEach(f=>v95Num(auditData?.[f]?.latestDigits?.[0],-1)>=0 && v95Num(auditData?.[f]?.latestDigits?.[1],-1)>=0 && auditData?.[f]?.latestDigits?.forEach?.(d=>topDigits.add(Number(d))));
+  const candidates=out.slice(0,3).map(x=>x.digit); topDigits.forEach(d=>{const r=out.find(x=>x.digit===d);if(r&&r.selectionQuality>=out[2].selectionQuality-8)candidates.push(d);});
+  let top3=[...new Set(candidates)].sort((a,b)=>v95Num(out.find(x=>x.digit===b)?.selectionQuality)-v95Num(out.find(x=>x.digit===a)?.selectionQuality)).slice(0,3); const protectedRanked=[...topDigits].map(d=>out.find(x=>x.digit===d)).filter(Boolean).sort((a,b)=>b.selectionQuality-a.selectionQuality); if(protectedRanked.length){const pr=protectedRanked[0]; if(!top3.includes(pr.digit) && pr.selectionQuality>=v95Num(out[2]?.selectionQuality)-8){top3=[top3[0],top3[1],pr.digit].filter((x,i,a)=>a.indexOf(x)===i).slice(0,3); top3.sort((a,b)=>v95Num(out.find(x=>x.digit===b)?.selectionQuality)-v95Num(out.find(x=>x.digit===a)?.selectionQuality));}} const selected=top3.slice(0,2).map(d=>out.find(x=>x.digit===d)).filter(Boolean);
+  const chosen=selected[0], second=selected[1];
+  return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
+    v95:{version:'V95 Audit-First Precision Architecture',principles:['formula-vs-digit-separation','top3-formula-protection','consensus-preserved-not-dominant','anti-suppression','empirical-null-baseline','partial-vs-strong-hit','conflict-penalty','correlation-aware','regime-aware-shrinkage','counterfactual-audit','score-is-not-probability'],regime,ranked:out.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,formula:r.v95?.formulaTrust??50,consensus:r.v95?.consensus??50,consensusCount:r.v95?.consensusCount??0,top3Protection:r.v95?.top3Protection??0,partialHitRate:r.v95?.partialHitRate??50,strongHitRate:r.v95?.strongHitRate??50,empiricalNull:r.v95?.empiricalNull??50,lift:r.v95?.observedLift??0,penalty:r.v95?.penalty??0,regime:r.v95?.regime??'UNKNOWN'})),counterfactual:{selected:chosen?.digit??null,second:second?.digit??null,selectedAudit:chosen?.v95?.counterfactual??null}},finalGate:{...(src.finalGate||{}),v95AuditFirst:true,v95Top3Protection:true,v95ConsensusGuard:true,v95AntiSuppression:true,v95EmpiricalNull:true,v95Counterfactual:true,v95ScoreProbabilitySeparated:true}};
+}
 window.__V91_PLUSPLUS_AUDIT__={
   version:'V91 Plus++ / M2D Precision Upgrade',
   base:'V54 Plus+ presentation/formula/card contract',
