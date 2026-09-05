@@ -1057,6 +1057,37 @@ function percent(part,total){
 function cleanDatasetKey(rawName){
   return String(rawName||'').split('\u2063')[0].trim();
 }
+function forceNikkeiVisibleTitle(value){
+  let s=String(value||'')
+    .replace(/[\u200B-\u200D\uFEFF]/g,'')
+    .replace(/\u00A0/g,' ')
+    .trim();
+
+  // FINAL NIKKEI DISPLAY RULE:
+  // The visible card title must never contain the generic prefix "หุ้น".
+  // Handle attached/spaced/zero-width variants defensively at the final
+  // render boundary, regardless of the upstream dataset alias.
+  const compact=s.replace(/[\s\u00A0]/g,'');
+  if(/^หุ้น(?:นิเคอิ|นิกเคอิ)/i.test(compact)){
+    const isVip=/vip|พิเศษ/i.test(compact);
+    const isMorning=compact.includes('เช้า');
+    const isAfternoon=compact.includes('บ่าย')||compact.includes('เย็น');
+    if(isVip){
+      if(isMorning)return 'นิเคอิ VIP เช้า';
+      if(isAfternoon)return 'นิเคอิ VIP บ่าย';
+      return 'นิเคอิ VIP';
+    }
+    if(isMorning)return 'นิเคอิ เช้า';
+    if(isAfternoon)return 'นิเคอิ บ่าย';
+    return 'นิเคอิ';
+  }
+
+  // Also normalize any remaining leading "หุ้น" when it is immediately
+  // followed by a Nikkei alias after whitespace cleanup.
+  s=s.replace(/^หุ้น\s*(?=นิเคอิ|นิกเคอิ)/,'').trim();
+  return s;
+}
+
 function formatDisplayTitle(rawName){
   rawName=cleanDatasetKey(rawName);
   let name=String(rawName||'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim();
@@ -6101,6 +6132,7 @@ window.__V102_THAI_PAIR_RANK_DISPLAY__={
 };
 
 /* V103 DISPLAY AUDIT — Nikkei title invariant. */
+window.__V104_NIKKEI_TITLE_HARD_FIX__={version:'V104',rule:'Final render boundary strips leading หุ้น from every Nikkei title',singleScoreAuditCard:true};
 window.__V103_NIKKEI_DISPLAY_AUDIT__={
   version:'V103',
   rule:'Nikkei card titles must never contain a leading generic หุ้น prefix',
@@ -6154,8 +6186,10 @@ function renderCardHTML(
   // FINAL DISPLAY TITLE GUARD: every rendered card goes through the canonical
   // formatter so stale/generated titles such as 'หุ้นนิเคอิ เช้า' can never
   // reach the visible card or its copy/capture payload.
-  const displayTitle=formatDisplayTitle(
-    card.displayTitle||card.lotteryName||''
+  let displayTitle=forceNikkeiVisibleTitle(
+    formatDisplayTitle(
+      card.displayTitle||card.lotteryName||''
+    )
   );
   /*
      Audit presentation rule:
@@ -9044,8 +9078,10 @@ function runEngineCore(){
               latestRec.date
             ),
           displayTitle:
-            formatDisplayTitle(
-              lotteryName
+            forceNikkeiVisibleTitle(
+              formatDisplayTitle(
+                lotteryName
+              )
             ),
           flag:
             getLotteryFlag(
