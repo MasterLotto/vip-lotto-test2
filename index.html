@@ -4274,7 +4274,7 @@ function m2dJointTop3Score(digits,score,base){
   }
   const normVals=chosen.map(d=>clamp(Number(score[d])||0,0,100));
   const baseVals=chosen.map(d=>clamp(Number(base[d])||0,0,100));
-  const avg=avg(normVals),baseAvg=avg(baseVals);
+  const meanScore=avg(normVals),baseMeanScore=avg(baseVals);
   const spreadPenalty=clamp(spread/Math.max(1,chosen.length*2),0,50);
   const wf=m2dDigitWalkForwardQuality(Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[]);
   const wfAvg=avg(chosen.map(d=>clamp(Number(wf.precision?.[d])||50,0,100)));
@@ -4284,7 +4284,7 @@ function m2dJointTop3Score(digits,score,base){
   const diversityScore=clamp(diversity/Math.max(1,chosen.length),0,1)*100;
   const arr=Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[];
   const positionAvg=arr.length?avg(chosen.map(d=>clamp((m2dPositionConditional(arr,d,(d+1)%10))/100,0,1)))*100:50;
-  return avg*.32+baseAvg*.14+wfAvg*.20+wfStable*.14+positionAvg*.06+diversityScore*.08-spreadPenalty*.06;
+  return meanScore*.32+baseMeanScore*.14+wfAvg*.20+wfStable*.14+positionAvg*.06+diversityScore*.08-spreadPenalty*.06;
 }
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
