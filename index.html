@@ -4426,6 +4426,137 @@ function v90PPApply(intelligence,records,auditData,formulaNames){
 }
 
 
+/* =========================================================
+   V96 STABLE-FORMULA CORE — FORMULA CONSISTENCY FIRST
+   Backend-only. Locked formula bodies, existing evidence families, pair engine,
+   card markup/CSS and public percentages remain unchanged.
+   Purpose: make formula stability the primary selector; consensus remains a
+   bounded verifier instead of the main driver. Existing systems are retained.
+========================================================= */
+const V96_STABLE_CORE_CONFIG=Object.freeze({
+  minHistory:10,formulaStabilityWeight:.52,formulaCurrentWeight:.18,
+  digitEvidenceWeight:.18,existingScoreWeight:.08,consensusWeight:.04,
+  topFormulaCount:3,maxAdjustment:8.0,coreThreshold:.58
+});
+function v96Clamp(v,a=0,b=100){const n=Number(v);return Number.isFinite(n)?Math.max(a,Math.min(b,n)):50;}
+function v96FormulaStabilityProfile(auditData,names){
+  const list=Array.isArray(names)?names.filter(Boolean):[];
+  return list.map(name=>{
+    const a=auditData?.[name]||{},tested=Number(a.totalTested??a.tests??0)||0;
+    const stability=v96Clamp(a.stability,50,100),multi=v96Clamp(a.multiHorizon,50,100),recent=v96Clamp(a.recentRate,50,100),hit=v96Clamp(a.hitRate,50,100);
+    const slope=50+v96Clamp(Number(a.horizonSlope)||0,-20,20)*1.25;
+    const sampleTrust=Math.max(.35,Math.min(1,tested/24));
+    const raw=stability*.50+multi*.25+recent*.15+hit*.07+slope*.03;
+    const score=50+(raw-50)*sampleTrust;
+    return{name,score:v96Clamp(score),tested,stability,multiHorizon:multi,recent,hitRate:hit,horizonSlope:Number(a.horizonSlope)||0,latest:Array.isArray(a.latestDigits)?a.latestDigits.map(Number).filter(d=>d>=0&&d<=9):[]};
+  }).sort((a,b)=>b.score-a.score||b.stability-a.stability||b.multiHorizon-a.multiHorizon||a.name.localeCompare(b.name));
+}
+function v96ApplyStableFormulaCore(intelligence,records,auditData,formulaNames){
+  const base=intelligence||{},rows=Array.isArray(base.rows)?base.rows:[],arr=getResultRecords(records).filter(isResultRecord);
+  if(rows.length!==10||!Array.isArray(formulaNames)||!formulaNames.length||arr.length<V96_STABLE_CORE_CONFIG.minHistory)return base;
+  const profiles=v96FormulaStabilityProfile(auditData,formulaNames),core=profiles.slice(0,V96_STABLE_CORE_CONFIG.topFormulaCount);
+  const coreMean=core.length?avg(core.map(x=>x.score)):50;
+  const coreWeights=core.map(x=>Math.max(.10,(x.score-35)/65));
+  const weightDen=coreWeights.reduce((a,b)=>a+b,0)||1;
+  const coreDigit=Array(10).fill(0),coreWeight=Array(10).fill(0),allDigit=Array(10).fill(0),allWeight=Array(10).fill(0);
+  profiles.forEach((p,i)=>{
+    const w=Math.max(.06,(p.score-30)/70)*(i<3?1:.30);
+    [...new Set(p.latest)].forEach(d=>{allDigit[d]+=w;allWeight[d]+=w;});
+  });
+  core.forEach((p,i)=>[...new Set(p.latest)].forEach(d=>{const w=coreWeights[i];coreDigit[d]+=w;coreWeight[d]+=w;}));
+  const maxCore=Math.max(...coreDigit,0)||1;
+  const maxAll=Math.max(...allDigit,0)||1;
+  const scored=rows.map(row=>{
+    const d=Number(row.digit),r=row.raw||{},coreAgreement=coreWeight[d]?coreDigit[d]/coreWeight[d]:0,corePresence=coreDigit[d]/maxCore*100,allSupport=allDigit[d]/maxAll*100;
+    const formulaReliability=v96Clamp(r.formulaEvidence??50),historical=v96Clamp(r.historicalEvidence??50),existing=v96Clamp(row.selectionQuality??row.score??50),consensus=v96Clamp(row.agreement?Math.min(100,50+Number(row.agreement)*8):50);
+    const stableFormulaSignal=v96Clamp(corePresence*.65+coreAgreement*.35);
+    const supportSignal=v96Clamp(stableFormulaSignal*.70+allSupport*.30);
+    const evidenceSignal=v96Clamp(formulaReliability*.28+historical*.42+v96Clamp(r.robustness??50)*.30);
+    const coreScore=supportSignal*V96_STABLE_CORE_CONFIG.formulaCurrentWeight+evidenceSignal*V96_STABLE_CORE_CONFIG.digitEvidenceWeight+existing*V96_STABLE_CORE_CONFIG.existingScoreWeight+consensus*V96_STABLE_CORE_CONFIG.consensusWeight;
+    const stabilityBonus=(coreMean-50)*.32;
+    const adjusted=50+(coreScore-50)*V96_STABLE_CORE_CONFIG.formulaStabilityWeight+stabilityBonus;
+    return{...row,selectionQuality:round2(v96Clamp(adjusted,0,100)),v96StableCore:{stableFormulaSignal:round2(stableFormulaSignal),corePresence:round2(corePresence),coreAgreement:round2(coreAgreement),allFormulaSupport:round2(allSupport),evidenceSignal:round2(evidenceSignal),coreScore:round2(coreScore),coreMean:round2(coreMean),consensusBounded:round2(consensus),existingScore:round2(existing)}};
+  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.v96StableCore.stableFormulaSignal-a.v96StableCore.stableFormulaSignal||a.digit-b.digit);
+  const top3=scored.slice(0,3).map(x=>x.digit),selected=top3.slice(0,2).map(d=>scored.find(x=>x.digit===d)).filter(Boolean);
+  return{...base,rows:scored,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
+    v96StableFormulaCore:{version:'V96 Stable Formula Core',principles:['TOP-3-STABLE-FORMULAS-FIRST','SHORT-MID-LONG-CONSISTENCY','CONSENSUS-BOUNDED-VERIFIER','ALL-EXISTING-SYSTEMS-RETAINED'],topFormulas:core.map((x,i)=>({rank:i+1,name:x.name,score:round2(x.score),stability:round2(x.stability),multiHorizon:round2(x.multiHorizon),recent:round2(x.recent),hitRate:round2(x.hitRate),tested:x.tested})),consensusWeight:V96_STABLE_CORE_CONFIG.consensusWeight},
+    finalGate:{...(base.finalGate||{}),v96StableFormulaCore:true,v96FormulaStabilityPrimary:true,v96ConsensusBounded:true}};
+}
+
+/* =========================================================
+   V97 PRECISION DECISION LAYER — NEXT-ROUND READINESS
+   Backend-only. No new prediction formulas. Existing formula bodies,
+   evidence families and card/UI contracts remain unchanged.
+   Purpose: after Stable Formula Top-3, test whether each digit is actually
+   ready for the next round using short/mid/long persistence, direction,
+   volatility, current regime and contradiction checks. Existing consensus
+   remains support only; no hard forcing.
+========================================================= */
+const V97_PRECISION_CONFIG=Object.freeze({
+  minHistory:12,shortWindow:3,midWindow:9,longWindow:30,previousShort:3,previousMid:9,
+  readinessWeight:.42,stabilityWeight:.22,regimeWeight:.14,contradictionWeight:.12,
+  recoveryWeight:.10,maxAdjustment:6.0,confidenceStrong:72,confidenceNormal:58
+});
+function v97Num(v,d=50){const n=Number(v);return Number.isFinite(n)?n:d;}
+function v97Clamp(v,a=0,b=100){return Math.max(a,Math.min(b,v97Num(v,a)));}
+function v97TargetDigits(records,digit){
+  const rs=getResultRecords(records).filter(isResultRecord), out=[];
+  rs.forEach(r=>{
+    const s=String(r?.n2??'').padStart(2,'0');
+    const top=String(r?.n3??'').padStart(3,'0');
+    const ds=[top[1],top[2],s[0],s[1]].map(Number).filter(x=>x>=0&&x<=9);
+    if(ds.includes(Number(digit)))out.push(1);else out.push(0);
+  });
+  return out;
+}
+function v97Rate(arr,digit){
+  const a=Array.isArray(arr)?arr:[], h=v97TargetDigits(a,digit);
+  return h.length?h.reduce((x,y)=>x+y,0)/h.length*100:50;
+}
+function v97WindowRate(records,digit,w){const a=getResultRecords(records).filter(isResultRecord);return v97Rate(a.slice(-Math.min(w,a.length)),digit);}
+function v97PreviousRate(records,digit,w,skip){const a=getResultRecords(records).filter(isResultRecord);const end=Math.max(0,a.length-(skip||w));return v97Rate(a.slice(Math.max(0,end-w),end),digit);}
+function v97ReadinessForDigit(records,digit,row,regime){
+  const a=getResultRecords(records).filter(isResultRecord), n=a.length;
+  if(n<V97_PRECISION_CONFIG.minHistory)return{readiness:50,confidence:50,state:'NORMAL',short:50,mid:50,long:50,momentum:50,volatility:50,contradiction:50,recovery:50,regime:50};
+  const s=v97WindowRate(a,digit,3),m=v97WindowRate(a,digit,9),l=v97WindowRate(a,digit,30);
+  const ps=v97PreviousRate(a,digit,3,3),pm=v97PreviousRate(a,digit,9,9);
+  const momentum=v97Clamp(50+(s-ps)*.75+(m-pm)*.25);
+  const dispersion=Math.abs(s-m)+Math.abs(m-l)+Math.abs(s-l)*.5;
+  const volatility=v97Clamp(100-dispersion*1.25);
+  const balance=v97Clamp(100-(Math.max(s,m,l)-Math.min(s,m,l))*1.15);
+  const regState=String(regime?.state||'').toUpperCase();
+  const regimeScore=regState==='STABLE'?82:regState==='UNCERTAIN'?58:regState==='CONTRADICTORY'?38:65;
+  const longSupport=l*.45+m*.30+s*.25;
+  const contradiction=v97Clamp(100-Math.abs(s-l)*1.4-Math.abs(m-l)*.8);
+  const bits=v97TargetDigits(a,digit), gap=(()=>{let g=0;for(let i=bits.length-1;i>=0&&bits[i]===0;i--)g++;return g;})();
+  const recovery=gap>=5?70:gap===4?60:gap===3?50:50;
+  const readiness=v97Clamp(longSupport*.22+balance*.18+volatility*.12+momentum*.18+regimeScore*.14+contradiction*.10+recovery*.06+v97Clamp(row?.v96StableCore?.stableFormulaSignal??50)*.10);
+  const confidence=v97Clamp(readiness*.55+v97Clamp(row?.v96StableCore?.coreScore??50)*.25+contradiction*.20);
+  const state=confidence>=V97_PRECISION_CONFIG.confidenceStrong?'HIGH':confidence>=V97_PRECISION_CONFIG.confidenceNormal?'NORMAL':'LOW';
+  return{readiness,confidence,state,short:s,mid:m,long:l,momentum,volatility,balance,contradiction,recovery,regime:regimeScore,gap,longSupport};
+}
+function v97ApplyPrecisionDecision(intelligence,records){
+  const base=intelligence||{},rows=Array.isArray(base.rows)?base.rows:[];
+  const arr=getResultRecords(records).filter(isResultRecord);
+  if(rows.length!==10||arr.length<V97_PRECISION_CONFIG.minHistory)return base;
+  const reg=typeof v90PlusRegime==='function'?v90PlusRegime(arr):{state:'STABLE'};
+  const enriched=rows.map(row=>{
+    const q=v97ReadinessForDigit(arr,Number(row.digit),row,reg);
+    const stable=v97Clamp(row?.v96StableCore?.stableFormulaSignal??row.selectionQuality??50);
+    const old=v97Clamp(row.selectionQuality??row.score??50);
+    const gate=q.readiness*.70+q.confidence*.30;
+    const adjustment=(gate-50)*V97_PRECISION_CONFIG.readinessWeight*.28+(q.contradiction-50)*V97_PRECISION_CONFIG.contradictionWeight*.20+(q.volatility-50)*V97_PRECISION_CONFIG.stabilityWeight*.12;
+    const final=v97Clamp(old+Math.max(-V97_PRECISION_CONFIG.maxAdjustment,Math.min(V97_PRECISION_CONFIG.maxAdjustment,adjustment)),0,100);
+    return{...row,selectionQuality:round2(final),v97Precision:{...q,gate:round2(gate),stableFormulaSignal:round2(stable),previousQuality:round2(old),adjustment:round2(final-old)}};
+  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.v97Precision.gate-a.v97Precision.gate||a.digit-b.digit);
+  const top3=enriched.slice(0,3).map(x=>x.digit),selected=top3.slice(0,2).map(d=>enriched.find(x=>x.digit===d)).filter(Boolean);
+  const conf=selected.length?avg(selected.map(x=>x.v97Precision.confidence)):50;
+  const state=conf>=V97_PRECISION_CONFIG.confidenceStrong?'HIGH':conf>=V97_PRECISION_CONFIG.confidenceNormal?'NORMAL':'LOW';
+  return{...base,rows:enriched,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
+    v97PrecisionDecision:{version:'V97 Precision Decision Layer',state,averageConfidence:round2(conf),regime:reg,principles:['STABLE-FORMULA-FIRST','NEXT-ROUND-READINESS','SHORT-MID-LONG','LIFECYCLE-DIRECTION','REGIME-GATE','CONTRADICTION-GATE','BOUNDED-RECOVERY','CONSENSUS-REMAINS-SUPPORT'],ranked:enriched.map((r,i)=>({rank:i+1,digit:r.digit,quality:r.selectionQuality,readiness:round2(r.v97Precision.readiness),confidence:round2(r.v97Precision.confidence),state:r.v97Precision.state,short:round2(r.v97Precision.short),mid:round2(r.v97Precision.mid),long:round2(r.v97Precision.long),momentum:round2(r.v97Precision.momentum),volatility:round2(r.v97Precision.volatility),contradiction:round2(r.v97Precision.contradiction),gap:r.v97Precision.gap}))},
+    finalGate:{...(base.finalGate||{}),v97PrecisionDecision:true,v97NextRoundReadiness:true,v97ShortMidLongGate:true,v97RegimeGate:true,v97ContradictionGate:true,v97BoundedAdjustment:true}};
+}
+
 function buildDigitIntelligenceV75(records,auditData,formulaNames,options={}){
   const v74=buildDigitIntelligenceV74(records,auditData,formulaNames,options);
   return v75Finalize(v74,records,auditData,formulaNames);
@@ -6981,6 +7112,52 @@ function reconcileDatasetIds(masterRecords,newRecords){
    selection are Myanmar-specific. Output is always tens + units.
 ========================================================= */
 const M2D_STORAGE_KEY='MESTER_M2D_SPECIALIZED_V2';
+/* Verified Myanmar 2D history supplied for the Myanmar calibration baseline. */
+const M2D_SEED_HISTORY=`🗓 01 ก.ค 69 : 30 -- 33
+🗓 02 ก.ค 69 : 29 -- 60
+🗓 03 ก.ค 69 : 38 -- 82
+🗓 06 ก.ค 69 : 01 -- 81
+🗓 07 ก.ค 69 : 79 -- 34
+🗓 08 ก.ค 69 : 83 -- 52
+🗓 09 ก.ค 69 : 66 -- 05
+🗓 10 ก.ค 69 : 75 -- 55
+🗓 13 ก.ค 69 : 48 -- 02
+🗓 14 ก.ค 69 : 17 -- 33
+🗓 15 ก.ค 69 : 80 -- 16
+🗓 16 ก.ค 69 : 76 -- 97
+🗓 17 ก.ค 69 : 53 -- 43
+🗓 20 ก.ค 69 : 66 -- 00
+🗓 21 ก.ค 69 : 57 -- 70
+🗓 22 ก.ค 69 : 58 -- 41
+🗓 22 ก.ค 69 : 03 -- 39
+🗓 23 ก.ค 69 : 15 -- 94
+🗓 26 ก.ค 69 : 85 -- 73
+🗓 30 ก.ค 69 : 30 -- 17
+🗓 31 ก.ค 69 : 16 -- 42
+🗓 03 ส.ค 69 : 20 -- 05
+🗓 04 ส.ค 69 : 71 -- 37
+🗓 05 ส.ค 69 : 87 -- 83
+🗓 06 ส.ค 69 : 31 -- 45
+🗓 07 ส.ค 69 : 75 -- 01
+🗓 10 ส.ค 69 : 27 -- 61
+🗓 11 ส.ค 69 : 56 -- 20
+🗓 13 ส.ค 69 : 54 -- 63
+🗓 14 ส.ค 69 : 13 -- 68
+🗓 17 ส.ค 69 : 23 -- 40
+🗓 18 ส.ค 69 : 19 -- 28
+🗓 19 ส.ค 69 : 53 -- 60
+🗓 20 ส.ค 69 : 69 -- 92
+🗓 21 ส.ค 69 : 60 -- 80
+🗓 24 ส.ค 69 : 22 -- 53
+🗓 25 ส.ค 69 : 11 -- 13
+🗓 26 ส.ค 69 : 78 -- 29
+🗓 27 ส.ค 69 : 35 -- 04
+🗓 28 ส.ค 69 : 85 -- 20
+🗓 31 ส.ค 69 : 79 -- 64
+🗓 01 ก.ย 69 : 87 -- 83
+🗓 02 ก.ย 69 : 17 -- 77
+🗓 03 ก.ย 69 : 71 -- 23
+🗓 04 ก.ย 69 : 26 -- 81`;
 const M2D_FORMULA_NAMES=Object.freeze([...ACTIVE_FORMULA_NAMES,'N3 — สูตรเด่นชุดเดียวจบ']);
 const M2D_WINDOWS=Object.freeze([3,6,9,12,15]);
 function m2dEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -7010,17 +7187,19 @@ function m2dAdapter(arr){const a=m2dRows(arr),last=a[a.length-1]||{tens:0,units:
 function m2dFormulaPredict(arr,name){const fn=allFormulas?.[name];if(typeof fn!=='function')return null;try{const v=fn(...m2dAdapter(arr));if(!Array.isArray(v)||v.length<2)return null;const safe=typeof sanitizeFormulaResult==='function'?sanitizeFormulaResult(v):v;return[m2dNorm10(safe[0]),m2dNorm10(safe[1])];}catch(e){return null;}}
 function m2dFormulaAudit(arr,name){const data=m2dRows(arr);if(data.length<6)return{tested:0,exact:50,digit:50,tens:50,units:50,stability:50,recent:50,latest:m2dFormulaPredict(data,name)};let tested=0,exact=0,digit=0,tens=0,units=0;const outcomes=[];for(let cut=5;cut<data.length;cut++){const pred=m2dFormulaPredict(data.slice(0,cut),name),actual=data[cut];if(!pred)continue;tested++;const hitT=pred[0]===actual.tens,hitU=pred[1]===actual.units;if(hitT)tens++;if(hitU)units++;if(hitT||hitU)digit++;if(hitT&&hitU)exact++;outcomes.push(hitT&&hitU?1:0);}const recent=outcomes.slice(-Math.min(6,outcomes.length)),stability=outcomes.length?100-Math.abs((outcomes.reduce((a,b)=>a+b,0)/outcomes.length)-(recent.length?recent.reduce((a,b)=>a+b,0)/recent.length:0))*100:50;return{tested,exact:tested?exact/tested*100:50,digit:tested?digit/tested*100:50,tens:tested?tens/tested*100:50,units:tested?units/tested*100:50,stability:m2dClamp(stability),recent:recent.length?recent.reduce((a,b)=>a+b,0)/recent.length*100:50,latest:m2dFormulaPredict(data,name)};}
 function m2dFormulaProfiles(arr){const out={};M2D_FORMULA_NAMES.forEach(n=>out[n]=m2dFormulaAudit(arr,n));return out;}
-function m2dFormulaDigitEvidence(arr,profiles){const score=Array(10).fill(0),count=Array(10).fill(0);M2D_FORMULA_NAMES.forEach(n=>{const p=profiles?.[n],pred=p?.latest;if(!p||!pred) return;const q=.45*p.exact+.20*p.digit+.20*p.stability+.15*p.recent;[pred[0],pred[1]].forEach(d=>{score[d]+=q;count[d]++;});});return score.map((x,d)=>count[d]?x/count[d]:50);}
-function m2dDigitScore(arr,profiles){const a=m2dRows(arr),formula=m2dFormulaDigitEvidence(a,profiles),out=Array(10).fill(0);for(let d=0;d<10;d++){const s3=m2dPresenceRate(a,d,3),s6=m2dPresenceRate(a,d,6),s9=m2dPresenceRate(a,d,9),s12=m2dPresenceRate(a,d,12),s15=m2dPresenceRate(a,d,15),stable=m2dStability(a,d),recovery=m2dRecovery(a,d);out[d]=stable*.32+((s15*.28+s12*.20+s9*.16+s6*.12+s3*.08))*.38+formula[d]*.20+recovery*.10;}return out;}
+function m2dFormulaDigitEvidence(arr,profiles){const score=Array(10).fill(0),count=Array(10).fill(0);M2D_FORMULA_NAMES.forEach(n=>{const p=profiles?.[n],pred=p?.latest;if(!p||!pred)return;const q=.45*p.exact+.20*p.digit+.20*p.stability+.15*p.recent;[pred[0],pred[1]].forEach(d=>{score[d]+=q;count[d]++;});});return score.map((x,d)=>count[d]?x/count[d]:50);}
+function m2dEmpiricalDigitSignal(arr,d){const a=m2dRows(arr),n=a.length;if(!n)return 50;const vals=M2D_WINDOWS.map(w=>{const x=a.slice(-Math.min(w,n));const t=x.filter(r=>r.tens===d).length,u=x.filter(r=>r.units===d).length;return(m2dBeta(t,x.length,50,8)+m2dBeta(u,x.length,50,8))/2;}),mean=avg(vals),spread=Math.max(...vals)-Math.min(...vals),rec=m2dBeta(a.slice(-6).filter(r=>r.tens===d||r.units===d).length,Math.min(6,n),50,6);return m2dClamp(mean*.72+(100-spread)*.18+rec*.10);}
+function m2dDigitScore(arr,profiles){const a=m2dRows(arr),formula=m2dFormulaDigitEvidence(a,profiles),out=Array(10).fill(0);for(let d=0;d<10;d++){const s3=m2dPresenceRate(a,d,3),s6=m2dPresenceRate(a,d,6),s9=m2dPresenceRate(a,d,9),s12=m2dPresenceRate(a,d,12),s15=m2dPresenceRate(a,d,15),stable=m2dStability(a,d),recovery=m2dRecovery(a,d),emp=m2dEmpiricalDigitSignal(a,d);out[d]=stable*.30+((s15*.28+s12*.20+s9*.16+s6*.12+s3*.08))*.32+formula[d]*.28+recovery*.05+emp*.05;}return out;}
 function m2dRankDigits(arr,profiles){const scores=m2dDigitScore(arr,profiles);return[...Array(10).keys()].map(d=>({digit:d,score:scores[d]})).sort((a,b)=>b.score-a.score||a.digit-b.digit);}
-function m2dPairEvidence(arr,a,b,digitScores){const rows=m2dRows(arr),key=`${a}${b}`,n=rows.length;if(!n)return{score:0};let exact=0;rows.forEach(r=>{if(`${r.tens}${r.units}`===key)exact++;});const pairRate=exact/n*100,stability=[3,6,9,12,15].map(w=>{const x=rows.slice(-Math.min(w,n));return x.length?x.filter(r=>`${r.tens}${r.units}`===key).length/x.length*100:50;}),spread=Math.max(...stability)-Math.min(...stability),partner=m2dClamp(digitScores[b]||50),target=m2dClamp(digitScores[a]||50);return{score:m2dClamp(pairRate*.38+(100-spread)*.22+target*.20+partner*.15+(m2dRecovery(rows,a)+m2dRecovery(rows,b))*.025),pairRate,ordered:pairRate,stability,spread};}
-function m2dPairScores(arr,target,digitScores,limit=5){const out=[];for(let d=0;d<10;d++){if(d===target)continue;const e=m2dPairEvidence(arr,target,d,digitScores);out.push({pair:`${target}${d}`,score:e.score,meta:e});}return out.sort((a,b)=>b.score-a.score||a.pair.localeCompare(b.pair)).slice(0,Math.max(1,limit||5));}
+function m2dPairFormulaSupport(profiles,key){let sum=0,count=0;M2D_FORMULA_NAMES.forEach(n=>{const p=profiles?.[n];if(!p?.latest)return;const q=.45*p.exact+.20*p.digit+.20*p.stability+.15*p.recent;if(`${p.latest[0]}${p.latest[1]}`===key)sum+=q;count++;});return count?m2dClamp(sum/count):50;}
+function m2dPairEvidence(arr,a,b,digitScores,profiles){const rows=m2dRows(arr),key=`${a}${b}`,n=rows.length;if(!n)return{score:0};const exact=rows.filter(r=>`${r.tens}${r.units}`===key).length,pairRate=m2dBeta(exact,n,1,6),stability=[3,6,9,12,15].map(w=>{const x=rows.slice(-Math.min(w,n));return x.length?m2dBeta(x.filter(r=>`${r.tens}${r.units}`===key).length,x.length,1,4):50;}),spread=Math.max(...stability)-Math.min(...stability),partner=m2dClamp(digitScores[b]||50),target=m2dClamp(digitScores[a]||50),formula=m2dPairFormulaSupport(profiles,key);return{score:m2dClamp(pairRate*.42+(100-spread)*.16+target*.18+partner*.14+formula*.10),pairRate,ordered:pairRate,stability,spread,formulaSupport:formula};}
+function m2dPairScores(arr,target,digitScores,limit=5,profiles){const out=[];for(let d=0;d<10;d++){if(d===target)continue;const e=m2dPairEvidence(arr,target,d,digitScores,profiles);out.push({pair:`${target}${d}`,score:e.score,meta:e});}return out.sort((a,b)=>b.score-a.score||a.pair.localeCompare(b.pair)).slice(0,Math.max(1,limit||5));}
 function m2dFinalizePairRows(rows){const arr=Array.isArray(rows)?rows.slice():[],ranked=arr.slice().sort((a,b)=>Number(b.score||0)-Number(a.score||0)||String(a.pair).localeCompare(String(b.pair))),r1=ranked[0]?.pair,r2=ranked[1]?.pair,r3=ranked[2]?.pair;return arr.map(p=>({...p,rankClass:p.pair===r1?'m2d-pair-focus-1':p.pair===r2?'m2d-pair-focus-2':p.pair===r3?'m2d-pair-focus-3':''}));}
-function m2dSelectDrill(arr,digitScores){const ranked=[];for(let d=0;d<10;d++){const base=digitScores[d]||0,pairBest=Math.max(...m2dPairScores(arr,d,digitScores,9).map(x=>x.score),0);ranked.push({digit:d,score:base*.78+pairBest*.22});}return ranked.sort((a,b)=>b.score-a.score||a.digit-b.digit)[0]?.digit??0;}
-function m2dTop(arr,profiles){const digitScores=m2dDigitScore(arr,profiles),ranked=m2dRankDigits(arr,profiles),top=ranked.slice(0,3),drill=m2dSelectDrill(arr,digitScores);return{digitScores,ranked,top,drill,profiles};}
-function m2dAnalyzeSession(records,session){const arr=m2dValidSeq(records,session),profiles=m2dFormulaProfiles(arr),data=m2dTop(arr,profiles),pairs={};data.top.forEach(t=>pairs[t.digit]=m2dFinalizePairRows(m2dPairScores(arr,t.digit,data.digitScores,5)));return{session,arr,profiles,...data,pairsByTarget:pairs,inputQuality:{sample:arr.length,minRequired:6,ready:arr.length>=6}};}
-function m2dCombineSessions(noon,evening){const wn=Math.min(30,Math.max(0,noon.arr?.length||0)),we=Math.min(30,Math.max(0,evening.arr?.length||0)),den=wn+we||1,scores=Array(10).fill(50);for(let d=0;d<10;d++)scores[d]=wn&&we?(noon.digitScores[d]*wn+evening.digitScores[d]*we)/den:wn?noon.digitScores[d]:we?evening.digitScores[d]:50;const ranked=[...Array(10).keys()].map(d=>({digit:d,score:scores[d]})).sort((a,b)=>b.score-a.score||a.digit-b.digit),top=ranked.slice(0,3),all=Array.from(new Set([...(noon.top||[]).map(x=>x.digit),...(evening.top||[]).map(x=>x.digit)]));const pool=(all.length?all:ranked.slice(0,3).map(x=>x.digit)).sort((a,b)=>scores[b]-scores[a]);const pairs={};top.forEach(t=>{const map=new Map();[...(noon.pairsByTarget?.[t.digit]||[]),...(evening.pairsByTarget?.[t.digit]||[])].forEach(p=>{const q=map.get(p.pair);if(!q||p.score>q.score)map.set(p.pair,p);});pairs[t.digit]=m2dFinalizePairRows([...map.values()].sort((a,b)=>b.score-a.score||a.pair.localeCompare(b.pair)).slice(0,5));});return{digitScores:scores,ranked,top,pairsByTarget:pairs,drill:pool[0]??ranked[0]?.digit??0};}
-function m2dRenderBlock(title,time,emoji,data,cardId,dateLabel){const top=(data.top||[]).slice(0,3),pairRows=top.map((t,i)=>`<div class="m2d-rank-row rank-${i+1}"><div class="m2d-rank-label">TOP ${i+1}</div><div class="m2d-main-digit">${t.digit}</div><div class="m2d-pair-line">${(data.pairsByTarget?.[t.digit]||[]).map(p=>`<span class="m2d-pair ${p.rankClass||''}">${m2dEsc(p.pair)}</span>`).join('')}</div></div>`).join('');return `<section class="m2d-card" id="${cardId}"><div class="m2d-card-head"><div class="m2d-card-title"><span class="m2d-flag">🇲🇲</span><div><div class="m2d-name">MYANMAR 2D</div><div class="m2d-time">${m2dEsc(time)}</div></div></div><div class="m2d-date">${m2dEsc(m2dFormatDate(dateLabel))}</div></div><div class="m2d-content"><div class="m2d-label">${m2dEsc(title)}</div>${pairRows}</div><div class="m2d-card-actions"><span class="m2d-brand" aria-label="บ้านเงินกอง"><span class="m2d-brand-icon">✦</span><span>บ้านเงินกอง</span></span><button class="card-action-btn m2d-capture-button" onclick="captureCardImage('${cardId}','MYANMAR 2D ${m2dEsc(time)}')">📸 แคปภาพ</button></div></section>`;}
+function m2dSelectDrill(arr,digitScores,profiles){const ranked=[];for(let d=0;d<10;d++){const base=digitScores[d]||0,pairBest=Math.max(...m2dPairScores(arr,d,digitScores,9,profiles).map(x=>x.score),0);ranked.push({digit:d,score:base*.78+pairBest*.22});}return ranked.sort((a,b)=>b.score-a.score||a.digit-b.digit)[0]?.digit??0;}
+function m2dTop(arr,profiles){const digitScores=m2dDigitScore(arr,profiles),ranked=m2dRankDigits(arr,profiles),top=ranked.slice(0,3),drill=m2dSelectDrill(arr,digitScores,profiles);return{digitScores,ranked,top,drill,profiles};}
+function m2dAnalyzeSession(records,session){const arr=m2dValidSeq(records,session),profiles=m2dFormulaProfiles(arr),data=m2dTop(arr,profiles),pairs={};data.top.forEach(t=>pairs[t.digit]=m2dFinalizePairRows(m2dPairScores(arr,t.digit,data.digitScores,5,profiles)));return{session,arr,profiles,...data,pairsByTarget:pairs,inputQuality:{sample:arr.length,minRequired:6,ready:arr.length>=6}};}
+function m2dCombineSessions(noon,evening){const wn=Math.min(30,Math.max(0,noon.arr?.length||0)),we=Math.min(30,Math.max(0,evening.arr?.length||0)),den=wn+we||1,scores=Array(10).fill(50);for(let d=0;d<10;d++)scores[d]=wn&&we?(noon.digitScores[d]*wn+evening.digitScores[d]*we)/den:wn?noon.digitScores[d]:we?evening.digitScores[d]:50;const ranked=[...Array(10).keys()].map(d=>({digit:d,score:scores[d]})).sort((a,b)=>b.score-a.score||a.digit-b.digit),top=ranked.slice(0,3),allRows=[];for(let i=0;i<Math.max(wn,we);i++){if(noon.arr?.[i])allRows.push(noon.arr[i]);if(evening.arr?.[i])allRows.push(evening.arr[i]);}allRows.splice(120);const profiles={};M2D_FORMULA_NAMES.forEach(n=>{profiles[n]=m2dFormulaAudit(allRows,n);});const pairs={};top.forEach(t=>{pairs[t.digit]=m2dFinalizePairRows(m2dPairScores(allRows,t.digit,scores,5,profiles)).sort((a,b)=>Number(a.pair)-Number(b.pair));});const drill=m2dSelectDrill(allRows,scores,profiles);return{digitScores:scores,ranked,top,pairsByTarget:pairs,drill};}
+function m2dRenderBlock(title,time,emoji,data,cardId,dateLabel){const top=(data.top||[]).slice(0,3),pairRows=top.map((t,i)=>`<div class="m2d-rank-row rank-${i+1}"><div class="m2d-rank-label">TOP ${i+1}</div><div class="m2d-main-digit">${t.digit}</div><div class="m2d-pair-line">${(data.pairsByTarget?.[t.digit]||[]).slice().sort((a,b)=>Number(a.pair)-Number(b.pair)).map(p=>`<span class="m2d-pair ${p.rankClass||''}">${m2dEsc(p.pair)}</span>`).join('')}</div></div>`).join('');return `<section class="m2d-card" id="${cardId}"><div class="m2d-card-head"><div class="m2d-card-title"><span class="m2d-flag">🇲🇲</span><div><div class="m2d-name">MYANMAR 2D</div><div class="m2d-time">${m2dEsc(time)}</div></div></div><div class="m2d-date">${m2dEsc(m2dFormatDate(dateLabel))}</div></div><div class="m2d-content"><div class="m2d-label">${m2dEsc(title)}</div>${pairRows}</div><div class="m2d-card-actions"><span class="m2d-brand" aria-label="บ้านเงินกอง"><span class="m2d-brand-icon">✦</span><span>บ้านเงินกอง</span></span><button class="card-action-btn m2d-capture-button" onclick="captureCardImage('${cardId}','MYANMAR 2D ${m2dEsc(time)}')">📸 แคปภาพ</button></div></section>`;}
 function m2dNextTargetDate(records){const valid=(records||[]).filter(r=>r&&Number(r.timestamp)>0);if(!valid.length)return null;const d=new Date(Math.max(...valid.map(r=>Number(r.timestamp))));d.setHours(12,0,0,0);d.setDate(d.getDate()+1);return d;}
 /* Compatibility helpers used by legacy validation functions; they do not drive Myanmar production selection. */
 function m2dPositionWalkForwardQuality(arr){const a=m2dRows(arr),out=Array.from({length:10},()=>({hits:[0,0],tests:0}));if(a.length<8)return{precision:Array(10).fill(50),stability:Array(10).fill(50),tested:0,byDigit:out};for(let cut=5;cut<a.length;cut++){const train=a.slice(0,cut),actual=a[cut];['tens','units'].forEach((p,i)=>{const f=m2dFreq(train,p),rank=[...Array(10).keys()].sort((x,y)=>f[y]-f[x]||x-y);rank.slice(0,3).forEach(d=>{out[d].tests++;if(d===actual[p])out[d].hits[i]++;});});}return{precision:out.map(x=>x.tests?x.hits.reduce((a,b)=>a+b,0)/(x.tests||1)*100:50),stability:Array(10).fill(50),tested:Math.max(0,a.length-5),byDigit:out};}
@@ -7028,8 +7207,8 @@ function m2dPrecisionScoreDigits(arr){const a=m2dRows(arr),p=m2dFormulaProfiles(
 function m2dV55AdvancedTop3(arr,baseTop){return m2dTop(arr,m2dFormulaProfiles(arr)).top.length?m2dTop(arr,m2dFormulaProfiles(arr)).top:(baseTop||[]);}
 function m2dV55DataQuality(arr){const a=m2dRows(arr),keys=new Set();let dup=0;a.forEach(r=>{const k=[r.timestamp,r.tens,r.units].join('|');if(keys.has(k))dup++;keys.add(k);});return{sample:a.length,duplicates:dup,gate:m2dClamp(100-dup*5,75,100)};}
 function m2dAnalyzeAll(records){const noon=m2dAnalyzeSession(records,'noon'),evening=m2dAnalyzeSession(records,'evening'),all=m2dCombineSessions(noon,evening);return{noon,evening,all};}
-function renderMyanmar2DModule(text){const parsed=m2dParse(text);if(!parsed.records.length)return null;const usable=parsed.records.some(r=>r.noon||r.evening);if(!usable)return null;let stored=[];try{stored=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){stored=[]}const key=r=>`${String(r?.date||'').trim()}|${r?.noon?.value||'××'}|${r?.evening?.value||'××'}`,map=new Map();stored.forEach(r=>map.set(key(r),r));parsed.records.forEach(r=>map.set(key(r),r));stored=[...map.values()].sort((a,b)=>(+a.timestamp||m2dThaiDate(a.date)||0)-(+b.timestamp||m2dThaiDate(b.date)||0)||(a.seq||0)-(b.seq||0));try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify(stored))}catch(e){}const result=m2dAnalyzeAll(stored),targetDate=m2dNextTargetDate(parsed.records),dateLabel=targetDate||parsed.records[parsed.records.length-1]?.date||'',err=parsed.errors.length?`<div class="m2d-note m2d-error">⚠️ ${parsed.errors.map(m2dEsc).join(' • ')}</div>`:'';return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('နေ့လယ်ပိုင်း','12.01 P.M.','☀️',result.noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('ညနေပိုင်း','4.30 P.M.','🌙',result.evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('တစ်နေ့တာ','12.01 P.M. + 4.30 P.M.','📅',result.all,'m2d-card-all',dateLabel)}</div>${err}</div>`;}
-window.__M2D_MAIN_FORMULA_AUDIT__={version:'Myanmar 2D Main Formula Adapter V1',formulaNames:M2D_FORMULA_NAMES,formulaBodies:'UNCHANGED',target:'2D tens+units only',sessions:['noon 12.01 P.M.','evening 4.30 P.M.','full-day'],drill:'secondary dynamic signal',cardAppearance:'UNCHANGED'};
+function renderMyanmar2DModule(text){const parsed=m2dParse(text),seed=m2dParse(M2D_SEED_HISTORY);if(!parsed.records.length&&!seed.records.length)return null;const usable=parsed.records.some(r=>r.noon||r.evening)||seed.records.some(r=>r.noon||r.evening);if(!usable)return null;let stored=[];try{stored=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){stored=[]}const key=r=>`${String(r?.date||'').trim()}|${r?.noon?.value||'××'}|${r?.evening?.value||'××'}`,map=new Map();stored.forEach(r=>map.set(key(r),r));seed.records.forEach(r=>map.set(key(r),r));parsed.records.forEach(r=>map.set(key(r),r));stored=[...map.values()].sort((a,b)=>(+a.timestamp||m2dThaiDate(a.date)||0)-(+b.timestamp||m2dThaiDate(b.date)||0)||(a.seq||0)-(b.seq||0));try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify(stored))}catch(e){}const result=m2dAnalyzeAll(stored),targetDate=m2dNextTargetDate(parsed.records.length?parsed.records:stored),dateLabel=targetDate||parsed.records[parsed.records.length-1]?.date||seed.records[seed.records.length-1]?.date||'',errs=[...seed.errors,...parsed.errors],err=errs.length?`<div class="m2d-note m2d-error">⚠️ ${errs.map(m2dEsc).join(' • ')}</div>`:'';return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('နေ့လယ်ပိုင်း','12.01 P.M.','☀️',result.noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('ညနေပိုင်း','4.30 P.M.','🌙',result.evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('တစ်နေ့တာ','12.01 P.M. + 4.30 P.M.','📅',result.all,'m2d-card-all',dateLabel)}</div>${err}</div>`;}
+window.__M2D_MAIN_FORMULA_AUDIT__={version:'Myanmar 2D Main Formula Adapter V2 — Historical Calibration',formulaNames:M2D_FORMULA_NAMES,formulaBodies:'UNCHANGED',target:'2D tens+units only',sessions:['noon 12.01 P.M.','evening 4.30 P.M.','full-day'],drill:'secondary dynamic signal',cardAppearance:'UNCHANGED'};
 
 /* =========================================================
    V55 PRECISION CONTROL LAYER
@@ -7538,8 +7717,10 @@ function runEngineCore(){
         auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
       }
       const governedV94=v94ApplyMainGovernor(intelligence,resultRecs);
-      const finalTop3=Array.isArray(governedV94.top3)?governedV94.top3.map(Number).filter(Number.isFinite):[];
-      intelligence=governedV94;
+      const governedV96=v96ApplyStableFormulaCore(governedV94,resultRecs,auditDataMap[lotteryName],formulaNames);
+      const governedV97=v97ApplyPrecisionDecision(governedV96,resultRecs);
+      const finalTop3=Array.isArray(governedV97.top3)?governedV97.top3.map(Number).filter(Number.isFinite):[];
+      intelligence=governedV97;
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
@@ -8270,7 +8451,7 @@ window.addEventListener(
     }
   });
 window.__V91_PLUSPLUS_AUDIT__={
-  version:'V91 Plus++ / M2D Precision Upgrade',
+  version:'V97 Precision Decision + V96 Stable Formula Core + M2D Precision Upgrade',
   base:'V54 Plus+ presentation/formula/card contract',
   brain:'V90 Plus / V90 Plus+ evidence-resolution stack',
   flagRouter:'deterministic-market-first-v91',
@@ -8281,7 +8462,7 @@ window.__V91_PLUSPLUS_AUDIT__={
   noNewFormulaLayer:true,
   chronologicalEvidence:true,
   targetLeakageGuard:true,
-  purpose:'V54 + V90 Plus++ integrated stability build; Myanmar 2D session-aware precision upgrade'
+  purpose:'V54 + V90 Plus++ integrated stability build; V96 stable-formula core; V97 next-round precision decision; Myanmar 2D session-aware precision upgrade'
 };
 window.__V79_AUDIT_META__={
 version:'V79',
