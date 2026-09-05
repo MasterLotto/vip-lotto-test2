@@ -908,7 +908,6 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 -->
 
 
-<meta name="nikkei-title-audit" content="V106 exact canonical names: นิเคอิ เช้า | นิเคอิ บ่าย | นิเคอิ VIP เช้า | นิเคอิ VIP บ่าย">
 </head>
 <body>
 <canvas id="snow"></canvas>
@@ -1071,7 +1070,16 @@ function forceNikkeiVisibleTitle(value){
     .trim();
 
   const compact=s.replace(/[\s\u00A0]/g,'').toLowerCase();
-  const isNikkei=compact.includes('นิเคอิ')||compact.includes('นิกเคอิ')||compact.includes('นิคเคอิ')||compact.includes('nikkei');
+  /* V106: accept every legacy/misspelled Nikkei source variant, but ALWAYS
+     emit the one canonical spelling required by the UI: "นิเคอิ".
+     Important variant seen in live cards: "นิคเคอิ". */
+  const nikkeiVariants=[
+    'นิเคอิ',
+    'นิกเคอิ',
+    'นิคเคอิ',
+    'nikkei'
+  ];
+  const isNikkei=nikkeiVariants.some(v=>compact.includes(v));
   if(isNikkei){
     const isVip=compact.includes('vip')||compact.includes('พิเศษ');
     const isMorning=compact.includes('เช้า');
@@ -1097,38 +1105,13 @@ function canonicalCardVisibleTitle(card){
 }
 
 
-function exactNikkeiCanonicalTitle(value){
-  const s=String(value||'')
-    .normalize('NFC')
-    .replace(/[\u200B-\u200D\uFEFF\u2063]/g,'')
-    .replace(/\s+/g,'')
-    .toLowerCase();
-  const isNikkei=
-    s.includes('นิเคอิ')||
-    s.includes('นิกเคอิ')||
-    s.includes('นิคเคอิ')||
-    s.includes('nikkei');
-  if(!isNikkei)return '';
-  const vip=s.includes('vip')||s.includes('พิเศษ');
-  const morning=s.includes('เช้า');
-  const afternoon=s.includes('บ่าย')||s.includes('เย็น');
-  if(vip&&morning)return 'นิเคอิ VIP เช้า';
-  if(vip&&afternoon)return 'นิเคอิ VIP บ่าย';
-  if(vip)return 'นิเคอิ VIP';
-  if(morning)return 'นิเคอิ เช้า';
-  if(afternoon)return 'นิเคอิ บ่าย';
-  return 'นิเคอิ';
-}
-
 function formatDisplayTitle(rawName){
-  const exactNikkei=exactNikkeiCanonicalTitle(rawName);
-  if(exactNikkei)return exactNikkei;
   rawName=cleanDatasetKey(rawName);
   let name=String(rawName||'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim();
   const thaiSynthetic=String(rawName||'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim();
   // NIKKEI DISPLAY HARDENING: the visible title must NEVER start with the
   // generic Thai word 'หุ้น'. Input aliases may still contain it.
-  name=name.replace(/^หุ้น\s*(?=นิเคอิ|นิกเคอิ|นิคเคอิ)/,'').trim();
+  name=name.replace(/^หุ้น\s*(?=นิเคอิ|นิกเคอิ)/,'').trim();
   if(/^__THAI_ROUND__/.test(thaiSynthetic)){
     const r=thaiSynthetic.replace(/^__THAI_ROUND__/,'').trim();
     return `หุ้นไทย ${r}`.trim();
@@ -1151,8 +1134,7 @@ function formatDisplayTitle(rawName){
     .replace(/\s+/g,'');
   if(
     cleanLower.includes('นิเคอิ')||
-    cleanLower.includes('นิกเคอิ')||
-    cleanLower.includes('นิคเคอิ')
+    cleanLower.includes('นิกเคอิ')
   ){
     const isVip=
       cleanLower.includes('vip')||
@@ -6164,11 +6146,19 @@ window.__V102_THAI_PAIR_RANK_DISPLAY__={
 };
 
 /* V103 DISPLAY AUDIT — Nikkei title invariant. */
-window.__V105_NIKKEI_TITLE_ROOT_CAUSE_FIX__={version:'V105',rule:'Nikkei title canonicalized from lotteryName and sanitized again after DOM insertion',singleScoreAuditCard:true,visiblePrefixForbidden:'หุ้น'};
+window.__V106_NIKKEI_TITLE_ROOT_CAUSE_FIX__={version:'V106',rule:'Nikkei title canonicalized from lotteryName and sanitized again after DOM insertion',singleScoreAuditCard:true,visiblePrefixForbidden:'หุ้น'};
 window.__V105_NIKKEI_TITLE_INVARIANT__={
   sourceOfTruth:'card.lotteryName',
   forbiddenVisiblePrefix:'หุ้น',
-  canonical:['นิเคอิ','นิเคอิ เช้า','นิเคอิ บ่าย','นิเคอิ VIP','นิเคอิ VIP เช้า','นิเคอิ VIP บ่าย']
+  canonical:['นิเคอิ','นิเคอิ เช้า','นิเคอิ บ่าย','นิเคอิ VIP','นิเคอิ VIP เช้า','นิเคอิ VIP บ่าย'],sourceVariants:['นิเคอิ','นิกเคอิ','นิคเคอิ','หุ้นนิเคอิ','หุ้นนิกเคอิ','หุ้นนิคเคอิ']
+};
+window.__V106_NIKKEI_SPELLING_AUDIT__={
+  version:'V106',
+  canonicalSpelling:'นิเคอิ',
+  canonicalTitles:['นิเคอิ เช้า','นิเคอิ บ่าย','นิเคอิ VIP เช้า','นิเคอิ VIP บ่าย'],
+  forbiddenVisibleSpelling:'นิคเคอิ',
+  forbiddenVisibleSpelling2:'นิกเคอิ',
+  forbiddenLeadingWord:'หุ้น'
 };
 window.__V103_NIKKEI_DISPLAY_AUDIT__={
   version:'V103',
@@ -7092,7 +7082,7 @@ function renderFullUI(
       lotteryName=decoded.split('|||')[0]||'';
     }catch(e){}
     const visible=forceNikkeiVisibleTitle(lotteryName||titleEl.textContent||'');
-    if(/นิเคอิ|นิกเคอิ|นิคเคอิ|nikkei/i.test(String(lotteryName||titleEl.textContent||'')))
+    if(/นิเคอิ|นิกเคอิ|nikkei/i.test(String(lotteryName||titleEl.textContent||'')))
       titleEl.textContent=visible;
   });
   renderManualCards();
@@ -9062,7 +9052,7 @@ function runEngineCore(){
       const governedV98=v98CleanAuthority(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
       const finalTop3=Array.isArray(governedV98.top3)?governedV98.top3.map(Number).filter(Number.isFinite):[];
       intelligence=governedV98;
-      if(auditDataMap[lotteryName]) auditDataMap[lotteryName].__V98_CONSENSUS_INVARIANCE__=v98ConsensusInvarianceTest(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
+      if(auditDataMap[lotteryName]) auditDataMap[lotteryName].__V98_CONSENSUS_INVARIANCE__=v107ConsensusInvarianceTest(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
@@ -10024,79 +10014,155 @@ function v98FormulaRanked(auditData,formulaNames,records){
   });
   return rows;
 }
-function v100DigitSupport(records,formulaName,d){
+function v107ShrinkRate(rate,samples,prior=50,priorStrength=8){
+  const r=v95Clamp(Number(rate),0,100), n=Math.max(0,Number(samples)||0);
+  const w=n/(n+Math.max(1,priorStrength));
+  return v95Clamp(prior+(r-prior)*w,0,100);
+}
+function v107DigitProfile(records,formulaName,d){
   const h=v98FormulaMetrics(records,formulaName).history;
   const predicted=h.filter(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d)));
-  if(!predicted.length)return {oos:50,samples:0,recent:50,stability:50,temporal:50};
+  if(!predicted.length)return {oos:50,samples:0,recent:50,stability:50,temporal:50,direction:50,dispersion:50,drawdown:0,early:50,mid:50,late:50};
   const hit=x=>v98TargetHasDigit({n3:x.actualN3,n2:x.actualN2},d);
-  const recent=percent(predicted.slice(-Math.min(6,predicted.length)).filter(hit).length,Math.min(6,predicted.length));
-  const all=percent(predicted.filter(hit).length,predicted.length);
   const q=Math.max(1,Math.floor(predicted.length/3));
-  const early=percent(predicted.slice(0,q).filter(hit).length,q);
+  const rateOf=a=>a.length?percent(a.filter(hit).length,a.length):50;
+  const all=rateOf(predicted), recent=rateOf(predicted.slice(-Math.min(6,predicted.length)));
+  const early=rateOf(predicted.slice(0,q));
   const midSeg=predicted.slice(q,Math.max(q+1,predicted.length-q));
-  const mid=midSeg.length?percent(midSeg.filter(hit).length,midSeg.length):50;
-  const lateSeg=predicted.slice(-q), late=percent(lateSeg.filter(hit).length,lateSeg.length);
+  const mid=rateOf(midSeg);
+  const late=rateOf(predicted.slice(-q));
   const temporal=.25*early+.30*mid+.45*late;
   const stability=.45*all+.30*recent+.25*temporal;
-  return {oos:all,samples:predicted.length,recent,stability,temporal};
+  const direction=v95Clamp(50+(late-early)*.45+(late-mid)*.25);
+  const rates=[early,mid,late,recent,all];
+  const mean=avg(rates), dispersion=avg(rates.map(x=>Math.abs(x-mean)));
+  const drawdown=Math.max(0,Math.max(early,mid,late)-late);
+  return {oos:all,samples:predicted.length,recent,stability,temporal,direction,dispersion,drawdown,early,mid,late};
+}
+function v107SelectionErrorLedger(base,rows,records){
+  const wf=base?.endToEndWalkForward||base?.v95?.endToEndWalkForward||null;
+  const srcRows=Array.isArray(wf?.rows)?wf.rows:[];
+  let missedTop3=0,selectedHits=0,top3Hits=0,total=0;
+  srcRows.forEach(r=>{
+    const normalizeDigitList=value=>{
+      if(value instanceof Set)return [...value].map(Number).filter(Number.isFinite);
+      if(Array.isArray(value))return value.map(Number).filter(Number.isFinite);
+      if(value==null)return [];
+      if(typeof value==='number')return Number.isFinite(value)?[value]:[];
+      const str=String(value).trim();
+      if(!str)return [];
+      return str.split(/[^0-9]+/).filter(Boolean).map(Number).filter(Number.isFinite);
+    };
+    const actual=new Set(normalizeDigitList(r.actual));
+    const selected=new Set(normalizeDigitList(r.selected));
+    const top3=new Set(normalizeDigitList(r.top3));
+    if(!actual.size)return;
+    total++;
+    if([...selected].some(d=>actual.has(d)))selectedHits++;
+    if([...top3].some(d=>actual.has(d)))top3Hits++;
+    for(const d of top3){if(actual.has(d)&&!selected.has(d))missedTop3++;}
+  });
+  const ranked=(Array.isArray(rows)?rows:[]).slice().sort((a,b)=>Number(b.selectionQuality||b.score||0)-Number(a.selectionQuality||a.score||0));
+  const top3=ranked.slice(0,3).map(x=>Number(x.digit));
+  return {tested:total,selectedHitRate:total?round2(selectedHits/total*100):0,top3HitRate:total?round2(top3Hits/total*100):0,missedTop3Hits:missedTop3,currentTop3:top3,diagnosticOnly:true};
+}
+function v100DigitSupport(records,formulaName,d){
+  const p=v107DigitProfile(records,formulaName,d);
+  return {oos:p.oos,samples:p.samples,recent:p.recent,stability:p.stability,temporal:p.temporal,direction:p.direction,dispersion:p.dispersion,drawdown:p.drawdown,early:p.early,mid:p.mid,late:p.late};
 }
 function v98CleanAuthority(base,records,auditData,formulaNames){
   const src=base||{}, rows0=Array.isArray(src.rows)?src.rows:[]; if(rows0.length!==10)return src;
   const arr=(records||[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
   const ranked=v98FormulaRanked(auditData,formulaNames,arr);
+  const formulaTop3=new Set(ranked.filter(x=>x.top3).map(x=>x.name));
   const out=rows0.map(row=>{
     const d=Number(row.digit), supporters=[];
     ranked.forEach(f=>{
       const latest=(auditData?.[f.name]?.latestDigits||[]).map(Number);
       if(latest.includes(d)){
-        const ds=v100DigitSupport(arr,f.name,d), m=f.metrics, mc=f.confluence;
-        supporters.push({name:f.name,rank:f.rank,rankWeight:f.rankWeight,top3:f.top3,quality:f.quality,oos:ds,multi:mc.confluence,temporal:mc.temporal});
+        const ds=v107DigitProfile(arr,f.name,d), mc=f.confluence;
+        const reliableOOS=v107ShrinkRate(ds.oos,ds.samples);
+        const reliableRecent=v107ShrinkRate(ds.recent,Math.min(6,ds.samples));
+        const reliableTemporal=v107ShrinkRate(ds.temporal,ds.samples);
+        const reliableStability=v107ShrinkRate(ds.stability,ds.samples);
+        supporters.push({name:f.name,rank:f.rank,rankWeight:f.rankWeight,top3:f.top3,quality:f.quality,oos:ds,multi:mc.confluence,temporal:mc.temporal,
+          reliableOOS,reliableRecent,reliableTemporal,reliableStability});
       }
     });
-    /* Formula-generated candidates are primary. A digit with no active formula
-       support is not allowed to win merely from frequency or legacy evidence. */
-    let formulaSignal=0,digitOOS=0,stability=0,recent=0,temporal=0,empirical=0;
+    let formulaSignal=0,digitOOS=0,stability=0,recent=0,temporal=0,empirical=0,direction=50,dispersion=0,drawdown=0,samples=0;
     if(supporters.length){
       const wsum=supporters.reduce((s,x)=>s+x.rankWeight,0)||1;
       formulaSignal=supporters.reduce((s,x)=>s+x.quality*x.rankWeight,0)/wsum;
-      digitOOS=supporters.reduce((s,x)=>s+x.oos.oos*x.rankWeight,0)/wsum;
-      stability=supporters.reduce((s,x)=>s+x.oos.stability*x.rankWeight,0)/wsum;
-      recent=supporters.reduce((s,x)=>s+x.oos.recent*x.rankWeight,0)/wsum;
-      temporal=supporters.reduce((s,x)=>s+x.temporal*x.rankWeight,0)/wsum;
+      digitOOS=supporters.reduce((s,x)=>s+x.reliableOOS*x.rankWeight,0)/wsum;
+      stability=supporters.reduce((s,x)=>s+x.reliableStability*x.rankWeight,0)/wsum;
+      recent=supporters.reduce((s,x)=>s+x.reliableRecent*x.rankWeight,0)/wsum;
+      temporal=supporters.reduce((s,x)=>s+x.reliableTemporal*x.rankWeight,0)/wsum;
+      direction=supporters.reduce((s,x)=>s+x.oos.direction*x.rankWeight,0)/wsum;
+      dispersion=supporters.reduce((s,x)=>s+x.oos.dispersion*x.rankWeight,0)/wsum;
+      drawdown=supporters.reduce((s,x)=>s+x.oos.drawdown*x.rankWeight,0)/wsum;
+      samples=supporters.reduce((s,x)=>s+x.oos.samples*x.rankWeight,0)/wsum;
       empirical=v95Num(v95EmpiricalNull(arr,[d]),50);
     }else{
-      /* Keep diagnostic values, but make the candidate ineligible for BEST-2. */
-      formulaSignal=0; digitOOS=0; stability=0; recent=0; temporal=0;
       empirical=v95Num(v95EmpiricalNull(arr,[d]),50);
     }
-    const rankTop3Boost=supporters.length?supporters.reduce((s,x)=>s+(x.top3?x.rankWeight:0),0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):0;
+    /* V107 challenge: penalize instability only softly; never hard-reject a formula candidate. */
+    const challengePenalty=Math.min(3,dispersion*.035)+Math.min(2.5,drawdown*.025)+Math.min(2.0,Math.max(0,50-direction)*.018);
+    const top3Support=supporters.length?supporters.reduce((s,x)=>s+(x.top3?x.rankWeight:0),0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):0;
     const rawScore=supporters.length ? (
-      V100_CONFIG.formula*formulaSignal + V100_CONFIG.digitOOS*digitOOS +
-      V100_CONFIG.stability*stability + V100_CONFIG.recent*recent +
-      V100_CONFIG.temporal*temporal + V100_CONFIG.empirical*empirical +
-      V100_CONFIG.top3Boost*rankTop3Boost
+      V107_CONFIG.formula*formulaSignal + V107_CONFIG.digitOOS*digitOOS +
+      V107_CONFIG.stability*stability + V107_CONFIG.recent*recent +
+      V107_CONFIG.temporal*temporal + V107_CONFIG.empirical*empirical +
+      V107_CONFIG.top3Prior*top3Support - challengePenalty
     ) : 0;
     const final=v95Clamp(rawScore,0,100);
-    return {...row,
-      selectionQuality:round2(final),score:round2(final),
-      v98:{version:'V100 FORMULA CONFLUENCE AUTHORITY',formulaSupportCount:supporters.length,
-        formulaSupporters:supporters.map(x=>x.name),formulaSignal:round2(formulaSignal),
-        digitOOS:round2(digitOOS),stability:round2(stability),recent:round2(recent),
-        temporal:round2(temporal),empirical:round2(empirical),
-        top3Influence:round2(rankTop3Boost),consensusAuthority:0,consensusBonus:0,
-        agreementAuthority:0,legacySelectionIgnored:true,formulaGenerated:supporters.length>0,
-        supporterRanks:supporters.map(x=>x.rank)}
-    };
+    return {...row,selectionQuality:round2(final),score:round2(final),
+      v98:{version:'V107 SELECTION PRECISION AUTHORITY',formulaSupportCount:supporters.length,
+        formulaSupporters:supporters.map(x=>x.name),formulaSignal:round2(formulaSignal),digitOOS:round2(digitOOS),
+        stability:round2(stability),recent:round2(recent),temporal:round2(temporal),empirical:round2(empirical),
+        top3Influence:round2(top3Support),consensusAuthority:0,consensusBonus:0,agreementAuthority:0,
+        legacySelectionIgnored:true,formulaGenerated:supporters.length>0,supporterRanks:supporters.map(x=>x.rank),
+        sampleReliability:round2(supporters.length?supporters.reduce((s,x)=>s+(100*x.oos.samples/(x.oos.samples+8))*x.rankWeight,0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):0),
+        samples:round2(samples),direction:round2(direction),dispersion:round2(dispersion),drawdown:round2(drawdown),challengePenalty:round2(challengePenalty),
+        top3FormulaSupport:round2(top3Support)}};
   }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
   const eligible=out.filter(x=>x.v98?.formulaGenerated);
-  const selected=eligible.slice(0,2);
+  let selected=eligible.slice(0,2);
+  /* V107 close-race resolver: when the leader is within 2 points of a nearby
+     candidate, a formula Top-3 candidate can win the tie only; it cannot
+     overturn a materially stronger score. */
+  if(selected.length===2){
+    const second=selected[1];
+    const pool=eligible.slice(0,5);
+    const close=pool.filter(x=>x!==selected[0]&&Math.abs(Number(x.selectionQuality||0)-Number(second.selectionQuality||0))<=2.0);
+    const challenger=close.sort((a,b)=>{
+      const pa=Number(a.v98?.top3FormulaSupport||0), pb=Number(b.v98?.top3FormulaSupport||0);
+      return pb-pa || Number(b.selectionQuality||0)-Number(a.selectionQuality||0) || Number(a.digit)-Number(b.digit);
+    })[0];
+    if(challenger && Number(challenger.selectionQuality)>Number(second.selectionQuality) && Number(challenger.v98?.top3FormulaSupport||0)>Number(second.v98?.top3FormulaSupport||0)){
+      selected=[selected[0],challenger].sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality));
+    }
+  }
   const top3=eligible.slice(0,3).map(x=>x.digit);
+  const ledger=v107SelectionErrorLedger(src,out,arr);
   return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
-    v98:{version:'V100 FORMULA CONFLUENCE AUTHORITY',authority:'FORMULA+OOS+MULTI-HORIZON+TEMPORAL',consensusAuthority:'ZERO',agreementAuthority:'ZERO',
+    v98:{version:'V107 SELECTION PRECISION AUTHORITY',authority:'FORMULA+OOS+SAMPLE+MULTI-HORIZON+TEMPORAL+CHALLENGE',consensusAuthority:'ZERO',agreementAuthority:'ZERO',
       formulaRankWeighting:'SMOOTH',ranked:ranked.map(x=>({rank:x.rank,name:x.name,quality:round2(x.quality),rankWeight:round2(x.rankWeight),top3:x.top3,confluence:x.confluence})),
-      selected:selected.map(x=>({digit:x.digit,score:x.selectionQuality,formulaSupport:x.v98?.formulaSupportCount||0}))},
-    finalGate:{...(src.finalGate||{}),v100FormulaConfluenceAuthority:true,v98CleanFinalAuthority:false,v100ConsensusZero:true,v100AgreementZero:true,v100LegacySelectionIgnored:true,v100FormulaCandidatesOnly:true}};
+      selected:selected.map(x=>({digit:x.digit,score:x.selectionQuality,formulaSupport:x.v98?.formulaSupportCount||0})),selectionErrorLedger:ledger,
+      closeRaceGap:2.0,top3TiePriority:'TIE_ONLY',sampleShrinkPrior:50,sampleShrinkStrength:8},
+    finalGate:{...(src.finalGate||{}),v107SelectionPrecision:true,v100FormulaConfluenceAuthority:true,v100ConsensusZero:true,v100AgreementZero:true,v100LegacySelectionIgnored:true,v100FormulaCandidatesOnly:true,v107SampleReliability:true,v107FalseRejectionAudit:true,v107CloseRaceResolver:true}};
 }
+const V107_CONFIG=Object.freeze({formula:.34,digitOOS:.23,stability:.16,recent:.07,temporal:.12,empirical:.05,top3Prior:.03});
+function v107ConsensusInvarianceTest(intelligence,records,auditData,formulaNames){
+  const a=v98CleanAuthority({...intelligence,consensus:[]},records,auditData,formulaNames);
+  const noisy=(intelligence?.consensus||[]).map(x=>({...x,score:100,consensusQuality:100,agreement:10,formulaCount:10}));
+  const b=v98CleanAuthority({...intelligence,consensus:noisy},records,auditData,formulaNames);
+  const A=(a.selected||[]).map(x=>Number(x.digit)),B=(b.selected||[]).map(x=>Number(x.digit));
+  return {pass:A.length===B.length&&A.every((d,i)=>d===B[i]),before:A,after:B};
+}
+window.__V107_TEST_API__={cleanAuthority:v98CleanAuthority,invariance:v107ConsensusInvarianceTest,formulaRanked:v98FormulaRanked,digitConditional:v98DigitConditional,selectionLedger:v107SelectionErrorLedger,digitProfile:v107DigitProfile,formulaNames:Object.keys(allFormulas).filter(n=>typeof allFormulas[n]==='function'),formulaHistory:getFormulaHistory,formulaMap:allFormulas};
+window.__V98_TEST_API__=window.__V107_TEST_API__;
+window.__V99_CONSENSUS_FIREWALL__={authority:'V107-SELECTION-PRECISION',consensusScore:0,agreementScore:0,legacyBuildDigitScoreForFinalCard:false,formulaCandidatesOnly:true};
+window.__V107_SELECTION_PRECISION__={version:'V107',selectionErrorAudit:true,falseRejectionProtection:true,digitFormulaOOS:true,sampleReliability:true,closeRaceResolver:true,consensusAuthority:'ZERO'};
 const V100_CONFIG=Object.freeze({formula:.34,digitOOS:.23,stability:.16,recent:.07,temporal:.12,empirical:.05,top3Boost:.03});
 /* Deterministic regression helper: changing consensus/agreement must not alter V98 BEST-2. */
 function v98ConsensusInvarianceTest(intelligence,records,auditData,formulaNames){
@@ -10107,8 +10173,8 @@ function v98ConsensusInvarianceTest(intelligence,records,auditData,formulaNames)
   return {pass:A.length===B.length&&A.every((d,i)=>d===B[i]),before:A,after:B};
 }
 
-window.__V98_TEST_API__={cleanAuthority:v98CleanAuthority,invariance:v98ConsensusInvarianceTest,formulaRanked:v98FormulaRanked,digitConditional:v98DigitConditional,formulaNames:Object.keys(allFormulas).filter(n=>typeof allFormulas[n]==='function')};
-window.__V99_CONSENSUS_FIREWALL__={authority:'V100-FORMULA-CONFLUENCE-ONLY',consensusScore:0,agreementScore:0,legacyBuildDigitScoreForFinalCard:false,formulaCandidatesOnly:true};
+window.__V98_TEST_API__={cleanAuthority:v98CleanAuthority,invariance:v98ConsensusInvarianceTest,formulaRanked:v98FormulaRanked,digitConditional:v98DigitConditional,formulaNames:Object.keys(allFormulas).filter(n=>typeof allFormulas[n]==='function'),formulaHistory:getFormulaHistory,formulaMap:allFormulas};
+window.__V99_CONSENSUS_FIREWALL__={authority:'V107-SELECTION-PRECISION',consensusScore:0,agreementScore:0,legacyBuildDigitScoreForFinalCard:false,formulaCandidatesOnly:true};
 window.__V91_PLUSPLUS_AUDIT__={
   version:'V91 Plus++ / M2D Precision Upgrade',
   base:'V54 Plus+ presentation/formula/card contract',
