@@ -1061,6 +1061,9 @@ function formatDisplayTitle(rawName){
   rawName=cleanDatasetKey(rawName);
   let name=String(rawName||'').trim();
   const thaiSynthetic=String(rawName||'').trim();
+  // Nikkei display titles must never carry the generic Thai word 'หุ้น'.
+  // Keep input aliases accepted, but normalize every Nikkei title to 'นิเคอิ ...'.
+  name=name.replace(/^หุ้น\s*(นิเคอิ|นิกเคอิ)/i,'$1').trim();
   if(/^__THAI_ROUND__/.test(thaiSynthetic)){
     const r=thaiSynthetic.replace(/^__THAI_ROUND__/,'').trim();
     return `หุ้นไทย ${r}`.trim();
@@ -1365,7 +1368,7 @@ function getLotteryFlag(name,displayTitle){
 ========================================================= */
 const V91_FLAG_CASES=Object.freeze([
   ['นิเคอิ เช้า','🇯🇵'],['นิเคอิ บ่าย','🇯🇵'],['นิเคอิ VIP เช้า','🇯🇵'],['นิเคอิ VIP บ่าย','🇯🇵'],
-  ['หุ้นนิเคอิ เช้า','🇯🇵'],['หุ้นนิเคอิ บ่าย','🇯🇵'],['นิกเคอิ VIP เช้า','🇯🇵'],['KI VIP เช้า','🇯🇵'],
+  ['นิเคอิ เช้า','🇯🇵'],['นิเคอิ บ่าย','🇯🇵'],['นิกเคอิ VIP เช้า','🇯🇵'],['KI VIP เช้า','🇯🇵'],
   ['จีน เช้า','🇨🇳'],['หุ้นจีน บ่าย','🇨🇳'],['ฮั่งเส็ง เช้า','🇭🇰'],
   ['ดาวโจนส์','🇺🇸'],['ไต้หวัน','🇹🇼'],['เกาหลี','🇰🇷'],['สิงคโปร์','🇸🇬'],
   ['อินเดีย','🇮🇳'],['อียิปต์','🇪🇬'],['รัสเซีย','🇷🇺'],['เยอรมัน','🇩🇪'],['อังกฤษ','🇬🇧'],
@@ -6086,6 +6089,17 @@ window.captureCardImage=function(cardId,lotteryTitle){
   });
 };
 /* V91 CARD ORDER AUDIT — presentation-only; no scoring/ranking mutation. */
+window.__V102_THAI_PAIR_RANK_DISPLAY__={
+  version:'V102',
+  scope:'Thai Stock cards only',
+  displayOnly:true,
+  perRowRanking:['gold','silver','rose-gold'],
+  rowsPerCard:2,
+  totalHighlightedPerCard:6,
+  scoringChanged:false,
+  selectionChanged:false
+};
+
 window.__V91_CARD_ORDER_AUDIT__={
   version:'V91 Plus++ Card Order Patch',
   scope:'general lottery cards only',
@@ -6153,12 +6167,35 @@ function renderCardHTML(
       return an-bn || String(a?.pair??'').localeCompare(String(b?.pair??''));
     });
   };
+  /* V102 THAI STOCK PAIR RANK DISPLAY — presentation-only.
+     Thai Stock cards must expose the same visual priority language as the
+     other cards: TOP 1 = gold, TOP 2 = silver, TOP 3 = rose-gold, with the
+     ranking applied independently to each 5-pair row. This never changes
+     digit selection, scores, pair scores, or backend ordering. */
+  const isThaiStockCard=v57IsThaiStockName(
+    `${card.lotteryName||''} ${card.displayTitle||''}`
+  );
+  const addThaiPairRankClasses=rows=>{
+    const arr=Array.isArray(rows)?rows.slice():[];
+    if(!isThaiStockCard||isMyanmar2DCard||arr.length<2)return arr;
+    const ranked=[...arr].sort((a,b)=>
+      Number(b?.score??b?.selectionQuality??0)-Number(a?.score??a?.selectionQuality??0)||
+      Number(a?.pair??99)-Number(b?.pair??99)||
+      String(a?.pair??'').localeCompare(String(b?.pair??''))
+    );
+    const rankMap=new Map([
+      [ranked[0]?.pair,'rank-gold'],
+      [ranked[1]?.pair,'rank-silver'],
+      [ranked[2]?.pair,'rank-rosegold']
+    ]);
+    return arr.map(item=>({...item,rankClass:rankMap.get(item?.pair)||item?.rankClass||''}));
+  };
   const displayD1Pairs=isMyanmar2DCard
     ? card.d1Pairs
-    : sortPairsForCardDisplay(card.d1Pairs);
+    : addThaiPairRankClasses(sortPairsForCardDisplay(card.d1Pairs));
   const displayD2Pairs=isMyanmar2DCard
     ? card.d2Pairs
-    : sortPairsForCardDisplay(card.d2Pairs);
+    : addThaiPairRankClasses(sortPairsForCardDisplay(card.d2Pairs));
   /* V90.1 FLAG HARDENING — resolve the flag again from the canonical display
      title at render time. This prevents a stale/misclassified card.flag value
      from reaching the visible card. */
