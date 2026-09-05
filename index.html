@@ -2189,7 +2189,7 @@ function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null,records
     item.score=item.consensusQuality;
     item.weightedAgreement=round2(item.weightedAgreement);
   });
-  return data.sort((a,b)=>b.score-a.score||b.independentConsensus-a.independentConsensus||a.digit-b.digit);
+  return data.sort((a,b)=>b.score-a.score||b.independentConsensus-a.independentConsensus||b.agreement-a.agreement||a.digit-b.digit);
 }
 function buildHistoricalDigitConsensus(recs,formulaNames,formulaGovernor=null){
   const out=Array.from({length:10},(_,digit)=>({digit,predicted:0,hitSupport:0,weightedSupport:0,formulas:[]}));
@@ -2861,7 +2861,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
      strong #3 candidate. Keep the pre-selection rank and record why a candidate
      was rejected. */
   const selectionRanked=[...rows].sort((a,b)=>
-    b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
+    b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
   selectionRanked.forEach((r,i)=>{
     r.raw.preSelectionRank=i+1;
     r.raw.top3Eligible=(i<3);
@@ -8413,7 +8413,7 @@ function v55ApplyMainPrecisionLayer(intelligence,records,auditData,formulaNames)
     const calibrated=v55SafeNum(row.selectionQuality,row.score||0)*cal.factor;
     const finalScore=round2(clamp(calibrated+stabilityBoost+independenceBoost+robustnessBoost-errorPenalty-shiftPenalty-riskPenalty-multiplePenalty-trapPenalty,0,100));
     return{...row,selectionQuality:finalScore,score:round2(clamp(v55SafeNum(row.score,0)*cal.factor,0,100)),raw:{...raw,v56ConsensusTrapPenalty:trapPenalty,v55WindowStability:ws.score,v55RankStability:ws.rankStability,v55DistributionShift:shift.score,v55FormulaDigitPrecision:er.precision,v55EnsembleDiversity:div,v55ErrorPenalty:errorPenalty,v55MultipleTestingPenalty:multiplePenalty,v55CalibrationFactor:cal.factor,v55QualityGate:quality.gate,v55Perturbation:perturb.score}};
-  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
+  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
   const champion=(base.selected||[]).map(x=>Number(x.digit));
   const challenger=scored.slice(0,2).map(x=>x.digit);
   const lookup=d=>scored.find(x=>x.digit===d);
@@ -8584,10 +8584,6 @@ function runEngineCore(){
   });
   const thaiAllDay=v57ThaiRecords(masterRecords);
   if(thaiAllDay.length) groups.__THAI_ALLDAY__=thaiAllDay;
-  /* V96.1 ROUTING CONTRACT: Thai Stock เช้า/เที่ยง/บ่าย/เย็น and ทั้งวัน use
-     the exact MAIN_SYSTEM_V96 pipeline. Only หุ้นไทย บนตรง ๆ is exceptional
-     and remains on the legacy direct-top specialist. */
-  const thaiMainPipelineKeys=new Set(['__THAI_ROUND__เช้า','__THAI_ROUND__เที่ยง','__THAI_ROUND__บ่าย','__THAI_ROUND__เย็น','__THAI_ALLDAY__']);
   const
     auditDataMap={},
     predictionDataMap={},
@@ -8617,7 +8613,6 @@ function runEngineCore(){
     .forEach(lotteryName=>{
       const recs=
         groups[lotteryName];
-      const thaiMainPipeline=thaiMainPipelineKeys.has(lotteryName);
       /* TEMPORAL INTEGRITY: use one chronological result snapshot. */
       const resultRecs=
         recs
@@ -8782,7 +8777,7 @@ function runEngineCore(){
       const scoreD1=selectedRows[0]?.digit;
       const scoreD2=selectedRows[1]?.digit;
       const scoreData=intelligence.rows.map(row=>buildDigitScore(row.digit,formulaNames,auditDataMap[lotteryName],intelligence.consensus,intelligence.frequency,intelligence))
-        .sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
+        .sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
       const selectedScore=scoreData.find(x=>x.digit===scoreD1)||scoreData[0];
       const secondScore=scoreData.find(x=>x.digit===scoreD2)||scoreData.find(x=>x.digit!==scoreD1);
       if(scoreD1===undefined||scoreD2===undefined) return;
@@ -8857,8 +8852,7 @@ function runEngineCore(){
           top3:intelligence.top3||[],
           top3Audit:intelligence.top3Audit||[],
           shadowTop3:intelligence.shadowTop3||[],
-          removedFromTop3:intelligence.removedFromTop3||[],
-          pipelineMode:thaiMainPipeline?'MAIN_SYSTEM_V96':'MAIN_SYSTEM_V96'
+          removedFromTop3:intelligence.removedFromTop3||[]
         }
       };
     });
@@ -8876,7 +8870,7 @@ function runEngineCore(){
       nextDate:top.nextDate,d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,
       rank1Formula:'V95 THAI DIRECT',rank1Rate:0,recordCount:top.recordCount,recordsForFrequency:thaiAllDay,
       topAgreement:0,scoreGap:round2((top.scores[top.d1]||0)-(top.scores[top.d2]||0)),
-      scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรง ๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{thaiV95:top.thaiV95},thaiV95:top.thaiV95,focusDigits:thaiFocusDigits,pipelineMode:'THAI_DIRECT_TOP_LEGACY'}
+      scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรง ๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{thaiV95:top.thaiV95},thaiV95:top.thaiV95,focusDigits:thaiFocusDigits}
     };
   }
   /* =====================================================
