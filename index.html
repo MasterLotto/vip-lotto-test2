@@ -6263,49 +6263,111 @@ window.copyCardText=function(
 /* =========================================================
    CAPTURE CARD
 ========================================================= */
-window.captureCardImage=function(cardId,lotteryTitle){
+window.captureCardImage=async function(cardId,lotteryTitle){
   const cardEl=$(cardId);
-  if(!cardEl||typeof html2canvas!=='function'){
-    showToast('❌ ไม่สามารถจับภาพได้');
+  if(!cardEl){
+    showToast('❌ ไม่พบการ์ดที่ต้องการจับภาพ');
     return;
   }
+
+  /*
+     CAPTURE PATCH ONLY — V106.1
+     Keep the rest of the application untouched.
+     html2canvas was previously assumed to already exist. That assumption
+     fails in some fresh/private-browser sessions. Load it on demand and
+     reuse the same promise for subsequent captures.
+  */
+  const loadHtml2Canvas=()=>{
+    if(typeof window.html2canvas==='function')return Promise.resolve(window.html2canvas);
+    if(window.__h2cLoadPromise)return window.__h2cLoadPromise;
+
+    const sources=[
+      'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    ];
+
+    window.__h2cLoadPromise=(async()=>{
+      let lastError=null;
+      for(const src of sources){
+        try{
+          await new Promise((resolve,reject)=>{
+            const existing=document.querySelector('script[data-h2c-loader="1"]');
+            if(existing){
+              if(typeof window.html2canvas==='function'){resolve();return;}
+              existing.addEventListener('load',resolve,{once:true});
+              existing.addEventListener('error',()=>reject(new Error('html2canvas load failed')),{once:true});
+              return;
+            }
+            const script=document.createElement('script');
+            script.src=src;
+            script.async=true;
+            script.dataset.h2cLoader='1';
+            script.onload=()=>resolve();
+            script.onerror=()=>reject(new Error('html2canvas load failed: '+src));
+            document.head.appendChild(script);
+          });
+          if(typeof window.html2canvas==='function')return window.html2canvas;
+        }catch(err){
+          lastError=err;
+          const bad=document.querySelector('script[data-h2c-loader="1"]');
+          if(bad)bad.remove();
+        }
+      }
+      throw lastError||new Error('html2canvas unavailable');
+    })();
+
+    return window.__h2cLoadPromise;
+  };
+
+  showToast('📸 กำลังเตรียมระบบจับภาพ...');
+  let h2c;
+  try{
+    h2c=await loadHtml2Canvas();
+  }catch(err){
+    console.error('html2canvas load:',err);
+    showToast('❌ ไม่สามารถโหลดระบบจับภาพได้');
+    return;
+  }
+
   showToast('📸 กำลังบันทึกภาพการ์ด...');
   const clone=cardEl.cloneNode(true);
-  /* Exported image: keep the card content/branding, remove ALL interactive controls. */
-  clone.querySelectorAll('.card-action-btn').forEach(button=>button.remove());
-  clone.removeAttribute('id');
   clone.style.position='fixed';
   clone.style.left='-100000px';
   clone.style.top='0';
-  clone.style.margin='0';
   clone.style.width=`${Math.max(1,cardEl.getBoundingClientRect().width)}px`;
   clone.style.zIndex='-1';
+  clone.style.pointerEvents='none';
   document.body.appendChild(clone);
+
   const cleanup=()=>{if(clone&&clone.parentNode)clone.parentNode.removeChild(clone);};
-  requestAnimationFrame(()=>{
-    html2canvas(clone,{scale:Math.max(3,Math.min(4,window.devicePixelRatio*2)),backgroundColor:'#ffffff',useCORS:true,allowTaint:false,logging:false})
-    .then(canvas=>new Promise(resolve=>canvas.toBlob(resolve,'image/png')))
-    .then(blob=>{
-      cleanup();
-      if(!blob){showToast('❌ ไม่สามารถสร้างไฟล์ภาพได้');return;}
-      const safeName=String(lotteryTitle||'Lottery').replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
-      const url=URL.createObjectURL(blob);
-      const link=document.createElement('a');
-      link.href=url;
-      link.download=`BanNgernKong_${safeName}.png`;
-      link.style.display='none';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),2000);
-      showToast('✓ บันทึกภาพการ์ดสำเร็จ');
-    })
-    .catch(err=>{
-      cleanup();
-      console.error('captureCardImage:',err);
-      showToast('❌ ไม่สามารถจับภาพได้');
+  try{
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const canvas=await h2c(clone,{
+      scale:Math.max(3,Math.min(4,window.devicePixelRatio*2)),
+      backgroundColor:'#ffffff',
+      useCORS:true,
+      allowTaint:false,
+      logging:false
     });
-  });
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+    cleanup();
+    if(!blob){showToast('❌ ไม่สามารถสร้างไฟล์ภาพได้');return;}
+    const safeName=String(lotteryTitle||'Lottery').replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download=`BanNgernKong_${safeName}.png`;
+    link.style.display='none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    showToast('✓ บันทึกภาพการ์ดสำเร็จ');
+  }catch(err){
+    cleanup();
+    console.error('captureCardImage:',err);
+    showToast('❌ ไม่สามารถจับภาพได้');
+  }
 };
 /* V91 CARD ORDER AUDIT — presentation-only; no scoring/ranking mutation. */
 window.__V102_THAI_PAIR_RANK_DISPLAY__={
