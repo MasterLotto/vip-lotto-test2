@@ -3985,9 +3985,41 @@ const top5PairRankedHTML=top5Pairs.map((item,index)=>{const rawRatio=item.votes/
 DEEP SCAN — 3 REAL TOP DIGIT SETS
 ========================================================= */
 function findPairsForDigit(digit){
+ /*
+  * TOP-3 PAIR ENGINE — audited fallback path
+  * A highlighted digit must not disappear from its pair card merely because
+  * the digit was not the primary digit of the model that produced the pair.
+  * Each model may vote for a canonical pair only once, preventing repeated
+  * pair generation inside one model from inflating support.
+  */
  const target=String(digit),pairMap=new Map();
- mainEvaluated.filter(model=>model.set.some(d=>String(d)===target)).forEach(model=>{const modelWeight=Math.max(model.aiScore||0,50)/100;Object.values(model.pairsMap||{}).forEach(list=>(list||[]).forEach(pairStr=>{const pair=String(pairStr||'');if(!/^\d{2}$/.test(pair)||pair[0]===pair[1]||(pair[0]!==target&&pair[1]!==target))return;const other=pair[0]===target?pair[1]:pair[0],normalized=`${target}${other}`;const item=pairMap.get(normalized)||{pair:normalized,support:0,models:0};item.support+=modelWeight;item.models+=1;pairMap.set(normalized,item);}));});
- return [...pairMap.values()].sort((a,b)=>b.support-a.support||b.models-a.models||Number(a.pair[1])-Number(b.pair[1])||a.pair.localeCompare(b.pair)).slice(0,5).map(x=>x.pair);
+ mainEvaluated.forEach(model=>{
+   const modelWeight=Math.max(model.aiScore||0,50)/100;
+   const seen=new Set();
+   Object.values(model.pairsMap||{}).forEach(list=>(list||[]).forEach(pairStr=>{
+     const pair=String(pairStr||'');
+     if(!/^\d{2}$/.test(pair)||pair[0]===pair[1]||(pair[0]!==target&&pair[1]!==target))return;
+     const other=pair[0]===target?pair[1]:pair[0];
+     const canonical=[target,other].sort().join('');
+     if(seen.has(canonical))return;
+     seen.add(canonical);
+     const normalized=`${target}${other}`;
+     const item=pairMap.get(canonical)||{pair:normalized,support:0,models:0,partner:other};
+     item.support+=modelWeight;
+     item.models+=1;
+     pairMap.set(canonical,item);
+   }));
+ });
+ /* Prefer partners that are themselves strong in the internal ranking. */
+ return [...pairMap.values()]
+   .map(x=>{
+     const partnerScore=digitScores[Number(x.partner)]?.rankingScore||0;
+     const partnerFocus=top3FocusWeight.get(Number(x.partner))||0;
+     return {...x,rankScore:x.support+(x.models*.08)+(partnerScore*.18)+(partnerFocus*.10)};
+   })
+   .sort((a,b)=>b.rankScore-a.rankScore||b.support-a.support||b.models-a.models||a.pair.localeCompare(b.pair))
+   .slice(0,5)
+   .map(x=>x.pair);
 }
 const deepSets=
 top3Digits.map(
@@ -4107,13 +4139,18 @@ more frequently. If tied, lexical order is used.
 ========================================================= */
 const top3SingleDigitSet=new Set(top3Digits.map(item=>String(item.digit)));
 const bestJuePairMap={};
-mainEvaluated.forEach(model=>{Object.values(model.pairsMap||{}).forEach(pairList=>{(pairList||[]).forEach(pairStr=>{
-  const pair=String(pairStr||''); if(!/^\d{2}$/.test(pair)||pair[0]===pair[1])return;
-  const canonical=[pair[0],pair[1]].sort().join('');
-  const item=bestJuePairMap[canonical]||(bestJuePairMap[canonical]={canonical,total:0,orientationCounts:{},sourceCounts:{},modelScores:[]});
-  item.total++; item.orientationCounts[pair]=(item.orientationCounts[pair]||0)+1;
-  item.sourceCounts[pair[0]]=(item.sourceCounts[pair[0]]||0)+1; item.sourceCounts[pair[1]]=(item.sourceCounts[pair[1]]||0)+1; item.modelScores.push(model.aiScore);
-});});});
+mainEvaluated.forEach(model=>{
+  const seenJue=new Set();
+  Object.values(model.pairsMap||{}).forEach(pairList=>{(pairList||[]).forEach(pairStr=>{
+    const pair=String(pairStr||''); if(!/^\d{2}$/.test(pair)||pair[0]===pair[1])return;
+    const canonical=[pair[0],pair[1]].sort().join('');
+    if(seenJue.has(canonical))return;
+    seenJue.add(canonical);
+    const item=bestJuePairMap[canonical]||(bestJuePairMap[canonical]={canonical,total:0,orientationCounts:{},sourceCounts:{},modelScores:[]});
+    item.total++; item.orientationCounts[pair]=(item.orientationCounts[pair]||0)+1;
+    item.sourceCounts[pair[0]]=(item.sourceCounts[pair[0]]||0)+1; item.sourceCounts[pair[1]]=(item.sourceCounts[pair[1]]||0)+1; item.modelScores.push(model.aiScore);
+  });});
+});
 const bestJueCandidates=Object.values(bestJuePairMap).filter(item=>Object.keys(item.sourceCounts).some(d=>top3SingleDigitSet.has(d))).map(item=>{
   const displayPair=Object.entries(item.orientationCounts).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0]?.[0]||item.canonical;
   return {...item,displayPair,quality:item.total+(Math.max(...item.modelScores,0)/100)};
@@ -4971,4 +5008,4 @@ _app.checkSessionBadge();
 })();
 </script>
 </body>
-  </html>
+                                                                                                                                                         </html>
