@@ -3331,7 +3331,7 @@ function buildDigitScore(digit,formulaNames,auditData,consensusMap,frequency,int
       agreement++;
     }
   });
-  total+=(frequency.rates[digit]*2); /* V97: consensus is display/diagnostic only. */
+  total+=0; /* V98: fallback board score must not receive consensus/frequency authority. */
   return{digit,score:round2(total),selectionQuality:round2(total),agreement,frequencyRate:(frequency.targetableRates?.[digit]??frequency.rates[digit]??0)};
 }
 /* =========================================================
@@ -8970,8 +8970,11 @@ function runEngineCore(){
       }
       const governedV94=v94ApplyMainGovernor(intelligence,resultRecs);
       const governedV95=v95ApplyPrecisionArchitecture(governedV94,resultRecs,auditDataMap[lotteryName],formulaNames);
-      const finalTop3=Array.isArray(governedV95.top3)?governedV95.top3.map(Number).filter(Number.isFinite):[];
-      intelligence=governedV95;
+      /* V98 is the clean final authority: it rebuilds selectionQuality from raw formula/OOS/stability evidence and ignores legacy selection scores. */
+      const governedV98=v98CleanAuthority(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
+      const finalTop3=Array.isArray(governedV98.top3)?governedV98.top3.map(Number).filter(Number.isFinite):[];
+      intelligence=governedV98;
+      if(auditDataMap[lotteryName]) auditDataMap[lotteryName].__V98_CONSENSUS_INVARIANCE__=v98ConsensusInvarianceTest(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
@@ -9038,9 +9041,9 @@ function runEngineCore(){
           d1Pairs:scoreD1Pairs,
           d2Pairs:scoreD2Pairs,
           selectedScore:
-            selectedScore?.score||0,
+            selectedScore?.selectionQuality||0,
           secondScore:
-            secondScore?.score||0,
+            secondScore?.selectionQuality||0,
           agreement:
             selectedScore?.agreement||0,
           secondAgreement:
@@ -9817,6 +9820,137 @@ function v95ApplyPrecisionArchitecture(base,records,auditData,formulaNames){
   return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
     v95:{version:'V95 Audit-First Precision Architecture',principles:['formula-vs-digit-separation','top3-formula-protection','consensus-diagnostic-only','anti-suppression','empirical-null-baseline','partial-vs-strong-hit','conflict-penalty','correlation-aware','regime-aware-shrinkage','counterfactual-audit','score-is-not-probability'],regime,ranked:out.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,formula:r.v95?.formulaTrust??50,consensus:r.v95?.consensus??50,consensusCount:r.v95?.consensusCount??0,top3Protection:r.v95?.top3Protection??0,partialHitRate:r.v95?.partialHitRate??50,strongHitRate:r.v95?.strongHitRate??50,empiricalNull:r.v95?.empiricalNull??50,lift:r.v95?.observedLift??0,penalty:r.v95?.penalty??0,regime:r.v95?.regime??'UNKNOWN'})),counterfactual:{selected:chosen?.digit??null,second:second?.digit??null,selectedAudit:chosen?.v95?.counterfactual??null}},finalGate:{...(src.finalGate||{}),v95AuditFirst:true,v95Top3Protection:true,v95ConsensusFirewall:true,v95AntiSuppression:true,v95EmpiricalNull:true,v95Counterfactual:true,v95ScoreProbabilitySeparated:true}};
 }
+
+/* =========================================================
+   V98 FINAL AUTHORITY — CONSENSUS DEVALUATION / CLEAN PATH
+   Backend-only. This layer deliberately ignores ALL prior
+   selectionQuality values because older layers may contain
+   consensus/agreement pressure. BEST-2 is rebuilt from:
+   1) current formula support,
+   2) formula reliability/rank,
+   3) digit-specific OOS conditional precision,
+   4) multi-horizon formula stability,
+   5) recent/temporal consistency,
+   6) bounded empirical digit evidence.
+   Consensus/agreement is diagnostic metadata only.
+========================================================= */
+const V98_CONFIG=Object.freeze({
+  formula:.46,
+  digitOOS:.27,
+  stability:.15,
+  recent:.07,
+  empirical:.05,
+  rankTop:1.14,
+  rankBottom:.80,
+  oosPrior:12,
+  maxRiskPenalty:8,
+  maxFormulaBoost:2.5
+});
+function v98TargetHasDigit(rec,d){
+  return v94TargetSet(rec).has(Number(d));
+}
+function v98FormulaRankWeight(rank,total){
+  const n=Math.max(1,Number(total)||1), r=Math.max(1,Number(rank)||n);
+  if(n<=1)return 1;
+  const t=(r-1)/(n-1);
+  return V98_CONFIG.rankTop+(V98_CONFIG.rankBottom-V98_CONFIG.rankTop)*t;
+}
+function v98FormulaMetrics(records,formulaName){
+  const h=getFormulaHistory(records,formulaName);
+  const a=(Array.isArray(h)?h:[]);
+  const rate=percent(a.filter(x=>x.hit).length,a.length);
+  const recent=rollingHitRate(a,5);
+  const w10=rollingHitRate(a,10);
+  const w20=rollingHitRate(a,20);
+  const stab=a.length?percent(a.slice(-Math.min(12,a.length)).filter(x=>x.hit).length,Math.min(12,a.length)):50;
+  const recency=a.length?percent(a.slice(-Math.min(7,a.length)).filter(x=>x.hit).length,Math.min(7,a.length)):50;
+  return {history:a,hitRate:rate,recentRate:recent,rolling10:w10,rolling20:w20,stability:stab,recencyRate:recency};
+}
+function v98DigitConditional(records,formulaName,d){
+  const h=v98FormulaMetrics(records,formulaName).history;
+  const predicted=h.filter(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d)));
+  if(!predicted.length)return {rate:50,samples:0,baseline:50,lift:0};
+  const hits=predicted.filter(x=>v98TargetHasDigit({n3:x.actualN3,n2:x.actualN2},d)).length;
+  const rate=percent(hits,predicted.length);
+  const baseline=v95Num((records||[]).filter(isResultRecord).reduce((n,r)=>n+(v98TargetHasDigit(r,d)?1:0),0),0);
+  const den=(records||[]).filter(isResultRecord).length;
+  const base=den?percent(baseline,den):50;
+  const shrink=Math.min(1,predicted.length/(predicted.length+V98_CONFIG.oosPrior));
+  const shrunk=base+(rate-base)*shrink;
+  return {rate:round2(shrunk),rawRate:round2(rate),samples:predicted.length,baseline:round2(base),lift:round2(shrunk-base)};
+}
+function v98FormulaRanked(auditData,formulaNames,records){
+  const names=(formulaNames||[]).filter(f=>f&&f!=='__formulaGovernor');
+  const rows=names.map(f=>{
+    const a=auditData?.[f]||{}, m=v98FormulaMetrics(records,f);
+    const quality=.40*v95Num(a.hitRate,m.hitRate)+.22*v95Num(a.recentRate,m.recentRate)+.13*v95Num(a.rolling10,m.rolling10)+.15*v95Num(a.stability,m.stability)+.10*v95Num(a.recencyRate,m.recencyRate);
+    return {name:f,quality:v95Clamp(quality),metrics:m};
+  }).sort((a,b)=>b.quality-a.quality||a.name.localeCompare(b.name));
+  rows.forEach((x,i)=>{x.rank=i+1;x.rankWeight=v98FormulaRankWeight(i+1,rows.length);});
+  return rows;
+}
+function v98CleanAuthority(base,records,auditData,formulaNames){
+  const src=base||{}, rows0=Array.isArray(src.rows)?src.rows:[]; if(rows0.length!==10)return src;
+  const arr=(records||[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const ranked=v98FormulaRanked(auditData,formulaNames,arr);
+  const out=rows0.map(row=>{
+    const d=Number(row.digit);
+    const supporters=[];
+    ranked.forEach(f=>{
+      const latest=(auditData?.[f.name]?.latestDigits||[]).map(Number);
+      if(latest.includes(d)){
+        const oos=v98DigitConditional(arr,f.name,d);
+        const m=f.metrics;
+        const multi=.35*v95Num(m.stability,50)+.25*v95Num(m.recentRate,50)+.20*v95Num(m.rolling10,50)+.20*v95Num(m.recencyRate,50);
+        supporters.push({name:f.name,rank:f.rank,rankWeight:f.rankWeight,quality:f.quality,oos,multi});
+      }
+    });
+    let formulaSignal=50,digitOOS=50,stability=50,recent=50,empirical=50;
+    if(supporters.length){
+      const wsum=supporters.reduce((s,x)=>s+x.rankWeight,0);
+      formulaSignal=supporters.reduce((s,x)=>s+x.quality*x.rankWeight,0)/wsum;
+      digitOOS=supporters.reduce((s,x)=>s+x.oos.rate*x.rankWeight,0)/wsum;
+      stability=supporters.reduce((s,x)=>s+x.multi*x.rankWeight,0)/wsum;
+      recent=supporters.reduce((s,x)=>s+x.oos.baseline*x.rankWeight,0)/wsum;
+      empirical=v95Num(v95EmpiricalNull(arr,[d]),50);
+    }else{
+      const q=v98FormulaRanked(auditData,formulaNames,arr);
+      formulaSignal=q.length?v98Avg(q.map(x=>x.quality)):50;
+      const targetRate=arr.length?percent(arr.filter(r=>v98TargetHasDigit(r,d)).length,arr.length):50;
+      digitOOS=targetRate; stability=targetRate; recent=targetRate; empirical=targetRate;
+    }
+    const supportDepth=Math.min(1,supporters.length/3);
+    const rawScore=V98_CONFIG.formula*formulaSignal+V98_CONFIG.digitOOS*digitOOS+V98_CONFIG.stability*stability+V98_CONFIG.recent*recent+V98_CONFIG.empirical*empirical;
+    const weak=(supporters.length===0?5:0)+(supporters.length===1&&digitOOS<45?2:0);
+    const final=v95Clamp(rawScore-weak,0,100);
+    return {...row,
+      selectionQuality:round2(final),
+      score:round2(final),
+      v98:{version:'V98 Clean Final Authority',formulaSupportCount:supporters.length,
+        formulaSupporters:supporters.map(x=>x.name),formulaSignal:round2(formulaSignal),
+        digitOOS:round2(digitOOS),stability:round2(stability),recent:round2(recent),
+        empirical:round2(empirical),supportDepth:round2(supportDepth),consensusAuthority:0,
+        consensusBonus:0,agreementAuthority:0,legacySelectionIgnored:true}
+    };
+  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
+  const top3=out.slice(0,3).map(x=>x.digit);
+  const selected=out.slice(0,2);
+  return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
+    v98:{version:'V98 CLEAN FINAL AUTHORITY',authority:'FORMULA+OOS+STABILITY',consensusAuthority:'ZERO',agreementAuthority:'ZERO',
+      formulaRankWeighting:'SMOOTH',ranked:ranked.map(x=>({rank:x.rank,name:x.name,quality:round2(x.quality),rankWeight:round2(x.rankWeight)})),
+      selected:selected.map(x=>({digit:x.digit,score:x.selectionQuality,formulaSupport:x.v98?.formulaSupportCount||0}))},
+    finalGate:{...(src.finalGate||{}),v98CleanFinalAuthority:true,v98ConsensusZero:true,v98AgreementZero:true,v98LegacySelectionIgnored:true}};
+}
+/* Deterministic regression helper: changing consensus/agreement must not alter V98 BEST-2. */
+function v98ConsensusInvarianceTest(intelligence,records,auditData,formulaNames){
+  const a=v98CleanAuthority({...intelligence,consensus:[]},records,auditData,formulaNames);
+  const noisy=(intelligence?.consensus||[]).map(x=>({...x,score:100,consensusQuality:100,agreement:10,formulaCount:10}));
+  const b=v98CleanAuthority({...intelligence,consensus:noisy},records,auditData,formulaNames);
+  const A=(a.selected||[]).map(x=>Number(x.digit)),B=(b.selected||[]).map(x=>Number(x.digit));
+  return {pass:A.length===B.length&&A.every((d,i)=>d===B[i]),before:A,after:B};
+}
+
+window.__V98_TEST_API__={cleanAuthority:v98CleanAuthority,invariance:v98ConsensusInvarianceTest,formulaRanked:v98FormulaRanked,digitConditional:v98DigitConditional};
 window.__V91_PLUSPLUS_AUDIT__={
   version:'V91 Plus++ / M2D Precision Upgrade',
   base:'V54 Plus+ presentation/formula/card contract',
