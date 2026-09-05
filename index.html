@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 
+
+
 <title>Mester Lotto VIP+ — V94 Plus++ Maximum Precision + Myanmar 2D Specialized</title>
 <style>
 :root{
@@ -877,6 +879,8 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 <!-- V60 AUDIT: targetable-evidence alignment; TOP-3 protection; anti-false-positive selection; session schema guard; empirical formula-correlation penalty; adaptive Myanmar 7/14/21/30 weighting; joint TOP3 selection; joint first-pass 15-pair optimization; double validation; symmetric noon/evening consensus pair-set WF. Locked formula bodies remain untouched. UI/layout contracts preserved. -->
 
 
+
+
 <!-- V85 MAX PRECISION DECISION INTELLIGENCE (V84 + end-to-end OOS decision integrity)
      Added end-to-end chronological selection audit after V84, selection-conditioned precision,
      top-3 coverage, rank separation, beta shrinkage and bounded final decision adjustment.
@@ -906,6 +910,8 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
      V81: adaptive 5-slot formula candidate laboratory + two-standout ranking; no locked-formula mutation.
      Myanmar 2D: remains isolated on its specialized path.
 -->
+
+
 
 
 <meta name="nikkei-title-audit" content="V106 exact canonical names: นิเคอิ เช้า | นิเคอิ บ่าย | นิเคอิ VIP เช้า | นิเคอิ VIP บ่าย">
@@ -1070,6 +1076,7 @@ function forceNikkeiVisibleTitle(value){
     .replace(/\u00A0/g,' ')
     .trim();
 
+
   const compact=s.replace(/[\s\u00A0]/g,'').toLowerCase();
   const isNikkei=compact.includes('นิเคอิ')||compact.includes('นิกเคอิ')||compact.includes('นิคเคอิ')||compact.includes('nikkei');
   if(isNikkei){
@@ -1088,13 +1095,19 @@ function forceNikkeiVisibleTitle(value){
   return s.replace(/^หุ้น\s*/,'').trim();
 }
 
+
 /* V105: canonical title from the card's actual lotteryName.
    This is intentionally independent of card.displayTitle, because a stale
    upstream displayTitle was the path that allowed "หุ้นนิเคอิ ..." to survive. */
 function canonicalCardVisibleTitle(card){
   const source=card?.lotteryName||card?.displayTitle||'';
-  return forceNikkeiVisibleTitle(source);
+  /* V106.1 CANONICAL DISPLAY BOUNDARY — every visible card title must pass
+     through the single display formatter. Internal synthetic keys such as
+     __THAI_ROUND__... are never allowed to leak into the UI. */
+  return formatDisplayTitle(source);
 }
+
+
 
 
 function exactNikkeiCanonicalTitle(value){
@@ -1120,6 +1133,7 @@ function exactNikkeiCanonicalTitle(value){
   return 'นิเคอิ';
 }
 
+
 function formatDisplayTitle(rawName){
   const exactNikkei=exactNikkeiCanonicalTitle(rawName);
   if(exactNikkei)return exactNikkei;
@@ -1131,10 +1145,16 @@ function formatDisplayTitle(rawName){
   name=name.replace(/^หุ้น\s*(?=นิเคอิ|นิกเคอิ|นิคเคอิ)/,'').trim();
   if(/^__THAI_ROUND__/.test(thaiSynthetic)){
     const r=thaiSynthetic.replace(/^__THAI_ROUND__/,'').trim();
-    return `หุ้นไทย ${r}`.trim();
+    const thaiRoundMap={
+      'เช้า':'หุ้นไทย เปิดเช้า',
+      'เที่ยง':'หุ้นไทย ปิดเที่ยง',
+      'บ่าย':'หุ้นไทย เปิดบ่าย',
+      'เย็น':'หุ้นไทย ปิดเย็น'
+    };
+    return thaiRoundMap[r]||`หุ้นไทย ${r}`.trim();
   }
   if(thaiSynthetic==='__THAI_ALLDAY__') return 'หุ้นไทย ทั้งวัน';
-  if(thaiSynthetic==='__THAI_TOP__') return 'หุ้นไทย บนตรง ๆ';
+  if(thaiSynthetic==='__THAI_TOP__') return 'หุ้นไทย บนตรงๆ';
   name=name
     .replace(/^สถิติหุ้น\s*/,'')
     .replace(/^สถิติ\s*/,'')
@@ -1183,16 +1203,24 @@ function formatDisplayTitle(rawName){
     'ไทยเย็น':'ไทย เย็น',
     'อังกฤษ':'อังกฤษ',
     'เยอรมัน':'เยอรมัน',
-    'รัสเซีย':'รัสเซีย'
+    'รัสเซีย':'รัสเซีย',
+    'มาเลย์':'มาเลย์',
+    'มาเลเซีย':'มาเลเซีย',
+    'รัฐบาล':'รัฐบาล',
+    'รัฐบาลไทย':'รัฐบาลไทย',
+    'อินเดีย':'อินเดีย',
+    'อียิปต์':'อียิปต์'
   };
   if(stockMap[name])
     return stockMap[name];
+  /* V106.1 SPACING LOCK — these market roots must always be separated
+     from a following session/type token in the visible title. */
   name=name.replace(
-    /^(ฮานอย|ลาว|จีน|ฮั่งเส็ง|ดาวโจนส์|ไต้หวัน|เกาหลี|สิงคโปร์|รัสเซีย|เยอรมัน|อังกฤษ)(?=[ก-๙a-zA-Z0-9])/g,
+    /^(นิเคอิ|นิกเคอิ|นิคเคอิ|จีน|ฮั่งเส็ง|ไต้หวัน|เกาหลี|สิงคโปร์|อินเดีย|อียิปต์|รัสเซีย|เยอรมัน|อังกฤษ|ดาวโจนส์|รัฐบาลไทย|รัฐบาล|มาเลย์|มาเลเซีย|ฮานอย|ลาว)(?=[ก-๙a-zA-Z0-9])/g,
     '$1 '
   );
   name=name.replace(
-    /([ก-๙a-zA-Z0-9])(VIP|พิเศษ|สามัคคี|พัฒนา|ประตูชัย|สตาร์|ทีวี|กาชาด|เฉพาะกิจ|Extra|HD|4D|เช้า|บ่าย|เย็น|ดึก|สันติภาพ)/g,
+    /([ก-๙a-zA-Z0-9])(VIP|พิเศษ|สามัคคี|พัฒนา|ประตูชัย|สตาร์|ทีวี|กาชาด|เฉพาะกิจ|Extra|HD|4D|เช้า|เที่ยง|บ่าย|เย็น|ดึก|สันติภาพ)/g,
     '$1 $2'
   );
   return name.replace(/\s+/g,' ').trim();
@@ -1358,6 +1386,12 @@ function v95ThaiBuildSpecialTop(records){
 
 
 
+
+
+
+
+
+
 /* =========================================================
    FLAGS
 ========================================================= */
@@ -1376,10 +1410,14 @@ function getLotteryFlag(name,displayTitle){
     .replace(/\s+/g,'');
 
 
+
+
   const raw=norm(name);
   const display=norm(displayTitle);
   const names=[raw,display].filter(Boolean);
   if(!names.length)return'🌐';
+
+
 
 
   const has=(...tokens)=>names.some(v=>tokens.some(t=>v.includes(norm(t))));
@@ -1388,14 +1426,20 @@ function getLotteryFlag(name,displayTitle){
   const isHongKong=has('ฮั่งเส็ง','ฮ่องกง','hangseng','hang seng','hongkong','hong kong');
 
 
+
+
   /* V54 exact principle: canonical Nikkei forms are Japan before any other rule. */
   if(has(
     'นิเคอิ','นิกเคอิ','หุ้นนิเคอิ','หุ้นนิกเคอิ','ญี่ปุ่น','nikkei','japan'
   ))return'🇯🇵';
 
 
+
+
   /* KI aliases used by the engine for the four Nikkei sessions. */
   if(names.some(v=>/(?:^|หุ้น)ki(?:vip)?(?:เช้า|บ่าย)?$/.test(v)))return'🇯🇵';
+
+
 
 
   /* Named markets must beat V54's generic time fallback. */
@@ -1417,6 +1461,8 @@ function getLotteryFlag(name,displayTitle){
   if(has('มาเลย์','มาเลเซีย','มาเล','malaysia','malay'))return'🇲🇾';
 
 
+
+
   /*
      V54 compatibility fallback.
      In V54, an otherwise-unclassified morning/afternoon stock session was
@@ -1425,6 +1471,8 @@ function getLotteryFlag(name,displayTitle){
      Named markets above are deliberately excluded first.
   */
   if(anyTime&&!isChina&&!isHongKong)return'🇯🇵';
+
+
 
 
   return'🌐';
@@ -1443,6 +1491,55 @@ const V91_FLAG_CASES=Object.freeze([
 ]);
 const V91_FLAG_AUDIT=V91_FLAG_CASES.map(([input,expected])=>({input,expected,actual:getLotteryFlag(input),pass:getLotteryFlag(input)===expected}));
 const V91_FLAG_AUDIT_PASS=V91_FLAG_AUDIT.every(x=>x.pass);
+
+/* =========================================================
+   V106.1 DISPLAY CANONICALIZATION REGRESSION LOCK
+   Presentation-only: verifies exact Thai-stock names/flags and the required
+   spacing policy for named markets. It must pass before a build is considered
+   display-safe.
+========================================================= */
+const V106_DISPLAY_CASES=Object.freeze([
+  ['__THAI_ROUND__เช้า','หุ้นไทย เปิดเช้า','🇹🇭'],
+  ['__THAI_ROUND__เที่ยง','หุ้นไทย ปิดเที่ยง','🇹🇭'],
+  ['__THAI_ROUND__บ่าย','หุ้นไทย เปิดบ่าย','🇹🇭'],
+  ['__THAI_ROUND__เย็น','หุ้นไทย ปิดเย็น','🇹🇭'],
+  ['__THAI_ALLDAY__','หุ้นไทย ทั้งวัน','🇹🇭'],
+  ['__THAI_TOP__','หุ้นไทย บนตรงๆ','🇹🇭'],
+  ['นิเคอิเช้า','นิเคอิ เช้า','🇯🇵'],
+  ['นิเคอิบ่าย','นิเคอิ บ่าย','🇯🇵'],
+  ['จีนเช้า','จีน เช้า','🇨🇳'],
+  ['จีนบ่าย','จีน บ่าย','🇨🇳'],
+  ['ฮั่งเส็งเช้า','ฮั่งเส็ง เช้า','🇭🇰'],
+  ['ฮั่งเส็งบ่าย','ฮั่งเส็ง บ่าย','🇭🇰'],
+  ['ไต้หวันเช้า','ไต้หวัน เช้า','🇹🇼'],
+  ['เกาหลีเช้า','เกาหลี เช้า','🇰🇷'],
+  ['สิงคโปร์เช้า','สิงคโปร์ เช้า','🇸🇬'],
+  ['อินเดียเช้า','อินเดีย เช้า','🇮🇳'],
+  ['อียิปต์เช้า','อียิปต์ เช้า','🇪🇬'],
+  ['รัสเซียเช้า','รัสเซีย เช้า','🇷🇺'],
+  ['เยอรมันเช้า','เยอรมัน เช้า','🇩🇪'],
+  ['อังกฤษเช้า','อังกฤษ เช้า','🇬🇧'],
+  ['ดาวโจนส์เช้า','ดาวโจนส์ เช้า','🇺🇸'],
+  ['รัฐบาลเช้า','รัฐบาล เช้า','🇹🇭'],
+  ['รัฐบาลไทยเช้า','รัฐบาลไทย เช้า','🇹🇭'],
+  ['มาเลย์เช้า','มาเลย์ เช้า','🇲🇾'],
+  ['มาเลเซียเช้า','มาเลเซีย เช้า','🇲🇾'],
+  ['ฮานอยVIP','ฮานอย VIP','🇻🇳'],
+  ['ลาวVIP','ลาว VIP','🇱🇦']
+]);
+const V106_DISPLAY_AUDIT=V106_DISPLAY_CASES.map(([input,expectedTitle,expectedFlag])=>{
+  const actualTitle=formatDisplayTitle(input);
+  const actualFlag=getLotteryFlag(input,actualTitle);
+  return{input,expectedTitle,actualTitle,expectedFlag,actualFlag,
+    titlePass:actualTitle===expectedTitle,flagPass:actualFlag===expectedFlag,
+    pass:actualTitle===expectedTitle&&actualFlag===expectedFlag};
+});
+const V106_DISPLAY_AUDIT_PASS=V106_DISPLAY_AUDIT.every(x=>x.pass);
+window.__V106_DISPLAY_AUDIT__={version:'V106.1',pass:V106_DISPLAY_AUDIT_PASS,cases:V106_DISPLAY_AUDIT,
+  thaiCanonical:{morning:'หุ้นไทย เปิดเช้า',noon:'หุ้นไทย ปิดเที่ยง',afternoon:'หุ้นไทย เปิดบ่าย',evening:'หุ้นไทย ปิดเย็น',allDay:'หุ้นไทย ทั้งวัน',top:'หุ้นไทย บนตรงๆ'},
+  spacingRoots:['นิเคอิ','จีน','ฮั่งเส็ง','ไต้หวัน','เกาหลี','สิงคโปร์','อินเดีย','อียิปต์','รัสเซีย','เยอรมัน','อังกฤษ','ดาวโจนส์','รัฐบาล','มาเลย์','ฮานอย','ลาว']};
+
+
 
 
 /* =========================================================
@@ -2200,6 +2297,10 @@ function adaptiveWindowBlend(rates,weights){
   const den=ws.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0)||1;
   return clamp(rates.reduce((a,v,i)=>a+clamp(Number(v)||0,0,100)*(ws[i]||0),0)/den,0,100);
 }
+
+
+
+
 
 
 
@@ -3136,6 +3237,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   v95Ranked.forEach((x,i)=>{ rows[x.digit].raw.v95FinalRank=i+1; });
   rows.forEach(row=>{ row.raw.v95PrimaryCandidate=row.formulaHits?.length>0; });
 
+
   /* V60 TOP-3 PROTECTION / ANTI-FALSE-POSITIVE LAYER
      The public board shows three digits, while the legacy prediction card still
      consumes the best two. Never let a pair optimizer silently erase a genuinely
@@ -3620,6 +3722,14 @@ function pairBayesPrecision(hits,total,priorRate=50,priorN=10){
 
 
 
+
+
+
+
+
+
+
+
 /* =========================================================
    V53.1 FINAL DECISION HARDENING
    - Evidence families prevent correlated evidence from being counted as
@@ -3669,6 +3779,14 @@ function targetSelectionGate(meta){
   if(conflict>60)gate*=.88;
   return clamp(gate,.62,1);
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -3801,6 +3919,10 @@ function m2dPairOOSGate(arr,target,partner){
   const p=hit/Math.max(1,tests)*100;
   return selectionOOSGate(p,tests,60);
 }
+
+
+
+
 
 
 
@@ -4107,6 +4229,10 @@ function generateFormulaPairs(mainDigit,otherDigit,auditMap,lotteryName,records)
 
 
 
+
+
+
+
 /* =========================================================
    V94 PRECISION GOVERNOR — TOP-5 FIRST + EMPIRICAL RECOVERY + CONSENSUS DOWNWEIGHT
    Backend-only. Formula bodies, UI/card contracts and original pair formulas remain untouched.
@@ -4186,6 +4312,8 @@ function v94RefinePairs(pairs,records,target){
   }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.meta?.pairWalkForwardPrecision||0)-Number(a.meta?.pairWalkForwardPrecision||0)||a.pair.localeCompare(b.pair));
 }
 function v94RefinePairSet(pairs,records,target){return v94RefinePairs(pairs,records,target);}
+
+
 
 
 /* =========================================================
@@ -4450,6 +4578,8 @@ function v88ApplyFairArbitration(intelligence,records,auditData=null,formulaName
 }
 
 
+
+
 /* =========================================================
    V90 PLUS — EVIDENCE RESOLUTION / CONTRADICTION / ROBUSTNESS GOVERNOR
    Backend-only. No new prediction formula. Locked formula bodies, targeted
@@ -4557,6 +4687,8 @@ function v90PlusApply(intelligence,records,auditData,formulaNames){
 }
 
 
+
+
 /* =========================================================
    V90 PLUS+ — RESOLUTION MAX / STATE ANALOGY / COUNTERFACTUAL GOVERNOR
    This is an evidence-resolution layer, not a formula layer. It does not
@@ -4647,6 +4779,8 @@ function v90PPPositionTransitionEvidence(arr,d){
 }
 
 
+
+
 const V90_PP_CONFIG=Object.freeze({
   minHistory:15, priorN:10, knnK:7, maxAdjustment:3.25,
   stateWeight:.20, contradictionWeight:.15, horizonWeight:.11,
@@ -4710,11 +4844,15 @@ function v90PPApply(intelligence,records,auditData,formulaNames){
 }
 
 
+
+
 function buildDigitIntelligenceV75(records,auditData,formulaNames,options={}){
   const v74=buildDigitIntelligenceV74(records,auditData,formulaNames,options);
   return v75Finalize(v74,records,auditData,formulaNames);
 }
 /* ========================================================= END V75 PRECISION LOOP ========================================================= */
+
+
 
 
 /* =========================================================
@@ -4991,6 +5129,8 @@ function v80ApplyFormulaLayer(intelligence,records){
 }
 
 
+
+
 /* =========================================================
    V81 MAX PRECISION ADAPTIVE FORMULA + TARGET-PAIR LAB
    Non-locked enhancement layer. The original 15 formulas and card UI
@@ -5093,6 +5233,8 @@ function v81ApplyAdaptiveLayer(intelligence,records){
   const standout=rows.slice(0,2).map(x=>x.digit);
   return {...base,rows,top3:uniqueTop3.slice(0,3),selected:uniqueTop3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean),v81Adaptive:{version:'V81',selected:selected.map(x=>({anchor:x.name,offsets:x.offsets,rate:round2(x.rate),recent:round2(x.recent),stability:round2(x.stability),score:round2(x.score),edge:round2(x.edge)})),standout,chronological:true},finalGate:{...(base.finalGate||{}),v81Adaptive:true,v81Standout:standout}};
 }
+
+
 
 
 /* =========================================================
@@ -5251,6 +5393,10 @@ function v83ApplyEvidenceStack(intelligence,records,auditData,formulaNames){
 
 
 
+
+
+
+
 /* =========================================================
    V84 DECISION INTELLIGENCE — CHRONOLOGICAL OOS GOVERNOR
    Backend-only. No formula bodies or card/UI/CSS mutation.
@@ -5355,6 +5501,8 @@ function v84ApplyDecisionGovernor(intelligence,records,auditData,formulaNames){
 }
 
 
+
+
 function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}){
   const base=buildDigitIntelligenceV75(records,auditData,formulaNames,options);
   const radar=v78ApplyStructure(base,records);
@@ -5367,6 +5515,8 @@ function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}
   if(options&&options.skipV84OOS) return v83;
   return v84ApplyDecisionGovernor(v83,records,auditData,formulaNames);
 }
+
+
 
 
 /* =========================================================
@@ -5708,6 +5858,8 @@ function v87FinalFairArbitration(intelligence,records,auditData,formulaNames){
 }
 
 
+
+
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const core=buildDigitIntelligenceV84Core(records,auditData,formulaNames,options);
   const v85=v85ApplyFinalDecisionGovernor(core,records,auditData,formulaNames);
@@ -5715,6 +5867,8 @@ function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   return v86ApplyEqualOpportunity(v85Plus,records,auditData,formulaNames);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
+
+
 
 
 /* =========================================================
@@ -5864,6 +6018,8 @@ function buildDigitIntelligenceV74(records,auditData,formulaNames,options={}){
   return v74Refine(base,records,auditData,formulaNames);
 }
 /* ========================================================= END V74 PRECISION AUDIT ========================================================= */
+
+
 
 
 /* =========================================================
@@ -6163,6 +6319,7 @@ window.__V102_THAI_PAIR_RANK_DISPLAY__={
   selectionChanged:false
 };
 
+
 /* V103 DISPLAY AUDIT — Nikkei title invariant. */
 window.__V105_NIKKEI_TITLE_ROOT_CAUSE_FIX__={version:'V105',rule:'Nikkei title canonicalized from lotteryName and sanitized again after DOM insertion',singleScoreAuditCard:true,visiblePrefixForbidden:'หุ้น'};
 window.__V105_NIKKEI_TITLE_INVARIANT__={
@@ -6178,6 +6335,7 @@ window.__V103_NIKKEI_DISPLAY_AUDIT__={
   scoreAuditCardVisible:true
 };
 
+
 window.__V91_CARD_ORDER_AUDIT__={
   version:'V91 Plus++ Card Order Patch',
   scope:'general lottery cards only',
@@ -6190,6 +6348,8 @@ window.__V91_CARD_ORDER_AUDIT__={
   copyPayloadOrder:'UNCHANGED',
   rankClassPreserved:true
 };
+
+
 
 
 /* =========================================================
@@ -7079,9 +7239,9 @@ function renderFullUI(
     </div>
   `;
   $('result').innerHTML=html;
-  /* V105 FINAL DOM AUDIT: sanitize every visible Nikkei card title after the
-     HTML is actually inserted. This is the last boundary, so no stale title
-     from any upstream builder can leak into the rendered card. */
+  /* V106.1 FINAL DOM AUDIT: canonicalize every visible prediction-card title
+     after insertion. This is the last display boundary for Thai stock,
+     Nikkei, and every named market; internal dataset keys must never leak. */
   document.querySelectorAll('#result .prediction-card').forEach(cardEl=>{
     const titleEl=cardEl.querySelector('.card-info b');
     if(!titleEl)return;
@@ -7091,9 +7251,7 @@ function renderFullUI(
       const decoded=decodeURIComponent(key);
       lotteryName=decoded.split('|||')[0]||'';
     }catch(e){}
-    const visible=forceNikkeiVisibleTitle(lotteryName||titleEl.textContent||'');
-    if(/นิเคอิ|นิกเคอิ|นิคเคอิ|nikkei/i.test(String(lotteryName||titleEl.textContent||'')))
-      titleEl.textContent=visible;
+    titleEl.textContent=formatDisplayTitle(lotteryName||titleEl.textContent||'');
   });
   renderManualCards();
   updateIndicator();
@@ -7115,6 +7273,8 @@ function v70Classify(digit,item,records){const ev=v70EvidenceProfile(item),life=
 function v70Arbitrate(scoreData,records){const ranked=Array.isArray(scoreData)?scoreData:[],c=ranked.map((x,i)=>v70Classify(x?.digit??x?.value??x?.d??i,x,records)),core=c.filter(x=>x.bucket==='CORE').sort((a,b)=>b.quality-a.quality),support=c.filter(x=>x.bucket==='SUPPORT').sort((a,b)=>b.quality-a.quality),shadow=c.filter(x=>x.bucket==='SHADOW').sort((a,b)=>b.quality-a.quality),selected=[...core,...support,...shadow].slice(0,3),top=selected.map(x=>x.digit),raw=ranked.slice(0,3).map((x,i)=>String(x?.digit??x?.value??x?.d??i));return{finalTop3:top,rawTop3:raw,removedFromTop3:raw.filter(d=>!top.includes(d)),core:core.map(x=>x.digit),support:support.map(x=>x.digit),shadow:shadow.slice(0,V70_CONFIG.shadowCount).map(x=>x.digit),noForcedPrediction:top.length<3,regime:v70Regime(records),audit:c.map(x=>({digit:x.digit,bucket:x.bucket,quality:x.quality,reasons:x.reasons}))};}
 window.V70Precision=Object.freeze({config:V70_CONFIG,lifecycle:v70Lifecycle,regime:v70Regime,overfit:v70Overfit,classify:v70Classify,arbitrate:v70Arbitrate});
 /* ========================================================= END V70 BIG UPGRADE ========================================================= */
+
+
 
 
 /* =========================================================
@@ -7241,6 +7401,10 @@ function v72RefineTop3(baseTop3,rows,records){
 }
 window.V72Precision=Object.freeze({config:V72_CONFIG,temporal:v72TemporalSurvival,antiRepeat:v72ConditionalAntiRepeat,margin:v72MarginQuality,compression:v72EvidenceCompression,regimeTransition:v72RegimeTransition,finalAudit:v72FinalAudit,refineTop3:v72RefineTop3});
 /* ========================================================= END V72 PRECISION REFINEMENT ========================================================= */
+
+
+
+
 
 
 
@@ -7525,6 +7689,8 @@ function m2dPrecisionScoreDigits(arr){
 }
 
 
+
+
 /* V84 Myanmar 2D Decision Governor — specialized, isolated from general lottery engine. */
 function m2dV84DecisionScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;
@@ -7547,6 +7713,8 @@ function m2dV84DecisionScoreDigits(arr){
   }
   return out;
 }
+
+
 
 
 function m2dTop3(arr){
@@ -8077,6 +8245,8 @@ function m2dNextTargetDate(records){
 }
 
 
+
+
 /* =========================================================
    V92 MYANMAR 2D SPECIALIZED BRAIN — PRECISION / ROBUSTNESS
    Scope: Myanmar 2D only. Main lottery formulas, scoring, Pair Engine,
@@ -8310,6 +8480,8 @@ function v92DecisionDigitScores(arr,allRecords,session){
 }
 
 
+
+
 function v93SelectionDiscipline(arr,allRecords,session,d,scores){
   const data=v92Rows(arr);
   const ledger=window.__V93_M2D_LEDGER__||v93BuildMethodLedger(data,allRecords,session);
@@ -8352,6 +8524,8 @@ function v92SelectTop3(arr,allRecords,session){
 }
 
 
+
+
 function v94M2DRecoveryScore(arr,d){
   const data=v92Rows(arr);let streak=0;
   for(let i=data.length-1;i>=0;i--){if(Number(data[i].tens)===Number(d)||Number(data[i].units)===Number(d))break;streak++;}
@@ -8365,6 +8539,8 @@ function v94M2DSelectTop3(arr,allRecords,session){
   window.__V94_M2D_TOP3_AUDIT__={session,ranked:ranked.map((x,i)=>({rank:i+1,digit:x.digit,score:round2(x.score),baseRank:x.baseRank,missStreak:x.missStreak,recoveryBonus:round2(x.recoveryBonus)})),priority:'TOP5 + MISS RECOVERY'};
   return top3;
 }
+
+
 
 
 function v92PairStats(arr,a,b){
@@ -8527,9 +8703,13 @@ function v92Consensus(noon,evening,records){
 }
 
 
+
+
 const V92_M2D_AUDIT={version:'V94 M2D Specialized Brain — Top-5 Recovery + Precision Governor + Champion-Challenger + Disjoint Pair Portfolio',sessions:['12:01 PM','4:30 PM'],activeCore:45,maxHistory:240,horizons:V92_M2D_CONFIG.horizons,chronologicalOOS:true,separateSessions:true,jointDayEvidence:true,directedTransitions:['T→T','T→U','U→T','U→U'],pairMode:'exact-oriented (12 != 21)',pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'exclude ambiguous duplicate dates from training and flag them',externalData:false};
 window.__V92_M2D_AUDIT__=V92_M2D_AUDIT;
 window.__V91_M2D_AUDIT__=V92_M2D_AUDIT;
+
+
 
 
 function renderMyanmar2DModule(text){
@@ -8546,6 +8726,8 @@ function renderMyanmar2DModule(text){
   const err=parsed.errors.length?`<div class="m2d-note m2d-error">⚠️ ${parsed.errors.map(m2dEsc).join(' • ')}</div>`:'';
   return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('နေ့လယ်ပိုင်း','12.01 P.M.','☀️',noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('ညနေပိုင်း','4.30 P.M.','🌙',evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('တစ်နေ့တာ','12.01 P.M. + 4.30 P.M.','📅',all,'m2d-card-all',dateLabel)}</div>${err}</div>`;
 }
+
+
 
 
 /* =========================================================
@@ -8759,6 +8941,10 @@ function m2dV55AdvancedTop3(arr,baseTop){
   out._v55={quality,distributionShift:shift,ranked:ranked.slice(0,10),multipleTestingPenalty:v55MultipleTestingPenalty(data.length,10)};
   return out;
 }
+
+
+
+
 
 
 
@@ -9169,7 +9355,7 @@ function runEngineCore(){
       nextDate:top.nextDate,d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,
       rank1Formula:'V95 THAI DIRECT',rank1Rate:0,recordCount:top.recordCount,recordsForFrequency:thaiAllDay,
       topAgreement:0,scoreGap:round2((top.scores[top.d1]||0)-(top.scores[top.d2]||0)),
-      scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรง ๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{thaiV95:top.thaiV95},thaiV95:top.thaiV95}
+      scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรงๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{thaiV95:top.thaiV95},thaiV95:top.thaiV95}
     };
   }
   /* =====================================================
@@ -9799,6 +9985,7 @@ window.addEventListener(
     }
   });
 
+
 /* =========================================================
    V95 PRECISION ARCHITECTURE — AUDIT-FIRST SELECTION ENGINE
    Backend-only. UI/card markup and styles intentionally untouched.
@@ -9914,6 +10101,7 @@ function v95ApplyPrecisionArchitecture(base,records,auditData,formulaNames){
   return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
     v95:{version:'V95 Audit-First Precision Architecture',principles:['formula-vs-digit-separation','top3-formula-protection','consensus-diagnostic-only','anti-suppression','empirical-null-baseline','partial-vs-strong-hit','conflict-penalty','correlation-aware','regime-aware-shrinkage','counterfactual-audit','score-is-not-probability'],regime,ranked:out.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,formula:r.v95?.formulaTrust??50,consensus:r.v95?.consensus??50,consensusCount:r.v95?.consensusCount??0,top3Protection:r.v95?.top3Protection??0,partialHitRate:r.v95?.partialHitRate??50,strongHitRate:r.v95?.strongHitRate??50,empiricalNull:r.v95?.empiricalNull??50,lift:r.v95?.observedLift??0,penalty:r.v95?.penalty??0,regime:r.v95?.regime??'UNKNOWN'})),counterfactual:{selected:chosen?.digit??null,second:second?.digit??null,selectedAudit:chosen?.v95?.counterfactual??null}},finalGate:{...(src.finalGate||{}),v95AuditFirst:true,v95Top3Protection:true,v95ConsensusFirewall:true,v95AntiSuppression:true,v95EmpiricalNull:true,v95Counterfactual:true,v95ScoreProbabilitySeparated:true}};
 }
+
 
 /* =========================================================
    V98 FINAL AUTHORITY — CONSENSUS DEVALUATION / CLEAN PATH
@@ -10107,6 +10295,7 @@ function v98ConsensusInvarianceTest(intelligence,records,auditData,formulaNames)
   return {pass:A.length===B.length&&A.every((d,i)=>d===B[i]),before:A,after:B};
 }
 
+
 window.__V98_TEST_API__={cleanAuthority:v98CleanAuthority,invariance:v98ConsensusInvarianceTest,formulaRanked:v98FormulaRanked,digitConditional:v98DigitConditional,formulaNames:Object.keys(allFormulas).filter(n=>typeof allFormulas[n]==='function')};
 window.__V99_CONSENSUS_FIREWALL__={authority:'V100-FORMULA-CONFLUENCE-ONLY',consensusScore:0,agreementScore:0,legacyBuildDigitScoreForFinalCard:false,formulaCandidatesOnly:true};
 window.__V91_PLUSPLUS_AUDIT__={
@@ -10116,6 +10305,7 @@ window.__V91_PLUSPLUS_AUDIT__={
   flagRouter:'deterministic-market-first-v91',
   flagSelfTestCases:V91_FLAG_AUDIT.length,
   flagSelfTestPass:V91_FLAG_AUDIT_PASS,
+  displayCanonicalSelfTestPass:V106_DISPLAY_AUDIT_PASS,
   lockedFormulaBodies:'UNCHANGED',
   uiCssCardContract:'UNCHANGED',
   noNewFormulaLayer:true,
