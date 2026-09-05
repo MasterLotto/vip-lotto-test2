@@ -5668,6 +5668,12 @@ function renderCardHTML(
   const badge='';
   /* คะแนนออดิทสรุปไว้นอกการ์ด เพื่อให้การ์ดสะอาดสำหรับแคปส่งสมาชิก */
   const scoreSummary='';
+  /* V90.1 FLAG HARDENING — resolve the flag again from the canonical display
+     title at render time. This prevents a stale/misclassified card.flag value
+     from reaching the visible card. */
+  const resolvedFlag=getLotteryFlag(
+    card.displayTitle||card.lotteryName||''
+  );
   return`
   <div
     class="prediction-card ${isScore?'score-card':''} ${manual?'formula-selected':''}"
@@ -5676,7 +5682,7 @@ function renderCardHTML(
     <div class="card-top-bar">
       <div class="card-title-group">
         <div class="card-flag">
-          ${card.flag}
+          ${resolvedFlag}
         </div>
         <div class="card-info">
           <small>
