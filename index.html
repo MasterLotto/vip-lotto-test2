@@ -1075,6 +1075,12 @@ function formatDisplayTitle(rawName){
     return'อียิปต์';
   if(name==='ประชาชนลาว'||name==='ประชาชน ลาว')
     return'ประชาชน ลาว';
+  /* DISPLAY CONTRACT: the word "หุ้น" is reserved for Thai stock only.
+     Keep internal/raw dataset keys untouched; strip only a leading stock
+     prefix from non-Thai lottery display titles. */
+  if(!/^หุ้นไทย(?:\s|$)/i.test(name)){
+    name=name.replace(/^หุ้น\s*/i,'').replace(/^หวยหุ้น\s*/i,'').trim();
+  }
   const cleanLower=name
     .toLowerCase()
     .replace(/\s+/g,'');
@@ -1267,6 +1273,14 @@ const V91_FLAG_CASES=Object.freeze([
 ]);
 const V91_FLAG_AUDIT=V91_FLAG_CASES.map(([input,expected])=>({input,expected,actual:getLotteryFlag(input),pass:getLotteryFlag(input)===expected}));
 const V91_FLAG_AUDIT_PASS=V91_FLAG_AUDIT.every(x=>x.pass);
+const V91_DISPLAY_TITLE_CASES=Object.freeze([
+  ['นิเคอิ เช้า','นิเคอิ เช้า'],['นิเคอิ VIP','นิเคอิ VIP'],
+  ['หุ้นนิเคอิ เช้า','นิเคอิ เช้า'],['หุ้นนิเคอิ VIP บ่าย','นิเคอิ VIP บ่าย'],
+  ['หุ้นจีน บ่าย','จีน บ่าย'],['หุ้นฮั่งเส็ง เช้า','ฮั่งเส็ง เช้า'],
+  ['หุ้นไทย บ่าย','หุ้นไทย บ่าย'],['หุ้นไทย VIP','หุ้นไทย VIP']
+]);
+const V91_DISPLAY_TITLE_AUDIT=V91_DISPLAY_TITLE_CASES.map(([input,expected])=>({input,expected,actual:formatDisplayTitle(input),pass:formatDisplayTitle(input)===expected}));
+const V91_DISPLAY_TITLE_AUDIT_PASS=V91_DISPLAY_TITLE_AUDIT.every(x=>x.pass);
 
 /* =========================================================
    THAI DATE
@@ -7562,43 +7576,40 @@ function m2dNextTargetDate(records){
    - preserve the existing TOP3 + 5-pairs-per-TOP display contract
 ========================================================= */
 const V91_M2D_CONFIG={
-  /* V91 M2D Precision Upgrade: 120 session-round active core.
-     The input may contain more history, but the prediction engine uses the
-     latest 120 valid session results as its active learning reservoir. */
-  maxHistory:120,
-  horizons:[3,6,9,12,15,18,21,24,27,30,45,60,90,120],
-  /* Family-aware weights prevent overlapping short windows from double-counting
-     the same recent observations. Each family is normalized internally. */
+  /* V91 M2D Precision Upgrade — 45-round active core.
+     Dense 3-round horizons are used through 45, but overlapping windows are
+     grouped into families so the same observations are not counted repeatedly. */
+  maxHistory:45,
+  horizons:[3,6,9,12,15,18,21,24,27,30,33,36,39,42,45],
   horizonFamilies:[
-    {name:'ultraRecent',windows:[3,6,9],weight:.16,internal:[.28,.34,.38]},
+    {name:'ultraRecent',windows:[3,6,9],weight:.14,internal:[.25,.33,.42]},
     {name:'recent',windows:[12,15,18],weight:.22,internal:[.34,.33,.33]},
-    {name:'coreRegime',windows:[21,24,27,30],weight:.32,internal:[.20,.23,.27,.30]},
-    {name:'mediumConfirm',windows:[45,60,90],weight:.20,internal:[.40,.35,.25]},
-    {name:'longConfirm',windows:[120],weight:.10,internal:[1]}
+    {name:'coreRegime',windows:[21,24,27,30],weight:.30,internal:[.20,.23,.27,.30]},
+    {name:'extendedRegime',windows:[33,36,39],weight:.20,internal:[.34,.33,.33]},
+    {name:'full45',windows:[42,45],weight:.14,internal:[.45,.55]}
   ],
-  horizonWeights:[.045,.055,.065,.075,.073,.073,.064,.074,.086,.096,.080,.070,.050,.094],
-  oosTests:24,
-  pairOosTests:20,
-  priorStrength:12,
-  maxAdjustment:7.5,
-  transitionWeight:.10,
-  crossSessionWeight:.08,
-  recentWeight:.18,
-  longWeight:.14,
-  positionWeight:.18,
-  frequencyWeight:.14,
-  gapWeight:.06,
-  stabilityWeight:.10,
-  oosWeight:.20,
-  pairExactWeight:.22,
-  pairConditionalWeight:.16,
-  pairRecentWeight:.10,
+  oosTests:18,
+  pairOosTests:18,
+  priorStrength:14,
+  maxAdjustment:6,
+  transitionWeight:.06,
+  crossSessionWeight:.04,
+  recentWeight:.16,
+  longWeight:.10,
+  positionWeight:.24,
+  frequencyWeight:.10,
+  gapWeight:.02,
+  stabilityWeight:.12,
+  oosWeight:.16,
+  pairExactWeight:.20,
+  pairConditionalWeight:.20,
+  pairRecentWeight:.12,
   pairStabilityWeight:.12,
   pairOOSWeight:.20,
-  pairTransitionWeight:.07,
-  pairCrossSessionWeight:.05,
+  pairTransitionWeight:.05,
+  pairCrossSessionWeight:.03,
   pairRecencyWeight:.08,
-  pairRiskPenalty:.10
+  pairRiskPenalty:.12
 };
 function v91M2DClamp(v,a=0,b=100){const n=Number(v);return Number.isFinite(n)?Math.max(a,Math.min(b,n)):a;}
 function v91M2DRecords(arr){return (Array.isArray(arr)?arr:[]).filter(r=>r&&Number.isInteger(r.tens)&&Number.isInteger(r.units)).slice(-V91_M2D_CONFIG.maxHistory);}
@@ -7607,7 +7618,7 @@ function v91M2DPairHit(r,a,b){return (r.tens===a&&r.units===b)||(r.tens===b&&r.u
 function v91M2DExactOriented(r,a,b){return r.tens===a&&r.units===b;}
 function v91M2DBeta(h,n,prior=50,strength=12){return ((Number(h)||0)+prior/100*strength)/(Math.max(0,Number(n)||0)+strength)*100;}
 function v91M2DWindowRate(arr,pos,d,w){const a=arr.slice(-Math.min(w,arr.length));if(!a.length)return 50;const h=a.filter(r=>r[pos]===d).length;return v91M2DBeta(h,a.length,5, V91_M2D_CONFIG.priorStrength)/1;}
-function v91M2DCombinedRate(arr,d,w){const a=arr.slice(-Math.min(w,arr.length));if(!a.length)return 50;const h=a.filter(r=>r.tens===d||r.units===d).length;return v91M2DBeta(h,a.length*2,5,V91_M2D_CONFIG.priorStrength);}
+function v91M2DCombinedRate(arr,d,w){const a=arr.slice(-Math.min(w,arr.length));if(!a.length)return 50;const h=a.filter(r=>r.tens===d||r.units===d).length;return v91M2DBeta(h,a.length,5,V91_M2D_CONFIG.priorStrength);}
 function v91M2DHorizonReliability(windowSize,n){
   /* Tiny windows are useful for momentum, but their raw estimates are noisy.
      Reliability therefore rises smoothly with effective sample size. */
@@ -7635,7 +7646,7 @@ function v91M2DWeightedHorizonRate(arr,d){
   const total=usable.reduce((a,f)=>a+(Number(f.weight)||0),0)||1;
   return usable.reduce((a,f)=>a+v91M2DFamilyHorizonRate(data,d,f)*(Number(f.weight)||0),0)/total;
 }
-function v91M2DGapScore(arr,d){if(!arr.length)return 50;let gap=arr.length+1;for(let i=arr.length-1;i>=0;i--){if(arr[i].tens===d||arr[i].units===d){gap=arr.length-1-i;break;}}if(gap===0)return 62; if(gap<=2)return 48; if(gap<=5)return 54; if(gap<=12)return 50+Math.min(22,(gap-5)*2.2); return 72;}
+function v91M2DGapScore(arr,d){if(!arr.length)return 50;let gap=arr.length+1;for(let i=arr.length-1;i>=0;i--){if(arr[i].tens===d||arr[i].units===d){gap=arr.length-1-i;break;}}if(gap===0)return 54;if(gap<=2)return 52;if(gap<=5)return 50;if(gap<=9)return 49;if(gap<=14)return 48;return 47;}
 function v91M2DStability(arr,d){
   const data=Array.isArray(arr)?arr:[], vals=[];
   (V91_M2D_CONFIG.horizonFamilies||[]).forEach(f=>{
@@ -7694,7 +7705,7 @@ function v91M2DBaseDigitScores(arr,allRecords,session,cutoffTimestamp=null){
     const gap=v91M2DGapScore(data,d),stable=v91M2DStability(data,d);
     const trans=(v91M2DTransitionScore(data,'tens',d)+v91M2DTransitionScore(data,'units',d))/2;
     const cross=v91M2DCrossSessionTransition(allRecords,d,session,cutoffTimestamp);
-    out[d]=weighted*.22+recent*.18+long*.14+position*.18+gap*.06+stable*.10+trans*.07+cross*.05;
+    out[d]=weighted*.30+recent*.16+long*.10+position*.24+gap*.02+stable*.12+trans*.06+cross*.04;
   }
   return out;
 }
@@ -7713,8 +7724,8 @@ function v91M2DDecisionDigitScores(arr,allRecords,session){
   for(let d=0;d<10;d++){
     const o=v91M2DClamp(oos.coverage[d]),r=v91M2DClamp(oos.rank[d]);
     const consistency=v91M2DStability(data,d);
-    const raw=base[d]*.60+o*.20+r*.08+consistency*.07+v91M2DGapScore(data,d)*.05;
-    const trust=Math.min(1,data.length/60);
+    const raw=base[d]*.58+o*.22+r*.10+consistency*.08+v91M2DGapScore(data,d)*.02;
+    const trust=Math.min(1,data.length/36);
     out[d]=50+(raw-50)*(.55+.45*trust);
   }
   return out;
@@ -7755,7 +7766,7 @@ function v91M2DPairScore(arr,target,partner,allRecords,session){
   const cross=v91M2DCrossSessionTransition(allRecords,partner,session),targetCross=v91M2DCrossSessionTransition(allRecords,target,session);
   const exactRate=st.exact/Math.max(1,data.length)*100,recentRate=st.recent/Math.max(1,Math.min(30,data.length))*100;
   const risk=Math.max(0,recentRate-exactRate-18)+Math.max(0,50-stable)*.35;
-  const trust=Math.min(1,data.length/60);
+  const trust=Math.min(1,data.length/36);
   const score=(base*.43+oos*.20+stable*.12+conditional*.10+((cross+targetCross)/2)*.07+Math.min(100,recentRate+50)*.08-risk*V91_M2D_CONFIG.pairRiskPenalty)*(0.62+0.38*trust);
   return {pair:String(target)+String(partner),score:Math.max(0,score),qualified:data.length<12||oos>=25,meta:{empiricalPairPrecision:exactRate,selectedPairPrecision:oos,pairWalkForwardStability:stable,positionConditional:conditional/100,crossSession:(cross+targetCross)/2,recency:recentRate,exact:st.exact,recent:st.recent,previous:st.previous,oriented:st.oriented,reverse:st.reverse,risk,version:'V91 M2D'} };
 }
@@ -7785,7 +7796,7 @@ function v91M2DAnalyzeSession(records,session){
   const clean=v91M2DCleanTrainingRecords(records),arr=(Array.isArray(clean)?clean.map(r=>r?.[session]).filter(Boolean):[]).slice(-V91_M2D_CONFIG.maxHistory);
   const top=v91M2DTop3(arr,records,session);
   const pairsByTarget={};top.forEach(t=>pairsByTarget[t.digit]=v91M2DRenderSortPairs(v91M2DPairs(arr,t.digit,records,session,9).slice(0,5)));
-  return {session,arr,top,pairsByTarget,inputQuality:{inputRounds:arr.length,coreRounds:Math.min(30,arr.length),activeTrainingCore:Math.min(V91_M2D_CONFIG.maxHistory,arr.length),longHistoryUsed:arr.length,horizons:V91_M2D_CONFIG.horizons},pairSetWF:{tested:0,precision:50,coverage:50}};
+  return {session,arr,top,pairsByTarget,inputQuality:{inputRounds:arr.length,coreRounds:Math.min(V91_M2D_CONFIG.maxHistory,arr.length),activeTrainingCore:Math.min(V91_M2D_CONFIG.maxHistory,arr.length),longHistoryUsed:arr.length,horizons:V91_M2D_CONFIG.horizons},pairSetWF:{tested:0,precision:50,coverage:50}};
 }
 function v91M2DConsensus(noon,evening,records){
   records=v91M2DCleanTrainingRecords(records);
@@ -7796,7 +7807,7 @@ function v91M2DConsensus(noon,evening,records){
   const pairsByTarget={};ranked.forEach(t=>{const a=v91M2DPairs(noon.arr,t.digit,records,'noon',9),b=v91M2DPairs(evening.arr,t.digit,records,'evening',9),mm=new Map();[...a,...b].forEach(p=>{const old=mm.get(p.pair);if(!old||p.score>old.score)mm.set(p.pair,p);});pairsByTarget[t.digit]=v91M2DRenderSortPairs([...mm.values()].sort((x,y)=>y.score-x.score||x.pair.localeCompare(y.pair)).slice(0,5));});
   return {top:ranked,pairsByTarget,inputQuality:{noon:noon.inputQuality,evening:evening.inputQuality},pairSetWF:{tested:0,precision:50,coverage:50},precisionLayer:{version:'V91 M2D session-aware OOS'}};
 }
-const V91_M2D_AUDIT={version:'V91 M2D Precision Upgrade — 120-round core + multi-horizon 3-120 + chronology-safe OOS + deterministic data reconciliation',mechanism:'SET-index-derived Myanmar 2D; historical-result model uses result history only when SET inputs are unavailable',sessions:['12:01 PM','4:30 PM'],maxHistory:120,horizons:[3,6,9,12,15,18,21,24,27,30,45,60,90,120],horizonFamilies:V91_M2D_CONFIG.horizonFamilies,familyWeights:V91_M2D_CONFIG.horizonFamilies.map(f=>({name:f.name,weight:f.weight,windows:f.windows})),chronologicalOOS:true,separateSessions:true,crossSessionBounded:true,pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'exclude-ambiguous-duplicate-date-from-training-and-retain-in-storage-for-correction',inputIntegrity:'strict-schema / no silent date repair',shortWindowShrinkage:true,overlapCorrelationGuard:true,activeTrainingCore:'120 session rounds'};
+const V91_M2D_AUDIT={version:'V91 M2D Precision Upgrade — 45-round core + multi-horizon 3-45 + chronology-safe OOS + deterministic data reconciliation',mechanism:'SET-index-derived Myanmar 2D; historical-result model uses result history only when SET inputs are unavailable',sessions:['12:01 PM','4:30 PM'],maxHistory:45,horizons:[3,6,9,12,15,18,21,24,27,30,33,36,39,42,45],horizonFamilies:V91_M2D_CONFIG.horizonFamilies,familyWeights:V91_M2D_CONFIG.horizonFamilies.map(f=>({name:f.name,weight:f.weight,windows:f.windows})),chronologicalOOS:true,separateSessions:true,crossSessionBounded:true,pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'exclude-ambiguous-duplicate-date-from-training-and-retain-in-storage-for-correction',inputIntegrity:'strict-schema / no silent date repair',shortWindowShrinkage:true,overlapCorrelationGuard:true,activeTrainingCore:'45 session rounds'};
 window.__V91_M2D_AUDIT__=V91_M2D_AUDIT;
 window.__V91_M2D_AUDIT__.chronologySafeOOS=true;
 window.__V91_M2D_AUDIT__.crossSessionAlignment='evening uses same-day noon; noon uses previous valid evening';
@@ -8339,18 +8350,28 @@ function runEngineCore(){
       if(auditDataMap[lotteryName]&&intelligence?.formulaGovernor){
         auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
       }
-      const finalTop3=Array.isArray(intelligence.top3)?intelligence.top3.map(Number).filter(Number.isFinite):[];
+      let finalTop3=Array.isArray(intelligence.top3)?intelligence.top3.map(Number).filter(Number.isFinite):[];
+      let laoPrecisionRows=null;
+      if(v91IsLaoLottery(lotteryName)){
+        laoPrecisionRows=v91LaoDigitIntelligence(resultRecs);
+        const baseRank=new Map(finalTop3.map((d,i)=>[d,i]));
+        const merged=laoPrecisionRows.map(r=>{const base=Number(intelligence.rows?.find(x=>Number(x.digit)===r.digit)?.score)||50;return {...r,combined:r.score*.62+base*.38+(baseRank.has(r.digit)?3:0)};});
+        finalTop3=merged.sort((a,b)=>b.combined-a.combined||a.digit-b.digit).slice(0,3).map(x=>x.digit);
+        auditDataMap[lotteryName].__laoPrecision={version:'V91 Lao Precision — dense 3..45 + OOS + position + transition',activeRounds:Math.min(45,resultRecs.length),horizons:[3,6,9,12,15,18,21,24,27,30,33,36,39,42,45],top3:finalTop3};
+      }
       if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
-      const d1Pairs=generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs);
-      const d2Pairs=generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs);
+      let d1Pairs=generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs);
+      let d2Pairs=generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs);
+      if(v91IsLaoLottery(lotteryName)){d1Pairs=v91LaoRefinePairs(resultRecs,d1,d1Pairs);d2Pairs=v91LaoRefinePairs(resultRecs,d2,d2Pairs);}
       /* -----------------------------------------
          INTELLIGENT SCORE SELECTION
          22-25: isolated dataset + multi-angle intelligence
       ----------------------------------------- */
       const consensus=intelligence.consensus;
       const selectedRows=intelligence.selected||[];
-      const scoreD1=selectedRows[0]?.digit;
-      const scoreD2=selectedRows[1]?.digit;
+      let scoreD1=selectedRows[0]?.digit;
+      let scoreD2=selectedRows[1]?.digit;
+      if(v91IsLaoLottery(lotteryName)&&finalTop3.length>=2){scoreD1=finalTop3[0];scoreD2=finalTop3[1];}
       const scoreData=intelligence.rows.map(row=>buildDigitScore(row.digit,formulaNames,auditDataMap[lotteryName],intelligence.consensus,intelligence.frequency,intelligence))
         .sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
       const selectedScore=scoreData.find(x=>x.digit===scoreD1)||scoreData[0];
@@ -8359,7 +8380,99 @@ function runEngineCore(){
       const confidence=getConfidence(selectedScore,secondScore,auditDataMap[lotteryName],formulaNames,intelligence);
       const scoreD1Pairs=generateFormulaPairs(scoreD1,scoreD2,auditDataMap,lotteryName,resultRecs);
       const scoreD2Pairs=generateFormulaPairs(scoreD2,scoreD1,auditDataMap,lotteryName,resultRecs);
-      /* -----------------------------------------
+      /* =========================================================
+   V91 LAO PRECISION LAYER — 45-ROUND DENSE EVIDENCE
+   Scope: Lao lotteries only. Locked formula bodies remain untouched.
+   Purpose: improve digit prominence + targeted/pair ranking without allowing
+   one frequency window to dominate. Evidence is chronological and bounded.
+========================================================= */
+function v91IsLaoLottery(name){return /(?:^|\s)(?:หวย)?ลาว|ประชาชนลาว|lao/i.test(String(name||''));}
+function v91LaoClamp(v,a=0,b=100){const n=Number(v);return Number.isFinite(n)?Math.max(a,Math.min(b,n)):a;}
+function v91LaoDigits(rec){
+  const out=[];
+  if(rec&&typeof rec.n3==='string'&&/^\d{3}$/.test(rec.n3)) out.push(...rec.n3.split('').map(Number));
+  if(rec&&typeof rec.n2==='string'&&/^\d{2}$/.test(rec.n2)) out.push(...rec.n2.split('').map(Number));
+  return out.filter(Number.isInteger);
+}
+function v91LaoWindowScore(records,d,w){
+  const a=(records||[]).slice(-Math.min(w,(records||[]).length));
+  if(!a.length)return 50;
+  let hit=0,total=0;
+  for(const r of a){const ds=v91LaoDigits(r); total+=ds.length; hit+=ds.filter(x=>x===d).length;}
+  const prior=6;
+  return v91LaoClamp(((hit+0.5*prior)/(total+prior))*100);
+}
+function v91LaoPositionScore(records,d,w){
+  const a=(records||[]).slice(-Math.min(w,(records||[]).length));
+  if(!a.length)return 50;
+  const pos=[0,0,0,0,0], hit=[0,0,0,0,0];
+  for(const r of a){
+    const ds=v91LaoDigits(r); ds.forEach((x,i)=>{if(i<5){pos[i]++;if(x===d)hit[i]++;}});
+  }
+  const vals=hit.map((h,i)=>pos[i]?((h+0.5*5)/(pos[i]+5))*100:50);
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+function v91LaoTransitionScore(records,d){
+  const a=Array.isArray(records)?records:[]; if(a.length<3)return 50;
+  let hit=0,total=0;
+  for(let i=1;i<a.length;i++){
+    const prev=v91LaoDigits(a[i-1]), cur=v91LaoDigits(a[i]);
+    if(!prev.length||!cur.length)continue;
+    total++; if(cur.includes(d)&&prev.some(x=>x===d))hit++;
+  }
+  return total?v91LaoClamp(((hit+1)/(total+2))*100):50;
+}
+function v91LaoChronologicalOOS(records,d){
+  const a=Array.isArray(records)?records:[]; if(a.length<18)return 50;
+  const start=Math.max(12,a.length-18); let tested=0,hit=0;
+  for(let i=start;i<a.length;i++){
+    const train=a.slice(0,i), actual=a[i], ranked=[];
+    for(let x=0;x<10;x++){
+      const s=v91LaoWindowScore(train,x,Math.min(30,train.length))*.58+
+        v91LaoWindowScore(train,x,Math.min(45,train.length))*.22+
+        v91LaoPositionScore(train,x,Math.min(30,train.length))*.20;
+      ranked.push({d:x,s});
+    }
+    ranked.sort((u,v)=>v.s-u.s||u.d-v.d);
+    const top=ranked.slice(0,3).map(x=>x.d), actualDigits=v91LaoDigits(actual);
+    tested++; if(top.some(x=>actualDigits.includes(x)))hit++;
+  }
+  return tested?v91LaoClamp(((hit+2)/(tested+4))*100):50;
+}
+function v91LaoDigitIntelligence(records){
+  const a=(records||[]).filter(isResultRecord).slice(-45), rows=[];
+  if(!a.length)return [];
+  for(let d=0;d<10;d++){
+    const h3=v91LaoWindowScore(a,d,3),h6=v91LaoWindowScore(a,d,6),h9=v91LaoWindowScore(a,d,9),
+      h12=v91LaoWindowScore(a,d,12),h15=v91LaoWindowScore(a,d,15),h18=v91LaoWindowScore(a,d,18),
+      h21=v91LaoWindowScore(a,d,21),h24=v91LaoWindowScore(a,d,24),h27=v91LaoWindowScore(a,d,27),
+      h30=v91LaoWindowScore(a,d,30),h33=v91LaoWindowScore(a,d,33),h36=v91LaoWindowScore(a,d,36),
+      h39=v91LaoWindowScore(a,d,39),h42=v91LaoWindowScore(a,d,42),h45=v91LaoWindowScore(a,d,45);
+    const ultra=h3*.20+h6*.30+h9*.50;
+    const recent=h12*.34+h15*.33+h18*.33;
+    const core=h21*.20+h24*.23+h27*.27+h30*.30;
+    const ext=h33*.34+h36*.33+h39*.33;
+    const full=h42*.45+h45*.55;
+    const oos=v91LaoChronologicalOOS(a,d), pos=v91LaoPositionScore(a,d,30), trans=v91LaoTransitionScore(a,d);
+    const score=ultra*.12+recent*.18+core*.28+ext*.20+full*.12+oos*.06+pos*.03+trans*.01;
+    rows.push({digit:d,score:v91LaoClamp(score),components:{ultra,recent,core,extended:ext,full45:oos?full:50,oos,position:pos,transition:trans}});
+  }
+  return rows.sort((x,y)=>y.score-x.score||x.digit-y.digit);
+}
+function v91LaoPairPrecision(records,a,b){
+  const rs=(records||[]).filter(isResultRecord).slice(-45); if(!rs.length)return 50;
+  const pair=String(a)+String(b),rev=String(b)+String(a); let exact=0,unordered=0,recent=0,total=0;
+  rs.forEach((r,i)=>{const top=String(r.n3||''), bot=String(r.n2||''); const seq=[top.slice(-2),bot].filter(x=>/^\d{2}$/.test(x)); seq.forEach(x=>{total++;if(x===pair||x===rev)unordered++;if(x===pair)exact++;if(i>=Math.max(0,rs.length-12)&&(x===pair||x===rev))recent++;});});
+  if(!total)return 50;
+  const ex=((exact+1)/(total+4))*100, un=((unordered+2)/(total+5))*100, rec=((recent+1)/(Math.min(12,rs.length)*2+4))*100;
+  return v91LaoClamp(ex*.40+un*.35+rec*.25);
+}
+function v91LaoRefinePairs(records,mainDigit,pairs){
+  const src=Array.isArray(pairs)?pairs:[], out=src.map(p=>{const m=String(p.pair||'').match(/^(\d)(\d)$/);if(!m)return p;const a=Number(m[1]),b=Number(m[2]);const ev=v91LaoPairPrecision(records,a,b);return {...p,score:v91LaoClamp((Number(p.score)||0)*.72+ev*.28),laoPrecision:round2(ev)};});
+  return out.sort((x,y)=>(Number(y.score)||0)-(Number(x.score)||0)||String(x.pair).localeCompare(String(y.pair)));
+}
+
+/* -----------------------------------------
          SAVE PREDICTION DATA
       ----------------------------------------- */
       predictionDataMap[
@@ -8373,6 +8486,7 @@ function runEngineCore(){
         d2,
         d1Pairs,
         d2Pairs,
+        precisionLayer: v91IsLaoLottery(lotteryName)?{version:'V91 Lao Precision',activeRounds:Math.min(45,resultRecs.length),horizons:[3,6,9,12,15,18,21,24,27,30,33,36,39,42,45],top3:finalTop3}:null,
         hundredsDigit,
         rank1Formula:
           rank1FormulaName,
@@ -9076,6 +9190,9 @@ window.__V91_PLUSPLUS_AUDIT__={
   flagRouter:'deterministic-market-first-v91',
   flagSelfTestCases:V91_FLAG_AUDIT.length,
   flagSelfTestPass:V91_FLAG_AUDIT_PASS,
+  displayTitleSelfTestCases:V91_DISPLAY_TITLE_AUDIT.length,
+  displayTitleSelfTestPass:V91_DISPLAY_TITLE_AUDIT_PASS,
+  thaiStockPrefixOnly:true,
   lockedFormulaBodies:'UNCHANGED',
   uiCssCardContract:'UNCHANGED',
   noNewFormulaLayer:true,
@@ -9106,6 +9223,7 @@ purpose:'FULL_AUDITED_ADAPTIVE_RADAR_V90_PLUS_PLUS'
 })();
 </script>
 <!-- V91 M2D AUDIT: 120-round active core; 3/6/9/12/15/18/21/24/27/30 + 45/60/90/120 family-aware horizons; short-window shrinkage; overlap correlation guard; chronology-safe OOS; session-aware cross-session evidence; deterministic data reconciliation; display-only ascending pair ordering. -->
+<!-- DISPLAY AUDIT: non-Thai lottery titles never show a leading "หุ้น" prefix; Thai stock titles retain "หุ้นไทย". Raw/internal keys are untouched. -->
 <!-- V90 PLUS+ SOURCE AUDIT: 58 lottery types; 1,735 valid result records; 5 no-result entries excluded; 15 locked formulas preserved byte-for-byte; 5 new adaptive formulas added. -->
 </body>
   </html>
