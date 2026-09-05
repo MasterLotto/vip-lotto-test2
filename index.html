@@ -2915,8 +2915,39 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     x.rankWeight=round2(clamp(1.14-0.34*((r-1)/Math.max(1,N-1)),.80,1.14));
     v95StableFormulaRows[x.name]=x;
   });
-  const v95SupportByDigit=Array.from({length:10},(_,digit)=>({digit,formulaSignal:0,digitOOS:50,stability:50,
-    recent:50,formulaCount:0,independentFamilies:0,consensusSupport:0,sourceNames:[],rankSpread:0}));
+  /* ================================================================
+     V97 CONSENSUS FIREWALL + STABILITY CONFLUENCE 2.0
+     Consensus Digit Board is intentionally retained for display/diagnostics,
+     but it has ZERO authority over the predictive score. The only primary
+     evidence here comes from formula-backed candidates, digit-specific OOS,
+     multi-horizon stability, temporal-segment stability, recency, and robust
+     evidence. This prevents the same "many formulas picked this digit" fact
+     from being counted again through agreement/family/consensus layers.
+     ================================================================ */
+  const v95SupportByDigit=Array.from({length:10},(_,digit)=>({digit,formulaSignal:0,digitOOS:50,
+    stability:50,recent:50,formulaCount:0,independentFamilies:0,consensusSupport:0,
+    sourceNames:[],rankSpread:v95FormulaRanked.length,supportingOOS:50,supportingOOSSamples:0,
+    horizonSurvival:50,segmentStability:50}));
+  const v97DigitFormulaOOS=(digit,supporting)=>{
+    let hit=0,total=0;
+    const source=[];
+    (supporting||[]).forEach(name=>{
+      const hist=getFormulaHistory(recs,name);
+      let fh=0,ft=0;
+      hist.forEach(h=>{
+        const predicted=[...(h.predicted||[])];
+        if(!predicted.includes(digit)) return;
+        const actual=([String(h.actualN3||'').slice(1),String(h.actualN2||'')].join('')).split('').map(Number);
+        ft++;
+        if(actual.includes(digit)) fh++;
+      });
+      if(ft){
+        hit+=fh; total+=ft;
+        source.push({name,rate:percent(fh,ft),samples:ft});
+      }
+    });
+    return {rate:total?betaSmoothedRate(hit,total,50,8):50,samples:total,source};
+  };
   rows.forEach(row=>{
     const d=row.digit;
     const supporting=(row.formulaHits||[]).filter(n=>names.includes(n));
@@ -2924,33 +2955,63 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     supporting.forEach(name=>{
       const f=v95StableFormulaRows[name]; if(!f)return;
       const rankW=f.rankWeight;
-      const reliability=clamp(.34*f.hitDensity+.20*f.stability+.16*f.recency+.30*f.multiStability,0,100);
+      const reliability=clamp(.28*f.hitDensity+.17*f.stability+.13*f.recency+.42*f.multiStability,0,100);
       const q=clamp(reliability*rankW,0,100);
       parts.push(q); fams.add(familyIdByFormula[name]);
     });
     const formulaSignal=parts.length
-      ?clamp(avg(parts)*.78+Math.max(...parts)*.22,0,100)
+      ?clamp(avg(parts)*.82+Math.max(...parts)*.18,0,100)
       :0;
-    const oos=Number(row.raw.empiricalPrecision)||50;
+    const supportingOOS=v97DigitFormulaOOS(d,supporting);
+    const oos=supporting.length
+      ?clamp(supportingOOS.rate*.72+(Number(row.raw.empiricalPrecision)||50)*.28,0,100)
+      :Number(row.raw.empiricalPrecision)||50;
     const recent=Number(row.raw.recencyStrength)||50;
+    const horizonValues=supporting.flatMap(name=>{
+      const g=v95StableFormulaRows[name];
+      const h=Array.isArray(g?.horizonRates)?g.horizonRates:[];
+      return h.filter(v=>Number.isFinite(v));
+    });
+    const horizonMean=horizonValues.length?avg(horizonValues):50;
+    const horizonFloor=horizonValues.length?Math.min(...horizonValues):50;
+    const horizonSurvival=clamp(horizonFloor*.45+horizonMean*.55,0,100);
+    const segmentValues=supporting.flatMap(name=>{
+      const hist=getFormulaHistory(recs,name),len=hist.length;
+      if(len<9)return [];
+      const a=Math.max(1,Math.floor(len/3));
+      const b=Math.max(a+1,Math.floor(len*2/3));
+      return [percent(hist.slice(0,a).filter(x=>x.hit).length,a),
+        percent(hist.slice(a,b).filter(x=>x.hit).length,b-a),
+        percent(hist.slice(b).filter(x=>x.hit).length,len-b)];
+    });
+    const segmentMean=segmentValues.length?avg(segmentValues):50;
+    const segmentDisp=segmentValues.length?avg(segmentValues.map(v=>Math.abs(v-segmentMean))):0;
+    const segmentStability=clamp(100-segmentDisp*1.65,0,100);
     const stability=clamp(
-      Number(row.raw.signalPersistence||50)*.30+
-      Number(row.raw.rankStability||50)*.22+
-      Number(row.raw.robustnessSurvival||50)*.18+
-      Number(row.raw.survivalTop5||50)*.10+
-      Number(row.raw.counterfactualStability||50)*.20,0,100);
-    const consensusSupport=clamp(Number(row.agreement||0)*1.5,0,6);
+      Number(row.raw.signalPersistence||50)*.20+
+      Number(row.raw.rankStability||50)*.18+
+      Number(row.raw.robustnessSurvival||50)*.16+
+      Number(row.raw.survivalTop5||50)*.08+
+      Number(row.raw.counterfactualStability||50)*.14+
+      horizonSurvival*.14+
+      segmentStability*.10,0,100);
+    /* Deliberately zero: consensus remains visible in the board but cannot
+       alter the candidate score or compensate for weak primary evidence. */
+    const consensusSupport=0;
     v95SupportByDigit[d]={digit:d,formulaSignal,oos,stability,recent,
       formulaCount:supporting.length,independentFamilies:fams.size,consensusSupport,
-      sourceNames:supporting.slice(),rankSpread:supporting.length?avg(supporting.map(n=>v95RankMap[n]||v95FormulaRanked.length)):v95FormulaRanked.length};
+      sourceNames:supporting.slice(),
+      rankSpread:supporting.length?avg(supporting.map(n=>v95RankMap[n]||v95FormulaRanked.length)):v95FormulaRanked.length,
+      supportingOOS:round2(supportingOOS.rate),supportingOOSSamples:supportingOOS.samples,
+      horizonSurvival:round2(horizonSurvival),segmentStability:round2(segmentStability)};
   });
   const v95PrimaryCandidates=v95SupportByDigit.filter(x=>x.formulaCount>0);
   const v95FallbackCandidates=v95SupportByDigit.filter(x=>x.formulaCount===0);
   const v95ScoreCandidate=(x,isFallback=false)=>{
     const r=rows[x.digit]?.raw||{};
     const familySupport=clamp(x.independentFamilies>=3?100:x.independentFamilies===2?78:x.independentFamilies===1?58:35,0,100);
-    /* Consensus is capped at 6 points and can never substitute for formula/OOS
-       evidence. It is support only, exactly as the live-use audit requested. */
+    /* V97: consensus contributes ZERO. It remains an audit/diagnostic field
+       only, so repeated formula agreement cannot override OOS or stability. */
     const support=clamp(
       x.formulaSignal*.43+
       x.oos*.27+
@@ -2958,12 +3019,11 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
       x.recent*.07+
       familySupport*.05,
       0,100);
-    const boundedConsensus=x.consensusSupport;
     const conflictPenalty=Math.min(10,(Number(r.conflict)||0)*1.35);
     const fpPenalty=Math.min(10,(Number(r.falsePositiveRisk)||50)*.08);
     const lowEvidencePenalty=(x.formulaCount===1&&x.oos<45&&x.stability<45)?5:0;
     const fallbackPenalty=isFallback?12:0;
-    return round2(clamp(support+boundedConsensus-conflictPenalty-fpPenalty-lowEvidencePenalty-fallbackPenalty,0,100));
+    return round2(clamp(support-conflictPenalty-fpPenalty-lowEvidencePenalty-fallbackPenalty,0,100));
   };
   v95SupportByDigit.forEach(x=>{
     const fallback=x.formulaCount===0;
@@ -2976,7 +3036,11 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     row.raw.v95FormulaCount=x.formulaCount;
     row.raw.v95IndependentFamilies=x.independentFamilies;
     row.raw.v95RankSpread=round2(x.rankSpread);
-    row.raw.v95ConsensusSupport=round2(x.consensusSupport);
+    row.raw.v95ConsensusSupport=0;
+    row.raw.v97SupportingDigitOOS=round2(x.supportingOOS);
+    row.raw.v97SupportingOOSSamples=Number(x.supportingOOSSamples)||0;
+    row.raw.v97HorizonSurvival=round2(x.horizonSurvival);
+    row.raw.v97SegmentStability=round2(x.segmentStability);
     row.raw.v95DecisionScore=score;
     /* Preserve the existing score fields for UI compatibility, but make the
        V95 decision score the final backend authority. */
@@ -3044,10 +3108,10 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     frequencyRate:x.raw.frequency,
     recent:x.raw.recencyStrength,
     momentum:x.raw.momentum,
-    formulaSupport:x.raw.formulaEvidence,
-    walkForward:x.raw.empiricalPrecision,
+    formulaSupport:x.raw.v95FormulaRankScore??x.raw.formulaEvidence,
+    walkForward:x.raw.v97SupportingDigitOOS??x.raw.empiricalPrecision,
     stability:x.raw.robustnessSurvival,
-    consensus:x.agreement,
+    consensus:0,
     positionSupport:x.raw.position,
     diversity:x.raw.evidenceDiversity,
     falsePositiveRisk:x.raw.falsePositiveRisk,
@@ -3183,6 +3247,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
     shadowTop3,
     removedFromTop3:[...new Set([...(v71Decision.removedFromTop3||removedFromTop3),...(v72Refinement.removedFromTop3||[])])],
     v71Arbitration:{accepted:v71Accepted,top3:integratedTop3,rawTop3:v71Decision.rawTop3||shadowTop3,core:v71Decision.core||[],support:v71Decision.support||[],shadow:v71Decision.shadow||[],noForcedPrediction:!!v71Decision.noForcedPrediction,audit:v71Decision.audit||[]},
+    v97DecisionGovernor:{version:'V97',consensusAuthority:'ZERO',formulaCandidatesOnly:true,digitSpecificOOS:true,multiHorizon:true,horizons:[3,6,9,10,12,15,18,21,24,27,30],temporalSegments:['EARLY','MIDDLE','LATE'],rankWeighting:'SMOOTH_1_TO_N',primaryWeights:{formulaSignal:.43,digitOOS:.27,stability:.18,recent:.07,independentFamilies:.05},consensusCap:0},
     margin,
     qualityGate,
     finalGate,
@@ -3252,7 +3317,7 @@ function buildDigitScore(digit,formulaNames,auditData,consensusMap,frequency,int
       agreement++;
     }
   });
-  total+=((consensusMap.find(x=>x.digit===digit)?.agreement||0)*6)+(frequency.rates[digit]*2);
+  total+=(frequency.rates[digit]*2); /* V97: consensus is display/diagnostic only. */
   return{digit,score:round2(total),selectionQuality:round2(total),agreement,frequencyRate:(frequency.targetableRates?.[digit]??frequency.rates[digit]??0)};
 }
 /* =========================================================
@@ -6940,7 +7005,7 @@ function v70Clamp(v,lo=0,hi=100){const n=Number(v);return Number.isFinite(n)?Mat
 function v70Mean(a){const x=(a||[]).map(Number).filter(Number.isFinite);return x.length?x.reduce((s,v)=>s+v,0)/x.length:0;}
 function v70Unique(a){return [...new Set((a||[]).map(String))];}
 function v70TargetString(r){return String(r?.top||'').padStart(3,'0').slice(1,3)+String(r?.bottom||'').padStart(2,'0');}
-function v70EvidenceProfile(item){const x=item||{},m=[['frequency',x.frequencyRate??x.rateDigit??x.frequency],['recent',x.recent??x.recency],['momentum',x.momentum??x.trend],['formula',x.formulaSupport??x.formulaReliability??x.formulaScore],['walkForward',x.walkForward??x.walkForwardPrecision??x.wfPrecision],['stability',x.stability??x.robustness??x.perturbationStability],['consensus',x.consensus??x.currentConsensus??x.historicalConsensus],['position',x.positionSupport??x.positionConditional],['diversity',x.diversity??x.evidenceDiversity]];const p=m.filter(([,v])=>Number.isFinite(Number(v))).map(([name,v])=>({name,score:v70Clamp(v)})),s=v70Unique(p.filter(x=>x.score>=35).map(x=>x.name));return{familyCount:p.length,independentCount:s.length,independentScore:v70Clamp(v70Mean(p.map(x=>x.score))+Math.min(12,s.length*2.5)),families:s};}
+function v70EvidenceProfile(item){const x=item||{},m=[['frequency',x.frequencyRate??x.rateDigit??x.frequency],['recent',x.recent??x.recency],['momentum',x.momentum??x.trend],['formula',x.formulaSupport??x.formulaReliability??x.formulaScore],['walkForward',x.walkForward??x.walkForwardPrecision??x.wfPrecision],['stability',x.stability??x.robustness??x.perturbationStability],['position',x.positionSupport??x.positionConditional],['diversity',x.diversity??x.evidenceDiversity]];const p=m.filter(([,v])=>Number.isFinite(Number(v))).map(([name,v])=>({name,score:v70Clamp(v)})),s=v70Unique(p.filter(x=>x.score>=35).map(x=>x.name));return{familyCount:p.length,independentCount:s.length,independentScore:v70Clamp(v70Mean(p.map(x=>x.score))+Math.min(12,s.length*2.5)),families:s};}
 function v70Lifecycle(digit,records){const rows=(Array.isArray(records)?records:[]).slice(-30);if(!rows.length)return{state:'UNKNOWN',recentRate:0,olderRate:0,delta:0};const h=rows.map(r=>v70TargetString(r).includes(String(digit))),rn=Math.min(9,h.length),recent=v70Mean(h.slice(-rn).map(v=>v?100:0)),older=v70Mean(h.slice(Math.max(0,h.length-rn*2),Math.max(0,h.length-rn)).map(v=>v?100:0)),d=recent-older;let state='STABLE';if(h.length<6)state='LOW_SAMPLE';else if(d>=22)state='RISING';else if(d>=8)state='EMERGING';else if(d<=-30)state='DEAD';else if(d<=-15)state='FADING';else if(older>=60&&recent>=55)state='PEAK';else if(older>=55&&recent<50)state='RECOVERY';return{state,recentRate:recent,olderRate:older,delta:d};}
 function v70Regime(records){const rows=(Array.isArray(records)?records:[]).slice(-12);if(rows.length<6)return{state:'LOW_SAMPLE',repeatRate:0,volatility:0};const sets=rows.map(v=>v70Unique([...v70TargetString(v)]));let rep=0;for(let i=1;i<sets.length;i++)if(sets[i].some(d=>sets[i-1].includes(d)))rep++;rep=rep/(sets.length-1)*100;const c={};sets.forEach(s=>s.forEach(d=>c[d]=(c[d]||0)+1));const vals=Object.values(c),m=v70Mean(vals),vol=Math.sqrt(v70Mean(vals.map(x=>(x-m)*(x-m))))*8;let state='STABLE';if(vol>=28)state='VOLATILE';else if(rep>=70)state='REPEAT';else if(rep<=25)state='TRANSITION';return{state,repeatRate:rep,volatility:vol};}
 function v70Overfit(item,records){const n=(Array.isArray(records)?records:[]).length;if(n<10)return{status:'LOW_SAMPLE',score:50};const recent=Number(item?.recent??item?.frequencyRate??50),old=Number(item?.historical??item?.longRate??item?.frequencyRate??50),d=recent-old;let score=70;if(Math.abs(d)>30)score-=18;if(Math.abs(d)>45)score-=15;return{status:score>=55?'PASS':'WATCH',score:v70Clamp(score),delta:d};}
@@ -8885,7 +8950,9 @@ function runEngineCore(){
       ----------------------------------------- */
       let intelligence=v90PPApply(v90PlusApply(v88ApplyFairArbitration(v75ReconcileAfterFinalLayer(v87FinalFairArbitration(v55ApplyMainPrecisionLayer(buildDigitIntelligenceV78(resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames)),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames),resultRecs,auditDataMap[lotteryName],formulaNames);
       if(auditDataMap[lotteryName]&&intelligence?.formulaGovernor){
-        auditDataMap[lotteryName].__formulaGovernor=intelligence.formulaGovernor;
+        Object.defineProperty(auditDataMap[lotteryName],'__formulaGovernor',{
+          value:intelligence.formulaGovernor,writable:true,configurable:true,enumerable:false
+        });
       }
       const governedV94=v94ApplyMainGovernor(intelligence,resultRecs);
       const governedV95=v95ApplyPrecisionArchitecture(governedV94,resultRecs,auditDataMap[lotteryName],formulaNames);
@@ -9718,23 +9785,23 @@ function v95ApplyPrecisionArchitecture(base,records,auditData,formulaNames){
     const d=Number(row.digit), raw=row.raw||{}, cf=v95CurrentFormulaEvidence(d,auditData,formulaNames), cc=v95Consensus(d,src.consensus), prot=v95TopFormulaProtection(d,auditData,formulaNames,rows0);
     const frequency=v95Num(raw.frequencyEvidence??raw.frequency??50), recent=v95Num(raw.recentEvidence??raw.momentum??50), historical=v95Num(raw.historicalEvidence??raw.historicalSupport??50), stability=v95Num(raw.stability??raw.robustnessSurvival??50), trend=v95Num(raw.trendEvidence??raw.trend??50), oos=v95Num(raw.oosEvidence??raw.empiricalPrecision??50), structure=v95Num(raw.structuralEvidence??raw.structure??50), risk=v95Num(raw.falsePositiveRisk,50), conflict=v95Num(raw.conflict,0);
     const nullRate=v95EmpiricalNull(arr,[d]), quality=v95DigitHitQuality(arr,[d]), corr=v95FormulaCorrelationPenalty(d,row,rows0);
-    const consensusBonus=cc.count>=V95_CONFIG.topConsensusGuard&&cc.score>=V95_CONFIG.consensusGuardScore?Math.min(5,(cc.score-60)*.10+cc.count*.65):0;
-    const predictive=.31*cf.score+.17*cc.score+.13*recent+.10*historical+.09*oos+.07*frequency+.06*trend+.04*structure+.03*stability+.04*quality.partial;
+    const consensusBonus=0; /* V97 firewall: consensus is diagnostic-only, never score authority. */
+    const predictive=.40*cf.score+.16*recent+.12*historical+.11*oos+.07*frequency+.06*trend+.04*structure+.04*stability; /* V97: redistributed former consensus weight into formula/OOS/temporal evidence. */
     const penalty=Math.min(12,risk*.06+conflict*1.15+corr);
     const rawFinal=v95Clamp(predictive-penalty,0,100);
-    const protectedFinal=prot.covered.length?Math.max(rawFinal, v95Clamp(v95Num(row.selectionQuality,row.score)*V95_CONFIG.top3Floor,0,100)):rawFinal;
+    const protectedFinal=prot.covered.length?Math.max(rawFinal, v95Clamp(cf.score*.92,0,100)):rawFinal; /* formula protection only; no legacy consensus-contaminated floor */
     const final=v95Clamp(protectedFinal+prot.boost+consensusBonus,0,100)*regime.factor;
     const calibration=v95ConfidenceCalibration(arr,final);
-    const counterfactual={noConsensus:round2(v95Clamp(predictive-.17*cc.score-penalty,0,100)),noTop3Protection:round2(rawFinal),noRiskPenalty:round2(v95Clamp(predictive,0,100)),consensusDelta:round2(.17*cc.score),top3ProtectionDelta:round2(prot.boost),riskPenalty:round2(penalty)};
+    const counterfactual={noConsensus:round2(v95Clamp(predictive-.17*cc.score-penalty,0,100)),noTop3Protection:round2(rawFinal),noRiskPenalty:round2(v95Clamp(predictive,0,100)),consensusDelta:0,top3ProtectionDelta:round2(prot.boost),riskPenalty:round2(penalty)};
     return {...row,selectionQuality:round2(v95Clamp(final,0,100)),v95:{formulaTrust:round2(cf.score),formulaCount:cf.count,formulaHits:cf.formulas,globalFormulaTrust:round2(formulaGlobal),consensus:round2(cc.score),consensusCount:cc.count,top3Protected:prot.covered,top3Protection:round2(prot.boost),recent:round2(recent),historical:round2(historical),stability:round2(stability),trend:round2(trend),frequency:round2(frequency),oos:round2(oos),structure:round2(structure),risk:round2(risk),conflict:round2(conflict),correlationPenalty:round2(corr),empiricalNull:round2(nullRate),partialHitRate:quality.partial,strongHitRate:quality.strong,observedLift:round2(v95Num(quality.partial)-nullRate),regime:regime.state,calibration,finalEvidence:round2(predictive),penalty:round2(penalty),counterfactual}};
-  }).sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(b.v95?.consensus)-Number(a.v95?.consensus)||Number(b.score)-Number(a.score)||Number(a.digit)-Number(b.digit));
+  }).sort((a,b)=>Number(b.selectionQuality)-Number(a.selectionQuality)||Number(b.score)-Number(a.score)||Number(a.digit)-Number(b.digit));
   // Top-3 formula coverage is a guard, not a forced pick: if a top-3 formula digit is within 8 points of the current #2, retain it in candidate top-3.
   const topDigits=new Set(); formulaNames.slice().sort((a,b)=>v95Num(auditData?.[b]?.hitRate)-v95Num(auditData?.[a]?.hitRate)).slice(0,3).forEach(f=>v95Num(auditData?.[f]?.latestDigits?.[0],-1)>=0 && v95Num(auditData?.[f]?.latestDigits?.[1],-1)>=0 && auditData?.[f]?.latestDigits?.forEach?.(d=>topDigits.add(Number(d))));
   const candidates=out.slice(0,3).map(x=>x.digit); topDigits.forEach(d=>{const r=out.find(x=>x.digit===d);if(r&&r.selectionQuality>=out[2].selectionQuality-8)candidates.push(d);});
   let top3=[...new Set(candidates)].sort((a,b)=>v95Num(out.find(x=>x.digit===b)?.selectionQuality)-v95Num(out.find(x=>x.digit===a)?.selectionQuality)).slice(0,3); const protectedRanked=[...topDigits].map(d=>out.find(x=>x.digit===d)).filter(Boolean).sort((a,b)=>b.selectionQuality-a.selectionQuality); if(protectedRanked.length){const pr=protectedRanked[0]; if(!top3.includes(pr.digit) && pr.selectionQuality>=v95Num(out[2]?.selectionQuality)-8){top3=[top3[0],top3[1],pr.digit].filter((x,i,a)=>a.indexOf(x)===i).slice(0,3); top3.sort((a,b)=>v95Num(out.find(x=>x.digit===b)?.selectionQuality)-v95Num(out.find(x=>x.digit===a)?.selectionQuality));}} const selected=top3.slice(0,2).map(d=>out.find(x=>x.digit===d)).filter(Boolean);
   const chosen=selected[0], second=selected[1];
   return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
-    v95:{version:'V95 Audit-First Precision Architecture',principles:['formula-vs-digit-separation','top3-formula-protection','consensus-preserved-not-dominant','anti-suppression','empirical-null-baseline','partial-vs-strong-hit','conflict-penalty','correlation-aware','regime-aware-shrinkage','counterfactual-audit','score-is-not-probability'],regime,ranked:out.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,formula:r.v95?.formulaTrust??50,consensus:r.v95?.consensus??50,consensusCount:r.v95?.consensusCount??0,top3Protection:r.v95?.top3Protection??0,partialHitRate:r.v95?.partialHitRate??50,strongHitRate:r.v95?.strongHitRate??50,empiricalNull:r.v95?.empiricalNull??50,lift:r.v95?.observedLift??0,penalty:r.v95?.penalty??0,regime:r.v95?.regime??'UNKNOWN'})),counterfactual:{selected:chosen?.digit??null,second:second?.digit??null,selectedAudit:chosen?.v95?.counterfactual??null}},finalGate:{...(src.finalGate||{}),v95AuditFirst:true,v95Top3Protection:true,v95ConsensusGuard:true,v95AntiSuppression:true,v95EmpiricalNull:true,v95Counterfactual:true,v95ScoreProbabilitySeparated:true}};
+    v95:{version:'V95 Audit-First Precision Architecture',principles:['formula-vs-digit-separation','top3-formula-protection','consensus-diagnostic-only','anti-suppression','empirical-null-baseline','partial-vs-strong-hit','conflict-penalty','correlation-aware','regime-aware-shrinkage','counterfactual-audit','score-is-not-probability'],regime,ranked:out.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,formula:r.v95?.formulaTrust??50,consensus:r.v95?.consensus??50,consensusCount:r.v95?.consensusCount??0,top3Protection:r.v95?.top3Protection??0,partialHitRate:r.v95?.partialHitRate??50,strongHitRate:r.v95?.strongHitRate??50,empiricalNull:r.v95?.empiricalNull??50,lift:r.v95?.observedLift??0,penalty:r.v95?.penalty??0,regime:r.v95?.regime??'UNKNOWN'})),counterfactual:{selected:chosen?.digit??null,second:second?.digit??null,selectedAudit:chosen?.v95?.counterfactual??null}},finalGate:{...(src.finalGate||{}),v95AuditFirst:true,v95Top3Protection:true,v95ConsensusFirewall:true,v95AntiSuppression:true,v95EmpiricalNull:true,v95Counterfactual:true,v95ScoreProbabilitySeparated:true}};
 }
 window.__V91_PLUSPLUS_AUDIT__={
   version:'V91 Plus++ / M2D Precision Upgrade',
