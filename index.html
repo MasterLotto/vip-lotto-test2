@@ -1200,66 +1200,88 @@ function v57ThaiBuildSpecialTop(records){
 /* =========================================================
    FLAGS
 ========================================================= */
-function isNikkeiJapanSession(name){
-  const n=String(name||'')
+function getLotteryFlag(name,displayTitle){
+  /* =======================================================
+     V91 FLAG ROUTER — SINGLE SOURCE OF TRUTH
+     Resolve the country from the lottery MARKET identity first.
+     Time-of-day words (เช้า/บ่าย/เย็น) are never sufficient.
+     The optional displayTitle is checked together with the raw
+     dataset name so hidden/internal aliases cannot fall through.
+     This block is PRESENTATION ONLY; no prediction formula is touched.
+  ======================================================= */
+  const normalizeFlagName=(value)=>String(value||'')
     .replace(/[\u200B-\u200D\uFEFF\u2060\u2063]/g,'')
     .trim()
     .toLowerCase()
     .replace(/\s+/g,'');
-  return (
-    n==='นิเคอิเช้า'||
-    n==='นิเคอิบ่าย'||
-    n==='นิเคอิvipเช้า'||
-    n==='นิเคอิvipบ่าย'||
-    n==='หุ้นนิเคอิเช้า'||
-    n==='หุ้นนิเคอิบ่าย'||
-    n==='หุ้นนิเคอิvipเช้า'||
-    n==='หุ้นนิเคอิvipบ่าย'
-  );
-}
 
-function getLotteryFlag(name){
-  /* V56 — deterministic market-first flag resolver.
-     Never infer country from a generic time word such as "เช้า" or "บ่าย".
-     Market identity must win before time-of-day identity. */
-  /* Normalize zero-width/invisible characters as well as whitespace.
-     Some imported dataset keys can carry hidden Unicode separators, which
-     previously could bypass the market matcher and fall through to 🌐. */
-  const n=String(name||'')
-    .replace(/[\u200B-\u200D\uFEFF\u2060\u2063]/g,'')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g,'');
-  if(!n)return'🌐';
-  /* Canonical Japan/Nikkei sessions — hard-stop before generic routing.
-     These are the four official display forms used by this engine. */
-  if(isNikkeiJapanSession(n))return'🇯🇵';
-  /* Thailand — exact/strong market identity first. */
-  if(n.includes('หุ้นไทย')||n.includes('__thai_round__')||n.includes('__thai_allday__')||n.includes('__thai_top__')||n.includes('ไทยเย็น')||n.includes('ไทยเช้า')||n.includes('ไทยเที่ยง')||n.includes('ไทยบ่าย')||n.includes('ตลาดหุ้นไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส'))return'🇹🇭';
+  const raw=normalizeFlagName(name);
+  const display=normalizeFlagName(displayTitle);
+  const names=[raw,display].filter(Boolean);
+  const has=(...tokens)=>names.some(v=>tokens.some(t=>v.includes(t)));
+  const exact=(...tokens)=>names.some(v=>tokens.includes(v));
+
+  if(!names.length)return'🌐';
+
+  /* Japan — Nikkei.  The four official sessions are hard-locked. */
+  if(exact(
+    'นิเคอิเช้า','นิเคอิบ่าย','นิเคอิvipเช้า','นิเคอิvipบ่าย',
+    'หุ้นนิเคอิเช้า','หุ้นนิเคอิบ่าย','หุ้นนิเคอิvipเช้า','หุ้นนิเคอิvipบ่าย',
+    'นิกเคอิเช้า','นิกเคอิบ่าย','นิกเคอิvipเช้า','นิกเคอิvipบ่าย',
+    'หุ้นนิกเคอิเช้า','หุ้นนิกเคอิบ่าย','หุ้นนิกเคอิvipเช้า','หุ้นนิกเคอิvipบ่าย'
+  )||has('นิเคอิ','นิกเคอิ','ญี่ปุ่น')||
+    names.some(v=>/(?:^|หุ้น)ki(?:vip)?(?:เช้า|บ่าย)?$/.test(v)))return'🇯🇵';
+
+  /* Hong Kong / Hang Seng. */
+  if(has('ฮั่งเส็ง','ฮ่องกง','hangseng','hongkong'))return'🇭🇰';
+
+  /* China. */
+  if(has('จีน','china','shanghai','หุ้นจีน'))return'🇨🇳';
+
+  /* Taiwan. */
+  if(has('ไต้หวัน','taiwan'))return'🇹🇼';
+
+  /* South Korea. */
+  if(has('เกาหลี','korea','kospi'))return'🇰🇷';
+
+  /* Singapore. */
+  if(has('สิงคโปร์','singapore'))return'🇸🇬';
+
+  /* India. */
+  if(has('อินเดีย','india'))return'🇮🇳';
+
+  /* Egypt. */
+  if(has('อียิปต์','egypt'))return'🇪🇬';
+
+  /* Russia. */
+  if(has('รัสเซีย','russia'))return'🇷🇺';
+
+  /* Germany. */
+  if(has('เยอรมัน','เยอรมนี','germany','german'))return'🇩🇪';
+
+  /* United Kingdom / England. */
+  if(has('อังกฤษ','สหราชอาณาจักร','uk','unitedkingdom','england'))return'🇬🇧';
+
+  /* United States — all Dow Jones variants, including ดาวโจนส์สตาร์. */
+  if(has('ดาวโจนส์','dowjones','อเมริกา','สหรัฐ','usa','usastock','สหรัฐอเมริกา'))return'🇺🇸';
+
   /* Vietnam / Hanoi. */
-  if(n.includes('ฮานอย')||n.includes('เวียดนาม'))return'🇻🇳';
+  if(has('ฮานอย','เวียดนาม','vietnam','hanoi'))return'🇻🇳';
+
   /* Laos. */
-  if(n.includes('ลาว')||n.includes('ประชาชนลาว'))return'🇱🇦';
-  /* Japan / Nikkei.
-     Explicit KI aliases are included because the four KI sessions can arrive
-     as KI เช้า / KI บ่าย / KI VIP เช้า / KI VIP บ่าย.  Do not infer Japan
-     from a generic time-of-day token alone. */
-  if(n.includes('นิเคอิ')||n.includes('นิกเคอิ')||n.includes('ญี่ปุ่น')||
-     /(?:^|หุ้น)ki(?:vip)?(?:เช้า|บ่าย)?$/.test(n))return'🇯🇵';
-  /* China / Hong Kong. */
-  if(n.includes('ฮั่งเส็ง')||n.includes('ฮ่องกง'))return'🇭🇰';
-  if(n.includes('จีน'))return'🇨🇳';
-  if(n.includes('ดาวโจนส์')||n.includes('อเมริกา')||n.includes('usa'))return'🇺🇸';
-  if(n.includes('ไต้หวัน'))return'🇹🇼';
-  if(n.includes('เกาหลี'))return'🇰🇷';
-  if(n.includes('สิงคโปร์'))return'🇸🇬';
-  if(n.includes('รัสเซีย'))return'🇷🇺';
-  if(n.includes('เยอรมัน'))return'🇩🇪';
-  if(n.includes('อังกฤษ'))return'🇬🇧';
-  if(n.includes('อินเดีย'))return'🇮🇳';
-  if(n.includes('อียิปต์'))return'🇪🇬';
-  if(n.includes('มาเลย์')||n.includes('มาเลเซีย'))return'🇲🇾';
-  /* No country inference from generic "เช้า/บ่าย/เย็น". */
+  if(has('ลาว','ประชาชนลาว','laos','lao'))return'🇱🇦';
+
+  /* Malaysia — include the short user-facing name "มาเล". */
+  if(has('มาเล','มาเลย์','มาเลเซีย','malaysia','malay'))return'🇲🇾';
+
+  /* Thailand — Thai government and Thai-stock families. */
+  if(has(
+    'รัฐบาลไทย','รัฐบาล','หุ้นไทย','ตลาดหุ้นไทย','ไทยเช้า','ไทยเที่ยง','ไทยบ่าย','ไทยเย็น',
+    '__thai_round__','__thai_allday__','__thai_top__','ออมสิน','ธกส',
+    'thailand','thai','set'
+  ))return'🇹🇭';
+
+  /* Never guess a country from a generic session word. */
   return'🌐';
 }
 /* =========================================================
@@ -5736,15 +5758,13 @@ function renderCardHTML(
     .replace(/\s+/g,'');
   const nikkeiFinal=(
     isNikkeiJapan||
-    isNikkeiJapanSession(flagSource)||
-    isNikkeiJapanSession(card.lotteryName)||
     rawFlagNorm.includes('นิเคอิ')||
     rawFlagNorm.includes('นิกเคอิ')||
     rawFlagNorm.includes('หุ้นนิเคอิ')||
     rawFlagNorm.includes('หุ้นนิกเคอิ')||
     rawFlagNorm.includes('ญี่ปุ่น')
   );
-  const resolvedFlag=nikkeiFinal?'🇯🇵':getLotteryFlag(flagSource);
+  const resolvedFlag=nikkeiFinal?'🇯🇵':getLotteryFlag(card.lotteryName||'',card.displayTitle||flagSource);
   return`
   <div
     class="prediction-card ${isScore?'score-card':''} ${manual?'formula-selected':''}"
