@@ -8986,12 +8986,23 @@ function runEngineCore(){
       const selectedRows=intelligence.selected||[];
       const scoreD1=selectedRows[0]?.digit;
       const scoreD2=selectedRows[1]?.digit;
-      const scoreData=intelligence.rows.map(row=>buildDigitScore(row.digit,formulaNames,auditDataMap[lotteryName],intelligence.consensus,intelligence.frequency,intelligence))
-        .sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||b.agreement-a.agreement||a.digit-b.digit);
+      /* V99 TOTAL CONSENSUS ISOLATION: score card must use the same clean authority rows.
+         Never rebuild scoreData through legacy buildDigitScore(), which still contains
+         agreement/consensus/frequency pathways. Consensus remains display-only metadata. */
+      const scoreData=(intelligence.rows||[]).map(row=>({
+        ...row,
+        score:round2(Number(row.selectionQuality)||0),
+        selectionQuality:round2(Number(row.selectionQuality)||0),
+        agreement:0,
+        formulaCount:Number(row.v98?.formulaSupportCount)||0,
+        consensusAuthority:0,
+        consensusBonus:0,
+        legacySelectionIgnored:true
+      })).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
       const selectedScore=scoreData.find(x=>x.digit===scoreD1)||scoreData[0];
       const secondScore=scoreData.find(x=>x.digit===scoreD2)||scoreData.find(x=>x.digit!==scoreD1);
       if(scoreD1===undefined||scoreD2===undefined) return;
-      const confidence=getConfidence(selectedScore,secondScore,auditDataMap[lotteryName],formulaNames,intelligence);
+      const confidence=getConfidence({...selectedScore,agreement:0,formulaEvidence:0}, {...secondScore,agreement:0,formulaEvidence:0}, auditDataMap[lotteryName], [], intelligence);
       const scoreD1Pairs=v94RefinePairSet(generateFormulaPairs(scoreD1,scoreD2,auditDataMap,lotteryName,resultRecs),resultRecs,scoreD1);
       const scoreD2Pairs=v94RefinePairSet(generateFormulaPairs(scoreD2,scoreD1,auditDataMap,lotteryName,resultRecs),resultRecs,scoreD2);
       /* -----------------------------------------
@@ -9044,10 +9055,8 @@ function runEngineCore(){
             selectedScore?.selectionQuality||0,
           secondScore:
             secondScore?.selectionQuality||0,
-          agreement:
-            selectedScore?.agreement||0,
-          secondAgreement:
-            secondScore?.agreement||0,
+          agreement:0,
+          secondAgreement:0,
           confidence,
           consensus,
           scoreData,
@@ -9951,6 +9960,7 @@ function v98ConsensusInvarianceTest(intelligence,records,auditData,formulaNames)
 }
 
 window.__V98_TEST_API__={cleanAuthority:v98CleanAuthority,invariance:v98ConsensusInvarianceTest,formulaRanked:v98FormulaRanked,digitConditional:v98DigitConditional};
+window.__V99_CONSENSUS_FIREWALL__={authority:'CLEAN-V98-ROWS-ONLY',consensusScore:0,agreementScore:0,legacyBuildDigitScoreForFinalCard:false};
 window.__V91_PLUSPLUS_AUDIT__={
   version:'V91 Plus++ / M2D Precision Upgrade',
   base:'V54 Plus+ presentation/formula/card contract',
