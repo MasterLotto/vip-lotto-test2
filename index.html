@@ -908,6 +908,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 -->
 
 
+<meta name="nikkei-title-audit" content="V106 exact canonical names: นิเคอิ เช้า | นิเคอิ บ่าย | นิเคอิ VIP เช้า | นิเคอิ VIP บ่าย">
 </head>
 <body>
 <canvas id="snow"></canvas>
@@ -1070,7 +1071,7 @@ function forceNikkeiVisibleTitle(value){
     .trim();
 
   const compact=s.replace(/[\s\u00A0]/g,'').toLowerCase();
-  const isNikkei=compact.includes('นิเคอิ')||compact.includes('นิกเคอิ')||compact.includes('nikkei');
+  const isNikkei=compact.includes('นิเคอิ')||compact.includes('นิกเคอิ')||compact.includes('นิคเคอิ')||compact.includes('nikkei');
   if(isNikkei){
     const isVip=compact.includes('vip')||compact.includes('พิเศษ');
     const isMorning=compact.includes('เช้า');
@@ -1096,13 +1097,38 @@ function canonicalCardVisibleTitle(card){
 }
 
 
+function exactNikkeiCanonicalTitle(value){
+  const s=String(value||'')
+    .normalize('NFC')
+    .replace(/[\u200B-\u200D\uFEFF\u2063]/g,'')
+    .replace(/\s+/g,'')
+    .toLowerCase();
+  const isNikkei=
+    s.includes('นิเคอิ')||
+    s.includes('นิกเคอิ')||
+    s.includes('นิคเคอิ')||
+    s.includes('nikkei');
+  if(!isNikkei)return '';
+  const vip=s.includes('vip')||s.includes('พิเศษ');
+  const morning=s.includes('เช้า');
+  const afternoon=s.includes('บ่าย')||s.includes('เย็น');
+  if(vip&&morning)return 'นิเคอิ VIP เช้า';
+  if(vip&&afternoon)return 'นิเคอิ VIP บ่าย';
+  if(vip)return 'นิเคอิ VIP';
+  if(morning)return 'นิเคอิ เช้า';
+  if(afternoon)return 'นิเคอิ บ่าย';
+  return 'นิเคอิ';
+}
+
 function formatDisplayTitle(rawName){
+  const exactNikkei=exactNikkeiCanonicalTitle(rawName);
+  if(exactNikkei)return exactNikkei;
   rawName=cleanDatasetKey(rawName);
   let name=String(rawName||'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim();
   const thaiSynthetic=String(rawName||'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim();
   // NIKKEI DISPLAY HARDENING: the visible title must NEVER start with the
   // generic Thai word 'หุ้น'. Input aliases may still contain it.
-  name=name.replace(/^หุ้น\s*(?=นิเคอิ|นิกเคอิ)/,'').trim();
+  name=name.replace(/^หุ้น\s*(?=นิเคอิ|นิกเคอิ|นิคเคอิ)/,'').trim();
   if(/^__THAI_ROUND__/.test(thaiSynthetic)){
     const r=thaiSynthetic.replace(/^__THAI_ROUND__/,'').trim();
     return `หุ้นไทย ${r}`.trim();
@@ -1125,7 +1151,8 @@ function formatDisplayTitle(rawName){
     .replace(/\s+/g,'');
   if(
     cleanLower.includes('นิเคอิ')||
-    cleanLower.includes('นิกเคอิ')
+    cleanLower.includes('นิกเคอิ')||
+    cleanLower.includes('นิคเคอิ')
   ){
     const isVip=
       cleanLower.includes('vip')||
@@ -7065,7 +7092,7 @@ function renderFullUI(
       lotteryName=decoded.split('|||')[0]||'';
     }catch(e){}
     const visible=forceNikkeiVisibleTitle(lotteryName||titleEl.textContent||'');
-    if(/นิเคอิ|นิกเคอิ|nikkei/i.test(String(lotteryName||titleEl.textContent||'')))
+    if(/นิเคอิ|นิกเคอิ|นิคเคอิ|nikkei/i.test(String(lotteryName||titleEl.textContent||'')))
       titleEl.textContent=visible;
   });
   renderManualCards();
