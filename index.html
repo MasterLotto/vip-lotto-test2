@@ -5685,7 +5685,23 @@ function renderCardHTML(
     flagNorm.includes('ญี่ปุ่น')||
     /^หุ้น?ki(?:vip)?(?:เช้า|บ่าย)?$/.test(flagNorm)
   );
-  const resolvedFlag=isNikkeiJapan?'🇯🇵':getLotteryFlag(flagSource);
+  /* V90.2 NIKKEI FINAL FLAG LOCK — the four Nikkei sessions are Japan by
+     definition. Resolve from BOTH the canonical display title and the raw
+     dataset name, then force the visible card flag. This is intentionally
+     isolated to presentation only. */
+  const rawFlagNorm=String(cleanDatasetKey(card.lotteryName||'')||'')
+    .replace(/[\u200B-\u200D\uFEFF\u2060\u2063]/g,'')
+    .toLowerCase()
+    .replace(/\s+/g,'');
+  const nikkeiFinal=(
+    isNikkeiJapan||
+    rawFlagNorm.includes('นิเคอิ')||
+    rawFlagNorm.includes('นิกเคอิ')||
+    rawFlagNorm.includes('หุ้นนิเคอิ')||
+    rawFlagNorm.includes('หุ้นนิกเคอิ')||
+    rawFlagNorm.includes('ญี่ปุ่น')
+  );
+  const resolvedFlag=nikkeiFinal?'🇯🇵':getLotteryFlag(flagSource);
   return`
   <div
     class="prediction-card ${isScore?'score-card':''} ${manual?'formula-selected':''}"
