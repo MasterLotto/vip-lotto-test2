@@ -7562,9 +7562,21 @@ function m2dNextTargetDate(records){
    - preserve the existing TOP3 + 5-pairs-per-TOP display contract
 ========================================================= */
 const V91_M2D_CONFIG={
-  maxHistory:240,
-  horizons:[14,30,60,120,180,240],
-  horizonWeights:[.30,.24,.18,.13,.09,.06],
+  /* V91 M2D Precision Upgrade: 120 session-round active core.
+     The input may contain more history, but the prediction engine uses the
+     latest 120 valid session results as its active learning reservoir. */
+  maxHistory:120,
+  horizons:[3,6,9,12,15,18,21,24,27,30,45,60,90,120],
+  /* Family-aware weights prevent overlapping short windows from double-counting
+     the same recent observations. Each family is normalized internally. */
+  horizonFamilies:[
+    {name:'ultraRecent',windows:[3,6,9],weight:.16,internal:[.28,.34,.38]},
+    {name:'recent',windows:[12,15,18],weight:.22,internal:[.34,.33,.33]},
+    {name:'coreRegime',windows:[21,24,27,30],weight:.32,internal:[.20,.23,.27,.30]},
+    {name:'mediumConfirm',windows:[45,60,90],weight:.20,internal:[.40,.35,.25]},
+    {name:'longConfirm',windows:[120],weight:.10,internal:[1]}
+  ],
+  horizonWeights:[.045,.055,.065,.075,.073,.073,.064,.074,.086,.096,.080,.070,.050,.094],
   oosTests:24,
   pairOosTests:20,
   priorStrength:12,
@@ -7596,32 +7608,92 @@ function v91M2DExactOriented(r,a,b){return r.tens===a&&r.units===b;}
 function v91M2DBeta(h,n,prior=50,strength=12){return ((Number(h)||0)+prior/100*strength)/(Math.max(0,Number(n)||0)+strength)*100;}
 function v91M2DWindowRate(arr,pos,d,w){const a=arr.slice(-Math.min(w,arr.length));if(!a.length)return 50;const h=a.filter(r=>r[pos]===d).length;return v91M2DBeta(h,a.length,5, V91_M2D_CONFIG.priorStrength)/1;}
 function v91M2DCombinedRate(arr,d,w){const a=arr.slice(-Math.min(w,arr.length));if(!a.length)return 50;const h=a.filter(r=>r.tens===d||r.units===d).length;return v91M2DBeta(h,a.length*2,5,V91_M2D_CONFIG.priorStrength);}
+function v91M2DHorizonReliability(windowSize,n){
+  /* Tiny windows are useful for momentum, but their raw estimates are noisy.
+     Reliability therefore rises smoothly with effective sample size. */
+  const prior=windowSize<=9?18:windowSize<=18?12:windowSize<=30?9:6;
+  const nn=Math.min(Number(n)||0,windowSize);
+  return nn/(nn+prior);
+}
+function v91M2DFamilyHorizonRate(arr,d,family){
+  const data=Array.isArray(arr)?arr:[], vals=[];
+  (family?.windows||[]).forEach((w,i)=>{
+    if(!data.length)return;
+    const n=Math.min(w,data.length), raw=v91M2DCombinedRate(data,d,w), rel=v91M2DHorizonReliability(w,n);
+    vals.push({raw,rel,weight:Number(family.internal?.[i])||0});
+  });
+  if(!vals.length)return 50;
+  const total=vals.reduce((a,x)=>a+x.weight,0)||1;
+  return vals.reduce((a,x)=>a+(50+(x.raw-50)*x.rel)*x.weight,0)/total;
+}
+function v91M2DWeightedHorizonRate(arr,d){
+  const data=Array.isArray(arr)?arr:[];
+  if(!data.length)return 50;
+  const families=V91_M2D_CONFIG.horizonFamilies||[];
+  const usable=families.filter(f=>(f.windows||[]).some(w=>data.length>=Math.min(w,3)));
+  if(!usable.length)return 50;
+  const total=usable.reduce((a,f)=>a+(Number(f.weight)||0),0)||1;
+  return usable.reduce((a,f)=>a+v91M2DFamilyHorizonRate(data,d,f)*(Number(f.weight)||0),0)/total;
+}
 function v91M2DGapScore(arr,d){if(!arr.length)return 50;let gap=arr.length+1;for(let i=arr.length-1;i>=0;i--){if(arr[i].tens===d||arr[i].units===d){gap=arr.length-1-i;break;}}if(gap===0)return 62; if(gap<=2)return 48; if(gap<=5)return 54; if(gap<=12)return 50+Math.min(22,(gap-5)*2.2); return 72;}
-function v91M2DStability(arr,d){const vals=V91_M2D_CONFIG.horizons.filter(w=>arr.length>=Math.min(w,14)).map(w=>v91M2DCombinedRate(arr,d,w));if(vals.length<2)return 50;const mean=vals.reduce((a,b)=>a+b,0)/vals.length;const spread=Math.max(...vals)-Math.min(...vals);return v91M2DClamp(100-spread*1.55);}
+function v91M2DStability(arr,d){
+  const data=Array.isArray(arr)?arr:[], vals=[];
+  (V91_M2D_CONFIG.horizonFamilies||[]).forEach(f=>{
+    const v=v91M2DFamilyHorizonRate(data,d,f);
+    if(Number.isFinite(v))vals.push(v);
+  });
+  if(vals.length<2)return 50;
+  const spread=Math.max(...vals)-Math.min(...vals);
+  return v91M2DClamp(100-spread*1.55);
+}
 function v91M2DTransitionScore(arr,pos,d){if(arr.length<2)return 50;let hit=0,obs=0;for(let i=1;i<arr.length;i++){const prev=arr[i-1],cur=arr[i];if(prev[pos]===d||prev.tens===d||prev.units===d){obs++;if(cur[pos]===d)hit++;}}return obs?v91M2DBeta(hit,obs,5,10):50;}
-function v91M2DCrossSessionTransition(all,d,session){
-  const rows=(Array.isArray(all)?all:[]).filter(r=>r&&r[session]);if(rows.length<2)return 50;
+function v91M2DCrossSessionTransition(all,d,session,cutoffTimestamp=null){
+  /* V91 M2D AUDIT FIX: session-aware and chronology-safe cross-session evidence.
+     Noon is conditioned on the PREVIOUS valid evening; evening is conditioned on
+     the SAME-DAY noon.  During OOS replay, rows after cutoff are excluded. */
+  let rows=(Array.isArray(all)?all:[]).filter(r=>r&&r.date&&r[session]);
+  if(Number.isFinite(Number(cutoffTimestamp))){
+    const cut=Number(cutoffTimestamp);
+    rows=rows.filter(r=>Number(r.timestamp||m2dThaiDate(r.date)||0)<=cut);
+  }
+  rows=rows.slice().sort((a,b)=>(Number(a.timestamp)||m2dThaiDate(a.date)||0)-(Number(b.timestamp)||m2dThaiDate(b.date)||0)||(Number(a.seq)||0)-(Number(b.seq)||0));
+  if(!rows.length)return 50;
   let hit=0,obs=0;
-  for(let i=1;i<rows.length;i++){
-    const prev=rows[i-1][session==='noon'?'evening':'noon'];const cur=rows[i][session];
-    if(!prev||!cur)continue;
-    if(prev.value?.includes(String(d))||prev.tens===d||prev.units===d){obs++;if(cur.tens===d||cur.units===d)hit++;}
+  const byDate=new Map(rows.map(r=>[String(r.date).replace(/\s+/g,' ').trim(),r]));
+  for(let i=0;i<rows.length;i++){
+    const cur=rows[i][session]; if(!cur)continue;
+    let prev=null;
+    if(session==='evening'){
+      /* Same trading day: noon -> evening. */
+      prev=rows[i].noon;
+    }else{
+      /* Morning: previous valid trading day evening -> current noon. */
+      const curTs=Number(rows[i].timestamp)||m2dThaiDate(rows[i].date)||0;
+      let prior=null;
+      for(let j=i-1;j>=0;j--){
+        const t=Number(rows[j].timestamp)||m2dThaiDate(rows[j].date)||0;
+        if(t<curTs){prior=rows[j];break;}
+      }
+      prev=prior?.evening||null;
+    }
+    if(!prev)continue;
+    if(prev.value?.includes(String(d))||prev.tens===d||prev.units===d){
+      obs++;
+      if(cur.tens===d||cur.units===d)hit++;
+    }
   }
   return obs?v91M2DBeta(hit,obs,5,10):50;
 }
-function v91M2DBaseDigitScores(arr,allRecords,session){
+function v91M2DBaseDigitScores(arr,allRecords,session,cutoffTimestamp=null){
   const data=v91M2DRecords(arr);if(!data.length)return Array(10).fill(50);
   const out=Array(10).fill(0);
   for(let d=0;d<10;d++){
-    const horizonVals=[];
-    V91_M2D_CONFIG.horizons.forEach((w,i)=>{if(data.length>=Math.min(w,14))horizonVals.push({v:v91M2DCombinedRate(data,d,w),w:V91_M2D_CONFIG.horizonWeights[i]});});
-    const totalW=horizonVals.reduce((a,x)=>a+x.w,0)||1;
-    const weighted=horizonVals.reduce((a,x)=>a+x.v*x.w,0)/totalW;
-    const recent=v91M2DCombinedRate(data,d,14),long=v91M2DCombinedRate(data,d,Math.min(120,data.length));
+    const weighted=v91M2DWeightedHorizonRate(data,d);
+    const recent=v91M2DCombinedRate(data,d,Math.min(18,data.length)),long=v91M2DCombinedRate(data,d,Math.min(120,data.length));
     const posT=v91M2DWindowRate(data,'tens',d,30),posU=v91M2DWindowRate(data,'units',d,30),position=(posT+posU)/2;
     const gap=v91M2DGapScore(data,d),stable=v91M2DStability(data,d);
     const trans=(v91M2DTransitionScore(data,'tens',d)+v91M2DTransitionScore(data,'units',d))/2;
-    const cross=v91M2DCrossSessionTransition(allRecords,d,session);
+    const cross=v91M2DCrossSessionTransition(allRecords,d,session,cutoffTimestamp);
     out[d]=weighted*.22+recent*.18+long*.14+position*.18+gap*.06+stable*.10+trans*.07+cross*.05;
   }
   return out;
@@ -7631,7 +7703,7 @@ function v91M2DReplayDigitOOS(arr,allRecords,session){
   if(tests<6)return {coverage:Array(10).fill(50),rank:Array(10).fill(50),tested:tests};
   const start=data.length-tests,hit=Array(10).fill(0),tested=Array(10).fill(0),rankScore=Array(10).fill(0);
   for(let cut=start;cut<data.length;cut++){
-    const train=data.slice(0,cut),actual=data[cut],scores=v91M2DBaseDigitScores(train,allRecords,session),ranked=[...Array(10).keys()].sort((a,b)=>scores[b]-scores[a]||a-b),top3=new Set(ranked.slice(0,3));
+    const train=data.slice(0,cut),actual=data[cut],cutoff=Number(actual.timestamp)||0,scores=v91M2DBaseDigitScores(train,allRecords,session,cutoff),ranked=[...Array(10).keys()].sort((a,b)=>scores[b]-scores[a]||a-b),top3=new Set(ranked.slice(0,3));
     for(let d=0;d<10;d++){tested[d]++;if((actual.tens===d||actual.units===d)&&top3.has(d))hit[d]++;const r=ranked.indexOf(d);rankScore[d]+=100-Math.min(99,r*11);}
   }
   return {coverage:hit.map((h,d)=>tested[d]?h/tested[d]*100:50),rank:rankScore.map((x,d)=>tested[d]?x/tested[d]:50),tested};
@@ -7649,7 +7721,7 @@ function v91M2DDecisionDigitScores(arr,allRecords,session){
 }
 function v91M2DTop3(arr,allRecords,session){
   const scores=v91M2DDecisionDigitScores(arr,allRecords,session),base=v91M2DBaseDigitScores(arr,allRecords,session);
-  return [...Array(10).keys()].sort((a,b)=>scores[b]-scores[a]||base[b]-base[a]||a-b).slice(0,3).map((d,i)=>({digit:d,score:round2(scores[d]*100),baseScore:round2(base[d]),rank:i+1}));
+  return [...Array(10).keys()].sort((a,b)=>scores[b]-scores[a]||base[b]-base[a]||a-b).slice(0,3).map((d,i)=>({digit:d,score:round2(scores[d]),baseScore:round2(base[d]),rank:i+1}));
 }
 function v91M2DPairStats(arr,a,b){
   const data=v91M2DRecords(arr);if(!data.length)return {exact:0,recent:0,previous:0,oriented:0,reverse:0};
@@ -7658,7 +7730,23 @@ function v91M2DPairStats(arr,a,b){
   return {exact,recent,previous,oriented,reverse};
 }
 function v91M2DPairConditional(arr,a,b){const data=v91M2DRecords(arr);if(!data.length)return 50;const targetCount=data.filter(r=>r.tens===a||r.units===a).length;const pairCount=data.filter(r=>v91M2DPairHit(r,a,b)).length;return targetCount?v91M2DBeta(pairCount,targetCount,5,10):50;}
-function v91M2DPairStability(arr,a,b){const data=v91M2DRecords(arr);const vals=V91_M2D_CONFIG.horizons.filter(w=>data.length>=Math.min(w,14)).map(w=>{const x=data.slice(-Math.min(w,data.length));return x.length?x.filter(r=>v91M2DPairHit(r,a,b)).length/x.length*100:50;});if(vals.length<2)return 50;return v91M2DClamp(100-(Math.max(...vals)-Math.min(...vals))*1.8);}
+function v91M2DPairStability(arr,a,b){
+  const data=v91M2DRecords(arr), vals=[];
+  (V91_M2D_CONFIG.horizonFamilies||[]).forEach(f=>{
+    const familyVals=[];
+    (f.windows||[]).forEach((w,i)=>{
+      if(!data.length)return;
+      const x=data.slice(-Math.min(w,data.length));
+      const raw=x.length?x.filter(r=>v91M2DPairHit(r,a,b)).length/x.length*100:50;
+      const rel=v91M2DHorizonReliability(w,x.length);
+      familyVals.push((50+(raw-50)*rel)*(Number(f.internal?.[i])||0));
+    });
+    const iw=(f.internal||[]).reduce((a,b)=>a+(Number(b)||0),0)||1;
+    if(familyVals.length)vals.push(familyVals.reduce((a,b)=>a+b,0)/iw);
+  });
+  if(vals.length<2)return 50;
+  return v91M2DClamp(100-(Math.max(...vals)-Math.min(...vals))*1.8);
+}
 function v91M2DPairOOS(arr,a,b){const data=v91M2DRecords(arr),tests=Math.min(V91_M2D_CONFIG.pairOosTests,Math.max(0,data.length-18));if(tests<6)return 50;let selected=0,selectedHits=0,tested=0;const start=data.length-tests;for(let cut=start;cut<data.length;cut++){const train=data.slice(0,cut),actual=data[cut],ranked=[];for(let x=0;x<10;x++){if(x===a)continue;const k=String(a)+String(x),s=v91M2DBasePairScore(train,a,x)[k]||0;ranked.push({x,s});}ranked.sort((u,v)=>v.s-u.s||u.x-v.x);const top5=ranked.slice(0,5),candidateSelected=top5.some(x=>x.x===b);if(candidateSelected){selected++;if(v91M2DPairHit(actual,a,b))selectedHits++;}tested++;}return selected?v91M2DBeta(selectedHits,selected,50,6):50;}
 function v91M2DBasePairScore(arr,a,b){const data=v91M2DRecords(arr),st=v91M2DPairStats(data,a,b);if(!data.length)return {[String(a)+String(b)]:50};const n=data.length,exact=v91M2DBeta(st.exact,n,2,V91_M2D_CONFIG.priorStrength),recent=v91M2DBeta(st.recent,Math.min(30,n),2,10),previous=v91M2DBeta(st.previous,Math.min(30,Math.max(1,n-30)),2,10),conditional=v91M2DPairConditional(data,a,b),stable=v91M2DPairStability(data,a,b),oriented=v91M2DBeta(st.oriented,n,2,8),reverse=v91M2DBeta(st.reverse,n,2,8);return {[String(a)+String(b)]:exact*.34+recent*.18+previous*.08+conditional*.16+stable*.12+((oriented+reverse)/2)*.07+Math.min(100,(oriented+reverse)/2)*.05};}
 function v91M2DPairScore(arr,target,partner,allRecords,session){
@@ -7697,7 +7785,7 @@ function v91M2DAnalyzeSession(records,session){
   const clean=v91M2DCleanTrainingRecords(records),arr=(Array.isArray(clean)?clean.map(r=>r?.[session]).filter(Boolean):[]).slice(-V91_M2D_CONFIG.maxHistory);
   const top=v91M2DTop3(arr,records,session);
   const pairsByTarget={};top.forEach(t=>pairsByTarget[t.digit]=v91M2DRenderSortPairs(v91M2DPairs(arr,t.digit,records,session,9).slice(0,5)));
-  return {session,arr,top,pairsByTarget,inputQuality:{inputRounds:arr.length,coreRounds:Math.min(30,arr.length),longHistoryUsed:arr.length},pairSetWF:{tested:0,precision:50,coverage:50}};
+  return {session,arr,top,pairsByTarget,inputQuality:{inputRounds:arr.length,coreRounds:Math.min(30,arr.length),activeTrainingCore:Math.min(V91_M2D_CONFIG.maxHistory,arr.length),longHistoryUsed:arr.length,horizons:V91_M2D_CONFIG.horizons},pairSetWF:{tested:0,precision:50,coverage:50}};
 }
 function v91M2DConsensus(noon,evening,records){
   records=v91M2DCleanTrainingRecords(records);
@@ -7708,15 +7796,34 @@ function v91M2DConsensus(noon,evening,records){
   const pairsByTarget={};ranked.forEach(t=>{const a=v91M2DPairs(noon.arr,t.digit,records,'noon',9),b=v91M2DPairs(evening.arr,t.digit,records,'evening',9),mm=new Map();[...a,...b].forEach(p=>{const old=mm.get(p.pair);if(!old||p.score>old.score)mm.set(p.pair,p);});pairsByTarget[t.digit]=v91M2DRenderSortPairs([...mm.values()].sort((x,y)=>y.score-x.score||x.pair.localeCompare(y.pair)).slice(0,5));});
   return {top:ranked,pairsByTarget,inputQuality:{noon:noon.inputQuality,evening:evening.inputQuality},pairSetWF:{tested:0,precision:50,coverage:50},precisionLayer:{version:'V91 M2D session-aware OOS'}};
 }
-const V91_M2D_AUDIT={version:'V91 M2D session-aware OOS',mechanism:'SET-index-derived Myanmar 2D; historical-result model uses result history only when SET inputs are unavailable',sessions:['12:01 PM','4:30 PM'],maxHistory:240,horizons:[14,30,60,120,180,240],chronologicalOOS:true,separateSessions:true,crossSessionBounded:true,pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'exclude-ambiguous-duplicate-date-from-training-and-retain-in-storage-for-correction',inputIntegrity:'strict-schema / no silent date repair'};
+const V91_M2D_AUDIT={version:'V91 M2D Precision Upgrade — 120-round core + multi-horizon 3-120 + chronology-safe OOS + deterministic data reconciliation',mechanism:'SET-index-derived Myanmar 2D; historical-result model uses result history only when SET inputs are unavailable',sessions:['12:01 PM','4:30 PM'],maxHistory:120,horizons:[3,6,9,12,15,18,21,24,27,30,45,60,90,120],horizonFamilies:V91_M2D_CONFIG.horizonFamilies,familyWeights:V91_M2D_CONFIG.horizonFamilies.map(f=>({name:f.name,weight:f.weight,windows:f.windows})),chronologicalOOS:true,separateSessions:true,crossSessionBounded:true,pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'exclude-ambiguous-duplicate-date-from-training-and-retain-in-storage-for-correction',inputIntegrity:'strict-schema / no silent date repair',shortWindowShrinkage:true,overlapCorrelationGuard:true,activeTrainingCore:'120 session rounds'};
 window.__V91_M2D_AUDIT__=V91_M2D_AUDIT;
+window.__V91_M2D_AUDIT__.chronologySafeOOS=true;
+window.__V91_M2D_AUDIT__.crossSessionAlignment='evening uses same-day noon; noon uses previous valid evening';
+window.__V91_M2D_AUDIT__.storageReconciliation='current input authoritative by date; duplicate input dates retained and flagged';
+
 
 function renderMyanmar2DModule(text){
   const parsed=m2dParse(text);if(!parsed.records.length)return null;
   const usable=parsed.records.some(r=>r.noon||r.evening);if(!usable)return null;
   let stored=[];try{stored=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){stored=[]}
-  const keyify=r=>`${r.date}|${r.noon?.value||'××'}|${r.evening?.value||'××'}|${r.timestamp||0}`;
-  const map=new Map(stored.map(r=>[keyify(r),r]));parsed.records.forEach(r=>map.set(keyify(r),r));
+  /* Deterministic reconciliation: the current pasted dataset is authoritative
+     for every date it contains.  This prevents an older stored value from
+     silently surviving after the user corrects/reloads a historical row.
+     If the pasted input contains duplicate dates, ALL rows for that date are
+     retained so the integrity layer can flag the ambiguity rather than silently
+     choosing one. */
+  const dateKey=r=>String(r?.date||'').replace(/\s+/g,' ').trim();
+  const inputDates=new Set(parsed.records.map(dateKey));
+  const map=new Map();
+  stored.filter(r=>!inputDates.has(dateKey(r))).forEach(r=>{
+    const k=`${dateKey(r)}|${r.noon?.value||'××'}|${r.evening?.value||'××'}|${r.timestamp||0}|stored`;
+    map.set(k,r);
+  });
+  parsed.records.forEach((r,i)=>{
+    const k=`${dateKey(r)}|${r.noon?.value||'××'}|${r.evening?.value||'××'}|${r.timestamp||0}|input-${i}`;
+    map.set(k,r);
+  });
   stored=[...map.values()];try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify(stored))}catch(e){}
   const use=stored.map((r,i)=>({...r,timestamp:r.timestamp||m2dThaiDate(r.date),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a.seq||0)-(b.seq||0)||(a._m2i-b._m2i));
   const noon=v91M2DAnalyzeSession(use,'noon'),evening=v91M2DAnalyzeSession(use,'evening'),cons=v91M2DConsensus(noon,evening,use);
@@ -8998,7 +9105,7 @@ purpose:'FULL_AUDITED_ADAPTIVE_RADAR_V90_PLUS_PLUS'
 };
 })();
 </script>
-<!-- V91 M2D AUDIT: session-aware 12:01/16:30 separation; 240-round weighted history; chronological OOS digit/pair replay; bounded cross-session evidence; display-only ascending pair ordering. -->
+<!-- V91 M2D AUDIT: 120-round active core; 3/6/9/12/15/18/21/24/27/30 + 45/60/90/120 family-aware horizons; short-window shrinkage; overlap correlation guard; chronology-safe OOS; session-aware cross-session evidence; deterministic data reconciliation; display-only ascending pair ordering. -->
 <!-- V90 PLUS+ SOURCE AUDIT: 58 lottery types; 1,735 valid result records; 5 no-result entries excluded; 15 locked formulas preserved byte-for-byte; 5 new adaptive formulas added. -->
 </body>
   </html>
