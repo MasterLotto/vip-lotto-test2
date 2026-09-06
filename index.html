@@ -981,8 +981,7 @@ table.audit-table th:nth-child(3),table.audit-table td:nth-child(3){min-width:82
 </div>
 </div>
 </div>
-<script>
-(function(){
+<script>(function(){
 /* =========================================================
    STORAGE
 ========================================================= */
@@ -1075,8 +1074,6 @@ function forceNikkeiVisibleTitle(value){
     .replace(/\u2063/g,'')
     .replace(/\u00A0/g,' ')
     .trim();
-
-
   const compact=s.replace(/[\s\u00A0]/g,'').toLowerCase();
   const isNikkei=compact.includes('นิเคอิ')||compact.includes('นิกเคอิ')||compact.includes('นิคเคอิ')||compact.includes('nikkei');
   if(isNikkei){
@@ -1094,8 +1091,6 @@ function forceNikkeiVisibleTitle(value){
   }
   return s.replace(/^หุ้น\s*/,'').trim();
 }
-
-
 /* V105: canonical title from the card's actual lotteryName.
    This is intentionally independent of card.displayTitle, because a stale
    upstream displayTitle was the path that allowed "หุ้นนิเคอิ ..." to survive. */
@@ -1106,10 +1101,6 @@ function canonicalCardVisibleTitle(card){
      __THAI_ROUND__... are never allowed to leak into the UI. */
   return formatDisplayTitle(source);
 }
-
-
-
-
 function exactNikkeiCanonicalTitle(value){
   const s=String(value||'')
     .normalize('NFC')
@@ -1132,8 +1123,6 @@ function exactNikkeiCanonicalTitle(value){
   if(afternoon)return 'นิเคอิ บ่าย';
   return 'นิเคอิ';
 }
-
-
 function formatDisplayTitle(rawName){
   const exactNikkei=exactNikkeiCanonicalTitle(rawName);
   if(exactNikkei)return exactNikkei;
@@ -1380,18 +1369,6 @@ function v95ThaiBuildSpecialTop(records){
   const scores=Array(10).fill(0); selectedT.forEach(x=>scores[x.digit]=x.score);
   return {d1,d2,nextDate:getNextDateStr(latest.date),recordCount:data.length,scores,records:data,thaiV95:{version:'V95 Thai Direct-Top',anchorTens,anchorUnit,tensCandidates:v95ThaiTensCandidates(anchorTens),selectedTens:selectedT,needleCandidates:v95ThaiNeedleCandidates(anchorUnit),selectedNeedles:selectedU,backtest:{tests,tensDailyCoverage:round2(tensCoverage),pairDailyCoverage:round2(pairCoverage),results:bt.results},pairs:{d1:allPairs1,d2:allPairs2}}};
 }
-
-
-
-
-
-
-
-
-
-
-
-
 /* =========================================================
    FLAGS
 ========================================================= */
@@ -1408,40 +1385,20 @@ function getLotteryFlag(name,displayTitle){
     .trim()
     .toLowerCase()
     .replace(/\s+/g,'');
-
-
-
-
   const raw=norm(name);
   const display=norm(displayTitle);
   const names=[raw,display].filter(Boolean);
   if(!names.length)return'🌐';
-
-
-
-
   const has=(...tokens)=>names.some(v=>tokens.some(t=>v.includes(norm(t))));
   const anyTime=names.some(v=>v.includes('เช้า')||v.includes('บ่าย')||v.includes('เย็น'));
   const isChina=has('จีน','china','shanghai','หุ้นจีน');
   const isHongKong=has('ฮั่งเส็ง','ฮ่องกง','hangseng','hang seng','hongkong','hong kong');
-
-
-
-
   /* V54 exact principle: canonical Nikkei forms are Japan before any other rule. */
   if(has(
     'นิเคอิ','นิกเคอิ','หุ้นนิเคอิ','หุ้นนิกเคอิ','ญี่ปุ่น','nikkei','japan'
   ))return'🇯🇵';
-
-
-
-
   /* KI aliases used by the engine for the four Nikkei sessions. */
   if(names.some(v=>/(?:^|หุ้น)ki(?:vip)?(?:เช้า|บ่าย)?$/.test(v)))return'🇯🇵';
-
-
-
-
   /* Named markets must beat V54's generic time fallback. */
   if(has('หุ้นไทย','ตลาดหุ้นไทย','ไทยเช้า','ไทยเที่ยง','ไทยบ่าย','ไทยเย็น',
          'รัฐบาล','รัฐบาลไทย','ออมสิน','ธกส','หวยหุ้นไทย','thai stock','thailand'))return'🇹🇭';
@@ -1459,10 +1416,6 @@ function getLotteryFlag(name,displayTitle){
   if(has('อินเดีย','india','sensex','nifty'))return'🇮🇳';
   if(has('อียิปต์','egypt'))return'🇪🇬';
   if(has('มาเลย์','มาเลเซีย','มาเล','malaysia','malay'))return'🇲🇾';
-
-
-
-
   /*
      V54 compatibility fallback.
      In V54, an otherwise-unclassified morning/afternoon stock session was
@@ -1471,10 +1424,6 @@ function getLotteryFlag(name,displayTitle){
      Named markets above are deliberately excluded first.
   */
   if(anyTime&&!isChina&&!isHongKong)return'🇯🇵';
-
-
-
-
   return'🌐';
 }
 /* =========================================================
@@ -1491,7 +1440,6 @@ const V91_FLAG_CASES=Object.freeze([
 ]);
 const V91_FLAG_AUDIT=V91_FLAG_CASES.map(([input,expected])=>({input,expected,actual:getLotteryFlag(input),pass:getLotteryFlag(input)===expected}));
 const V91_FLAG_AUDIT_PASS=V91_FLAG_AUDIT.every(x=>x.pass);
-
 /* =========================================================
    V106.1 DISPLAY CANONICALIZATION REGRESSION LOCK
    Presentation-only: verifies exact Thai-stock names/flags and the required
@@ -1538,10 +1486,6 @@ const V106_DISPLAY_AUDIT_PASS=V106_DISPLAY_AUDIT.every(x=>x.pass);
 window.__V106_DISPLAY_AUDIT__={version:'V106.1',pass:V106_DISPLAY_AUDIT_PASS,cases:V106_DISPLAY_AUDIT,
   thaiCanonical:{morning:'หุ้นไทย เปิดเช้า',noon:'หุ้นไทย ปิดเที่ยง',afternoon:'หุ้นไทย เปิดบ่าย',evening:'หุ้นไทย ปิดเย็น',allDay:'หุ้นไทย ทั้งวัน',top:'หุ้นไทย บนตรงๆ'},
   spacingRoots:['นิเคอิ','จีน','ฮั่งเส็ง','ไต้หวัน','เกาหลี','สิงคโปร์','อินเดีย','อียิปต์','รัสเซีย','เยอรมัน','อังกฤษ','ดาวโจนส์','รัฐบาล','มาเลย์','ฮานอย','ลาว']};
-
-
-
-
 /* =========================================================
    THAI DATE
 ========================================================= */
@@ -1996,10 +1940,20 @@ function updateIndicator(){
 /* =========================================================
    1-2. BASIC RESULT HISTORY
 ========================================================= */
+const V1067_ENGINE_CACHE=(()=>{
+  const history=new Map(),audit=new Map();
+  const limit=420;
+  const touch=(map,key,value)=>{if(map.has(key))map.delete(key);map.set(key,value);if(map.size>limit)map.delete(map.keys().next().value);return value;};
+  const keyOf=(recs)=>{const a=Array.isArray(recs)?recs:[];let k=String(a.length)+"|";for(let i=0;i<a.length;i++){const r=a[i]||{};k+=(r.timestamp??"")+","+(r.sequence??"")+","+(r.date??"")+","+(r.n3??"")+","+(r.n2??"")+";";}return k;};
+  return{history,audit,touch,keyOf,clear:()=>{history.clear();audit.clear();}};
+})();
+function v1067HistoryKey(recs,formulaName){return String(formulaName)+"@@"+V1067_ENGINE_CACHE.keyOf(recs);}
 function getFormulaHistory(
   recs,
   formulaName
 ){
+  const cacheKey=v1067HistoryKey(recs,formulaName),cached=V1067_ENGINE_CACHE.history.get(cacheKey);
+  if(cached)return cached;
   const history=[];
   /* TEMPORAL INTEGRITY: audit strictly in chronological order. */
   const resultRecs=
@@ -2046,7 +2000,7 @@ function getFormulaHistory(
       hundredsOnly:check.hitHundredsOnly
     });
   }
-  return history;
+  return V1067_ENGINE_CACHE.touch(V1067_ENGINE_CACHE.history,cacheKey,history);
 }
 /* =========================================================
    3. ROLLING METRICS
@@ -2297,14 +2251,6 @@ function adaptiveWindowBlend(rates,weights){
   const den=ws.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0)||1;
   return clamp(rates.reduce((a,v,i)=>a+clamp(Number(v)||0,0,100)*(ws[i]||0),0)/den,0,100);
 }
-
-
-
-
-
-
-
-
 function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null,records=[]){
   /* V90 Evidence Independence Consensus
      Raw repeated votes are preserved, but correlated formulas no longer receive
@@ -3236,8 +3182,6 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   const v95Top3=v95Ranked.slice(0,3).map(x=>x.digit);
   v95Ranked.forEach((x,i)=>{ rows[x.digit].raw.v95FinalRank=i+1; });
   rows.forEach(row=>{ row.raw.v95PrimaryCandidate=row.formulaHits?.length>0; });
-
-
   /* V60 TOP-3 PROTECTION / ANTI-FALSE-POSITIVE LAYER
      The public board shows three digits, while the legacy prediction card still
      consumes the best two. Never let a pair optimizer silently erase a genuinely
@@ -3543,6 +3487,8 @@ function auditFormula(
   recs,
   formulaName
 ){
+  const cacheKey=v1067HistoryKey(recs,formulaName),cached=V1067_ENGINE_CACHE.audit.get(cacheKey);
+  if(cached)return cached;
   const history=
     getFormulaHistory(
       recs,
@@ -3613,7 +3559,7 @@ function auditFormula(
     calculateRecencyRate(history);
   const trend=
     getTrend(history);
-  return{
+  const result={
     totalTested:history.length,
     hits,
     misses,
@@ -3649,6 +3595,7 @@ function auditFormula(
     trend,
     history
   };
+  return V1067_ENGINE_CACHE.touch(V1067_ENGINE_CACHE.audit,cacheKey,result);
 }
 /* =========================================================
    13. ORIGINAL PAIR GENERATOR
@@ -3714,22 +3661,6 @@ function mainPairCalibratedPrecision(wfPrecision,tests,empirical){
 function pairBayesPrecision(hits,total,priorRate=50,priorN=10){
   return betaSmoothedRate(hits,total,priorRate,priorN);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* =========================================================
    V53.1 FINAL DECISION HARDENING
    - Evidence families prevent correlated evidence from being counted as
@@ -3779,22 +3710,6 @@ function targetSelectionGate(meta){
   if(conflict>60)gate*=.88;
   return clamp(gate,.62,1);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* =========================================================
    V54 PLUS — PRECISION REFINEMENT LAYER
    Backend-only upgrade. UI/card markup remains untouched.
@@ -3919,14 +3834,6 @@ function m2dPairOOSGate(arr,target,partner){
   const p=hit/Math.max(1,tests)*100;
   return selectionOOSGate(p,tests,60);
 }
-
-
-
-
-
-
-
-
 function lastMinuteDriftGuard(records,target,partner){
   const arr=Array.isArray(records)?records:[];
   if(arr.length<8)return 1;
@@ -4225,14 +4132,6 @@ function generateFormulaPairs(mainDigit,otherDigit,auditMap,lotteryName,records)
   const data=Array.isArray(records)?records:[];
   return v90PPRefinePairs(adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,data),data,mainDigit,otherDigit);
 }
-
-
-
-
-
-
-
-
 /* =========================================================
    V94 PRECISION GOVERNOR — TOP-5 FIRST + EMPIRICAL RECOVERY + CONSENSUS DOWNWEIGHT
    Backend-only. Formula bodies, UI/card contracts and original pair formulas remain untouched.
@@ -4312,10 +4211,6 @@ function v94RefinePairs(pairs,records,target){
   }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.meta?.pairWalkForwardPrecision||0)-Number(a.meta?.pairWalkForwardPrecision||0)||a.pair.localeCompare(b.pair));
 }
 function v94RefinePairSet(pairs,records,target){return v94RefinePairs(pairs,records,target);}
-
-
-
-
 /* =========================================================
    V75 PRECISION LOOP — TRUE END-TO-END OOS + EVIDENCE LEDGER
    Backend-only. No new formula. Locked 15 formulas and card/UI untouched.
@@ -4576,10 +4471,6 @@ function v88ApplyFairArbitration(intelligence,records,auditData=null,formulaName
     finalGate:{...(base.finalGate||{}),v88RecoveryFairness:true,v90EmpiricalFormulaRecovery:true,v88LotteryLocalRecovery:true,v88NonMonotonicRecovery:true,v88RecoveryAfterTwoTrueTargetMisses:true,v88HundredsPlaceExcluded:true,v88IndependentConsensusDiminishingReturns:true}
   };
 }
-
-
-
-
 /* =========================================================
    V90 PLUS — EVIDENCE RESOLUTION / CONTRADICTION / ROBUSTNESS GOVERNOR
    Backend-only. No new prediction formula. Locked formula bodies, targeted
@@ -4685,10 +4576,6 @@ function v90PlusApply(intelligence,records,auditData,formulaNames){
   const selected=finalTop3.slice(0,2).map(d=>ranked.find(r=>Number(r.digit)===d)).filter(Boolean);
   return {...base,rows:ranked,top3:finalTop3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v90Plus:{version:'V90 Plus — Evidence Resolution Governor',principles:['formula-lottery-digit-shrinkage','contradiction-aware-selection','horizon-coherence','leave-one-out-contribution','top3-robustness','data-sufficiency-gate','no-new-formula','locked-formulas-unchanged'],regime,ranked:ranked.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,evidence:r.v90Plus?.evidenceScore??50,formula:r.v90Plus?.formulaEvidence??50,contradiction:r.v90Plus?.contradiction??50,horizon:r.v90Plus?.horizonCoherence??50,loo:r.v90Plus?.leaveOneOutStability??50,robustness:r.v90Plus?.top3Robustness??50}))},finalGate:{...(base.finalGate||{}),v90Plus:true,v90PlusFormulaLotteryDigit:true,v90PlusContradiction:true,v90PlusHorizonCoherence:true,v90PlusLeaveOneOut:true,v90PlusTop3Robustness:true,v90PlusDataSufficiency:arr.length>=V90_PLUS_CONFIG.minHistory}};
 }
-
-
-
-
 /* =========================================================
    V90 PLUS+ — RESOLUTION MAX / STATE ANALOGY / COUNTERFACTUAL GOVERNOR
    This is an evidence-resolution layer, not a formula layer. It does not
@@ -4777,10 +4664,6 @@ function v90PPPositionTransitionEvidence(arr,d){
   const targetTotal=counts.flat().reduce((x,y)=>x+y,0), concentration=Math.max(...row)/total, support=targetTotal?total/targetTotal:0;
   return {score:round2(clamp(50+(concentration-.20)*80*clamp(support*3,0,1),0,100)),lastPosition:last,samples:total,transition:row.map(x=>x)};
 }
-
-
-
-
 const V90_PP_CONFIG=Object.freeze({
   minHistory:15, priorN:10, knnK:7, maxAdjustment:3.25,
   stateWeight:.20, contradictionWeight:.15, horizonWeight:.11,
@@ -4842,19 +4725,11 @@ function v90PPApply(intelligence,records,auditData,formulaNames){
   const top3=ranked.slice(0,3).map(x=>x.digit), selected=top3.slice(0,2).map(d=>ranked.find(x=>x.digit===d)).filter(Boolean);
   return {...base,rows:ranked,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v90PlusPlus:{version:'V90 Plus+ — Resolution Max Governor',regime:reg,globalRobustness:robustness,ranked:ranked.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,resolution:r.v90PlusPlus?.resolutionScore??50,analogy:r.v90PlusPlus?.analogicalState??50,contradiction:r.v90PlusPlus?.contradiction??50,loo:r.v90PlusPlus?.leaveOneFamilyStability??50,robustness:r.v90PlusPlus?.top3RobustnessPlus??50}))},finalGate:{...(base.finalGate||{}),v90PlusPlus:true,v90PlusPlusAnalogicalState:true,v90PlusPlusContradiction:true,v90PlusPlusRobustness:true,v90PlusPlusDualMiss:true,v90PlusPlusPositionTransition:true,v90PlusPlusNoNewFormula:true}};
 }
-
-
-
-
 function buildDigitIntelligenceV75(records,auditData,formulaNames,options={}){
   const v74=buildDigitIntelligenceV74(records,auditData,formulaNames,options);
   return v75Finalize(v74,records,auditData,formulaNames);
 }
 /* ========================================================= END V75 PRECISION LOOP ========================================================= */
-
-
-
-
 /* =========================================================
    V78 ADAPTIVE RADAR — LEAKAGE-SAFE 5-DIGIT CONSENSUS
    Backend-only. Locked formulas and card markup are untouched.
@@ -5127,10 +5002,6 @@ function v80ApplyFormulaLayer(intelligence,records){
   const selected=finalTop3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean);
   return {...base,rows,top3:finalTop3,selected,v80:{version:'V80',source:'สถิติ.pdf',formulaAudit:audit,newFormulaCount:5,standout,chronological:true},finalGate:{...(base.finalGate||{}),v80FormulaLayer:true,v80NewFormulaCount:5,v80Standout:standout,v80AuditRows:audit}};
 }
-
-
-
-
 /* =========================================================
    V81 MAX PRECISION ADAPTIVE FORMULA + TARGET-PAIR LAB
    Non-locked enhancement layer. The original 15 formulas and card UI
@@ -5233,10 +5104,6 @@ function v81ApplyAdaptiveLayer(intelligence,records){
   const standout=rows.slice(0,2).map(x=>x.digit);
   return {...base,rows,top3:uniqueTop3.slice(0,3),selected:uniqueTop3.slice(0,2).map(d=>rows.find(x=>x.digit===d)).filter(Boolean),v81Adaptive:{version:'V81',selected:selected.map(x=>({anchor:x.name,offsets:x.offsets,rate:round2(x.rate),recent:round2(x.recent),stability:round2(x.stability),score:round2(x.score),edge:round2(x.edge)})),standout,chronological:true},finalGate:{...(base.finalGate||{}),v81Adaptive:true,v81Standout:standout}};
 }
-
-
-
-
 /* =========================================================
    V83 EVIDENCE STACK — MAX PRECISION DECISION LAYER
    Backend-only. UI/card markup and CSS are untouched.
@@ -5389,14 +5256,6 @@ function v83ApplyEvidenceStack(intelligence,records,auditData,formulaNames){
     finalGate:{...(base.finalGate||{}),v83EvidenceStack:true,v83HorizonCount:V83_CONFIG.horizons.length,v83ActiveFormulaCount:names.length}
   };
 }
-
-
-
-
-
-
-
-
 /* =========================================================
    V84 DECISION INTELLIGENCE — CHRONOLOGICAL OOS GOVERNOR
    Backend-only. No formula bodies or card/UI/CSS mutation.
@@ -5499,10 +5358,6 @@ function v84ApplyDecisionGovernor(intelligence,records,auditData,formulaNames){
     finalGate:{...(base.finalGate||{}),v84DecisionGovernor:true,v84ChronologicalOOS:true}
   };
 }
-
-
-
-
 function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}){
   const base=buildDigitIntelligenceV75(records,auditData,formulaNames,options);
   const radar=v78ApplyStructure(base,records);
@@ -5515,10 +5370,6 @@ function buildDigitIntelligenceV84Core(records,auditData,formulaNames,options={}
   if(options&&options.skipV84OOS) return v83;
   return v84ApplyDecisionGovernor(v83,records,auditData,formulaNames);
 }
-
-
-
-
 /* =========================================================
    V85 FINAL DECISION INTEGRITY — END-TO-END OOS SELECTION AUDIT
    Backend-only. No formula bodies, pair contract, or prediction-card CSS.
@@ -5856,10 +5707,6 @@ function v87FinalFairArbitration(intelligence,records,auditData,formulaNames){
   const fairness={version:'V87 Final Fair Arbitration',principles:['equal-treatment-for-0-to-9','stability-first','consensus-bounded','final-layer-authority'],ranked:out.map((x,i)=>({rank:i+1,digit:x.digit,score:x.selectionQuality,evidence:x.v87Fairness?.evidenceScore??50,stability:x.v87Fairness?.historicalStability??50,consensus:x.v87Fairness?.consensus??0,penalty:x.v87Fairness?.crowdPenalty??0}))};
   return {...base,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v87Fairness:fairness,finalGate:{...(base.finalGate||{}),v87FinalFairness:true,v87StabilityFirstFinal:true,v87ConsensusBoundedFinal:true}};
 }
-
-
-
-
 function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   const core=buildDigitIntelligenceV84Core(records,auditData,formulaNames,options);
   const v85=v85ApplyFinalDecisionGovernor(core,records,auditData,formulaNames);
@@ -5867,10 +5714,6 @@ function buildDigitIntelligenceV78(records,auditData,formulaNames,options={}){
   return v86ApplyEqualOpportunity(v85Plus,records,auditData,formulaNames);
 }
 /* ========================================================= END V78 ADAPTIVE RADAR LAYER ========================================================= */
-
-
-
-
 /* =========================================================
    V74 PRECISION AUDIT — LEAKAGE-SAFE GLOBAL ENSEMBLE
    Backend-only. No formula/card/UI mutation.
@@ -6018,10 +5861,6 @@ function buildDigitIntelligenceV74(records,auditData,formulaNames,options={}){
   return v74Refine(base,records,auditData,formulaNames);
 }
 /* ========================================================= END V74 PRECISION AUDIT ========================================================= */
-
-
-
-
 /* =========================================================
    V73 PRECISION SELECTION — EMPIRICAL ENSEMBLE + FINAL CONSISTENCY
    Backend-only. No new formula. Locked 15 formula bodies and card/UI remain untouched.
@@ -6087,42 +5926,21 @@ function v73DigitOOS(recs,names,auditData){
   return {tested:rows.length,top3HitRate:rows.length?hits/rows.length*100:50,rows,precisionByDigit:Array.from({length:10},(_,d)=>seenBy[d]?hitBy[d]/seenBy[d]*100:50)};
 }
 function v73LatestFormulaVoteFromTrain(train,names){
-  const data=train.slice(), out=Array(10).fill(0), fam={};
-  const formulaList=Array.isArray(names)?names:[];
-  formulaList.forEach(name=>{
-    const fn=allFormulas?.[name]; if(typeof fn!=='function'||!data.length)return;
-    const source=String(fn).replace(/\s+/g,'');
-    let hit=0,total=0,recentHit=0,recentN=0,stable=50;
-    for(let i=1;i<data.length;i++){
-      const prev=data[i-1], act=v73TargetSet(data[i]);
-      const n3=String(prev.n3||'').padStart(3,'0'),n2=String(prev.n2||'').padStart(2,'0');
-      const vals=fn(Number(n3[0]),Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1]))||[];
-      const ds=vals.slice(0,2).map(v=>((Number(v)%10)+10)%10);
-      total++; if(ds.some(d=>act.has(d)))hit++;
-      if(i>=Math.max(1,data.length-8)){recentN++;if(ds.some(d=>act.has(d)))recentHit++;}
-    }
-    const w=(total?hit/total*100:50)*.50+(recentN?recentHit/recentN*100:50)*.30+stable*.20;
-    if(!fam[source])fam[source]={weight:0}; fam[source].weight=Math.max(fam[source].weight,w);
-    const prev=data[data.length-1],n3=String(prev.n3||'').padStart(3,'0'),n2=String(prev.n2||'').padStart(2,'0');
-    const vals=fn(Number(n3[0]),Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1]))||[];
+  const data=Array.isArray(train)?train:[],out=Array(10).fill(0),fam={};
+  (Array.isArray(names)?names:[]).forEach(name=>{
+    const fn=allFormulas?.[name];if(typeof fn!=='function'||!data.length)return;
+    const hist=getFormulaHistory(data,name);let hit=0,recentHit=0,recentN=0;
+    hist.forEach((h,i)=>{if(h.hit)hit++;if(i>=Math.max(0,hist.length-8)){recentN++;if(h.hit)recentHit++;}});
+    const w=(hist.length?hit/hist.length*100:50)*.50+(recentN?recentHit/recentN*100:50)*.30+10;
+    const source=String(fn).replace(/\s+/g,'');if(!fam[source])fam[source]={weight:0};fam[source].weight=Math.max(fam[source].weight,w);
+    const prev=data[data.length-1],n3=String(prev.n3||'').padStart(3,'0'),n2=String(prev.n2||'').padStart(2,'0'),vals=fn(Number(n3[0]),Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1]))||[];
     fam[source].digits=(fam[source].digits||[]).concat(vals.slice(0,2).map(v=>((Number(v)%10)+10)%10));
   });
-  /* FAIRNESS LAYER (chronological replay): correlated formula collisions get
-     diminishing marginal credit per independent formula body. This keeps
-     consensus useful while preventing a crowded digit from overwhelming
-     empirical/temporal evidence. */
-  const familyList=Object.values(fam);
-  const den=familyList.reduce((s,x)=>s+x.weight,0)||1;
-  const marginal=[1,.74,.55,.40,.30,.24,.20,.18,.16,.15];
-  const perDigit=Array.from({length:10},()=>[]);
+  const familyList=Object.values(fam),den=familyList.reduce((s,x)=>s+x.weight,0)||1,marginal=[1,.74,.55,.40,.30,.24,.20,.18,.16,.15],perDigit=Array.from({length:10},()=>[]);
   familyList.forEach(x=>new Set(x.digits||[]).forEach(d=>perDigit[d].push(Number(x.weight)||0)));
-  perDigit.forEach((weights,d)=>{
-    weights.sort((a,b)=>b-a);
-    out[d]=weights.reduce((sum,w,i)=>sum+w*(marginal[i]??marginal[marginal.length-1]),0);
-  });
+  perDigit.forEach((weights,d)=>{weights.sort((a,b)=>b-a);out[d]=weights.reduce((sum,w,i)=>sum+w*(marginal[i]??marginal[marginal.length-1]),0);});
   return out.map(x=>x/den*100);
-}
-function v73Refine(base,recs,auditData,names){
+}function v73Refine(base,recs,auditData,names){
   const rows=Array.isArray(base?.rows)?base.rows:[];
   const pool=rows.slice(0,V73_CONFIG.poolSize).map(x=>x.digit);
   (base?.top3||[]).forEach(d=>{if(!pool.includes(Number(d)))pool.push(Number(d));});
@@ -6269,7 +6087,6 @@ window.captureCardImage=async function(cardId,lotteryTitle){
     showToast('❌ ไม่พบการ์ดที่ต้องการจับภาพ');
     return;
   }
-
   /*
      CAPTURE PATCH ONLY — V106.1
      Keep the rest of the application untouched.
@@ -6280,12 +6097,10 @@ window.captureCardImage=async function(cardId,lotteryTitle){
   const loadHtml2Canvas=()=>{
     if(typeof window.html2canvas==='function')return Promise.resolve(window.html2canvas);
     if(window.__h2cLoadPromise)return window.__h2cLoadPromise;
-
     const sources=[
       'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
       'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
     ];
-
     window.__h2cLoadPromise=(async()=>{
       let lastError=null;
       for(const src of sources){
@@ -6315,10 +6130,8 @@ window.captureCardImage=async function(cardId,lotteryTitle){
       }
       throw lastError||new Error('html2canvas unavailable');
     })();
-
     return window.__h2cLoadPromise;
   };
-
   showToast('📸 กำลังเตรียมระบบจับภาพ...');
   let h2c;
   try{
@@ -6328,7 +6141,6 @@ window.captureCardImage=async function(cardId,lotteryTitle){
     showToast('❌ ไม่สามารถโหลดระบบจับภาพได้');
     return;
   }
-
   showToast('📸 กำลังบันทึกภาพการ์ด...');
   const clone=cardEl.cloneNode(true);
   clone.style.position='fixed';
@@ -6338,7 +6150,6 @@ window.captureCardImage=async function(cardId,lotteryTitle){
   clone.style.zIndex='-1';
   clone.style.pointerEvents='none';
   document.body.appendChild(clone);
-
   const cleanup=()=>{if(clone&&clone.parentNode)clone.parentNode.removeChild(clone);};
   try{
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
@@ -6354,7 +6165,6 @@ window.captureCardImage=async function(cardId,lotteryTitle){
     if(!blob){showToast('❌ ไม่สามารถสร้างไฟล์ภาพได้');return;}
     const safeName=String(lotteryTitle||'Lottery').replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
     const url=URL.createObjectURL(blob);
-
     /*
        ANDROID SAVE PATCH — capture point only.
        IMPORTANT: do NOT use Web Share here. It opens the Android
@@ -6368,7 +6178,6 @@ window.captureCardImage=async function(cardId,lotteryTitle){
     document.body.appendChild(link);
     link.click();
     link.remove();
-
     setTimeout(()=>URL.revokeObjectURL(url),2000);
     showToast('✓ บันทึกภาพการ์ดสำเร็จ');
   }catch(err){
@@ -6388,8 +6197,6 @@ window.__V102_THAI_PAIR_RANK_DISPLAY__={
   scoringChanged:false,
   selectionChanged:false
 };
-
-
 /* V103 DISPLAY AUDIT — Nikkei title invariant. */
 window.__V105_NIKKEI_TITLE_ROOT_CAUSE_FIX__={version:'V105',rule:'Nikkei title canonicalized from lotteryName and sanitized again after DOM insertion',singleScoreAuditCard:true,visiblePrefixForbidden:'หุ้น'};
 window.__V105_NIKKEI_TITLE_INVARIANT__={
@@ -6404,8 +6211,6 @@ window.__V103_NIKKEI_DISPLAY_AUDIT__={
   originalFormulaCardVisible:false,
   scoreAuditCardVisible:true
 };
-
-
 window.__V91_CARD_ORDER_AUDIT__={
   version:'V91 Plus++ Card Order Patch',
   scope:'general lottery cards only',
@@ -6418,10 +6223,6 @@ window.__V91_CARD_ORDER_AUDIT__={
   copyPayloadOrder:'UNCHANGED',
   rankClassPreserved:true
 };
-
-
-
-
 /* =========================================================
    CARD HTML
 ========================================================= */
@@ -7343,10 +7144,6 @@ function v70Classify(digit,item,records){const ev=v70EvidenceProfile(item),life=
 function v70Arbitrate(scoreData,records){const ranked=Array.isArray(scoreData)?scoreData:[],c=ranked.map((x,i)=>v70Classify(x?.digit??x?.value??x?.d??i,x,records)),core=c.filter(x=>x.bucket==='CORE').sort((a,b)=>b.quality-a.quality),support=c.filter(x=>x.bucket==='SUPPORT').sort((a,b)=>b.quality-a.quality),shadow=c.filter(x=>x.bucket==='SHADOW').sort((a,b)=>b.quality-a.quality),selected=[...core,...support,...shadow].slice(0,3),top=selected.map(x=>x.digit),raw=ranked.slice(0,3).map((x,i)=>String(x?.digit??x?.value??x?.d??i));return{finalTop3:top,rawTop3:raw,removedFromTop3:raw.filter(d=>!top.includes(d)),core:core.map(x=>x.digit),support:support.map(x=>x.digit),shadow:shadow.slice(0,V70_CONFIG.shadowCount).map(x=>x.digit),noForcedPrediction:top.length<3,regime:v70Regime(records),audit:c.map(x=>({digit:x.digit,bucket:x.bucket,quality:x.quality,reasons:x.reasons}))};}
 window.V70Precision=Object.freeze({config:V70_CONFIG,lifecycle:v70Lifecycle,regime:v70Regime,overfit:v70Overfit,classify:v70Classify,arbitrate:v70Arbitrate});
 /* ========================================================= END V70 BIG UPGRADE ========================================================= */
-
-
-
-
 /* =========================================================
    V72 PRECISION REFINEMENT — DECISION HARDENING
    No new prediction formula. No card/UI changes.
@@ -7471,14 +7268,6 @@ function v72RefineTop3(baseTop3,rows,records){
 }
 window.V72Precision=Object.freeze({config:V72_CONFIG,temporal:v72TemporalSurvival,antiRepeat:v72ConditionalAntiRepeat,margin:v72MarginQuality,compression:v72EvidenceCompression,regimeTransition:v72RegimeTransition,finalAudit:v72FinalAudit,refineTop3:v72RefineTop3});
 /* ========================================================= END V72 PRECISION REFINEMENT ========================================================= */
-
-
-
-
-
-
-
-
 /* =========================================================
    BUILD ENGINE
 ========================================================= */
@@ -7761,10 +7550,6 @@ function m2dPrecisionScoreDigits(arr){
   if(Array.isArray(arr)) M2D_PRECISION_CACHE.set(arr,out);
   return out;
 }
-
-
-
-
 /* V84 Myanmar 2D Decision Governor — specialized, isolated from general lottery engine. */
 function m2dV84DecisionScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;
@@ -7787,10 +7572,6 @@ function m2dV84DecisionScoreDigits(arr){
   }
   return out;
 }
-
-
-
-
 function m2dTop3(arr){
   m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   const base=m2dScoreDigits(arr),score=m2dV84DecisionScoreDigits(arr);
@@ -8317,10 +8098,6 @@ function m2dNextTargetDate(records){
   d.setDate(d.getDate()+1);
   return d;
 }
-
-
-
-
 /* =========================================================
    V92 MYANMAR 2D SPECIALIZED BRAIN — PRECISION / ROBUSTNESS
    Scope: Myanmar 2D only. Main lottery formulas, scoring, Pair Engine,
@@ -8552,10 +8329,6 @@ function v92DecisionDigitScores(arr,allRecords,session){
   window.__V93_M2D_LEDGER__=ledger;
   return raw;
 }
-
-
-
-
 function v93SelectionDiscipline(arr,allRecords,session,d,scores){
   const data=v92Rows(arr);
   const ledger=window.__V93_M2D_LEDGER__||v93BuildMethodLedger(data,allRecords,session);
@@ -8596,10 +8369,6 @@ function v92SelectTop3(arr,allRecords,session){
   window.__V93_M2D_TOP3_AUDIT__={session,selected:selected.map(x=>({digit:x.digit,score:round2(x.meta.score),agreement:round2(x.meta.agreement),reliability:round2(x.meta.reliability),oosCoverage:round2(x.meta.oosCoverage),oosRank:round2(x.meta.oosRank),stability:round2(x.meta.stability)}))};
   return selected.map((x,i)=>({digit:x.digit,score:round2(v92Clamp(x.meta.score)),baseScore:round2(x.base),rank:i+1}));
 }
-
-
-
-
 function v94M2DRecoveryScore(arr,d){
   const data=v92Rows(arr);let streak=0;
   for(let i=data.length-1;i>=0;i--){if(Number(data[i].tens)===Number(d)||Number(data[i].units)===Number(d))break;streak++;}
@@ -8613,10 +8382,6 @@ function v94M2DSelectTop3(arr,allRecords,session){
   window.__V94_M2D_TOP3_AUDIT__={session,ranked:ranked.map((x,i)=>({rank:i+1,digit:x.digit,score:round2(x.score),baseRank:x.baseRank,missStreak:x.missStreak,recoveryBonus:round2(x.recoveryBonus)})),priority:'TOP5 + MISS RECOVERY'};
   return top3;
 }
-
-
-
-
 function v92PairStats(arr,a,b){
   const data=v92Rows(arr),recentN=Math.min(18,data.length),recentStart=data.length-recentN;let exact=0,recent=0,target=0,conditional=0;
   data.forEach((r,i)=>{if(v92PairExact(r,a,b)){exact++;if(i>=recentStart)recent++;}if(r.tens===a)target++;if(r.tens===a&&r.units===b)conditional++;});
@@ -8786,18 +8551,10 @@ function v92Consensus(noon,evening,records){
   window.__V93_M2D_PAIR_PORTFOLIO_AUDIT__={targets:ranked.map(x=>x.digit),total:Object.values(pairsByTarget).reduce((n,a)=>n+a.length,0),uniqueDirected:new Set(Object.values(pairsByTarget).flat().map(canonicalPair)).size,reversePairSuppression:false,orientationPolicy:'EXACT_DIRECTED_12_NE_21',perTarget:5};
   return {top:ranked,pairsByTarget,inputQuality:{noon:noon.inputQuality,evening:evening.inputQuality},pairSetWF:{tested:Math.max(noon.pairSetWF?.tested||0,evening.pairSetWF?.tested||0),precision:50,coverage:50},precisionLayer:{version:'V94 M2D Precision Governor + Top-5 Recovery + Champion-Challenger + Disjoint Pair Portfolio',jointEvidence:true,exactOrientedPairs:true,walkForward:true,longHistoryConfirmation:true,championChallenger:true,methodLedger:window.__V93_M2D_LEDGER__||null}};
 }
-
-
-
-
 window.__V1064_M2D_STRUCTURAL_AUDIT__={version:'V106.4',rawDuplicateRowsRetained:true,ambiguousDateChronologyExcluded:true,exactOrientedPairs:true,reversePairSuppression:false,pairStabilityWindows:[6,9,12,18,24,30,36,45],generalLotteryEngineUntouched:true,cardAppearanceUntouched:true};
 const V92_M2D_AUDIT={version:'V106.4 M2D Structural Precision — Top-5 Recovery + Exact Orientation + Ambiguous-Date Guard',sessions:['12:01 PM','4:30 PM'],activeCore:45,maxHistory:240,horizons:V92_M2D_CONFIG.horizons,chronologicalOOS:true,separateSessions:true,jointDayEvidence:true,directedTransitions:['T→T','T→U','U→T','U→U'],pairMode:'exact-oriented (12 != 21), preserved end-to-end',pairDisplayOrder:'ascending numeric only',generalLotteryEngineUntouched:true,duplicateDatePolicy:'retain raw ambiguous rows, exclude only ambiguous dates from chronology training, flag explicitly',externalData:false};
 window.__V92_M2D_AUDIT__=V92_M2D_AUDIT;
 window.__V91_M2D_AUDIT__=V92_M2D_AUDIT;
-
-
-
-
 function renderMyanmar2DModule(text){
   const parsed=m2dParse(text);if(!parsed.records.length)return null;
   const usable=parsed.records.some(r=>r.noon||r.evening);if(!usable)return null;
@@ -8812,10 +8569,6 @@ function renderMyanmar2DModule(text){
   const err=parsed.errors.length?`<div class="m2d-note m2d-error">⚠️ ${parsed.errors.map(m2dEsc).join(' • ')}</div>`:'';
   return `<div class="m2d-shell"><div class="m2d-grid">${m2dRenderBlock('နေ့လယ်ပိုင်း','12.01 P.M.','☀️',noon,'m2d-card-noon',dateLabel)}${m2dRenderBlock('ညနေပိုင်း','4.30 P.M.','🌙',evening,'m2d-card-evening',dateLabel)}${m2dRenderBlock('တစ်နေ့တာ','12.01 P.M. + 4.30 P.M.','📅',all,'m2d-card-all',dateLabel)}</div>${err}</div>`;
 }
-
-
-
-
 /* =========================================================
    V55 PRECISION CONTROL LAYER
    Decision-only upgrade. Protected formula definitions are untouched.
@@ -9027,14 +8780,6 @@ function m2dV55AdvancedTop3(arr,baseTop){
   out._v55={quality,distributionShift:shift,ranked:ranked.slice(0,10),multipleTestingPenalty:v55MultipleTestingPenalty(data.length,10)};
   return out;
 }
-
-
-
-
-
-
-
-
 function runEngineCore(){
   const textVal=
     $('bulkInput')
@@ -9117,6 +8862,7 @@ function runEngineCore(){
       )
     );
   }catch(e){}
+  V1067_ENGINE_CACHE.clear();
   if(!FORMULA_DEFINITION_AUDIT.ok || !CHALLENGER_FORMULA_AUDIT.ok){
     const formulaIssues=[...(FORMULA_DEFINITION_AUDIT.issues||[]),...(CHALLENGER_FORMULA_AUDIT.issues||[])];
     console.error('[FORMULA AUDIT] พบสูตรที่ว่าง/ทำงานผิดปกติ',formulaIssues);
@@ -10070,8 +9816,6 @@ window.addEventListener(
       );
     }
   });
-
-
 /* =========================================================
    V95 PRECISION ARCHITECTURE — AUDIT-FIRST SELECTION ENGINE
    Backend-only. UI/card markup and styles intentionally untouched.
@@ -10187,8 +9931,6 @@ function v95ApplyPrecisionArchitecture(base,records,auditData,formulaNames){
   return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
     v95:{version:'V95 Audit-First Precision Architecture',principles:['formula-vs-digit-separation','top3-formula-protection','consensus-diagnostic-only','anti-suppression','empirical-null-baseline','partial-vs-strong-hit','conflict-penalty','correlation-aware','regime-aware-shrinkage','counterfactual-audit','score-is-not-probability'],regime,ranked:out.map((r,i)=>({rank:i+1,digit:r.digit,score:r.selectionQuality,formula:r.v95?.formulaTrust??50,consensus:r.v95?.consensus??50,consensusCount:r.v95?.consensusCount??0,top3Protection:r.v95?.top3Protection??0,partialHitRate:r.v95?.partialHitRate??50,strongHitRate:r.v95?.strongHitRate??50,empiricalNull:r.v95?.empiricalNull??50,lift:r.v95?.observedLift??0,penalty:r.v95?.penalty??0,regime:r.v95?.regime??'UNKNOWN'})),counterfactual:{selected:chosen?.digit??null,second:second?.digit??null,selectedAudit:chosen?.v95?.counterfactual??null}},finalGate:{...(src.finalGate||{}),v95AuditFirst:true,v95Top3Protection:true,v95ConsensusFirewall:true,v95AntiSuppression:true,v95EmpiricalNull:true,v95Counterfactual:true,v95ScoreProbabilitySeparated:true}};
 }
-
-
 /* =========================================================
    V98 FINAL AUTHORITY — CONSENSUS DEVALUATION / CLEAN PATH
    Backend-only. This layer deliberately ignores ALL prior
@@ -10437,11 +10179,10 @@ function v98ConsensusInvarianceTest(intelligence,records,auditData,formulaNames)
   const A=(a.selected||[]).map(x=>Number(x.digit)),B=(b.selected||[]).map(x=>Number(x.digit));
   return {pass:A.length===B.length&&A.every((d,i)=>d===B[i]),before:A,after:B};
 }
-
-
 window.__V98_TEST_API__={cleanAuthority:v98CleanAuthority,invariance:v98ConsensusInvarianceTest,formulaRanked:v98FormulaRanked,digitConditional:v98DigitConditional,formulaNames:Object.keys(allFormulas).filter(n=>typeof allFormulas[n]==='function')};
 window.__V99_CONSENSUS_FIREWALL__={authority:'V100-FORMULA-CONFLUENCE-ONLY',consensusScore:0,agreementScore:0,legacyBuildDigitScoreForFinalCard:false,formulaCandidatesOnly:true};
 window.__V1065_CALIBRATION_AUDIT__={version:'V106.5',conditionalDigitPrecision:true,conditionalMetric:'shrunk_formula_digit_OOS',weights:V1065_CONFIG,formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false,requiresCleanWalkForwardPromotion:true};
+window.__V1067_PERFORMANCE_AUDIT__={version:'V106.7',formulaHistoryCache:true,auditCache:true,cachedVotePath:true,cacheLimit:420,uiMutation:false,formulaBodiesUntouched:true,cardAppearanceUntouched:true};
 window.__V1066_CALIBRATION_AUDIT__={version:'V106.6',selector:'CALIBRATED_DIGIT_AUTHORITY',weights:V1066_CONFIG,consensus:'historical_support_breadth_shrunk',contradictionPenalty:true,formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false,requiresCleanWalkForwardPromotion:true};
 window.__V91_PLUSPLUS_AUDIT__={
   version:'V91 Plus++ / M2D Precision Upgrade',
