@@ -6143,6 +6143,13 @@ window.captureCardImage=async function(cardId,lotteryTitle){
   }
   showToast('📸 กำลังบันทึกภาพการ์ด...');
   const clone=cardEl.cloneNode(true);
+  /* CAPTURE CLEANUP: action controls are UI-only and must never appear
+     inside the exported image. Remove them from the clone only; the live
+     card remains completely unchanged. */
+  clone.querySelectorAll('.card-action-btn,.m2d-capture-button').forEach(el=>el.remove());
+  clone.querySelectorAll('.card-btn-group').forEach(group=>{
+    if(!group.querySelector('*')) group.remove();
+  });
   clone.style.position='fixed';
   clone.style.left='-100000px';
   clone.style.top='0';
