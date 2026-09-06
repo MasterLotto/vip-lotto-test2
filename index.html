@@ -3423,7 +3423,11 @@ function buildEndToEndWalkForward(recs,auditData,formulaNames){
       try{ trainAudit[fName]=auditFormula(train,fName); }catch(e){ trainAudit[fName]=auditData?.[fName]||{}; }
     });
     const shadow=buildDigitIntelligence(train,trainAudit,formulaNames,{skipEndToEnd:true});
-    const selected=(shadow.selected||[]).map(x=>x.digit).slice(0,2);
+    /* V106.8: OOS must validate the same final authority used by production.
+       The previous walker stopped at the pre-V98 selector, so it could not
+       measure the actual final two-digit decision. */
+    const finalShadow=v98CleanAuthority(shadow,train,trainAudit,formulaNames);
+    const selected=(finalShadow.selected||[]).map(x=>x.digit).slice(0,2);
     const actual=v94TargetSet(target);
     const top1Hit=selected.length>0&&actual.has(selected[0]);
     const top2Hit=selected.length>1&&actual.has(selected[1]);
@@ -10092,78 +10096,130 @@ function v1066SupportDispersion(supporters,base){
   const negative=supporters.reduce((s,x,i)=>s+((Number(x.conditional?.rate??base)<base)?w[i]:0),0)/sw;
   return {dispersion:Math.sqrt(variance),negativeRate:negative,meanLift:mean-base};
 }
+function v1068ClampProb(v){
+  const x=Number(v);
+  return Math.max(.08,Math.min(.92,Number.isFinite(x)?x:.50));
+}
+function v1068RecentConditional(records,formulaName,d,window){
+  const h=v98FormulaMetrics(records,formulaName).history||[];
+  const arr=h.slice(-Math.max(1,window||12));
+  const eligible=arr.filter(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d)));
+  if(!eligible.length)return null;
+  const hits=eligible.filter(x=>v98TargetHasDigit({n3:x.actualN3,n2:x.actualN2},d)).length;
+  const raw=hits/eligible.length*100;
+  const base=v95Num(v95EmpiricalNull(records,[d]),50);
+  const shrink=eligible.length/(eligible.length+8);
+  return round2(base+(raw*shrink+base*(1-shrink))-base);
+}
+function v1068EvidenceProbability(arr,d,supporters,formulaNames){
+  const base=v1068ClampProb(v95Num(v95EmpiricalNull(arr,[d]),50)/100);
+  if(!supporters.length)return base;
+  const odds=[];
+  supporters.forEach(x=>{
+    const p=v1068ClampProb((x.conditional?.rate||50)/100);
+    const rp=v1068ClampProb((x.recentConditional==null?x.conditional?.rate||50:x.recentConditional)/100);
+    const reliability=v1068ClampProb((x.quality||50)/100);
+    const blend=p*.52+rp*.28+reliability*.20;
+    const strength=Math.max(.35,Math.min(1.20,(x.rankWeight||1)*.72));
+    odds.push({p:blend,strength});
+  });
+  let logit=Math.log(base/(1-base));
+  odds.forEach(o=>{
+    const p=v1068ClampProb(o.p);
+    logit+=(Math.log(p/(1-p))-Math.log(base/(1-base)))*o.strength;
+  });
+  const breadth=Math.min(2.0,Math.max(0.0,supporters.length/3));
+  logit+=Math.log(1+Math.max(0,breadth-.5))*.20;
+  return 1/(1+Math.exp(-logit));
+}
 function v98CleanAuthority(base,records,auditData,formulaNames){
-  const src=base||{}, rows0=Array.isArray(src.rows)?src.rows:[]; if(rows0.length!==10)return src;
-  const arr=(records||[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const src=base||{}, rows0=Array.isArray(src.rows)?src.rows:[];
+  if(rows0.length!==10)return src;
+  const arr=(records||[]).filter(isResultRecord).slice().sort((a,b)=>
+    (Number(a.timestamp)||parseThaiDate(a.date)||0)-
+    (Number(b.timestamp)||parseThaiDate(b.date)||0));
   const ranked=v98FormulaRanked(auditData,formulaNames,arr);
   const out=rows0.map(row=>{
     const d=Number(row.digit), supporters=[];
     ranked.forEach(f=>{
       const latest=(auditData?.[f.name]?.latestDigits||[]).map(Number);
-      if(latest.includes(d)){
-        const ds=v100DigitSupport(arr,f.name,d), m=f.metrics, mc=f.confluence;
-        const cd=v98DigitConditional(arr,f.name,d);
-        supporters.push({name:f.name,rank:f.rank,rankWeight:f.rankWeight,top3:f.top3,quality:f.quality,oos:ds,multi:mc.confluence,temporal:mc.temporal,conditional:cd});
-      }
+      if(!latest.includes(d))return;
+      const ds=v100DigitSupport(arr,f.name,d), cd=v98DigitConditional(arr,f.name,d);
+      const recent12=v1068RecentConditional(arr,f.name,d,12);
+      const recent18=v1068RecentConditional(arr,f.name,d,18);
+      const recentBlend=recent12==null?(recent18==null?cd.rate:recent18):
+        (recent18==null?recent12:recent12*.65+recent18*.35);
+      supporters.push({name:f.name,rank:f.rank,rankWeight:f.rankWeight,top3:f.top3,
+        quality:f.quality,oos:ds,conditional:cd,recentConditional:recentBlend,
+        temporal:f.confluence?.temporal||50});
     });
-    let formulaSignal=0,digitOOS=0,conditional=0,stability=0,recent=0,temporal=0,empirical=50;
-    if(supporters.length){
-      const wsum=supporters.reduce((s,x)=>s+x.rankWeight,0)||1;
-      formulaSignal=supporters.reduce((s,x)=>s+x.quality*x.rankWeight,0)/wsum;
-      digitOOS=supporters.reduce((s,x)=>s+x.oos.oos*x.rankWeight,0)/wsum;
-      conditional=supporters.reduce((s,x)=>s+x.conditional.rate*x.rankWeight,0)/wsum;
-      stability=supporters.reduce((s,x)=>s+x.oos.stability*x.rankWeight,0)/wsum;
-      recent=supporters.reduce((s,x)=>s+x.oos.recent*x.rankWeight,0)/wsum;
-      temporal=supporters.reduce((s,x)=>s+x.temporal*x.rankWeight,0)/wsum;
-      empirical=v95Num(v95EmpiricalNull(arr,[d]),50);
-    }else{
-      empirical=v95Num(v95EmpiricalNull(arr,[d]),50);
-    }
     const cal=v1066ConsensusCalibrate(arr,formulaNames,d);
     const supportCount=supporters.length;
     const consensusRate=supportCount<cal.supportRate.length?cal.supportRate[supportCount]:cal.base;
     const dispersion=v1066SupportDispersion(supporters,cal.base);
-    /* Consensus is no longer a hard-wired authority or a zero-value firewall.
-       It is calibrated by historical support breadth and shrunk toward the
-       digit base rate. This prevents "more formulas = automatically better". */
-    const consensusQuality=consensusRate;
-    const breadthQuality=50 + (consensusQuality-50)*.75;
-    const contradictionPenalty=Math.min(8,dispersion.negativeRate*6 + Math.max(0,dispersion.dispersion-12)*.12);
-    const agreementPenalty=Math.min(5,Math.max(0,dispersion.dispersion-18)*.15);
-    const rankTop3Boost=supporters.length?supporters.reduce((s,x)=>s+(x.top3?x.rankWeight:0),0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):0;
-    /* V106.6: rebalance the selector around digit-conditioned evidence.
-       Formula-level quality remains useful, but cannot dominate the digit.
-       Consensus breadth is calibrated from prior transitions, and contradictory
-       supporter evidence is explicitly penalized. */
-    const rawScore=supporters.length ? (
-      .25*formulaSignal + .12*digitOOS + .20*conditional +
-      .11*stability + .06*recent + .07*temporal + .05*empirical +
-      .11*breadthQuality + .03*(50+Math.min(50,Math.max(-50,dispersion.meanLift)))
-      - contradictionPenalty - agreementPenalty
-    ) : 0;
+    const formulaQuality=supporters.length?
+      supporters.reduce((s,x)=>s+x.quality*x.rankWeight,0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):50;
+    const digitOOS=supporters.length?
+      supporters.reduce((s,x)=>s+x.oos.oos*x.rankWeight,0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):50;
+    const conditional=supporters.length?
+      supporters.reduce((s,x)=>s+x.conditional.rate*x.rankWeight,0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):50;
+    const recentConditional=supporters.length?
+      supporters.reduce((s,x)=>s+x.recentConditional*x.rankWeight,0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):50;
+    const stability=supporters.length?
+      supporters.reduce((s,x)=>s+x.oos.stability*x.rankWeight,0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):50;
+    const temporal=supporters.length?
+      supporters.reduce((s,x)=>s+x.temporal*x.rankWeight,0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):50;
+    const empirical=v95Num(v95EmpiricalNull(arr,[d]),50);
+    const probability=v1068EvidenceProbability(arr,d,supporters,formulaNames);
+    const pScore=probability*100;
+    const breadthQuality=consensusRate;
+    const negativeRate=dispersion.negativeRate*100;
+    const conflict=Math.min(12,Math.max(0,negativeRate-25)*.10+Math.max(0,dispersion.dispersion-10)*.16);
+    const recencyBonus=Math.max(-4,Math.min(4,(recentConditional-conditional)*.10));
+    const breadthBonus=Math.max(-8,Math.min(10,(breadthQuality-50)*.18));
+    const rawScore=
+      pScore*.42+
+      conditional*.13+
+      recentConditional*.10+
+      formulaQuality*.08+
+      digitOOS*.06+
+      stability*.05+
+      temporal*.04+
+      empirical*.04+
+      50*.02+
+      breadthBonus+recencyBonus-conflict;
     const final=v95Clamp(rawScore,0,100);
     return {...row,
       selectionQuality:round2(final),score:round2(final),
-      v98:{version:'V106.6 CALIBRATED DIGIT AUTHORITY',formulaSupportCount:supportCount,
-        formulaSupporters:supporters.map(x=>x.name),formulaSignal:round2(formulaSignal),
-        digitOOS:round2(digitOOS),conditional:round2(conditional),stability:round2(stability),recent:round2(recent),
-        temporal:round2(temporal),empirical:round2(empirical),consensusQuality:round2(consensusQuality),
-        consensusBase:round2(cal.base),consensusBuckets:cal.buckets,consensusBreadth:supportCount,
-        supportDispersion:round2(dispersion.dispersion),negativeSupportRate:round2(dispersion.negativeRate*100),
-        contradictionPenalty:round2(contradictionPenalty),agreementPenalty:round2(agreementPenalty),
-        top3Influence:round2(rankTop3Boost),consensusAuthority:'CALIBRATED',agreementAuthority:'PENALTY_ONLY',
-        legacySelectionIgnored:true,formulaGenerated:supportCount>0,supporterRanks:supporters.map(x=>x.rank)}
+      v98:{version:'V106.8 EVIDENCE PROBABILITY RANK',formulaSupportCount:supportCount,
+        formulaSupporters:supporters.map(x=>x.name),formulaSignal:round2(formulaQuality),
+        digitOOS:round2(digitOOS),conditional:round2(conditional),recentConditional:round2(recentConditional),
+        stability:round2(stability),temporal:round2(temporal),empirical:round2(empirical),
+        consensusQuality:round2(consensusRate),consensusBase:round2(cal.base),consensusBuckets:cal.buckets,
+        consensusBreadth:supportCount,supportDispersion:round2(dispersion.dispersion),
+        negativeSupportRate:round2(negativeRate),evidenceProbability:round2(pScore),
+        breadthBonus:round2(breadthBonus),recencyBonus:round2(recencyBonus),conflictPenalty:round2(conflict),
+        top3Influence:round2(supporters.length?supporters.reduce((s,x)=>s+(x.top3?x.rankWeight:0),0)/(supporters.reduce((s,x)=>s+x.rankWeight,0)||1):0),
+        consensusAuthority:'CALIBRATED',agreementAuthority:'PENALTY_ONLY',
+        legacySelectionIgnored:true,formulaGenerated:supportCount>0,
+        supporterRanks:supporters.map(x=>x.rank)}
     };
   }).sort((a,b)=>b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit);
   const eligible=out.filter(x=>x.v98?.formulaGenerated);
   const selected=eligible.slice(0,2);
   const top3=eligible.slice(0,3).map(x=>x.digit);
-  return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
-    v98:{version:'V106.6 CALIBRATED DIGIT AUTHORITY',authority:'FORMULA+CONDITIONAL+CALIBRATED-CONSENSUS+MULTI-HORIZON',consensusAuthority:'CALIBRATED',agreementAuthority:'PENALTY_ONLY',
-      formulaRankWeighting:'SMOOTH',ranked:ranked.map(x=>({rank:x.rank,name:x.name,quality:round2(x.quality),rankWeight:round2(x.rankWeight),top3:x.top3,confluence:x.confluence})),
+  return {...src,rows:out,top3,selected,
+    margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,
+    v98:{version:'V106.8 EVIDENCE PROBABILITY RANK',authority:'FORMULA-CONDITIONAL-BAYESIAN-EVIDENCE+CALIBRATED-CONSENSUS',
+      consensusAuthority:'CALIBRATED',agreementAuthority:'PENALTY_ONLY',formulaRankWeighting:'SMOOTH',
+      ranked:ranked.map(x=>({rank:x.rank,name:x.name,quality:round2(x.quality),rankWeight:round2(x.rankWeight),top3:x.top3,confluence:x.confluence})),
       selected:selected.map(x=>({digit:x.digit,score:x.selectionQuality,formulaSupport:x.v98?.formulaSupportCount||0}))},
-    finalGate:{...(src.finalGate||{}),v1066CalibratedDigitAuthority:true,v100FormulaConfluenceAuthority:false,v98CleanFinalAuthority:false,v100ConsensusZero:false,v1066ConsensusCalibrated:true,v1066ContradictionPenalty:true,v100LegacySelectionIgnored:true,v100FormulaCandidatesOnly:true}};
+    finalGate:{...(src.finalGate||{}),v1068EvidenceProbabilityRank:true,v1066CalibratedDigitAuthority:false,
+      v100FormulaConfluenceAuthority:false,v98CleanFinalAuthority:false,v100ConsensusZero:false,
+      v1066ConsensusCalibrated:true,v1066ContradictionPenalty:true,v100LegacySelectionIgnored:true,v100FormulaCandidatesOnly:true}};
 }
+const V1068_CONFIG=Object.freeze({probability:.42,conditional:.13,recentConditional:.10,formula:.08,digitOOS:.06,stability:.05,temporal:.04,empirical:.04,breadth:.18});
+
 const V100_CONFIG=Object.freeze({formula:.34,digitOOS:.23,stability:.16,recent:.07,temporal:.12,empirical:.05,top3Boost:.03});
 /* V106.6: calibrated consensus + formula-conditioned digit precision + contradiction control. */
 const V1066_CONFIG=Object.freeze({formula:.25,digitOOS:.12,conditional:.20,stability:.11,recent:.06,temporal:.07,empirical:.05,consensus:.11,consistency:.03});
@@ -10183,6 +10239,7 @@ window.__V98_TEST_API__={cleanAuthority:v98CleanAuthority,invariance:v98Consensu
 window.__V99_CONSENSUS_FIREWALL__={authority:'V100-FORMULA-CONFLUENCE-ONLY',consensusScore:0,agreementScore:0,legacyBuildDigitScoreForFinalCard:false,formulaCandidatesOnly:true};
 window.__V1065_CALIBRATION_AUDIT__={version:'V106.5',conditionalDigitPrecision:true,conditionalMetric:'shrunk_formula_digit_OOS',weights:V1065_CONFIG,formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false,requiresCleanWalkForwardPromotion:true};
 window.__V1067_PERFORMANCE_AUDIT__={version:'V106.7',formulaHistoryCache:true,auditCache:true,cachedVotePath:true,cacheLimit:420,uiMutation:false,formulaBodiesUntouched:true,cardAppearanceUntouched:true};
+window.__V1068_EVIDENCE_RANK_AUDIT__={version:'V106.8',selector:'EVIDENCE_PROBABILITY_RANK',formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false,requiresCleanWalkForwardPromotion:true};
 window.__V1066_CALIBRATION_AUDIT__={version:'V106.6',selector:'CALIBRATED_DIGIT_AUTHORITY',weights:V1066_CONFIG,consensus:'historical_support_breadth_shrunk',contradictionPenalty:true,formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false,requiresCleanWalkForwardPromotion:true};
 window.__V91_PLUSPLUS_AUDIT__={
   version:'V91 Plus++ / M2D Precision Upgrade',
