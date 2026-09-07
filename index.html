@@ -1508,7 +1508,7 @@ let currentGlobalAuditMap={};
 
 
 
-let manualCards=[];
+let manualCards=window.manualCards=window.manualCards||[];
 
 
 
@@ -2572,6 +2572,7 @@ function showToast(msg){
 
 
   const toast=$('toast');
+  if(!toast) return;
 
 
 
@@ -5092,11 +5093,10 @@ window.addFormulaCard=function(
 
 
 
-  if(!card)
+  if(!card || typeof card!=='object' || Array.isArray(card)){
+    showToast('ไม่สามารถสร้างการ์ดสูตรได้');
     return;
-
-
-
+  }
 
   manualCards.push(card);
 
