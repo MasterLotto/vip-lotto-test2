@@ -300,8 +300,12 @@ button{cursor:pointer}
 .actions{
   padding:0 16px 16px;
   display:grid;
-  grid-template-columns:1fr 1fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:10px
+}
+
+.actions .run{
+  grid-column:1 / -1
 }
 
 
@@ -1171,7 +1175,6 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 @media(max-width:900px){
   .audit-grid{grid-template-columns:repeat(2,1fr)}
   .digit-board{grid-template-columns:repeat(5,1fr)}
-  .actions{grid-template-columns:1fr 1fr}
 }
 
 
@@ -1422,8 +1425,8 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 
 
   <div class="actions">
-    <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
     <button id="run" class="run">⚡ ประมวลผลระบบ V32.4</button>
+    <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
     <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
   </div>
 
@@ -1698,6 +1701,27 @@ function formatDisplayTitle(rawName){
 
 
 
+  const thaiStockKey=name
+    .replace(/\s+/g,'')
+    .toLowerCase();
+
+
+  const thaiStockLabels={
+    'ไทยเปิดเช้า':'หุ้นไทย เปิดเช้า',
+    'ไทยปิดเที่ยง':'หุ้นไทย ปิดเที่ยง',
+    'ไทยเปิดบ่าย':'หุ้นไทย เปิดบ่าย',
+    'ไทยปิดเย็น':'หุ้นไทย ปิดเย็น',
+    'หุ้นไทยเปิดเช้า':'หุ้นไทย เปิดเช้า',
+    'หุ้นไทยปิดเที่ยง':'หุ้นไทย ปิดเที่ยง',
+    'หุ้นไทยเปิดบ่าย':'หุ้นไทย เปิดบ่าย',
+    'หุ้นไทยปิดเย็น':'หุ้นไทย ปิดเย็น'
+  };
+
+
+  if(thaiStockLabels[thaiStockKey])
+    return thaiStockLabels[thaiStockKey];
+
+
   name=name
     .replace(/^สถิติหุ้น\s*/,'')
     .replace(/^สถิติ\s*/,'')
@@ -1857,12 +1881,12 @@ function formatDisplayTitle(rawName){
 
 function getLotteryFlag(name){
   const n=String(name||'').toLowerCase().trim();
+  if(n.includes('นิเคอิ')||n.includes('นิกเคอิ')||n.includes('ญี่ปุ่น'))return'🇯🇵';
   if(n.includes('ลาว'))return'🇱🇦';
   if(n.includes('ฮานอย')||n.includes('เวียดนาม'))return'🇻🇳';
   if(n.includes('ไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส'))return'🇹🇭';
   if(n.includes('ฮั่งเส็ง')||n.includes('ฮ่องกง'))return'🇭🇰';
   if(n.includes('จีน'))return'🇨🇳';
-  if(n.includes('นิเคอิ')||n.includes('นิกเคอิ')||n.includes('ญี่ปุ่น'))return'🇯🇵';
   if(n.includes('ดาวโจนส์')||n.includes('อเมริกา')||n.includes('usa'))return'🇺🇸';
   if(n.includes('ไต้หวัน'))return'🇹🇼';
   if(n.includes('เกาหลี'))return'🇰🇷';
