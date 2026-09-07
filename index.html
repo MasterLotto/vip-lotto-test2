@@ -9134,7 +9134,7 @@ function runEngineCore(){
       const finalTop3=Array.isArray(governedV98.top3)?governedV98.top3.map(Number).filter(Number.isFinite):[];
       const finalBest2=Array.isArray(governedV98.best2)?governedV98.best2.map(Number).filter(Number.isFinite).slice(0,2):[];
       intelligence=governedV98;
-      if(auditDataMap[lotteryName]) auditDataMap[lotteryName].__V98_CONSENSUS_INVARIANCE__=v98ConsensusInvarianceTest(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
+      window.__V98_CONSENSUS_INVARIANCE_AUDIT__=v98ConsensusInvarianceTest(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
       /* The public prediction card must consume the same BEST-2 authority that
          V97 exposes; it must not silently fall back to the first two TOP-3 digits. */
       if(finalBest2.length===2){ d1=finalBest2[0]; d2=finalBest2[1]; }
@@ -10546,5 +10546,72 @@ window.__V1092_AUDIT__=audit17;
 window.__V1092_LOCK_AUDIT__=Object.freeze({cardAppearance:false,cardLayout:false,lotteryNames:false,lotteryTypes:false,headings:false,dates:false,calendar:false,displayFormat:false,displayPercentages:false});
 })();
 //--></script>
+
+<script id="V110_HIDDEN_GOLD_FINAL_AUTHORITY">
+(function(){
+'use strict';
+const WIN=[3,6,9,12,15,18,21,24,27,30];
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number(v)||0));
+const pct=(n,d)=>d>0?100*n/d:50;
+function corr(a,b){const n=Math.min(a.length,b.length);if(n<4)return 0;let sa=0,sb=0;for(let i=0;i<n;i++){sa+=a[i];sb+=b[i];}const ma=sa/n,mb=sb/n;let xy=0,xx=0,yy=0;for(let i=0;i<n;i++){const x=a[i]-ma,y=b[i]-mb;xy+=x*y;xx+=x*x;yy+=y*y;}return xx&&yy?xy/Math.sqrt(xx*yy):0;}
+function digitSeries(records,formula,d){try{return v98FormulaMetrics(records,formula).history.map(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(d)?1:0);}catch(e){return[];}}
+function digitProof(records,ranked,d){
+ const rows=[];
+ for(const f of ranked){const h=digitSeries(records,f.name,d);if(!h.length||!f.metrics)continue;const ev=typeof v100DigitSupport==='function'?v100DigitSupport(records,f.name,d):{oos:50,recent:50,stability:50,temporal:50};if(!h.some(Boolean))continue;
+   const overall=clamp(f.metrics.hitRate), recent=clamp(f.metrics.recencyRate), stability=clamp(f.metrics.stability),
+         proof=.42*clamp(ev.oos)+.22*clamp(ev.recent)+.18*clamp(ev.stability)+.10*overall+.08*clamp(f.confluence?.confluence??50);
+   rows.push({name:f.name,rank:f.rank,quality:clamp(f.quality),proof,series:h,ev});}
+ if(!rows.length)return {score:50,rows:[],independent:0,topRank:null};
+ rows.sort((a,b)=>b.proof-a.proof);
+ const chosen=[];
+ for(const r of rows){let maxc=0;for(const q of chosen)maxc=Math.max(maxc,Math.abs(corr(r.series,q.series)));r.independence=clamp(100-100*Math.max(0,maxc-.55),0,100);r.weight=(.58+.42*(1-Math.max(0,maxc-.55)/.45))*(1/(1+.10*Math.max(0,r.rank-1)));chosen.push(r);}
+ const top=rows.slice(0,6);const sw=top.reduce((s,r)=>s+r.weight,0)||1;const score=top.reduce((s,r)=>s+r.proof*r.weight,0)/sw;
+ return {score:clamp(score),rows,independent:chosen.filter(x=>x.independence>70).length,topRank:rows[0]?.rank??null};
+}
+function horizon(records,d){const vals=WIN.map(w=>{const a=records.slice(-w);let hit=0,total=0;for(const r of a){const n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0');for(const x of [n3[0],n3[1],n2[0],n2[1]]){total++;if(Number(x)===d)hit++;}}return pct(hit,total);});let slope=0;for(let i=1;i<vals.length;i++)slope+=(vals[i-1]-vals[i]);const short=.55*vals[0]+.25*vals[1]+.20*vals[2], long=.30*vals[7]+.25*vals[8]+.45*vals[9];return {vals,short,long,shape:clamp(50+slope*2)};}
+function rebound(records,d){let miss=0;for(let i=records.length-1;i>=0&&i>=records.length-12;i--){const r=records[i],n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0');const hit=[n3[0],n3[1],n2[0],n2[1]].some(x=>Number(x)===d);if(hit)break;miss++;}if(miss<2)return 50;let follow=0,den=0;for(let i=0;i<records.length-1;i++){let gap=0;for(let j=i;j>=0&&j>=i-5;j--){const r=records[j],n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0');if([n3[0],n3[1],n2[0],n2[1]].some(x=>Number(x)===d))break;gap++;}if(gap>=Math.min(miss,5)){const r=records[i+1],n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0');den++;if([n3[0],n3[1],n2[0],n2[1]].some(x=>Number(x)===d))follow++;}}return den?pct(follow,den):50;}
+function v110Authority(base,records,auditData,formulaNames){
+ const src=base||{}, rows=Array.isArray(src.rows)?src.rows:[];if(rows.length!==10)return src;
+ const rec=(records||[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+ const names=(formulaNames||[]).filter(f=>f&&f!=='__formulaGovernor'&&!String(f).startsWith('__V'));
+ const ranked=typeof v98FormulaRanked==='function'?v98FormulaRanked(auditData,names,rec):[];
+ const metrics=[];
+ for(let d=0;d<10;d++){
+   const proof=digitProof(rec,ranked,d), h=horizon(rec,d), rb=rebound(rec,d);
+   const baseRow=rows.find(x=>Number(x.digit)===d)||{};const baseScore=clamp(baseRow.score,0,100);
+   const support=proof.rows.filter(x=>x.series.at(-1)===1);const rawCount=support.length;
+   const consensus=clamp(50+Math.min(35,rawCount*7)+(proof.independent-rawCount)*2);
+   const recent3=typeof v1071Recent==='function'?v1071Recent(rec,d,3):h.vals[0];
+   const recent6=typeof v1071Recent==='function'?v1071Recent(rec,d,6):h.vals[1];
+   const momentum=clamp(50+(recent3-recent6)*1.4);
+   const position=typeof v1071PositionRate==='function'?clamp(v1071PositionRate(rec,d)):50;
+   const opposition=clamp(100-(ranked.length?ranked.filter(f=>f.metrics&&f.metrics.hitRate<45).length*2:0));
+   const hiddenGold=clamp(proof.score-baseScore);
+   const score=clamp(.34*proof.score+.16*(proof.topRank?clamp(100-((proof.topRank-1)*9)):45)+.15*(.58*h.short+.42*h.long)+.09*consensus+.08*momentum+.06*position+.04*rb+.04*opposition+.04*baseScore);
+   metrics.push({digit:d,score,baseScore,proofScore:proof.score,topFormulaRank:proof.topRank,independentSupport:proof.independent,rawSupport:rawCount,consensus,momentum,position,rebound:rb,hiddenGold,horizon:h});
+ }
+ metrics.sort((a,b)=>b.score-a.score||b.proofScore-a.proofScore||a.digit-b.digit);
+ const top3=metrics.slice(0,3).map(x=>x.digit);
+ const pool=metrics.slice(0,6);const best2=pool.slice().sort((a,b)=>b.score-a.score||b.proofScore-a.proofScore).slice(0,2).map(x=>x.digit);
+ const out={...src,rows:src.rows,top3,best2,selectionAuthority:metrics,selectionAudit:{version:'V110.0 HIDDEN-GOLD FINAL AUTHORITY',windows:WIN,principle:'historical proof before current consensus',hiddenGold:metrics.filter(x=>x.hiddenGold>5).map(x=>x.digit),suppression:metrics.filter(x=>x.proofScore>baseScoreSafe(x.baseScore)&&x.score>70).map(x=>x.digit)}};
+ return out;
+}
+function baseScoreSafe(x){return Number(x)||50;}
+const original=window.v98CleanAuthority;
+if(typeof original==='function'){
+ window.v98CleanAuthority=function(base,records,auditData,formulaNames){
+   const cleanNames=(formulaNames||[]).filter(f=>f&&!String(f).startsWith('__V'));
+   const originalOut=original(base,records,auditData,cleanNames);
+   const upgraded=v110Authority(originalOut,records,auditData,cleanNames);
+   window.__V110_SELECTION_AUDIT__=upgraded.selectionAudit;
+   window.__V110_DIGIT_AUTHORITY__=upgraded.selectionAuthority;
+   return upgraded;
+ };
+}
+window.__V110_CONFIG__=Object.freeze({version:'V110.0',windows:WIN,lockedUI:true,lockedCalendar:true,lockedNames:true,lockedTypes:true,lockedHeadings:true,lockedDisplay:true,lockedFormulaBodies:true,targetDigitMayEvolve:true});
+window.__V110_LOCK_AUDIT__=Object.freeze({cardAppearance:false,cardLayout:false,lotteryNames:false,lotteryTypes:false,headings:false,dates:false,calendar:false,displayFormat:false,displayPercentages:false,formulaBodies:false});
+})();
+</script>
+
 </body>
 </html>
