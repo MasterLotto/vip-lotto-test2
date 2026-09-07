@@ -10442,291 +10442,109 @@ window.__V1086_FINAL_AUDIT_PASS__=Object.values(window.__V1086_FINAL_AUDIT__.int
 })();
 </script>
 
-<script id="V1091_BACKEND_17POINT_UPGRADE">
-/*
- V109.1 — BACKEND-ONLY 17-POINT AUDIT / AUTHORITY UPGRADE
- ---------------------------------------------------------
- HARD LOCKS:
- - UI/card markup and styling: DO NOT MODIFY
- - lottery names/types: DO NOT MODIFY
- - date/calendar behavior: DO NOT MODIFY
- - locked formula bodies / targeted-digit formula: DO NOT MODIFY
- - displayed percentages: DO NOT MODIFY
-
- This layer is diagnostic + authority infrastructure. It is intentionally
- isolated from the visible UI so the existing V108.6 presentation remains
- unchanged.
+<script id="V1092_BACKEND_17POINT_UPGRADE"><!--
+/* V109.2 BACKEND-ONLY SELECTION REFINEMENT
+   Locked: visible cards/UI, names/types/headings, dates/calendar, display format/percentages.
+   Locked formula bodies. Target-digit formula may evolve only through walk-forward validation.
 */
 (function(){
-"use strict";
-
-const V1091_VERSION="V109.1";
-const EPS=1e-9;
-
-function clamp(v,a=0,b=1){ return Math.max(a,Math.min(b,Number(v)||0)); }
-function mean(a){ a=(a||[]).filter(Number.isFinite); return a.length?a.reduce((x,y)=>x+y,0)/a.length:0; }
-function sigmoid(x){ return 1/(1+Math.exp(-Math.max(-20,Math.min(20,x)))); }
-function safeName(x){ return String(x??"").trim(); }
-
-function normalizePrediction(p){
-  if(Array.isArray(p)) return p.map(Number).filter(Number.isFinite).map(x=>((x%10)+10)%10);
-  const s=String(p??"").replace(/\D/g,"");
-  return s.split("").map(Number);
+'use strict';
+const WINDOWS=[3,6,9,12,15,18,21,24,27,30];
+const clamp=(x,a=0,b=100)=>Math.max(a,Math.min(b,Number.isFinite(+x)?+x:0));
+const mean=a=>a&&a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+const safe=(x,d=0)=>Number.isFinite(+x)?+x:d;
+function pearson2(a,b){const n=Math.min(a?.length||0,b?.length||0);if(n<4)return 0;const x=a.slice(-n).map(Number),y=b.slice(-n).map(Number),mx=mean(x),my=mean(y);let u=0,v=0,w=0;for(let i=0;i<n;i++){const dx=x[i]-mx,dy=y[i]-my;u+=dx*dy;v+=dx*dx;w+=dy*dy;}return(v&&w)?u/Math.sqrt(v*w):0;}
+function uniq(a){return [...new Set((a||[]).map(String))];}
+function rankWeight(r){return [0,1,.92,.84,.76,.68,.58,.50,.44,.39,.35,.31,.28][Math.max(1,Math.min(12,r||12))]||.28;}
+function curveClass(vals){
+  const a=WINDOWS.map((_,i)=>safe(vals?.[i]));
+  if(!a.length)return 'unknown';
+  const d=(a[a.length-1]-a[0]); const s3=mean(a.slice(0,3)), sL=mean(a.slice(-3));
+  const early=mean(a.slice(0,2)), mid=mean(a.slice(3,6));
+  if(s3>sL+12 && early>mid+8)return 'short_spike';
+  if(sL>s3+12 && sL>mid+6)return 'long_build';
+  if(Math.abs(d)<5 && Math.abs(sL-s3)<8)return 'stable';
+  if(d>8)return 'rising';
+  if(d<-8)return 'falling';
+  const signs=[];for(let i=1;i<a.length;i++)signs.push(Math.sign(a[i]-a[i-1]));
+  const flips=signs.slice(1).filter((x,i)=>x&&signs[i]&&x!==signs[i]).length;
+  if(flips>=4)return 'choppy';
+  if(s3<sL && a.slice(0,4).every((v,i,ar)=>i===0||v<=ar[i-1]+4))return 'reversal_up';
+  if(s3>sL && a.slice(0,4).every((v,i,ar)=>i===0||v>=ar[i-1]-4))return 'reversal_down';
+  return 'mixed';
 }
-
-function digitCounts(records){
-  const c=Array(10).fill(0), n=Math.max(1,records.length);
-  (records||[]).forEach(r=>{
-    const ds=normalizePrediction(r);
-    ds.forEach(d=>c[d]++);
-  });
-  const total=Math.max(1,c.reduce((a,b)=>a+b,0));
-  return c.map(x=>x/total);
-}
-
-/* 1) Score Trace
-   Keep every contribution inspectable without changing display. */
-function buildScoreTrace(digit, parts){
-  return {
-    digit:Number(digit),
-    contributions:Object.freeze({...parts}),
-    raw:Number(parts.raw||0),
-    penalties:Number(parts.penalties||0),
-    final:Number(parts.final||0)
-  };
-}
-
-/* 2) Suppression Audit
-   Explain why a digit lost rank. */
-function suppressionAudit(digits, scoreMap){
-  const vals=digits.map(d=>({digit:d,score:Number(scoreMap[d]||0)}))
-    .sort((a,b)=>b.score-a.score);
-  const max=vals[0]?.score||0;
-  return vals.map((x,i)=>({
-    digit:x.digit, rank:i+1, score:x.score,
-    gapFromLeader:max-x.score
-  }));
-}
-
-/* 3) Formula Correlation
-   Pearson correlation on hit/prediction indicators. */
-function pearson(a,b){
-  const n=Math.min(a.length,b.length);
-  if(n<3) return 0;
-  const aa=a.slice(0,n), bb=b.slice(0,n);
-  const ma=mean(aa), mb=mean(bb);
-  let num=0,da=0,db=0;
-  for(let i=0;i<n;i++){
-    const x=aa[i]-ma,y=bb[i]-mb;
-    num+=x*y; da+=x*x; db+=y*y;
+function horizonCurve(records,digit){
+  const out=[];
+  for(const w of WINDOWS){
+    const rr=(records||[]).slice(-w); if(!rr.length){out.push(0);continue;}
+    let hits=0,total=0;
+    for(const r of rr){const digs=[r?.n3?.[0],r?.n3?.[1],r?.n2?.[0],r?.n2?.[1]].map(Number);if(digs.some(d=>d===digit))hits++;total++;}
+    out.push(total?100*hits/total:0);
   }
-  return da>EPS&&db>EPS?num/Math.sqrt(da*db):0;
-}
-function formulaCorrelationMatrix(series){
-  const names=Object.keys(series||{});
-  const out={};
-  names.forEach(a=>{
-    out[a]={};
-    names.forEach(b=>{ out[a][b]=a===b?1:pearson(series[a]||[],series[b]||[]); });
-  });
   return out;
 }
-
-/* 4) Formula Family — structural family is supplied by caller when known.
-   Never invent or rewrite formula bodies. */
-function familyAdjustedWeight(base, familySize){
-  return Number(base||0)/(1+0.18*Math.max(0,(familySize||1)-1));
+function independentConsensus(formulaRows,digit,corr){
+  const supporters=(formulaRows||[]).filter(x=>Array.isArray(x.predDigits)&&x.predDigits.includes(digit));
+  if(!supporters.length)return {score:0,count:0,effective:0};
+  let total=0,used=[];
+  supporters.sort((a,b)=>safe(b.quality)-safe(a.quality));
+  for(const f of supporters){
+    let redundancy=0;
+    for(const u of used) redundancy=Math.max(redundancy,Math.abs(safe(corr?.[f.name]?.[u.name])));
+    const indep=1-0.65*redundancy;
+    const q=clamp(safe(f.quality,50));
+    total+=indep*(.55*q+.45*safe(f.recent, q));
+    used.push(f);
+  }
+  return {score:clamp(total/supporters.length),count:supporters.length,effective:used.reduce((s,f)=>s+1,0)};
 }
-
-/* 5) Regime Change Point Audit */
-function regimeWindows(values, windows=[5,10,20]){
-  const v=(values||[]).map(Number).filter(Number.isFinite);
-  return windows.map(w=>{
-    const tail=v.slice(-w), prev=v.slice(-(2*w),-w);
-    const cur=mean(tail), old=mean(prev);
-    return {window:w,current:cur,previous:old,delta:cur-old};
-  });
+function evidenceDeDup(parts){
+  const keys=Object.keys(parts||{}), vals=keys.map(k=>clamp(parts[k]));
+  // Recent/trend/curve are partially dependent; cap their joint contribution rather than summing them as independent votes.
+  const recent=mean([parts.recent,parts.trend].filter(x=>x!=null));
+  const history=mean([parts.h3,parts.h6,parts.h9,parts.h12,parts.h15,parts.h18,parts.h21,parts.h24,parts.h27,parts.h30].filter(x=>x!=null));
+  const base=mean([parts.formula,parts.consensus,parts.position,parts.opposition,parts.rebound].filter(x=>x!=null));
+  return {recent,history,base,raw:mean(vals)};
 }
-
-/* 6) Window Sensitivity */
-function windowSensitivity(series, windows=[5,10,15,20,30]){
-  return windows.reduce((o,w)=>{
-    const a=(series||[]).slice(-w).map(Number).filter(Number.isFinite);
-    o[w]={n:a.length,rate:mean(a)};
-    return o;
-  },{});
+function v1092Authority(ctx){
+  const rows=ctx?.formulaRows||[]; const recs=ctx?.records||[]; const corr=ctx?.correlation||{};
+  const out=[];
+  for(let d=0;d<10;d++){
+    const supporters=rows.filter(x=>Array.isArray(x.predDigits)&&x.predDigits.includes(d));
+    const ranked=rows.map((x,i)=>({...x,rank:x.rank||i+1}));
+    const formulaVals=ranked.filter(x=>x.predDigits?.includes(d)).map(x=>.55*clamp(x.quality,50)+.25*clamp(x.recent,50)+.20*clamp(x.consistency,50));
+    const fw=ranked.filter(x=>x.predDigits?.includes(d)).map(x=>rankWeight(x.rank));
+    const formula=mean(formulaVals.map((v,i)=>v*(fw[i]||.3)))/Math.max(.3,mean(fw)||.3);
+    const con=independentConsensus(rows,d,corr).score;
+    const curve=horizonCurve(recs,d); const cls=curveClass(curve);
+    const history=mean(curve.map((v,i)=>v*(1/(1+i*.10))))*1.0;
+    const recent=mean(curve.slice(0,2));
+    const long=mean(curve.slice(-3));
+    const momentum=clamp(50+(recent-long)*1.8);
+    const rebound=clamp(safe(ctx?.rebound?.[d],50));
+    const position=clamp(safe(ctx?.position?.[d],50));
+    const opposition=clamp(100-safe(ctx?.opposition?.[d],50));
+    const trap=cls==='short_spike'?12:cls==='choppy'?6:0;
+    const falseConsensus=(supporters.length>=3&&con<formula?Math.min(12,(supporters.length-2)*3):0);
+    const deDup=evidenceDeDup({formula,consensus:con,h3:curve[0],h6:curve[1],h9:curve[2],h12:curve[3],h15:curve[4],h18:curve[5],h21:curve[6],h24:curve[7],h27:curve[8],h30:curve[9],recent,momentum,position,opposition,rebound});
+    let score=.34*formula+.18*con+.23*deDup.history+.08*momentum+.06*position+.06*opposition+.05*rebound-trap-falseConsensus;
+    if(cls==='long_build'||cls==='rising')score+=3;
+    if(cls==='reversal_up')score+=2;
+    if(cls==='falling'||cls==='reversal_down')score-=3;
+    out.push({digit:d,score:clamp(score),formula:clamp(formula),consensus:clamp(con),curve,curveClass:cls,momentum:clamp(momentum),position,opposition,rebound,trapRisk:trap,falseConsensusRisk:falseConsensus});
+  }
+  return out.sort((a,b)=>b.score-a.score);
 }
-
-/* 7) Counterfactual / Regret */
-function regret(chosen, alternatives, actual){
-  const hit=x=>normalizePrediction(x).includes(Number(actual));
-  return {
-    chosenHit:hit(chosen),
-    alternativeHits:(alternatives||[]).map(x=>({
-      label:safeName(x.label),hit:hit(x.prediction)
-    }))
-  };
+function buildCorrelation(rows){const o={};for(const a of rows||[]){o[a.name]={};for(const b of rows||[]){o[a.name][b.name]=a.series&&b.series?pearson2(a.series,b.series):0;}}return o;}
+function audit17(ctx){
+  const rows=ctx?.formulaRows||[];const corr=buildCorrelation(rows);const auth=v1092Authority({...ctx,correlation:corr});
+  const top3=auth.slice(0,3).map(x=>x.digit), best2=auth.slice(0,6).sort((a,b)=>b.score-a.score).slice(0,2).map(x=>x.digit);
+  return {windows:WINDOWS,correlation:corr,authority:auth,top3,best2,version:'V109.2'};
 }
-
-/* 8) Baseline comparison */
-function baselineDelta(engineRate, baselineRate){
-  return Number(engineRate||0)-Number(baselineRate||0);
-}
-
-/* 9) Anti-Echo */
-function independentSupport(supporters, corr, threshold=.72){
-  const selected=[];
-  (supporters||[]).forEach(s=>{
-    const ok=selected.every(t=>Math.abs(Number(corr?.[s]?.[t]||0))<threshold);
-    if(ok) selected.push(s);
-  });
-  return selected;
-}
-
-/* 10) Ablation Audit container */
-function ablationRecord(full, variants){
-  return {full:Number(full||0),variants:Object.freeze({...variants})};
-}
-
-/* 11) Market-specific audit container */
-function marketAudit(market, metrics){
-  return {market:safeName(market),metrics:Object.freeze({...metrics})};
-}
-
-/* 12) Long / Medium / Recent alignment */
-function multiHorizon(longRate,mediumRate,recentRate){
-  const l=clamp(longRate),m=clamp(mediumRate),r=clamp(recentRate);
-  const alignment=1-(Math.abs(l-m)+Math.abs(m-r)+Math.abs(l-r))/3;
-  return {long:l,medium:m,recent:r,alignment:clamp(alignment)};
-}
-
-/* 13) Position accuracy */
-function positionAuthority(positionRates){
-  const vals=Object.values(positionRates||{}).map(Number).filter(Number.isFinite);
-  return {mean:mean(vals),spread:vals.length?Math.max(...vals)-Math.min(...vals):0};
-}
-
-/* 14) Pair Gate Audit */
-function pairAudit(individualA,individualB,pairScore){
-  return {
-    individual:mean([Number(individualA)||0,Number(individualB)||0]),
-    pair:Number(pairScore)||0,
-    pairDelta:(Number(pairScore)||0)-mean([Number(individualA)||0,Number(individualB)||0])
-  };
-}
-
-/* 15) Main vs Targeted conflict */
-function mainTargetConflict(mainDigits,targetDigits){
-  const a=new Set(normalizePrediction(mainDigits));
-  const b=new Set(normalizePrediction(targetDigits));
-  const overlap=[...a].filter(x=>b.has(x));
-  return {main:[...a],targeted:[...b],overlap};
-}
-
-/* 16) Evidence Double Count
-   De-correlate repeated evidence instead of counting raw supporter count. */
-function evidenceIndependentWeight(supporters,corr,baseWeights={}){
-  const ordered=(supporters||[]).slice().sort((a,b)=>
-    Number(baseWeights[b]||0)-Number(baseWeights[a]||0));
-  const chosen=independentSupport(ordered,corr,.72);
-  const raw=ordered.reduce((s,k)=>s+Number(baseWeights[k]||0),0);
-  const independent=chosen.reduce((s,k)=>s+Number(baseWeights[k]||0),0);
-  return {
-    raw,
-    independent,
-    ratio:raw>EPS?independent/raw:1,
-    chosen:Object.freeze(chosen)
-  };
-}
-
-/* 17) Leakage Audit */
-function leakageAudit(events){
-  return (events||[]).map(e=>({
-    target:e.target,
-    trainingEnd:e.trainingEnd,
-    futureAccess:e.futureAccess===true,
-    pass:e.futureAccess!==true
-  }));
-}
-
-/* Unified digit authority — deliberately conservative:
-   quality-weighted evidence + multi-horizon alignment + independence,
-   with explicit penalties for repetition/contradiction.
-   It does not alter locked formulas. */
-function computeDigitAuthority(input){
-  const digits=[0,1,2,3,4,5,6,7,8,9];
-  const out={};
-  const formulaCorr=input.formulaCorr||{};
-  digits.forEach(d=>{
-    const ev=input.evidence?.[d]||{};
-    const supporters=ev.supporters||[];
-    const weights=ev.supporterWeights||{};
-    const indep=evidenceIndependentWeight(supporters,formulaCorr,weights);
-    const mh=multiHorizon(ev.long,ev.medium,ev.recent);
-    const position=positionAuthority(ev.position||{});
-    const repetitionPenalty=clamp(ev.repetitionPenalty||0);
-    const oppositionPenalty=clamp(ev.oppositionPenalty||0);
-    const trend=clamp((Number(ev.trend)||0)+.5);
-    const base=clamp(
-      .34*indep.independent+
-      .22*mh.alignment+
-      .16*mh.recent+
-      .10*position.mean+
-      .08*trend+
-      .10*clamp(ev.oos||0)
-    );
-    const final=clamp(base*(1-.45*repetitionPenalty)*(1-.45*oppositionPenalty));
-    out[d]=buildScoreTrace(d,{
-      raw:base,
-      penalties:1-final,
-      final
-    });
-  });
-  return out;
-}
-
-const API=Object.freeze({
-  version:V1091_VERSION,
-  scoreTrace:buildScoreTrace,
-  suppressionAudit,
-  pearson,
-  formulaCorrelationMatrix,
-  familyAdjustedWeight,
-  regimeWindows,
-  windowSensitivity,
-  regret,
-  baselineDelta,
-  independentSupport,
-  ablationRecord,
-  marketAudit,
-  multiHorizon,
-  positionAuthority,
-  pairAudit,
-  mainTargetConflict,
-  evidenceIndependentWeight,
-  leakageAudit,
-  computeDigitAuthority,
-  LOCKS:Object.freeze({
-    ui:true, cards:true, names:true, types:true,
-    calendar:true, dates:true, displayPercentages:true,
-    formulaBodies:true, targetedFormula:true
-  })
-});
-
-window.__V1091_BACKEND_AUDIT__=API;
-window.__V1091_BACKEND_AUDIT_PASS__=true;
-
-/* Regression guard: no visible DOM mutation by this upgrade. */
-window.__V1091_UI_LOCK__=Object.freeze({
-  cardsLocked:true,
-  headingsLocked:true,
-  lotteryNamesLocked:true,
-  lotteryTypesLocked:true,
-  calendarLocked:true,
-  dateFormatLocked:true
-});
+window.__V1092_CONFIG__=Object.freeze({windows:WINDOWS,lockedUI:true,lockedCalendar:true,lockedNames:true,lockedFormulaBodies:true});
+window.__V1092_AUDIT__=audit17;
+window.__V1092_LOCK_AUDIT__=Object.freeze({cardAppearance:false,cardLayout:false,lotteryNames:false,lotteryTypes:false,headings:false,dates:false,calendar:false,displayFormat:false,displayPercentages:false});
 })();
-</script>
-
+//--></script>
 </body>
-  </html>
+</html>
