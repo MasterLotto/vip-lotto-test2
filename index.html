@@ -1123,19 +1123,35 @@ function exactNikkeiCanonicalTitle(value){
   if(afternoon)return 'นิเคอิ บ่าย';
   return 'นิเคอิ';
 }
-function v1085LotteryNameLock(name){
+function v1086LotteryNameLock(name){
   let s=String(name||'')
     .replace(/\u200B|\u200C|\u200D|\uFEFF/g,'')
     .replace(/\s+/g,' ')
     .trim();
-  /* DISPLAY-NAME LOCK: remove the generic prefix 'หวย' from every lottery
-     title, except the explicitly protected Thai-stock title 'หวยหุ้นไทย'.
-     Remove the stray token 'พุ่น' as well. This affects visible naming only;
-     prediction data, formulas, scoring, schedules, and card structure remain untouched. */
-  if(s!=='หวยหุ้นไทย') s=s.replace(/^หวย\s*/,'').trim();
-  s=s.replace(/\s*พุ่น\s*/g,' ').replace(/\s+/g,' ').trim();
+  /* DISPLAY-NAME LOCK (STRICT): visible lottery names must not contain the
+     generic tokens 'หวย' or 'หุ้น'. The sole protected phrase is 'หุ้นไทย',
+     which remains exactly as the Thai-stock naming convention requires.
+     'พุ่น' is also forbidden. This is display naming only; prediction data,
+     formulas, scoring, schedules, and card structure remain untouched. */
+  const THAI_STOCK='หุ้นไทย';
+  const protectedThaiStock=s.includes(THAI_STOCK);
+  s=s.replace(/\s*พุ่น\s*/g,' ')
+    .replace(/\s*หวย\s*/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+  if(!protectedThaiStock){
+    s=s.replace(/\s*หุ้น\s*/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  }else{
+    s=s.replace(/\s+/g,' ').trim();
+    /* Preserve the Thai-stock token while still removing any stray generic
+       'หุ้น' token elsewhere in the same title. */
+    s=s.replace(/^(?!หุ้นไทย)หุ้น\s*/,'').trim();
+  }
   return s;
 }
+function v1085LotteryNameLock(name){ return v1086LotteryNameLock(name); }
 function formatDisplayTitle(rawName){
   rawName=v1085LotteryNameLock(rawName);
   const exactNikkei=exactNikkeiCanonicalTitle(rawName);
@@ -10665,6 +10681,7 @@ window.__V1085_DISPLAY_NAME_AUDIT__={
   predictionEngineUntouched:true,
   scheduleEngineUntouched:true
 };
+window.__V1086_AUDIT__={version:'V108.6',change:'strict visible-name lock: remove หวย and หุ้น from all lottery titles except preserve หุ้นไทย; remove พุ่น',uiMutation:false,cardAppearanceUntouched:true,formulaBodiesUntouched:true,noShareAPI:true};
 </script>
 <!-- V92 M2D AUDIT: 45-round active regime; long-history confirmation; directed positional transitions; exact oriented pairs; chronological OOS; display-only ascending pair ordering. -->
 <!-- V90 PLUS+ SOURCE AUDIT: 58 lottery types; 1,735 valid result records; 5 no-result entries excluded; 15 locked formulas preserved byte-for-byte; 5 new adaptive formulas added. -->
