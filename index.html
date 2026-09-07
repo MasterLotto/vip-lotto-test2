@@ -1171,6 +1171,13 @@ function formatDisplayTitle(rawName){
     return'อียิปต์';
   if(name==='ประชาชนลาว'||name==='ประชาชน ลาว')
     return'ประชาชน ลาว';
+  /* V110.4 DISPLAY EXCEPTION — ดาวโจนส์สตาร์ has no visible 'ปกติ'.
+     Presentation-only correction. Internal market identity, calendar, formulas,
+     pair rules and all other display contracts remain untouched. */
+  const displayCompact=name.toLowerCase().replace(/\s+/g,'');
+  if(displayCompact==='หุ้นดาวโจนส์สตาร์'||displayCompact==='ดาวโจนส์สตาร์')
+    return'ดาวโจนส์ สตาร์';
+
   const cleanLower=name
     .toLowerCase()
     .replace(/\s+/g,'');
@@ -1248,12 +1255,6 @@ function formatDisplayTitle(rawName){
     'สิงคโปร์','รัสเซีย','เยอรมัน','อังกฤษ','ดาวโจนส์'
   ];
   const market=normalMarkets.find(m=>compact.includes(m));
-  /* V110.4 DISPLAY NAME MICRO-FIX — Dow Jones STAR is a distinct public
-     label and must NOT inherit the generic normal-market "ปกติ" token.
-     Presentation only; internal market identity/calendar remain unchanged. */
-  if(market==='ดาวโจนส์' && compact.includes('สตาร์')){
-    return 'ดาวโจนส์ สตาร์';
-  }
   if(market&&!vip&&!compact.includes('ปกติ')){
     const rest=name.replace(new RegExp('^'+market),'').trim();
     return `${market} ปกติ${rest?' '+rest:''}`.trim();
@@ -1514,6 +1515,7 @@ const V106_DISPLAY_CASES=Object.freeze([
   ['เยอรมันเช้า','เยอรมัน เช้า','🇩🇪'],
   ['อังกฤษเช้า','อังกฤษ เช้า','🇬🇧'],
   ['ดาวโจนส์เช้า','ดาวโจนส์ เช้า','🇺🇸'],
+  ['หุ้นดาวโจนส์สตาร์','ดาวโจนส์ สตาร์','🇺🇸'],
   ['รัฐบาลเช้า','รัฐบาล เช้า','🇹🇭'],
   ['รัฐบาลไทยเช้า','รัฐบาลไทย เช้า','🇹🇭'],
   ['มาเลย์เช้า','มาเลย์ เช้า','🇲🇾'],
@@ -10850,254 +10852,233 @@ window.__V1103_LOCK_AUDIT__=Object.freeze({formulaBodiesUntouched:true,formula31
 })();
 </script>
 
-
-<script id="V1104_DEEP_ADAPTIVE_EVIDENCE_AUTHORITY">
+<script id="V1104_ADAPTIVE_PRECISION_LAYER">
 (function(){
 'use strict';
-/* V110.4 — DEEP ADAPTIVE EVIDENCE / DECISION AUTHORITY
-   Backend-only continuation of V110.3.
-   LOCKS: formula bodies, Formula 31, targeted-pair construction, UI/card
-   structure, names/types except the explicitly requested Dow STAR display
-   label, calendar/date logic, and public percentage formatting.
-   No new formula is introduced.
+/*
+ V110.4 — ADAPTIVE MARKET × FORMULA × HORIZON × DIGIT × PAIR PRECISION
+ Backend-only precision layer built on V110.3.
+ LOCKED: formula bodies, Formula 31, pair-construction rules, cards/UI,
+ names/types/headings, dates/calendar and public display percentages.
+ No new prediction formula is introduced.
 */
 const V1104_CFG=Object.freeze({
   version:'V110.4',
   horizons:Object.freeze([3,6,9,12,15,18,21,24,27,30]),
-  shrinkPrior:8,
-  positionWeights:Object.freeze([.18,.28,.27,.27]),
-  marketWeight:.18,
-  formulaWeight:.24,
-  horizonWeight:.24,
-  recentWeight:.16,
-  positionWeight:.10,
-  conflictWeight:.08,
-  tierBonusCap:5.0,
-  vetoCap:4.0,
-  marginCap:4.0,
-  pairCap:2.5,
-  pairIndependenceFloor:.35
+  priorTests:12,
+  horizonWeights:Object.freeze([.22,.17,.14,.11,.09,.07,.06,.05,.04,.05]),
+  positionWeight:.07,
+  conflictCap:3.0,
+  pairAdjustmentCap:3.5,
+  pairPriorTests:12
 });
 const v1104Clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number.isFinite(Number(v))?Number(v):50));
-const v1104R=v=>Math.round((Number(v)||0)*100)/100;
+const v1104Round=v=>Math.round((Number(v)||0)*100)/100;
 function v1104Arr(records){
   return (Array.isArray(records)?records:[]).filter(r=>typeof isResultRecord!=='function'||isResultRecord(r)).slice()
     .sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
 }
-function v1104Targets(r){
-  const n3=String(r?.n3??'').padStart(3,'0'), n2=String(r?.n2??'').padStart(2,'0');
-  if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2)) return [];
-  return [Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1])];
+function v1104TargetSet(r){
+  const n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0');
+  if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2))return new Set();
+  return new Set([Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1])]);
 }
-function v1104Has(r,d){return v1104Targets(r).includes(Number(d));}
-function v1104PosRate(arr,d){
-  if(!arr.length)return {score:50,positions:[50,50,50,50]};
-  const den=[0,0,0,0],hit=[0,0,0,0];
-  arr.forEach(r=>v1104Targets(r).forEach((x,i)=>{den[i]++;if(x===Number(d))hit[i]++;}));
-  const p=den.map((n,i)=>n?100*hit[i]/n:50);
-  return {score:p.reduce((s,x,i)=>s+x*V1104_CFG.positionWeights[i],0),positions:p};
+function v1104DigitRate(arr,d,w){
+  const a=arr.slice(-w); if(!a.length)return 50;
+  let h=0; for(const r of a)if(v1104TargetSet(r).has(Number(d)))h++;
+  return 100*h/a.length;
 }
-function v1104Shrink(raw,n,prior=V1104_CFG.shrinkPrior,base=50){
-  const nn=Math.max(0,Number(n)||0);
-  return base+(Number(raw)-base)*(nn/(nn+prior));
+function v1104PositionRate(arr,d){
+  if(!arr.length)return {score:50,positions:{topTens:50,topUnits:50,bottomTens:50,bottomUnits:50}};
+  const pos=[0,0,0,0],total=[0,0,0,0];
+  for(const r of arr){
+    const n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0'),ds=[n3[1],n3[2],n2[0],n2[1]];
+    for(let i=0;i<4;i++)if(/\d/.test(ds[i])){total[i]++;if(Number(ds[i])===Number(d))pos[i]++;}
+  }
+  const rates=pos.map((x,i)=>total[i]?100*x/total[i]:50);
+  return {score:rates.reduce((a,b)=>a+b,0)/4,positions:{topTens:rates[0],topUnits:rates[1],bottomTens:rates[2],bottomUnits:rates[3]}};
 }
-function v1104FormulaH(records,name){
-  try{return getFormulaHistory(v1104Arr(records),name)||[];}catch(e){return[];}
+function v1104HorizonProfile(arr,d){
+  const rates=V1104_CFG.horizons.map(w=>v1104DigitRate(arr,d,w));
+  const usable=rates.map((v,i)=>arr.length>=V1104_CFG.horizons[i]?v:null).filter(v=>v!=null);
+  let sw=0,ss=0;
+  rates.forEach((v,i)=>{if(arr.length>=V1104_CFG.horizons[i]){const w=V1104_CFG.horizonWeights[i];sw+=w;ss+=w*v;}});
+  const weighted=sw?ss/sw:50,mean=usable.length?usable.reduce((a,b)=>a+b,0)/usable.length:50;
+  const dev=usable.length?Math.sqrt(usable.reduce((s,v)=>s+(v-mean)*(v-mean),0)/usable.length):25;
+  const short=rates.slice(0,4).filter((v,i)=>arr.length>=V1104_CFG.horizons[i]);
+  const long=rates.slice(4).filter((v,i)=>arr.length>=V1104_CFG.horizons[i+4]);
+  const shortMean=short.length?short.reduce((a,b)=>a+b,0)/short.length:50,longMean=long.length?long.reduce((a,b)=>a+b,0)/long.length:50;
+  return {rates,weighted,stability:v1104Clamp(100-dev*1.55),short:shortMean,long:longMean,regime:shortMean-longMean};
 }
-function v1104HorizonStats(h){
-  const rates=V1104_CFG.horizons.map(w=>{
-    const a=h.slice(-w);
-    if(!a.length)return 50;
-    return 100*a.filter(x=>x.hit).length/a.length;
-  });
-  return rates;
-}
-function v1104FormulaEvidence(records,name){
-  const h=v1104FormulaH(records,name);
-  if(!h.length)return {score:50,recent:50,short:50,long:50,stability:50,horizons:[],tests:0};
-  const rates=v1104HorizonStats(h);
+function v1104Shrink(raw,n){const tests=Math.max(0,Number(n)||0),prior=V1104_CFG.priorTests;return (v1104Clamp(raw)*tests+50*prior)/(tests+prior);}
+function v1104FormulaMarketReliability(records,name){
+  let h=[];try{h=getFormulaHistory(v1104Arr(records),name)||[];}catch(e){h=[];}
+  if(!h.length)return {score:50,tests:0,horizons:V1104_CFG.horizons.map(()=>50),shrunk:50,stability:50,recent:50};
+  const rates=V1104_CFG.horizons.map(w=>{const a=h.slice(-w);return a.length?100*a.filter(x=>x.hit).length/a.length:50;});
   const valid=rates.filter((v,i)=>h.length>=V1104_CFG.horizons[i]);
-  const overall=valid.length?valid.reduce((a,b)=>a+b,0)/valid.length:50;
-  const recentSet=h.slice(-Math.min(6,h.length));
-  const recent=100*recentSet.filter(x=>x.hit).length/recentSet.length;
-  const short=.50*rates[0]+.30*rates[1]+.20*rates[2];
-  const long=.30*rates[7]+.30*rates[8]+.40*rates[9];
-  const vals=valid.length?valid:[overall];
-  const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
-  const dev=Math.sqrt(vals.reduce((s,v)=>s+(v-mean)*(v-mean),0)/vals.length);
-  const stability=v1104Clamp(100-dev*1.7);
-  const score=.42*short+.30*long+.18*recent+.10*stability;
-  return {score:v1104R(score),recent:v1104R(recent),short:v1104R(short),long:v1104R(long),stability:v1104R(stability),horizons:rates.map(v=>v1104R(v)),tests:h.length};
+  const raw=valid.length?valid.reduce((s,v)=>s+v,0)/valid.length:rates[0],recentArr=h.slice(-Math.min(6,h.length));
+  const recent=recentArr.length?100*recentArr.filter(x=>x.hit).length/recentArr.length:50,mean=valid.length?raw:50;
+  const dev=valid.length?Math.sqrt(valid.reduce((s,v)=>s+(v-mean)*(v-mean),0)/valid.length):25;
+  const stability=v1104Clamp(100-dev*1.55);
+  const short=.34*rates[0]+.27*rates[1]+.22*rates[2]+.17*rates[3];
+  const long=.28*rates[4]+.22*rates[5]+.18*rates[6]+.13*rates[7]+.10*rates[8]+.09*rates[9];
+  const horizon=.58*short+.42*long,shrunk=v1104Shrink(horizon,h.length),score=.50*shrunk+.27*recent+.23*stability;
+  return {score:v1104Clamp(score),tests:h.length,horizons:rates,recent,stability,horizonScore:horizon,shrunk};
 }
-function v1104FormulaRank(records,names){
-  return (names||[]).map(name=>({name,ev:v1104FormulaEvidence(records,name)}))
-    .sort((a,b)=>b.ev.score-a.ev.score||b.ev.recent-a.ev.recent||a.name.localeCompare(b.name));
+function v1104RankFormula(records,names){
+  return (names||[]).map(name=>({name,rel:v1104FormulaMarketReliability(records,name)}))
+    .sort((a,b)=>b.rel.score-a.rel.score||b.rel.recent-a.rel.recent||a.name.localeCompare(b.name));
 }
-function v1104Tier(rank){return rank<=3?1:rank<=6?.58:.30;}
 function v1104Pearson(a,b){
-  const n=Math.min(a?.length||0,b?.length||0); if(n<4)return 0;
-  let ma=0,mb=0;for(let i=0;i<n;i++){ma+=a[i];mb+=b[i];}ma/=n;mb/=n;
-  let xy=0,xx=0,yy=0;
-  for(let i=0;i<n;i++){const x=a[i]-ma,y=b[i]-mb;xy+=x*y;xx+=x*x;yy+=y*y;}
+  const n=Math.min(a?.length||0,b?.length||0);if(n<5)return 0;
+  const x=a.slice(-n).map(Number),y=b.slice(-n).map(Number),mx=x.reduce((s,v)=>s+v,0)/n,my=y.reduce((s,v)=>s+v,0)/n;
+  let xy=0,xx=0,yy=0;for(let i=0;i<n;i++){const dx=x[i]-mx,dy=y[i]-my;xy+=dx*dy;xx+=dx*dx;yy+=dy*dy;}
   return xx&&yy?xy/Math.sqrt(xx*yy):0;
 }
-function v1104DigitFormulaEvidence(arr,names,d){
-  const ranked=v1104FormulaRank(arr,names), chosen=[];
-  ranked.forEach((f,idx)=>{
-    const h=v1104FormulaH(arr,f.name); if(!h.length)return;
-    const latest=h[h.length-1];
-    if(!(Array.isArray(latest?.predicted)&&latest.predicted.map(Number).includes(Number(d))))return;
-    const series=h.map(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d))?1:0);
-    let corr=0;
-    if(chosen.length)corr=Math.max(...chosen.map(x=>Math.abs(v1104Pearson(x.series,series))));
-    const indep=Math.max(V1104_CFG.pairIndependenceFloor,1-Math.max(0,corr-.45));
-    const tier=v1104Tier(idx+1);
-    chosen.push({name:f.name,rank:idx+1,tier,reliability:f.ev.score,series,independence:indep});
-  });
-  if(!chosen.length)return {score:50,support:[],independent:0};
-  const usable=chosen.slice(0,10);
-  let sw=0,ss=0;
-  usable.forEach(x=>{
-    const w=x.tier*(.55+.45*x.reliability/100)*x.independence;
-    sw+=w;ss+=x.reliability*w;
-  });
-  return {score:sw?ss/sw:50,support:chosen,independent:usable.reduce((s,x)=>s+x.independence,0)/usable.length};
-}
-function v1104MarketState(records,lotteryName){
-  const s=String(lotteryName||'').toLowerCase().replace(/\s+/g,'');
-  const market=(typeof v1086MarketIdentity==='function')?v1086MarketIdentity(lotteryName):s;
-  return {key:JSON.stringify(market),identity:market};
-}
-function v1104Recent(arr,d,w){const a=arr.slice(-Math.min(w,arr.length));return a.length?100*a.filter(r=>v1104Has(r,d)).length/a.length:50;}
-function v1104Gap(arr,d){
-  let g=0;for(let i=arr.length-1;i>=0;i--){if(v1104Has(arr[i],d))break;g++;}return g;
-}
-function v1104Rebound(arr,d){
-  const gap=v1104Gap(arr,d); if(gap<3)return 0;
-  return Math.min(4.0,(gap-2)*.72);
-}
-function v1104Conflict(arr,d,names){
-  const vals=[];
-  (names||[]).forEach(name=>{
-    const h=v1104FormulaH(arr,name); if(!h.length)return;
-    const recent=h.slice(-Math.min(6,h.length));
-    if(!recent.length)return;
-    vals.push(100*recent.filter(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d))).length/recent.length);
-  });
-  if(vals.length<3)return 0;
-  const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
-  const dev=Math.sqrt(vals.reduce((s,v)=>s+(v-mean)*(v-mean),0)/vals.length);
-  return Math.min(V1104_CFG.vetoCap,Math.max(0,(dev-18)*.10));
-}
-function v1104MarginBonus(sorted){
-  if(sorted.length<2)return 0;
-  const gap=Number(sorted[0].score)-Number(sorted[1].score);
-  return v1104Clamp(gap,0,V1104_CFG.marginCap);
+function v1104DigitEvidence(records,names,d){
+  const arr=v1104Arr(records),ranked=v1104RankFormula(arr,names),supports=[];
+  for(let i=0;i<ranked.length;i++){
+    const f=ranked[i];let hist=[];try{hist=(getFormulaHistory(arr,f.name)||[]).map(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d))?1:0);}catch(e){hist=[];}
+    if(!hist.length||!hist[hist.length-1])continue;
+    let redundancy=0;for(const u of supports)redundancy=Math.max(redundancy,Math.abs(v1104Pearson(hist,u.series)));
+    supports.push({name:f.name,rank:i+1,reliability:f.rel.score,series:hist,independent:Math.max(.30,1-Math.max(0,redundancy-.55)),tierWeight:i<3?1:(i<6?.58:.30)});
+  }
+  if(!supports.length)return {score:50,supports:[]};
+  let sw=0,ss=0;for(const s of supports.slice(0,8)){const w=s.tierWeight*s.independent*(.55+.45*s.reliability/100);sw+=w;ss+=s.reliability*w;}
+  return {score:sw?ss/sw:50,supports};
 }
 function v1104Apply(base,records,auditData,formulaNames){
-  const src=base||{}, rows=Array.isArray(src.rows)?src.rows:[];
-  if(rows.length!==10)return src;
-  const arr=v1104Arr(records), names=(formulaNames||[]).filter(x=>x&&!String(x).startsWith('__V'));
-  const market=v1104MarketState(arr,auditData?.lotteryName||auditData?.name||'');
-  const ranked=v1104FormulaRank(arr,names);
-  const metrics=rows.map(row=>{
-    const d=Number(row.digit), fe=v1104DigitFormulaEvidence(arr,names,d), pos=v1104PosRate(arr,d);
-    const r3=v1104Recent(arr,d,3),r6=v1104Recent(arr,d,6),r9=v1104Recent(arr,d,9),r12=v1104Recent(arr,d,12);
-    const recent=.42*r3+.30*r6+.18*r9+.10*r12;
-    const overall=arr.length?100*arr.filter(r=>v1104Has(r,d)).length/arr.length:50;
-    const shrunk=v1104Shrink(overall,arr.length);
-    const rebound=v1104Rebound(arr,d);
-    const conflict=v1104Conflict(arr,d,names);
-    const stableSupport=fe.support.filter(x=>x.rank<=3).length;
-    const challengerSupport=fe.support.filter(x=>x.rank>=4&&x.rank<=6).length;
-    const tierBonus=v1104Clamp((fe.score-50)/50*V1104_CFG.tierBonusCap,-V1104_CFG.tierBonusCap,V1104_CFG.tierBonusCap);
-    const raw=(Number(row.score)||50)
-      +V1104_CFG.marketWeight*(shrunk-50)
-      +V1104_CFG.formulaWeight*(fe.score-50)
-      +V1104_CFG.horizonWeight*((.55*fe.support.reduce((s,x)=>s+x.reliability,0)/(fe.support.length||1))-50)
-      +V1104_CFG.recentWeight*(recent-50)
-      +V1104_CFG.positionWeight*(pos.score-50)
-      +tierBonus
-      +rebound
-      -V1104_CFG.conflictWeight*conflict;
-    return {...row,score:v1104R(v1104Clamp(raw)),selectionQuality:v1104R(v1104Clamp(raw)),
-      v1104:{market:market.identity,formulaEvidence:v1104R(fe.score),independentFormulaSupport:v1104R(fe.independent*100),
-        stableSupport,challengerSupport,recent3:v1104R(r3),recent6:v1104R(r6),recent9:v1104R(r9),recent12:v1104R(r12),
-        recentFusion:v1104R(recent),positionScore:v1104R(pos.score),positionRates:pos.positions.map(v1104R),
-        shrunkBase:v1104R(shrunk),reboundBonus:v1104R(rebound),conflictVeto:v1104R(conflict),
-        tierBonus:v1104R(tierBonus),formulaSupport:fe.support.slice(0,8).map(x=>({name:x.name,rank:x.rank,
-          tier:x.tier,reliability:v1104R(x.reliability),independence:v1104R(x.independence)}))}};
-  }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.selectionQuality)-Number(a.selectionQuality)||Number(a.digit)-Number(b.digit));
-  const margin=v1104MarginBonus(metrics);
-  const top3=metrics.slice(0,3).map(x=>x.digit);
-  const selected=metrics.slice(0,2);
-  const errorAttribution=Object.fromEntries(metrics.map(x=>[String(x.digit),{
-    formulaContribution:v1104R((x.v1104?.formulaEvidence||50)-50),
-    recentContribution:v1104R((x.v1104?.recentFusion||50)-50),
-    positionContribution:v1104R((x.v1104?.positionScore||50)-50),
-    marketBaseContribution:v1104R((x.v1104?.shrunkBase||50)-50),
-    rebound:v1104R(x.v1104?.reboundBonus||0),
-    conflictVeto:v1104R(x.v1104?.conflictVeto||0)
-  }]));
-  return {...src,rows:metrics,top3,selected,margin:v1104R(margin),
-    v98:{...(src.v98||{}),version:'V110.4 DEEP ADAPTIVE EVIDENCE AUTHORITY',
-      authority:'MARKET × FORMULA × HORIZON × DIGIT × POSITION × DECISION',
-      layers:['market-specific formula reliability','exact 3/6/9/12/15/18/21/24/27/30 horizons',
-        'shrinkage calibration','position-aware evidence','independence de-duplication',
-        'rebound detector','bounded conflict veto','final decision margin'],formulaBodiesUntouched:true,cardAppearanceUntouched:true},
-    finalGate:{...(src.finalGate||{}),v1104DeepAuthority:true,formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false},
-    selectionAudit:{...(src.selectionAudit||{}),version:'V110.4 DEEP ADAPTIVE EVIDENCE AUTHORITY',
-      horizons:V1104_CFG.horizons,marketIdentity:market.identity,formulaRank:ranked.map((x,i)=>({name:x.name,rank:i+1,score:v1104R(x.ev.score)})),
-      finalMargin:v1104R(margin),errorAttribution}};
+  const src=base||{},rows=Array.isArray(src.selectionAuthority)?src.selectionAuthority:[];if(rows.length!==10)return src;
+  const arr=v1104Arr(records),names=(formulaNames||[]).filter(x=>x&&!String(x).startsWith('__V'));
+  const market=typeof v1086MarketIdentity==='function'?v1086MarketIdentity(auditData?.lotteryName||auditData?.name||''):String(auditData?.lotteryName||'');
+  const fRank=v1104RankFormula(arr,names),metrics=rows.map(row=>{
+    const d=Number(row.digit),ev=v1104DigitEvidence(arr,names,d),hp=v1104HorizonProfile(arr,d),pos=v1104PositionRate(arr,d);
+    const historical=v1104DigitRate(arr,d,Math.min(30,arr.length||30)),recent=v1104DigitRate(arr,d,Math.min(6,arr.length||6));
+    const supportScore=ev.score,positionCentered=(pos.score-50)/50;
+    const regimePenalty=hp.regime<-14?1.8:0;
+    const conflict=Math.min(V1104_CFG.conflictCap,Math.max(0,(50-supportScore)*(historical<50?.04:.018)));
+    const evidence=.43*supportScore+.25*hp.weighted+.20*historical+.12*recent;
+    const adj=v1104Clamp((evidence-50)/50*4.5,-4.5,4.5)+positionCentered*V1104_CFG.positionWeight*10-regimePenalty-conflict;
+    const score=v1104Clamp(v1104Clamp(row.score)+adj);
+    return {...row,score:v1104Round(score),selectionQuality:v1104Round(score),v1104:{market:`${market.market||market}|${market.type||''}`,formulaMarketReliability:v1104Round(supportScore),horizonWeighted:v1104Round(hp.weighted),horizonRates:hp.rates.map(v1104Round),horizonStability:v1104Round(hp.stability),positionScore:v1104Round(pos.score),positions:Object.fromEntries(Object.entries(pos.positions).map(([k,v])=>[k,v1104Round(v)])),historical30:v1104Round(historical),recent6:v1104Round(recent),supportCount:ev.supports.length,conflict:v1104Round(conflict),regimePenalty:v1104Round(regimePenalty),supporters:ev.supports.slice(0,8).map(x=>({name:x.name,rank:x.rank,reliability:v1104Round(x.reliability),independence:v1104Round(x.independent),tierWeight:x.tierWeight}))}};
+  }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.proofScore)-Number(a.proofScore)||Number(a.digit)-Number(b.digit));
+  const top3=metrics.slice(0,3).map(x=>x.digit),best2=metrics.slice(0,2).map(x=>x.digit),selected=metrics.slice(0,2),margin=selected.length===2?v1104Round(selected[0].score-selected[1].score):0;
+  return {...src,selectionAuthority:metrics,top3,best2,selected,margin,selectionAudit:{...(src.selectionAudit||{}),version:'V110.4 ADAPTIVE PRECISION',marketIdentity:market,marketFormulaReliability:Object.fromEntries(fRank.map(x=>[x.name,v1104Round(x.rel.score)])),formulaTests:Object.fromEntries(fRank.map(x=>[x.name,x.rel.tests])),horizons:V1104_CFG.horizons,positionAware:true,shrinkagePrior:V1104_CFG.priorTests,evidenceDeDup:true,conflictCap:V1104_CFG.conflictCap,finalMargin:margin,stableTierEqual:true,challengerTierEqual:true,everyDigitCanWin:true}};
 }
 const priorClean=window.v98CleanAuthority;
-if(typeof priorClean==='function'){
-  window.v98CleanAuthority=function(base,records,auditData,formulaNames){
-    const out=priorClean(base,records,auditData,formulaNames);
-    const up=v1104Apply(out,records,auditData,formulaNames);
-    window.__V1104_DIGIT_AUTHORITY__=up.selectionAuthority||up.rows||[];
-    window.__V1104_SELECTION_AUDIT__=up.selectionAudit||{};
-    return up;
-  };
-}
+if(typeof priorClean==='function')window.v98CleanAuthority=function(base,records,auditData,formulaNames){const out=priorClean(base,records,auditData,formulaNames),up=v1104Apply(out,records,auditData,formulaNames);window.__V1104_DIGIT_AUTHORITY__=up.selectionAuthority;window.__V1104_MARKET_FORMULA_RELIABILITY__=up.selectionAudit?.marketFormulaReliability||{};window.__V1104_ERROR_ATTRIBUTION__={market:up.selectionAudit?.marketIdentity||'',digitAuthority:up.selectionAuthority?.map(x=>({digit:x.digit,score:x.score,v1104:x.v1104}))||[],margin:up.margin||0};return up;};
 const priorPairs=window.generateFormulaPairs;
-if(typeof priorPairs==='function'){
-  window.generateFormulaPairs=function(mainDigit,otherDigit,auditMap,lotteryName,records){
-    const base=priorPairs(mainDigit,otherDigit,auditMap,lotteryName,records);
-    if(!Array.isArray(base)||!base.length)return base;
-    const arr=v1104Arr(records), a=Number(mainDigit), b=Number(otherDigit);
-    const out=base.map(p=>{
-      const pair=String(p.pair||'').padStart(2,'0'); if(!/^\d{2}$/.test(pair))return p;
-      let n=0,h=0,rn=0,rh=0;
-      for(let i=0;i<arr.length-1;i++){
-        const next=v1104Targets(arr[i+1]);
-        n++; if(next.includes(Number(pair[0]))&&next.includes(Number(pair[1])))h++;
-        if(i>=arr.length-7){rn++;if(next.includes(Number(pair[0]))&&next.includes(Number(pair[1])))rh++;}
-      }
-      const long=n?100*h/n:50, recent=rn?100*rh/rn:long;
-      const pairInd=v1104Pearson(
-        arr.map(r=>v1104Has(r,a)?1:0),
-        arr.map(r=>v1104Has(r,b)?1:0)
-      );
-      const independence=Math.max(V1104_CFG.pairIndependenceFloor,1-Math.abs(pairInd));
-      const signal=.65*long+.35*recent;
-      const adj=v1104Clamp((signal-50)/50*V1104_CFG.pairCap,-V1104_CFG.pairCap,V1104_CFG.pairCap)*independence;
-      const score=v1104R(v1104Clamp((Number(p.score)||50)+adj));
-      return {...p,score,meta:{...(p.meta||{}),v1104Pair:{pair,tests:n,hits:h,long:v1104R(long),recent:v1104R(recent),
-        independence:v1104R(independence*100),adjustment:v1104R(adj),market:v1104MarketState(arr,lotteryName).identity,
-        stage:'two-stage empirical + independence calibration'}}};
-    }).sort((x,y)=>Number(y.score)-Number(x.score)||String(x.pair).localeCompare(String(y.pair)));
-    return out;
-  };
-}
+if(typeof priorPairs==='function')window.generateFormulaPairs=function(mainDigit,otherDigit,auditMap,lotteryName,records){
+  const base=priorPairs(mainDigit,otherDigit,auditMap,lotteryName,records);if(!Array.isArray(base)||!base.length)return base;
+  const arr=v1104Arr(records);
+  const pairStats=pair=>{const key=String(pair||'').padStart(2,'0');if(!/^\d{2}$/.test(key))return {score:50,tests:0,hits:0,recent:50};let tests=0,hits=0,recentTests=0,recentHits=0;
+    for(let i=0;i<arr.length-1;i++){const r=arr[i+1],n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0'),hit=n2===key||n3.includes(key);tests++;if(hit)hits++;if(i>=arr.length-7){recentTests++;if(hit)recentHits++;}}
+    const raw=tests?100*hits/tests:50,recent=recentTests?100*recentHits/recentTests:raw,shrunk=(raw*tests+50*V1104_CFG.pairPriorTests)/(tests+V1104_CFG.pairPriorTests);
+    return {score:.72*shrunk+.18*recent+.10*50,tests,hits,recent};};
+  const out=base.map(p=>{const st=pairStats(p.pair),meta=p.meta||{},indep=Math.max(.35,1-Math.abs(Number(meta?.independentEvidence||50)-50)/100),adj=v1104Clamp((st.score-50)/50*V1104_CFG.pairAdjustmentCap*indep,-V1104_CFG.pairAdjustmentCap,V1104_CFG.pairAdjustmentCap);return {...p,score:v1104Round(v1104Clamp((Number(p.score)||50)+adj)),meta:{...meta,v1104PairPrecision:{version:'V110.4',market:lotteryName||'',pair:p.pair,tests:st.tests,hits:st.hits,empirical:v1104Round(st.score),recent:v1104Round(st.recent),independence:v1104Round(indep),adjustment:v1104Round(adj)}}};}).sort((a,b)=>Number(b.score)-Number(a.score)||String(a.pair).localeCompare(String(b.pair)));
+  window.__V1104_PAIR_AUDIT__={market:lotteryName||'',pairs:out.map(x=>({pair:x.pair,score:x.score,precision:x.meta?.v1104PairPrecision}))};return out;
+};
 window.__V1104_CONFIG__=V1104_CFG;
-window.__V1104_LOCK_AUDIT__=Object.freeze({
-  formulaBodiesUntouched:true,formula31Untouched:true,targetedPairConstructionUntouched:true,
-  uiMutation:false,cardAppearanceUntouched:true,calendarUntouched:true,
-  publicPercentageUntouched:true,onlyRequestedDisplayNameChanged:'ดาวโจนส์ สตาร์',
-  exactHorizonSet:true,shrinkage:true,positionAware:true,independenceDedup:true,
-  reboundBounded:true,conflictVetoBounded:true,decisionMarginBounded:true,errorAttribution:true
-});
+window.__V1104_LOCK_AUDIT__=Object.freeze({backendOnly:true,formulaBodiesUntouched:true,formula31Untouched:true,pairConstructionUntouched:true,cardAppearanceUntouched:true,cardLayoutUntouched:true,namesUntouched:true,typesUntouched:true,headingsUntouched:true,datesUntouched:true,calendarUntouched:true,displayUntouched:true,publicPercentagesUntouched:true,marketFormulaHorizonLearning:true,shrinkage:true,positionAware:true,evidenceDeDup:true,pairTwoStage:true,pairIndependence:true,finalMargin:true,errorAttribution:true});
+window.__V1104_DISPLAY_DOW_STAR_AUDIT__=Object.freeze({input:'หุ้นดาวโจนส์สตาร์',expected:'ดาวโจนส์ สตาร์',actual:typeof formatDisplayTitle==='function'?formatDisplayTitle('หุ้นดาวโจนส์สตาร์'):'',pass:typeof formatDisplayTitle==='function'&&formatDisplayTitle('หุ้นดาวโจนส์สตาร์')==='ดาวโจนส์ สตาร์'});
+})();
+</script>
+
+
+<script id="V1105_POSITION_LEAKAGE_AUDIT">
+(function(){
+'use strict';
+/*
+ V110.5 — POSITION LEAKAGE AUDIT (DIAGNOSTIC ONLY)
+ Purpose: distinguish a genuinely wrong digit from a correct digit that lands
+ only in the hundreds place. This layer NEVER changes Score, Ranking, TOP 3,
+ Best-2, formulas, pair construction, cards, calendar, names, or percentages.
+ Definitions:
+   TARGETABLE = actual top-tens/top-units/bottom-tens/bottom-units.
+   HUNDREDS-ONLY = predicted digit equals top hundreds and is absent from all
+                   targetable positions.
+   TRUE-MISS = predicted digit is absent from all five result positions.
+   MIXED = a round contains both a targetable selected digit and a
+           hundreds-only selected digit.
+*/
+const V1105_CFG=Object.freeze({version:'V110.5',maxFormulaDigits:2,windows:Object.freeze([5,10,20,30])});
+const v1105Clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number.isFinite(Number(v))?Number(v):0));
+const v1105Pct=(n,d)=>d?Math.round(n/d*10000)/100:0;
+function v1105ResultPositions(r){
+  const n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0');
+  if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2))return null;
+  return {hundreds:Number(n3[0]),target:[Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1])],all:[Number(n3[0]),Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1])]};
+}
+function v1105AnalyzeHistory(history){
+  const out={tests:0,selected:0,targetable:0,hundredsOnly:0,trueMiss:0,actualMatches:0,roundLeak:0,pureLeak:0,mixed:0,roundTargetable:0,roundTrueMiss:0};
+  (Array.isArray(history)?history:[]).forEach(item=>{
+    const p=Array.isArray(item?.predicted)?item.predicted.slice(0,2).map(Number).filter(Number.isFinite):[];
+    const pos=v1105ResultPositions({n3:item?.actualN3,n2:item?.actualN2});
+    if(!p.length||!pos)return;
+    const preds=[...new Set(p.filter(d=>d>=0&&d<=9))];
+    if(!preds.length)return;
+    out.tests++;out.selected+=preds.length;
+    let rowTarget=0,rowHundreds=0,rowWrong=0;
+    preds.forEach(d=>{
+      const target=pos.target.includes(d),hundreds=d===pos.hundreds;
+      if(target){out.targetable++;rowTarget++;}
+      else if(hundreds){out.hundredsOnly++;rowHundreds++;}
+      else{out.trueMiss++;rowWrong++;}
+      if(pos.all.includes(d))out.actualMatches++;
+    });
+    if(rowTarget)out.roundTargetable++;
+    if(rowHundreds){out.roundLeak++;if(!rowTarget)out.pureLeak++;else out.mixed++;}
+    if(!rowTarget&&!rowHundreds)out.roundTrueMiss++;
+  });
+  return {...out,selectionLeakRate:v1105Pct(out.hundredsOnly,out.selected),selectionTargetRate:v1105Pct(out.targetable,out.selected),selectionMissRate:v1105Pct(out.trueMiss,out.selected),leakAmongMatches:v1105Pct(out.hundredsOnly,out.hundredsOnly+out.targetable),roundLeakRate:v1105Pct(out.roundLeak,out.tests),pureLeakRate:v1105Pct(out.pureLeak,out.tests),mixedRate:v1105Pct(out.mixed,out.tests),roundTargetRate:v1105Pct(out.roundTargetable,out.tests),roundTrueMissRate:v1105Pct(out.roundTrueMiss,out.tests)};
+}
+function v1105Merge(stats){
+  const keys=['tests','selected','targetable','hundredsOnly','trueMiss','actualMatches','roundLeak','pureLeak','mixed','roundTargetable','roundTrueMiss'];
+  const o={};keys.forEach(k=>o[k]=0);(stats||[]).forEach(s=>keys.forEach(k=>o[k]+=Number(s?.[k])||0));
+  return {...o,selectionLeakRate:v1105Pct(o.hundredsOnly,o.selected),selectionTargetRate:v1105Pct(o.targetable,o.selected),selectionMissRate:v1105Pct(o.trueMiss,o.selected),leakAmongMatches:v1105Pct(o.hundredsOnly,o.hundredsOnly+o.targetable),roundLeakRate:v1105Pct(o.roundLeak,o.tests),pureLeakRate:v1105Pct(o.pureLeak,o.tests),mixedRate:v1105Pct(o.mixed,o.tests),roundTargetRate:v1105Pct(o.roundTargetable,o.tests),roundTrueMissRate:v1105Pct(o.roundTrueMiss,o.tests)};
+}
+function v1105Type(name){
+  const id=typeof v1086MarketIdentity==='function'?v1086MarketIdentity(name):{market:String(name||''),type:''};
+  return `${id.market||name}|${id.type||''}`;
+}
+function v1105TypeLabel(key){const p=String(key||'').split('|');return p[1]?`${p[0]} — ${p[1]}`:p[0]||'อื่นๆ';}
+function v1105Build(groups,auditMap){
+  const byLottery=[],byType={},global=[];
+  Object.keys(groups||{}).forEach(name=>{
+    const audit=auditMap?.[name]||{};const formulaStats=[];
+    Object.keys(audit).forEach(f=>{
+      const s=v1105AnalyzeHistory(audit[f]?.history||[]);if(s.tests)formulaStats.push({formula:f,stats:s});
+    });
+    const total=v1105Merge(formulaStats.map(x=>x.stats));
+    if(total.tests)byLottery.push({name,type:v1105Type(name),stats:total,formulas:formulaStats});
+    formulaStats.forEach(x=>{const key=v1105Type(name);(byType[key]??=[]).push(x.stats);global.push(x.stats);});
+  });
+  const typeRows=Object.keys(byType).map(type=>({type,stats:v1105Merge(byType[type])})).sort((a,b)=>b.stats.leakAmongMatches-a.stats.leakAmongMatches||a.type.localeCompare(b.type));
+  return {byLottery:byLottery.sort((a,b)=>b.stats.leakAmongMatches-a.stats.leakAmongMatches||a.name.localeCompare(b.name)),byType:typeRows,global:v1105Merge(global)};
+}
+function v1105LeakClass(s){if(!s?.tests)return 'flat';if(s.leakAmongMatches>=25||s.roundLeakRate>=30)return 'bad';if(s.leakAmongMatches>=12||s.roundLeakRate>=18)return 'warn';return 'good';}
+function v1105LeakLabel(s){if(!s?.tests)return 'NO DATA';if(s.leakAmongMatches>=25||s.roundLeakRate>=30)return 'หลุดสูง';if(s.leakAmongMatches>=12||s.roundLeakRate>=18)return 'ควรเฝ้าระวัง';return 'หลุดต่ำ';}
+function v1105Row(label,s,extra=''){
+  return `<tr><td>${esc(String(label))}</td><td>${s.tests}</td><td>${s.selected}</td><td>${s.targetable} (${s.selectionTargetRate}%)</td><td>${s.hundredsOnly} (${s.selectionLeakRate}%)</td><td>${s.trueMiss} (${s.selectionMissRate}%)</td><td>${s.leakAmongMatches}%</td><td>${s.roundLeakRate}%</td><td>${s.pureLeakRate}%</td><td><span class="ea-status ${v1105LeakClass(s)}">${v1105LeakLabel(s)}</span></td>${extra}</tr>`;
+}
+function v1105Table(title,head,body){return `<div class="ea-table-wrap v1105-wrap"><h4 class="v1105-title">${title}</h4><table class="ea-table v1105-table"><thead><tr>${head.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${body||`<tr><td colspan="${head.length}">ไม่มีข้อมูลเพียงพอ</td></tr>`}</tbody></table></div>`;}
+function v1105RenderAuditBlock(groups){
+  const data=v1105Build(groups,currentAuditDataMap||{}),g=data.global;
+  let html=`<section class="v1105-panel"><div class="ea-head"><div><div class="ea-title">🎯 Position Leakage Audit — ตรวจจับ “เลขถูกแต่หลุดหลักร้อย”</div><div class="ea-sub">วัดเฉพาะผลย้อนหลัง: แยก <b>เลขเข้าเป้าหมาย</b> ออกจาก <b>เลขที่ตรงหลักร้อยอย่างเดียว</b> เพื่อระบุว่าความผิดพลาดเกิดจาก “เลือกเลขผิด” หรือ “เลือกเลขถูกแต่ตำแหน่งหลุด”</div></div><div class="ea-legend">เป้าหมาย = สิบบน/หน่วยบน/เลขล่าง · หลุดหลักร้อย = ตรงร้อยอย่างเดียว</div></div>`;
+  html+=`<div class="ea-grid"><div class="ea-card"><h4>รวมทุกหวย / ทุกประเภท</h4><div class="ea-kpi"><span>ทดสอบ</span><b>${g.tests}</b></div><div class="ea-kpi"><span>เข้าเป้าหมาย</span><b>${g.targetable} (${g.selectionTargetRate}%)</b></div><div class="ea-kpi"><span>หลุดหลักร้อยเท่านั้น</span><b>${g.hundredsOnly} (${g.selectionLeakRate}%)</b></div><div class="ea-kpi"><span>ในกรณีที่เลขถูกตัว</span><b>${g.leakAmongMatches}% เป็นการหลุดหลักร้อย</b></div></div><div class="ea-card"><h4>อ่านค่าหลัก</h4><div class="ea-kpi"><span>Round Leak</span><b>${g.roundLeakRate}%</b></div><div class="ea-kpi"><span>Pure Leak</span><b>${g.pureLeakRate}%</b></div><div class="ea-kpi"><span>เลขผิดจริง</span><b>${g.selectionMissRate}%</b></div><div class="ea-kpi"><span>สถานะ</span><b><span class="ea-status ${v1105LeakClass(g)}">${v1105LeakLabel(g)}</span></b></div></div></div>`;
+  html+=v1105Table('🌐 ออดิตรวมทุกหวย / ทุกประเภท',['รายการ','ทดสอบ','เลขที่เลือก','เข้าเป้าหมาย','หลุดหลักร้อย','เลขผิดจริง','หลุดเมื่อเลขถูก','Round Leak','Pure Leak','สถานะ'],v1105Row('รวมทุกหวย / ทุกประเภท',g));
+  html+=v1105Table('🗂️ ออดิตแยกประเภท / ตลาด',['ประเภท','ทดสอบ','เลขที่เลือก','เข้าเป้าหมาย','หลุดหลักร้อย','เลขผิดจริง','หลุดเมื่อเลขถูก','Round Leak','Pure Leak','สถานะ'],data.byType.map(x=>v1105Row(v1105TypeLabel(x.type),x.stats)).join(''));
+  html+=v1105Table('🏷️ ออดิตรายหวย',['หวย','ประเภท','ทดสอบ','เลขที่เลือก','เข้าเป้าหมาย','หลุดหลักร้อย','เลขผิดจริง','หลุดเมื่อเลขถูก','Round Leak','Pure Leak','สถานะ'],data.byLottery.map(x=>v1105Row(x.name,x.stats,`<td>${esc(v1105TypeLabel(x.type))}</td>`)).join(''));
+  html+=`<details class="ea-section"><summary>🔬 ออดิตรายสูตรภายในแต่ละหวย</summary>`;
+  data.byLottery.forEach(x=>{html+=v1105Table(`${esc(formatDisplayTitle(x.name))}`,['สูตร','ทดสอบ','เลขที่เลือก','เข้าเป้าหมาย','หลุดหลักร้อย','เลขผิดจริง','หลุดเมื่อเลขถูก','Round Leak','Pure Leak','สถานะ'],x.formulas.map(f=>v1105Row(f.formula,f.stats)).join(''));});
+  html+=`</details><div class="ea-note"><b>ความหมายสำคัญ:</b> “หลุดเมื่อเลขถูก” = ในทุกกรณีที่เลขที่สูตรเลือกปรากฏอยู่ในผลจริง 5 หลัก มีสัดส่วนเท่าไรที่เลขนั้นอยู่ <b>หลักร้อยเพียงตำแหน่งเดียว</b> และไม่อยู่ในตำแหน่งเป้าหมาย 4 ตำแหน่ง. ค่านี้เป็น <b>Audit Diagnostic</b> ไม่ส่งกลับไปแก้ Score/Ranking ใน V110.5.</div></section>`;
+  return html;
+}
+const v1105OriginalRender=window.renderExpandedAuditPanel;
+if(typeof v1105OriginalRender==='function'){
+  window.renderExpandedAuditPanel=function(groups){v1105OriginalRender(groups);const root=$('expandedAuditPanel');const host=root?.querySelector('.expanded-audit-panel');if(!host)return;const old=host.querySelector('.v1105-panel');if(old)old.remove();host.insertAdjacentHTML('beforeend',v1105RenderAuditBlock(groups));window.__V1105_POSITION_LEAKAGE_AUDIT__=v1105Build(groups,currentAuditDataMap||{});};
+}
+window.__V1105_LOCK_AUDIT__=Object.freeze({diagnosticOnly:true,formulaBodiesUntouched:true,formula31Untouched:true,pairConstructionUntouched:true,selectionUntouched:true,scoreUntouched:true,rankingUntouched:true,top3Untouched:true,best2Untouched:true,cardAppearanceUntouched:true,cardLayoutUntouched:true,namesUntouched:true,typesUntouched:true,calendarUntouched:true,displayUntouched:true,publicPercentagesUntouched:true,positionLeakageAudit:true,allMarketsAggregate:true,marketTypeAggregate:true,perLotteryAggregate:true,perFormulaAggregate:true});
 })();
 </script>
 
