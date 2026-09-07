@@ -1600,6 +1600,7 @@ function v1086MarketIdentity(name){
   if(has('ฮานอย')) return {market:'ฮานอย',type:vip?'vip':'ปกติ',drawTime:null};
   if(has('ลาว')) return {market:'ลาว',type:vip?'vip':'ปกติ',drawTime:null};
   if(has('มาเลย์','มาเลเซีย')) return {market:'มาเลย์',type:vip?'vip':'ปกติ',drawTime:vip?null:'18:30'};
+  if(has('พม่า2d','เมียนมา2d','myanmar2d')) return {market:'เมียนมา2d',type:'ปกติ',drawTime:null};
   if(has('ดาวโจนส์','dowjones')) return {market:'ดาวโจนส์',type:vip?'vip':'ปกติ',drawTime:vip?'00:00+':'03:05'};
   const stocks=['นิเคอิ','นิกเคอิ','นิคเคอิ','จีน','ฮั่งเส็ง','ไต้หวัน','เกาหลี','สิงคโปร์','รัสเซีย','เยอรมัน','อังกฤษ'];
   const market=stocks.find(x=>s.includes(x));
@@ -1616,8 +1617,17 @@ function v1086IsValidDrawDate(date,identity){
     return true;
   if(identity.market==='มาเลย์')
     return dow===0||dow===3||dow===6;
-  if(identity.market==='ดาวโจนส์')
-    return identity.type==='vip'||dow>=2&&dow<=6;
+  if(identity.market==='ดาวโจนส์'){
+    if(identity.type==='vip') return true;
+    /* Dow Jones normal: operational draw window is Tue-Sat. For the
+       displayed NEXT-DRAW calendar, a Friday result rolls forward to the
+       following Tuesday (the engine's requested weekend/holiday display
+       convention), while other valid weekdays continue through Sat. */
+    if(dow===6) return false;
+    return dow>=2&&dow<=5;
+  }
+  /* Myanmar 2D: Monday-Friday only; Saturday/Sunday are closed. */
+  if(identity.market==='เมียนมา2d') return dow>=1&&dow<=5;
   /* Named stock normal sessions are Mon-Fri. VIP is treated as daily because
      no separate VIP weekday restriction was specified in the supplied rules. */
   if(identity.type==='vip') return true;
@@ -8140,7 +8150,8 @@ function m2dNextTargetDate(records){
   const latest=valid.reduce((a,b)=>b.timestamp>a.timestamp?b:a);
   const d=new Date(latest.timestamp);
   d.setHours(12,0,0,0);
-  d.setDate(d.getDate()+1);
+  /* Myanmar 2D operates Monday-Friday; roll Sat/Sun to Monday. */
+  do{ d.setDate(d.getDate()+1); }while(d.getDay()===0||d.getDay()===6);
   return d;
 }
 /* =========================================================
@@ -10394,20 +10405,22 @@ window.__V1086_MARKET_TYPE_AUDIT_PASS__=window.__V1086_MARKET_TYPE_AUDIT__.every
 window.__V1086_CALENDAR_AUDIT__=Object.freeze({
   thaiShortYearParse:parseThaiDate('4 ก.ย. 69')===new Date(2026,8,4).getTime(),
   normalStockFriToMon:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นจีน')==='7 ก.ย. 69',
-  dowNormalFriToSat:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นดาวโจนส์')==='5 ก.ย. 69',
+  dowNormalFriToTue:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นดาวโจนส์')==='8 ก.ย. 69',
   dowVipFriToSat:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นดาวโจนส์ VIP')==='5 ก.ย. 69',
+  myanmar2dFriToMon:m2dFormatDate(m2dNextTargetDate([{date:'4 ก.ย. 69',timestamp:m2dThaiDate('4 ก.ย. 69')}]))==='07/09/2026',
   malaysiaFriToSat:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นมาเลเซีย')==='5 ก.ย. 69',
   thai16ToNext1:getNextValidDrawDateStr('16 ก.ย. 69','รัฐบาลไทย')==='1 ต.ค. 69'
 });
 window.__V1086_CALENDAR_AUDIT_PASS__=Object.values(window.__V1086_CALENDAR_AUDIT__).every(Boolean);
 window.__V1086_SCHEDULE_AUDIT__=Object.freeze({
   normalStockWeekdays:'Mon-Fri',
-  dowNormalWeekdays:'Tue-Sat',
+  dowNormalWeekdays:'Tue-Fri (requested display: Fri→Tue)',
   dowNormalTime:'03:05',
   dowVipEveryDay:true,
   dowVipTime:'00:00+',
   malaysiaWeekdays:'Wed-Sat-Sun',
   malaysiaTime:'18:30',
+  myanmar2dWeekdays:'Mon-Fri',
   laoDevelopmentWeekdays:'Mon-Fri',
   thaiGovernmentDays:'1,16'
 });
