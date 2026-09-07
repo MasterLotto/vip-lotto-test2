@@ -1526,35 +1526,31 @@ const V106_DISPLAY_AUDIT_PASS=V106_DISPLAY_AUDIT.every(x=>x.pass);
 /* =========================================================
    THAI DATE
 ========================================================= */
+function normalizeThaiBuddhistYear(year){
+  const y=parseInt(year,10);
+  if(!Number.isFinite(y)) return 2569;
+  /* Public input uses Thai Buddhist Era: 2569 or the 2-digit form 69. */
+  if(y>=0&&y<100) return 2500+y;
+  if(y>=100&&y<2500) return y+543;
+  return y;
+}
+function formatThaiShortDate(date){
+  const thaiMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const d=date instanceof Date?date:new Date(date);
+  const yy=String(d.getFullYear()+543).slice(-2);
+  return `${d.getDate()} ${thaiMonths[d.getMonth()]} ${yy}`;
+}
 function parseThaiDate(dateStr){
   const months={
-    'ม.ค.':1,
-    'ก.พ.':2,
-    'มี.ค.':3,
-    'เม.ย.':4,
-    'พ.ค.':5,
-    'มิ.ย.':6,
-    'ก.ค.':7,
-    'ส.ค.':8,
-    'ก.ย.':9,
-    'ต.ค.':10,
-    'พ.ย.':11,
-    'ธ.ค.':12
+    'ม.ค.':1,'ก.พ.':2,'มี.ค.':3,'เม.ย.':4,'พ.ค.':5,'มิ.ย.':6,
+    'ก.ค.':7,'ส.ค.':8,'ก.ย.':9,'ต.ค.':10,'พ.ย.':11,'ธ.ค.':12
   };
-  const parts=String(dateStr||'')
-    .trim()
-    .split(/\s+/);
+  const parts=String(dateStr||'').trim().split(/\s+/);
   if(parts.length>=3){
     const day=parseInt(parts[0],10)||1;
     const month=months[parts[1]]||1;
-    let year=parseInt(parts[2],10)||2569;
-    if(year<2500)
-      year+=2543;
-    return new Date(
-      year-543,
-      month-1,
-      day
-    ).getTime();
+    const year=normalizeThaiBuddhistYear(parts[2]);
+    return new Date(year-543,month-1,day).getTime();
   }
   return 0;
 }
@@ -1580,16 +1576,11 @@ function getNextDateStr(dateStr){
     const day=parseInt(parts[0],10)||1;
     const m=months[parts[1]]??0;
     const d=new Date(
-      (parseInt(parts[2],10)||2569)-543,
+      normalizeThaiBuddhistYear(parts[2])-543,
       m,
       day+1
     );
-    const thaiMonths=[
-      'ม.ค.','ก.พ.','มี.ค.','เม.ย.',
-      'พ.ค.','มิ.ย.','ก.ค.','ส.ค.',
-      'ก.ย.','ต.ค.','พ.ย.','ธ.ค.'
-    ];
-    return`${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear()+543}`;
+    return formatThaiShortDate(d);
   }
   return dateStr;
 }
@@ -1604,16 +1595,16 @@ function v1086MarketIdentity(name){
   const s=String(name||'').toLowerCase().replace(/\s+/g,'');
   const vip=s.includes('vip')||s.includes('พิเศษ');
   const has=(...xs)=>xs.some(x=>s.includes(x));
-  if(has('รัฐบาลไทย','รัฐบาล')) return {market:'รัฐบาลไทย',type:'รัฐบาล'};
-  if(has('ลาวพัฒนา')) return {market:'ลาวพัฒนา',type:'ปกติ'};
-  if(has('ฮานอย')) return {market:'ฮานอย',type:vip?'vip':'ปกติ'};
-  if(has('ลาว')) return {market:'ลาว',type:vip?'vip':'ปกติ'};
-  if(has('มาเลย์','มาเลเซีย')) return {market:'มาเลย์',type:vip?'vip':'ปกติ'};
-  if(has('ดาวโจนส์','dowjones')) return {market:'ดาวโจนส์',type:vip?'vip':'ปกติ'};
+  if(has('รัฐบาลไทย','รัฐบาล')) return {market:'รัฐบาลไทย',type:'รัฐบาล',drawTime:null};
+  if(has('ลาวพัฒนา')) return {market:'ลาวพัฒนา',type:'ปกติ',drawTime:null};
+  if(has('ฮานอย')) return {market:'ฮานอย',type:vip?'vip':'ปกติ',drawTime:null};
+  if(has('ลาว')) return {market:'ลาว',type:vip?'vip':'ปกติ',drawTime:null};
+  if(has('มาเลย์','มาเลเซีย')) return {market:'มาเลย์',type:vip?'vip':'ปกติ',drawTime:vip?null:'18:30'};
+  if(has('ดาวโจนส์','dowjones')) return {market:'ดาวโจนส์',type:vip?'vip':'ปกติ',drawTime:vip?'00:00+':'03:05'};
   const stocks=['นิเคอิ','นิกเคอิ','นิคเคอิ','จีน','ฮั่งเส็ง','ไต้หวัน','เกาหลี','สิงคโปร์','รัสเซีย','เยอรมัน','อังกฤษ'];
   const market=stocks.find(x=>s.includes(x));
-  if(market) return {market,type:vip?'vip':'ปกติ'};
-  return {market:'อื่นๆ',type:'ปกติ'};
+  if(market) return {market,type:vip?'vip':'ปกติ',drawTime:null};
+  return {market:'อื่นๆ',type:'ปกติ',drawTime:null};
 }
 function v1086IsValidDrawDate(date,identity){
   const dow=date.getDay(); /* 0 Sun ... 6 Sat */
@@ -1640,8 +1631,7 @@ function getNextValidDrawDateStr(dateStr,marketName){
   for(let i=1;i<=370;i++){
     d.setDate(d.getDate()+1);
     if(v1086IsValidDrawDate(d,identity)){
-      const thaiMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-      return `${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear()+543}`;
+      return formatThaiShortDate(d);
     }
   }
   return getNextDateStr(dateStr);
@@ -10402,13 +10392,25 @@ window.__V1086_MARKET_TYPE_AUDIT__=V1086_MARKET_TYPE_TESTS.map(([input,title,fla
 }));
 window.__V1086_MARKET_TYPE_AUDIT_PASS__=window.__V1086_MARKET_TYPE_AUDIT__.every(x=>x.pass);
 window.__V1086_CALENDAR_AUDIT__=Object.freeze({
+  thaiShortYearParse:parseThaiDate('4 ก.ย. 69')===new Date(2026,8,4).getTime(),
   normalStockFriToMon:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นจีน')==='7 ก.ย. 69',
-  dowNormalFriToTue:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นดาวโจนส์')==='8 ก.ย. 69',
+  dowNormalFriToSat:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นดาวโจนส์')==='5 ก.ย. 69',
   dowVipFriToSat:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นดาวโจนส์ VIP')==='5 ก.ย. 69',
   malaysiaFriToSat:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นมาเลเซีย')==='5 ก.ย. 69',
   thai16ToNext1:getNextValidDrawDateStr('16 ก.ย. 69','รัฐบาลไทย')==='1 ต.ค. 69'
 });
 window.__V1086_CALENDAR_AUDIT_PASS__=Object.values(window.__V1086_CALENDAR_AUDIT__).every(Boolean);
+window.__V1086_SCHEDULE_AUDIT__=Object.freeze({
+  normalStockWeekdays:'Mon-Fri',
+  dowNormalWeekdays:'Tue-Sat',
+  dowNormalTime:'03:05',
+  dowVipEveryDay:true,
+  dowVipTime:'00:00+',
+  malaysiaWeekdays:'Wed-Sat-Sun',
+  malaysiaTime:'18:30',
+  laoDevelopmentWeekdays:'Mon-Fri',
+  thaiGovernmentDays:'1,16'
+});
 window.__V1086_FINAL_AUDIT__=Object.freeze({
   internalPrecisionApi:{
     arbitrate:typeof window.__INTERNAL_PRECISION_SUPPORT__.arbitrate==='function',
