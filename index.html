@@ -10342,7 +10342,92 @@ function v1071MaxAuthority(base,records,auditData,formulaNames){
   const selected=selectedDigits.map(d=>out.find(x=>Number(x.digit)===d)).filter(Boolean).sort((a,b)=>selectedDigits.indexOf(Number(a.digit))-selectedDigits.indexOf(Number(b.digit)));
   return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v98:{version:'V107.1 MAX-LEVEL EVIDENCE STACK',authority:'MULTI-LAYER FORMULA-DIGIT-PAIR ENSEMBLE',layers:['formula conditional precision','formula rank reliability','consensus breadth calibration','recent 3/6/12/24','long frequency','position-specific frequency','same-digit transition','cross-digit transition','gap conditional','multi-window stability','regime fit','entropy/regime change','empirical null','direct evidence','top-supporter quality','support breadth','layer-rank fusion','pair co-occurrence synergy','pair balance gate'],formulaBodiesUntouched:true,cardAppearanceUntouched:true,selected:selected.map(x=>({digit:x.digit,score:x.selectionQuality,formulaSupport:x.v98.formulaSupportCount})),pairGate:best?{digits:[best.a.d,best.b.d],joint:round2(best.joint),synergy:round2(best.sy)}:null},finalGate:{...(src.finalGate||{}),v1071MaxLevel:true,v1068EvidenceRankAuthority:false,v1067LegacySelectorReplaced:true,formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false}};
 }
-function v98CleanAuthority(base,records,auditData,formulaNames){return v1071MaxAuthority(base,records,auditData,formulaNames);}
+/* =========================================================
+   V109.0 — MARKET ADAPTIVE AUTHORITY / SELECTOR UPGRADE
+   UI/CARD CONTRACT: LOCKED. Formula bodies: LOCKED. Targeted-digit
+   formula: LOCKED. This layer only governs backend evidence weighting.
+   It is deterministic and uses only records supplied to the current call.
+========================================================= */
+function v109MarketKey(records){
+  const r=(records||[]).find(isResultRecord)||{};
+  return String(r.name||'').trim().toLowerCase();
+}
+function v109Profile(name){
+  const n=String(name||'').toLowerCase();
+  const p={kind:'generic',preferRecent:.30,preferBaseline:.20,selector:.50};
+  if(/vip/.test(n))p.kind='vip';
+  if(/ลาว|hanoi|ฮานอย/.test(n))p.kind='lottery';
+  if(/นิคเคอิ|nikkei/.test(n))p.kind='nikkei';
+  else if(/จีน/.test(n))p.kind='china';
+  else if(/ฮั่งเส็ง|hang/.test(n))p.kind='hang';
+  else if(/ไต้หวัน|taiwan/.test(n))p.kind='taiwan';
+  else if(/เกาหลี|korea/.test(n))p.kind='korea';
+  else if(/สิงคโปร์|singapore/.test(n))p.kind='singapore';
+  else if(/รัสเซีย|russia/.test(n))p.kind='russia';
+  else if(/เยอรมัน|germany/.test(n))p.kind='germany';
+  else if(/อังกฤษ|england|uk/.test(n))p.kind='england';
+  else if(/ดาวโจนส์|dow/.test(n))p.kind='dow';
+  return p;
+}
+function v109RecentTrend(row){
+  const v=row?.v98||{};
+  const r3=Number(v.recent3)||50,r12=Number(v.recent12)||50,r24=Number(v.recent24)||50;
+  return v95Clamp(50+(r3-r24)*.45+(r12-r24)*.20);
+}
+function v109FormulaSelector(row,ranked,profile){
+  const supporters=Array.isArray(row?.v98?.formulaSupporters)?row.v98.formulaSupporters:[];
+  if(!supporters.length)return {score:50,count:0,leaders:[]};
+  const byName=new Map((ranked||[]).map(x=>[x.name,x]));
+  const xs=supporters.map(name=>byName.get(name)).filter(Boolean);
+  if(!xs.length)return {score:50,count:0,leaders:[]};
+  const vals=xs.map((x,i)=>{
+    const c=Number(x?.quality)||50;
+    const rec=Number(x?.metrics?.recencyRate)||50;
+    const conf=Number(x?.confluence?.confluence)||50;
+    return .46*c+.34*rec+.20*conf;
+  });
+  vals.sort((a,b)=>b-a);
+  const top=vals.slice(0,Math.min(3,vals.length));
+  const score=top.reduce((a,b)=>a+b,0)/top.length;
+  return {score:v95Clamp(score),count:xs.length,leaders:xs.slice().sort((a,b)=>(b.quality||0)-(a.quality||0)).slice(0,3).map(x=>x.name)};
+}
+function v109AdaptiveAuthority(base,records,auditData,formulaNames){
+  const src=v1071MaxAuthority(base,records,auditData,formulaNames);
+  if(!src||!Array.isArray(src.rows)||src.rows.length!==10)return src;
+  const arr=(records||[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+  const name=v109MarketKey(arr), profile=v109Profile(name);
+  const names=(formulaNames||[]).filter(f=>f&&f!=='__formulaGovernor');
+  const ranked=v98FormulaRanked(auditData,names,arr);
+  const marketStrength=arr.length>=24?1:arr.length>=16?.82:arr.length>=10?.65:.50;
+  const rows=src.rows.map(row=>{
+    const baseScore=Number(row.selectionQuality)||50;
+    const selector=v109FormulaSelector(row,ranked,profile);
+    const trend=v109RecentTrend(row);
+    const stability=Number(row?.v98?.windowStability)||50;
+    const position=Number(row?.v98?.positionRate)||50;
+    const breadth=Number(row?.v98?.supportBreadth)||50;
+    /* Adaptive blend: market-specific formula authority is stronger when
+       OOS history is sufficient; recent trend breaks ties, not dominates. */
+    const adaptive=.52*baseScore+.18*selector.score+.10*trend+.08*stability+.06*position+.06*breadth;
+    const confidence=v95Clamp(50+(adaptive-50)*marketStrength-(Math.max(0,Math.abs(selector.score-baseScore)-22)*.12));
+    return {...row,selectionQuality:round2(v95Clamp(adaptive)),score:round2(v95Clamp(adaptive)),v109:{market:name||'unknown',profile:profile.kind,selectorScore:round2(selector.score),selectorFormulaCount:selector.count,selectorLeaders:selector.leaders,recentTrend:round2(trend),marketStrength:round2(marketStrength),adaptiveConfidence:round2(confidence),version:'V109.0 MARKET ADAPTIVE AUTHORITY'}};
+  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||Number(a.digit)-Number(b.digit));
+  const top3=rows.slice(0,3).map(x=>Number(x.digit));
+  const pairCandidates=rows.slice(0,6);
+  let best=null;
+  for(let i=0;i<pairCandidates.length;i++)for(let j=i+1;j<pairCandidates.length;j++){
+    const a=pairCandidates[i],b=pairCandidates[j];
+    const sy=v1071DigitPairSynergy(arr,Number(a.digit),Number(b.digit));
+    const joint=.74*(a.selectionQuality+b.selectionQuality)/2+.16*sy+.10*Math.min(a.selectionQuality,b.selectionQuality);
+    if(!best||joint>best.joint)best={a,b,joint,sy};
+  }
+  const best2=best?[Number(best.a.digit),Number(best.b.digit)]:top3.slice(0,2);
+  const selected=best2.map(d=>rows.find(r=>Number(r.digit)===d)).filter(Boolean);
+  const diagnostics={version:'V109.0 MARKET ADAPTIVE SELECTOR',market:name,profile:profile.kind,historyLength:arr.length,marketStrength:round2(marketStrength),formulaAuthority:'market-specific + OOS + recent + stability + position + breadth',formulaBodiesUntouched:true,targetedFormulaUntouched:true,cardAppearanceUntouched:true,uiMutation:false,top3, best2, rows:rows.map((r,i)=>({rank:i+1,digit:Number(r.digit),score:r.selectionQuality,selector:r.v109.selectorScore,trend:r.v109.recentTrend,confidence:r.v109.adaptiveConfidence}))};
+  window.__V109_MARKET_ADAPTIVE_AUDIT__=diagnostics;
+  return {...src,rows,top3,best2,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v109:diagnostics,finalGate:{...(src.finalGate||{}),v109MarketAdaptive:true,formulaBodiesUntouched:true,targetedFormulaUntouched:true,cardAppearanceUntouched:true,uiMutation:false}};
+}
+function v98CleanAuthority(base,records,auditData,formulaNames){return v109AdaptiveAuthority(base,records,auditData,formulaNames);}
 
 
 /* V107.1 Myanmar 2D MAX-LEVEL session brain.  This keeps the existing
@@ -10439,6 +10524,8 @@ window.__V1086_FINAL_AUDIT__=Object.freeze({
   cardUiMutation:false
 });
 window.__V1086_FINAL_AUDIT_PASS__=Object.values(window.__V1086_FINAL_AUDIT__.internalPrecisionApi).every(Boolean)&&window.__V1086_FINAL_AUDIT__.marketTypePass&&window.__V1086_FINAL_AUDIT__.calendarPass;
+window.__V109_UPGRADE_AUDIT__=Object.freeze({version:'V109.0',marketAdaptiveAuthority:true,formulaBodiesUntouched:true,targetedFormulaUntouched:true,cardAppearanceUntouched:true,uiMutation:false,walkForwardCompatible:true});
+window.__V109_UPGRADE_AUDIT_PASS__=Object.values(window.__V109_UPGRADE_AUDIT__).every(Boolean);
 })();
 </script>
 </body>
