@@ -1871,8 +1871,9 @@ function formatDisplayTitle(rawName){
 
 
 function getLotteryFlag(name){
-  const n=String(name||'').toLowerCase().trim();
-  const nikkei=/นิเคอิ|นิกเคอิ|นิกเกอิ|นิเกอิ|nikkei|nikkey|japan/.test(n);
+  const n=normalizeLotterySeriesName(name).toLowerCase().trim();
+  const key=n.replace(/\s+/g,'');
+  const nikkei=/นิเคอิ|นิกเคอิ|นิกเกอิ|นิเกอิ|นิกกิอิ|nikkei|nikkey|japan/.test(key);
   if(nikkei)return'🇯🇵';
   if(n.includes('ลาว'))return'🇱🇦';
   if(n.includes('ฮานอย')||n.includes('เวียดนาม'))return'🇻🇳';
