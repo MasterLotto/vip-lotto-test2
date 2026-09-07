@@ -1252,7 +1252,7 @@ function v95ThaiRankPairs(history,tens,needles){
   return needles.map(u=>{
     const st=v95ThaiPairStats(history,tens,u),score=st.coverage*V95_THAI_CONFIG.pairWeights.coverage+st.recent*V95_THAI_CONFIG.pairWeights.recent+st.breadth*V95_THAI_CONFIG.pairWeights.sessionBreadth+st.stability*V95_THAI_CONFIG.pairWeights.stability;
     return {pair:`${tens}${u}`,tens,unit:u,score,meta:{v95Thai:{coverage:st.coverage,recent:st.recent,sessionBreadth:st.breadth,stability:st.stability,tests:st.n}}};
-  }).sort((a,b)=>b.score-a.score||a.pair.localeCompare(b.pair));
+  }).sort((a,b)=>b.score-a.score||String(a?.pair??'').localeCompare(String(b?.pair??'')));
 }
 function v95ThaiBacktest(records){
   const days=v95ThaiDayMap(records),trans=v95ThaiTransitionData(days),results=[];
@@ -3012,7 +3012,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
       pc.v71Quality=round2((qa+qb)/2);
       pc.pairScore=round2(pc.pairScore + inPool*2.2 + Math.max(0,(pc.v71Quality-55))*.035);
     });
-    pairCandidates.sort((a,b)=>b.pairScore-a.pairScore||b.v71Quality-a.v71Quality||a.pair.localeCompare(b.pair));
+    pairCandidates.sort((a,b)=>b.pairScore-a.pairScore||b.v71Quality-a.v71Quality||String(a?.pair??'').localeCompare(String(b?.pair??'')));
     const v71Eligible=pairCandidates.filter(pc=>v71TopSet.has(pc.a.digit)||v71TopSet.has(pc.b.digit));
     if(v71Eligible.length){
       const best=v71Eligible.slice().sort((a,b)=>{
@@ -4002,7 +4002,7 @@ function v94RefinePairs(pairs,records,target){
       pairRecovery=pairMiss>=3?Math.min(1.5,(pairMiss-2)*.45):0,
       adj=v94Clamp(((evidence-50)/50)*V94_CONFIG.pairMaxAdjustment+recovery+pairRecovery,-V94_CONFIG.pairMaxAdjustment,V94_CONFIG.pairMaxAdjustment);
     return {...p,score:round2(v94Clamp(base+adj)),meta:{...meta,v94Governor:{version:'V94',targetMissStreak:targetMiss,pairMissStreak:pairMiss,evidence:round2(evidence),adjustment:round2(adj)}}};
-  }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.meta?.pairWalkForwardPrecision||0)-Number(a.meta?.pairWalkForwardPrecision||0)||a.pair.localeCompare(b.pair));
+  }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.meta?.pairWalkForwardPrecision||0)-Number(a.meta?.pairWalkForwardPrecision||0)||String(a?.pair??'').localeCompare(String(b?.pair??'')));
 }
 function v94RefinePairSet(pairs,records,target){return v94RefinePairs(pairs,records,target);}
 
@@ -7684,7 +7684,7 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
       map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,positionConditional,pairOOSGate,selectionPairOOSGate,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,reverseSymmetry,sampleGate,sanityGate,v56PairConfidenceGate:v56PairGate,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
     }
   }
-  const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||a.pair.localeCompare(b.pair));
+  const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||String(a?.pair??'').localeCompare(String(b?.pair??'')));
   const selected=[];const used=new Set();
   const targetLimit=Math.max(1,Math.min(9,Number(limit)||5));
   for(const item of ranked){
@@ -7837,7 +7837,7 @@ function m2dConsensus(noon,evening){
     const a=m2dPairScores(noon.arr,t.digit,false,9),b=m2dPairScores(evening.arr,t.digit,false,9),map=new Map();
     [...a,...b].forEach(p=>{const prior=map.get(p.pair);if(!prior||p.score>prior.score)map.set(p.pair,p);});
     raw[t.digit]=[...map.values()].sort((a,b)=>{
-      const as=(a.score||0),bs=(b.score||0);return bs-as||((b.meta?.confidence||0)-(a.meta?.confidence||0))||a.pair.localeCompare(b.pair);
+      const as=(a.score||0),bs=(b.score||0);return bs-as||((b.meta?.confidence||0)-(a.meta?.confidence||0))||String(a?.pair??'').localeCompare(String(b?.pair??''));
     });
   });
   const pairsByTarget=m2dJointSelect15Pairs(m2dV72Ranked,raw);
@@ -8202,7 +8202,7 @@ function v92Pairs(arr,target,allRecords,session,limit=5){
     const old=byUnordered.get(key);
     if(!old||Number(p.score)>Number(old.score))byUnordered.set(key,p);
   }
-  return [...byUnordered.values()].sort((a,b)=>Number(b.score)-Number(a.score)||a.pair.localeCompare(b.pair)).slice(0,Math.max(1,limit));
+  return [...byUnordered.values()].sort((a,b)=>Number(b.score)-Number(a.score)||String(a?.pair??'').localeCompare(String(b?.pair??''))).slice(0,Math.max(1,limit));
 }
 function v93BuildDisjointPairPortfolio(top,sessionRows,allRecords,session,perTarget=5){
   const targets=(Array.isArray(top)?top:[]).slice(0,3).map(x=>Number(x.digit)).filter(Number.isInteger);
@@ -8281,7 +8281,7 @@ function v92Consensus(noon,evening,records){
       for(let i=all.length-1;i>=0;i--){const r=all[i],n=String(r?.noon?.value??''),e=String(r?.evening?.value??'');if(n===p.pair||e===p.pair)break;streak++;if(streak>=6)break;}
       const recovery=streak>=2?Math.min(2.4,(streak-1)*.55):0;
       return {...p,score:v92Clamp(Number(p.score)+recovery),meta:{...(p.meta||{}),v94Governor:{version:'V94-M2D',pairMissStreak:streak,recoveryBonus:round2(recovery)}}};
-    }).sort((x,y)=>Number(y.score)-Number(x.score)||x.pair.localeCompare(y.pair));
+    }).sort((x,y)=>Number(y.score)-Number(x.score)||String(x?.pair??'').localeCompare(String(y?.pair??'')));
     pairCandidatesByTarget[t.digit]=refined;
   }
   const finalPortfolio=v93BuildDisjointPairPortfolio(ranked,
@@ -8298,7 +8298,7 @@ function v92Consensus(noon,evening,records){
   // Refill any short target deterministically from its own session candidates while maintaining uniqueness.
   for(const t of ranked){
     if((pairsByTarget[t.digit]||[]).length>=5)continue;
-    const fallback=[...(portfolioNoon.byTarget?.[t.digit]||[]),...(portfolioEvening.byTarget?.[t.digit]||[])].sort((a,b)=>Number(b.score)-Number(a.score)||a.pair.localeCompare(b.pair));
+    const fallback=[...(portfolioNoon.byTarget?.[t.digit]||[]),...(portfolioEvening.byTarget?.[t.digit]||[])].sort((a,b)=>Number(b.score)-Number(a.score)||String(a?.pair??'').localeCompare(String(b?.pair??'')));
     for(const p of fallback){const k=canonicalPair(p);if(globalUsed.has(k))continue;pairsByTarget[t.digit].push(p);globalUsed.add(k);if(pairsByTarget[t.digit].length===5)break;}
     pairsByTarget[t.digit]=v92RenderSortPairs(pairsByTarget[t.digit]);
   }
