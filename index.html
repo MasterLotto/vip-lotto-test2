@@ -1123,7 +1123,21 @@ function exactNikkeiCanonicalTitle(value){
   if(afternoon)return 'นิเคอิ บ่าย';
   return 'นิเคอิ';
 }
+function v1085LotteryNameLock(name){
+  let s=String(name||'')
+    .replace(/\u200B|\u200C|\u200D|\uFEFF/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+  /* DISPLAY-NAME LOCK: remove the generic prefix 'หวย' from every lottery
+     title, except the explicitly protected Thai-stock title 'หวยหุ้นไทย'.
+     Remove the stray token 'พุ่น' as well. This affects visible naming only;
+     prediction data, formulas, scoring, schedules, and card structure remain untouched. */
+  if(s!=='หวยหุ้นไทย') s=s.replace(/^หวย\s*/,'').trim();
+  s=s.replace(/\s*พุ่น\s*/g,' ').replace(/\s+/g,' ').trim();
+  return s;
+}
 function formatDisplayTitle(rawName){
+  rawName=v1085LotteryNameLock(rawName);
   const exactNikkei=exactNikkeiCanonicalTitle(rawName);
   if(exactNikkei)return exactNikkei;
   rawName=cleanDatasetKey(rawName);
@@ -10541,7 +10555,7 @@ function v1084M2DTop3(arr,allRecords,session){
   ranked.sort((a,b)=>b.score-a.score||a.baseRank-b.baseRank||a.digit-b.digit);
   return ranked.slice(0,3).map((x,i)=>({...x,rank:i+1,score:round2(x.score),adaptive:true,stableReasoning:true}));
 }
-window.__V1084_AUDIT__={version:'V108.4',change:'anchored TOP1 + conditional TOP2 + normalized pair objective + excess-risk control + Myanmar duplicate-date temporal guard + legacy display-key hardening',uiMutation:false,cardAppearanceUntouched:true,formulaBodiesUntouched:true,schedulePrecisionBoundToTrainingRecords:true,duplicateDatePolicy:'retain evidence; same-date rows are not treated as temporal transitions',noShareAPI:true};
+window.__V1084_AUDIT__={version:'V108.5',change:'anchored TOP1 + conditional TOP2 + normalized pair objective + excess-risk control + Myanmar duplicate-date temporal guard + legacy display-key hardening + lottery-name prefix lock',uiMutation:false,cardAppearanceUntouched:true,formulaBodiesUntouched:true,schedulePrecisionBoundToTrainingRecords:true,duplicateDatePolicy:'retain evidence; same-date rows are not treated as temporal transitions',noShareAPI:true};
 const v1084LegacyM2DAnalyzeSession=v92AnalyzeSession;
 v92AnalyzeSession=function(records,session){
   const legacy=v1084LegacyM2DAnalyzeSession(records,session),arr=legacy?.arr||m2dValidSeq(records,session),top=v1084M2DTop3(arr,records,session),raw={};
@@ -10641,6 +10655,16 @@ cardAppearance:'UNCHANGED',
 purpose:'FULL_AUDITED_ADAPTIVE_RADAR_V90_PLUS_PLUS'
 };
 })();
+
+window.__V1085_DISPLAY_NAME_AUDIT__={
+  version:'V108.5',
+  change:'display-name lock: remove leading หวย except หวยหุ้นไทย; remove พุ่น',
+  uiMutation:false,
+  cardAppearanceUntouched:true,
+  formulasUntouched:true,
+  predictionEngineUntouched:true,
+  scheduleEngineUntouched:true
+};
 </script>
 <!-- V92 M2D AUDIT: 45-round active regime; long-history confirmation; directed positional transitions; exact oriented pairs; chronological OOS; display-only ascending pair ordering. -->
 <!-- V90 PLUS+ SOURCE AUDIT: 58 lottery types; 1,735 valid result records; 5 no-result entries excluded; 15 locked formulas preserved byte-for-byte; 5 new adaptive formulas added. -->
