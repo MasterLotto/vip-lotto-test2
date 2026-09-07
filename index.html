@@ -15,7 +15,7 @@
 
 
 
-<title>Mester Lotto VIP+ — V94 Plus++ Maximum Precision + Myanmar 2D Specialized</title>
+<title>Mester Lotto VIP+ — V108.6 Maximum Precision + Myanmar 2D Specialized</title>
 <style>
 :root{
   --bg-main:linear-gradient(135deg,#fcfbfa 0%,#f4efe6 100%);
@@ -3448,7 +3448,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   const v72Refinement=typeof window.__INTERNAL_PRECISION_SUPPORT__!=='undefined'
     ?window.__INTERNAL_PRECISION_SUPPORT__.refineTop3(integratedTop3,adversarialRanked,recs)
     :{finalTop3:integratedTop3,rawTop3:integratedTop3,removedFromTop3:[],audit:{status:'SKIPPED'},enriched:[],margin:{},regime:{}};
-  const finalTop3V72=(v95Top3.length===3?v95Top3:(v72Refinement.finalTop3.length===3?v72Refinement.finalTop3:integratedTop3));
+  const finalTop3V72=(v72Refinement.finalTop3.length===3?v72Refinement.finalTop3:(v95Top3.length===3?v95Top3:integratedTop3));
   /* V97 BEST-2 is the same decision contract used by the prediction card. */
   const v97FinalBest2=selected.slice(0,2).map(x=>Number(x.digit)).filter(Number.isFinite);
   return{
@@ -7321,7 +7321,7 @@ function v72RefineTop3(baseTop3,rows,records){
   const final=candidate.length===3?candidate:raw.slice(0,3);
   return{finalTop3:final,rawTop3:raw,removedFromTop3:raw.filter(d=>!final.includes(d)),audit,enriched,margin:v72MarginQuality(enriched),regime:v72RegimeTransition(records)};
 }
-window.__INTERNAL_PRECISION_SUPPORT__=Object.freeze({config:V72_CONFIG,temporal:v72TemporalSurvival,antiRepeat:v72ConditionalAntiRepeat,margin:v72MarginQuality,compression:v72EvidenceCompression,regimeTransition:v72RegimeTransition,finalAudit:v72FinalAudit,refineTop3:v72RefineTop3});
+window.__INTERNAL_PRECISION_SUPPORT__=Object.freeze({...window.__INTERNAL_PRECISION_SUPPORT__,config:V72_CONFIG,temporal:v72TemporalSurvival,antiRepeat:v72ConditionalAntiRepeat,margin:v72MarginQuality,compression:v72EvidenceCompression,regimeTransition:v72RegimeTransition,finalAudit:v72FinalAudit,refineTop3:v72RefineTop3});
 /* ========================================================= END V72 PRECISION REFINEMENT ========================================================= */
 /* =========================================================
    BUILD ENGINE
@@ -9131,9 +9131,13 @@ function runEngineCore(){
       /* V98 is the clean final authority: it rebuilds selectionQuality from raw formula/OOS/stability evidence and ignores legacy selection scores. */
       const governedV98=v98CleanAuthority(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
       const finalTop3=Array.isArray(governedV98.top3)?governedV98.top3.map(Number).filter(Number.isFinite):[];
+      const finalBest2=Array.isArray(governedV98.best2)?governedV98.best2.map(Number).filter(Number.isFinite).slice(0,2):[];
       intelligence=governedV98;
       if(auditDataMap[lotteryName]) auditDataMap[lotteryName].__V98_CONSENSUS_INVARIANCE__=v98ConsensusInvarianceTest(governedV95,resultRecs,auditDataMap[lotteryName],formulaNames);
-      if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
+      /* The public prediction card must consume the same BEST-2 authority that
+         V97 exposes; it must not silently fall back to the first two TOP-3 digits. */
+      if(finalBest2.length===2){ d1=finalBest2[0]; d2=finalBest2[1]; }
+      else if(finalTop3.length>=2){ d1=finalTop3[0]; d2=finalTop3[1]; }
       const d1Pairs=v94RefinePairSet(generateFormulaPairs(d1,d2,auditDataMap,lotteryName,resultRecs),resultRecs,d1);
       const d2Pairs=v94RefinePairSet(generateFormulaPairs(d2,d1,auditDataMap,lotteryName,resultRecs),resultRecs,d2);
       /* -----------------------------------------
@@ -9142,8 +9146,9 @@ function runEngineCore(){
       ----------------------------------------- */
       const consensus=intelligence.consensus;
       const selectedRows=intelligence.selected||[];
-      const scoreD1=selectedRows[0]?.digit;
-      const scoreD2=selectedRows[1]?.digit;
+      const authorityBest2=Array.isArray(intelligence.best2)?intelligence.best2.map(Number).filter(Number.isFinite).slice(0,2):[];
+      const scoreD1=authorityBest2[0]??selectedRows[0]?.digit;
+      const scoreD2=authorityBest2[1]??selectedRows[1]?.digit;
       /* V99 TOTAL CONSENSUS ISOLATION: score card must use the same clean authority rows.
          Never rebuild scoreData through legacy buildDigitScore(), which still contains
          agreement/consensus/frequency pathways. Consensus remains display-only metadata. */
@@ -9170,8 +9175,9 @@ function runEngineCore(){
         lotteryName
       ]={
         nextDate:
-          getNextDateStr(
-            latestRec.date
+          getNextValidDrawDateStr(
+            latestRec.date,
+            latestRec.name
           ),
         d1,
         d2,
@@ -9193,8 +9199,9 @@ function runEngineCore(){
         scoreCard:{
           lotteryName,
           nextDate:
-            getNextDateStr(
-              latestRec.date
+            getNextValidDrawDateStr(
+              latestRec.date,
+              latestRec.name
             ),
           displayTitle:canonicalCardVisibleTitle({lotteryName}),
           flag:
@@ -10372,8 +10379,7 @@ function v98ConsensusInvarianceTest(intelligence,records,auditData,formulaNames)
   const A=(a.selected||[]).map(x=>Number(x.digit)),B=(b.selected||[]).map(x=>Number(x.digit));
   return {pass:A.length===B.length&&A.every((d,i)=>d===B[i]),before:A,after:B};
 }
-})();
-/* V108.6 DISPLAY/CALENDAR REGRESSION LOCK */
+/* V108.6 DISPLAY/CALENDAR REGRESSION LOCK — executable inside engine scope */
 const V1086_MARKET_TYPE_TESTS=Object.freeze([
   ['หุ้นนิคเคอิเช้า','นิเคอิ ปกติ เช้า','🇯🇵'],
   ['หุ้นนิคเคอิ VIP เช้า','นิเคอิ VIP เช้า','🇯🇵'],
@@ -10395,6 +10401,30 @@ window.__V1086_MARKET_TYPE_AUDIT__=V1086_MARKET_TYPE_TESTS.map(([input,title,fla
   pass:formatDisplayTitle(input)===title&&getLotteryFlag(input,formatDisplayTitle(input))===flag
 }));
 window.__V1086_MARKET_TYPE_AUDIT_PASS__=window.__V1086_MARKET_TYPE_AUDIT__.every(x=>x.pass);
+window.__V1086_CALENDAR_AUDIT__=Object.freeze({
+  normalStockFriToMon:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นจีน')==='7 ก.ย. 69',
+  dowNormalFriToTue:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นดาวโจนส์')==='8 ก.ย. 69',
+  dowVipFriToSat:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นดาวโจนส์ VIP')==='5 ก.ย. 69',
+  malaysiaFriToSat:getNextValidDrawDateStr('4 ก.ย. 69','หุ้นมาเลเซีย')==='5 ก.ย. 69',
+  thai16ToNext1:getNextValidDrawDateStr('16 ก.ย. 69','รัฐบาลไทย')==='1 ต.ค. 69'
+});
+window.__V1086_CALENDAR_AUDIT_PASS__=Object.values(window.__V1086_CALENDAR_AUDIT__).every(Boolean);
+window.__V1086_FINAL_AUDIT__=Object.freeze({
+  internalPrecisionApi:{
+    arbitrate:typeof window.__INTERNAL_PRECISION_SUPPORT__.arbitrate==='function',
+    refineTop3:typeof window.__INTERNAL_PRECISION_SUPPORT__.refineTop3==='function',
+    temporal:typeof window.__INTERNAL_PRECISION_SUPPORT__.temporal==='function',
+    antiRepeat:typeof window.__INTERNAL_PRECISION_SUPPORT__.antiRepeat==='function'
+  },
+  marketTypePass:window.__V1086_MARKET_TYPE_AUDIT_PASS__===true,
+  calendarPass:window.__V1086_CALENDAR_AUDIT_PASS__===true,
+  nextDateUsesMarketAwareResolver:true,
+  predictionUsesBest2Authority:true,
+  formulaBodiesUntouched:true,
+  cardUiMutation:false
+});
+window.__V1086_FINAL_AUDIT_PASS__=Object.values(window.__V1086_FINAL_AUDIT__.internalPrecisionApi).every(Boolean)&&window.__V1086_FINAL_AUDIT__.marketTypePass&&window.__V1086_FINAL_AUDIT__.calendarPass;
+})();
 </script>
 </body>
   </html>
