@@ -10724,5 +10724,125 @@ window.__V1102_LOCK_AUDIT__=Object.freeze({
 })();
 </script>
 
+
+<script id="V1103_ADAPTIVE_MARKET_DIGIT_PAIR_AUTHORITY">
+(function(){
+'use strict';
+/* V110.3 — ADAPTIVE MARKET × FORMULA × DIGIT × PAIR AUTHORITY
+   Backend-only extension of V110.2.
+   LOCKED: all formula bodies, Formula 31, pair construction rules, UI/cards,
+   names/types/headings, dates/calendar and public percentage formatting.
+   No new prediction formula is introduced.
+*/
+const V1103_CFG=Object.freeze({
+  version:'V110.3',
+  horizons:Object.freeze([3,6,9,12,15,18,21,24,27,30]),
+  marketWeight:.16,
+  recentWeight:.26,
+  stabilityWeight:.22,
+  horizonWeight:.36,
+  stableTierWeight:1.00,
+  challengerTierWeight:.58,
+  supportTierWeight:.30,
+  tierBonusCap:6.0,
+  pairAdjustmentCap:3.0,
+  pairRecentWeight:.35,
+  pairLongWeight:.65,
+  minPairTests:4
+});
+const v1103Clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number.isFinite(Number(v))?Number(v):50));
+const v1103Round=v=>Math.round((Number(v)||0)*100)/100;
+function v1103Records(records){return (Array.isArray(records)?records:[]).filter(r=>typeof isResultRecord!=='function'||isResultRecord(r)).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));}
+function v1103TargetSet(r){const n3=String(r?.n3??'').padStart(3,'0'),n2=String(r?.n2??'').padStart(2,'0');if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2))return new Set();return new Set([Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1])]);}
+function v1103Hit(rec,d){return v1103TargetSet(rec).has(Number(d));}
+function v1103FormulaHistory(records,name){try{return getFormulaHistory(v1103Records(records),name)||[];}catch(e){return[];}}
+function v1103FormulaReliability(records,name){
+  const h=v1103FormulaHistory(records,name); if(!h.length)return {score:50,tests:0,horizons:[]};
+  const rates=V1103_CFG.horizons.map(w=>{const a=h.slice(-w);return a.length?100*a.filter(x=>x.hit).length/a.length:50;});
+  const valid=rates.filter((v,i)=>h.length>=V1103_CFG.horizons[i]);
+  const hr=valid.length?valid.reduce((a,b)=>a+b,0)/valid.length:rates[0]||50;
+  const recent=h.slice(-Math.min(6,h.length)); const rr=recent.length?100*recent.filter(x=>x.hit).length/recent.length:50;
+  const mean=valid.length?hr:50; const dev=valid.length?Math.sqrt(valid.reduce((s,v)=>s+(v-mean)*(v-mean),0)/valid.length):25;
+  const stability=v1103Clamp(100-dev*1.6);
+  const short=(rates[0]*.45+rates[1]*.30+rates[2]*.25);
+  const long=(rates[7]*.30+rates[8]*.30+rates[9]*.40);
+  const horizonScore=.55*short+.45*long;
+  const score=.36*horizonScore+.26*rr+.22*stability+.16*hr;
+  return {score:v1103Clamp(score),tests:h.length,horizons:rates,recent:rr,stability,horizonScore};
+}
+function v1103MarketIdentity(name){
+  try{return typeof v1086MarketIdentity==='function'?v1086MarketIdentity(name):String(name||'').trim();}catch(e){return String(name||'').trim();}
+}
+function v1103FormulaMarketMap(records,formulaNames){
+  const out={};
+  for(const name of (formulaNames||[])) out[name]=v1103FormulaReliability(records,name);
+  return out;
+}
+function v1103FormulaRank(records,names){
+  const map=v1103FormulaMarketMap(records,names);
+  return (names||[]).map(name=>({name,rel:map[name]||{score:50,tests:0}})).sort((a,b)=>b.rel.score-a.rel.score||b.rel.recent-a.rel.recent||a.name.localeCompare(b.name));
+}
+function v1103Tier(rank){return rank<=3?{tier:'STABLE_CORE',weight:V1103_CFG.stableTierWeight}:rank<=6?{tier:'STRONG_CHALLENGER',weight:V1103_CFG.challengerTierWeight}:{tier:'SUPPORT',weight:V1103_CFG.supportTierWeight};}
+function v1103DigitMarketEvidence(records,names,d){
+  const ranked=v1103FormulaRank(records,names), chosen=[];
+  for(const f of ranked){
+    const h=v1103FormulaHistory(records,f.name); if(!h.length)continue;
+    const latest=h[h.length-1]; if(!Array.isArray(latest?.predicted)||!latest.predicted.map(Number).includes(Number(d)))continue;
+    const t=v1103Tier(chosen.length<999?ranked.findIndex(x=>x.name===f.name)+1:999);
+    const independence=chosen.length?Math.max(...chosen.map(x=>Math.abs(v1103Pearson(x.series, h.map(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d))?1:0))))):0;
+    const deDup=Math.max(.30,1-Math.max(0,independence-.55));
+    chosen.push({name:f.name,rank:ranked.findIndex(x=>x.name===f.name)+1,tier:t.tier,tierWeight:t.weight,reliability:f.rel.score,series:h.map(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d))?1:0),deDup});
+  }
+  if(!chosen.length)return {score:50,support:[],tier:'SUPPORT'};
+  let sw=0,ss=0; for(const x of chosen.slice(0,8)){const w=x.tierWeight*(.55+.45*x.reliability/100)*x.deDup;sw+=w;ss+=x.reliability*w;}
+  return {score:sw?ss/sw:50,support:chosen,tier:chosen[0]?.tier||'SUPPORT'};
+}
+function v1103Pearson(a,b){const n=Math.min(a?.length||0,b?.length||0);if(n<4)return 0;let ma=0,mb=0;for(let i=0;i<n;i++){ma+=a[i];mb+=b[i];}ma/=n;mb/=n;let xy=0,xx=0,yy=0;for(let i=0;i<n;i++){const x=a[i]-ma,y=b[i]-mb;xy+=x*y;xx+=x*x;yy+=y*y;}return xx&&yy?xy/Math.sqrt(xx*yy):0;}
+function v1103Apply(base,records,auditData,formulaNames){
+  const src=base||{}, rows=Array.isArray(src.selectionAuthority)?src.selectionAuthority:[]; if(rows.length!==10)return src;
+  const rec=v1103Records(records), names=(formulaNames||[]).filter(x=>x&&!String(x).startsWith('__V')), market=v1103MarketIdentity(auditData?.lotteryName||auditData?.name||'');
+  const formulaRank=v1103FormulaRank(rec,names), marketRel=Object.fromEntries(formulaRank.map(x=>[x.name,x.rel]));
+  const metrics=rows.map(r=>{
+    const d=Number(r.digit), ev=v1103DigitMarketEvidence(rec,names,d), support=ev.support;
+    const top=support.filter(x=>x.rank<=3), ch=support.filter(x=>x.rank>=4&&x.rank<=6), sp=support.filter(x=>x.rank>=7);
+    /* Equal authority inside each tier: member rank never changes the tier weight. */
+    const tierEvidence=(top.length?top.reduce((s,x)=>s+x.reliability,0)/top.length:50)*.56+
+      (ch.length?ch.reduce((s,x)=>s+x.reliability,0)/ch.length:50)*.29+
+      (sp.length?sp.reduce((s,x)=>s+x.reliability,0)/sp.length:50)*.15;
+    const centered=(ev.score-50)/50;
+    const bounded=v1103Clamp(centered*V1103_CFG.tierBonusCap,-V1103_CFG.tierBonusCap,V1103_CFG.tierBonusCap);
+    const score=v1103Clamp((Number(r.score)||50)+bounded);
+    return {...r,score:v1103Round(score),selectionQuality:v1103Round(score),v1103:{market,marketFormulaReliability:v1103Round(ev.score),tierEvidence:v1103Round(tierEvidence),stableSupport:top.length,challengerSupport:ch.length,supportPool:sp.length,supporters:support.slice(0,8).map(x=>({name:x.name,rank:x.rank,tier:x.tier,reliability:v1103Round(x.reliability),deDup:v1103Round(x.deDup)}))}};
+  }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.proofScore)-Number(a.proofScore)||Number(a.digit)-Number(b.digit));
+  /* Stable TOP-3 and Challenger 4-6 are equal-authority tiers, not permanent locks. */
+  const top3=metrics.slice(0,3).map(x=>x.digit), best2=metrics.slice(0,6).slice(0,2).map(x=>x.digit);
+  return {...src,selectionAuthority:metrics,top3,best2,selectionAudit:{...(src.selectionAudit||{}),version:'V110.3 ADAPTIVE MARKET AUTHORITY',marketIdentity:market,marketFormulaReliability:Object.fromEntries(formulaRank.map(x=>[x.name,v1103Round(x.rel.score)])),horizons:V1103_CFG.horizons,stableTierEqual:true,challengerTierEqual:true,everyDigitCanWin:true,tierBonusCap:V1103_CFG.tierBonusCap}};
+}
+const oldClean=window.v98CleanAuthority;
+if(typeof oldClean==='function')window.v98CleanAuthority=function(base,records,auditData,formulaNames){const out=oldClean(base,records,auditData,formulaNames);const up=v1103Apply(out,records,auditData,formulaNames);window.__V1103_DIGIT_AUTHORITY__=up.selectionAuthority;window.__V1103_MARKET_FORMULA_RELIABILITY__=up.selectionAudit?.marketFormulaReliability||{};return up;};
+const oldPairs=window.generateFormulaPairs;
+if(typeof oldPairs==='function')window.generateFormulaPairs=function(mainDigit,otherDigit,auditMap,lotteryName,records){
+  const base=oldPairs(mainDigit,otherDigit,auditMap,lotteryName,records); if(!Array.isArray(base)||!base.length)return base;
+  const arr=v1103Records(records), target=Number(mainDigit), out=base.map(p=>{
+    const key=String(p.pair||'').padStart(2,'0'); if(!/^\d{2}$/.test(key))return p;
+    let tests=0,hits=0,recentTests=0,recentHits=0;
+    for(let i=0;i<arr.length-1;i++){
+      const next=arr[i+1], n3=String(next?.n3??'').padStart(3,'0'),n2=String(next?.n2??'').padStart(2,'0');
+      const actuals=[n3.slice(1),n3.slice(2),n2]; tests++; if(actuals.includes(key))hits++;
+      if(i>=arr.length-7){recentTests++;if(actuals.includes(key))recentHits++;}
+    }
+    const empirical=tests>=V1103_CFG.minPairTests?100*hits/tests:50;
+    const recent=recentTests>=2?100*recentHits/recentTests:empirical;
+    const signal=V1103_CFG.pairLongWeight*empirical+V1103_CFG.pairRecentWeight*recent;
+    const adj=v1103Clamp((signal-50)/50*V1103_CFG.pairAdjustmentCap,-V1103_CFG.pairAdjustmentCap,V1103_CFG.pairAdjustmentCap);
+    return {...p,score:v1103Round(v1103Clamp((Number(p.score)||50)+adj)),meta:{...(p.meta||{}),v1103Pair:{market:v1103MarketIdentity(lotteryName),pair:key,tests,hits,empirical:v1103Round(empirical),recent:v1103Round(recent),adjustment:v1103Round(adj),target}}};
+  }).sort((a,b)=>Number(b.score)-Number(a.score)||String(a.pair).localeCompare(String(b.pair)));
+  return out;
+};
+window.__V1103_CONFIG__=V1103_CFG;
+window.__V1103_LOCK_AUDIT__=Object.freeze({formulaBodiesUntouched:true,formula31Untouched:true,pairConstructionUntouched:true,uiMutation:false,cardAppearanceUntouched:true,calendarUntouched:true,namesUntouched:true,typesUntouched:true,displayUntouched:true,stableTop3Equal:true,challenger46Equal:true,everyDigitCanWin:true,marketSpecificLearning:true,pairMarketCalibration:true});
+})();
+</script>
+
 </body>
 </html>
