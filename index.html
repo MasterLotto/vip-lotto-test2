@@ -1694,6 +1694,38 @@ function percent(part,total){
 function normalizeLotterySeriesName(rawName){
   const name=String(rawName||'').trim();
   const key=name.replace(/\s+/g,'').toLowerCase();
+  const nikkeiAliases={
+    'นิคเคอิ':'นิเคอิ',
+    'นิคเคอิเช้า':'นิเคอิ เช้า',
+    'นิคเคอิบ่าย':'นิเคอิ บ่าย',
+    'นิคเคอิปกติเช้า':'นิเคอิ ปกติ เช้า',
+    'นิคเคอิปกติบ่าย':'นิเคอิ ปกติ บ่าย',
+    'นิคเคอิvipเช้า':'นิเคอิ VIP เช้า',
+    'นิคเคอิvipบ่าย':'นิเคอิ VIP บ่าย',
+    'นิคเคอิพิเศษเช้า':'นิเคอิ พิเศษ เช้า',
+    'นิคเคอิพิเศษบ่าย':'นิเคอิ พิเศษ บ่าย'
+  };
+  if(nikkeiAliases[key])
+    return nikkeiAliases[key];
+
+  const nikkeiPrefix=/^นิคเคอิ(?=เช้า|บ่าย|ปกติ|vip|พิเศษ|$)/i;
+  if(nikkeiPrefix.test(key)){
+    const rest=key.replace(/^นิคเคอิ/i,'');
+    const nikkeiSuffix={
+      '':'',
+      'เช้า':' เช้า',
+      'บ่าย':' บ่าย',
+      'ปกติเช้า':' ปกติ เช้า',
+      'ปกติบ่าย':' ปกติ บ่าย',
+      'vipเช้า':' VIP เช้า',
+      'vipบ่าย':' VIP บ่าย',
+      'พิเศษเช้า':' พิเศษ เช้า',
+      'พิเศษบ่าย':' พิเศษ บ่าย'
+    };
+    if(Object.prototype.hasOwnProperty.call(nikkeiSuffix,rest))
+      return 'นิเคอิ'+nikkeiSuffix[rest];
+  }
+
   const thaiStockLabels={
     'ไทยเช้า':'หุ้นไทย เปิดเช้า',
     'ไทยเที่ยง':'หุ้นไทย ปิดเที่ยง',
@@ -1805,17 +1837,17 @@ function formatDisplayTitle(rawName){
 
 
 
-    if(isMorning)return'นิเคอิ ปกติ เช้า';
+    if(isMorning)return'นิเคอิ เช้า';
 
 
 
 
-    if(isAfternoon)return'นิเคอิ ปกติ บ่าย';
+    if(isAfternoon)return'นิเคอิ บ่าย';
 
 
 
 
-    return'นิเคอิ ปกติ';
+    return'นิเคอิ';
   }
 
 
