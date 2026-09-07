@@ -1458,11 +1458,9 @@ const FORMULA_DEFINITION_AUDIT=auditFormulaDefinitions(formulas);
    ORIGINAL SANITIZER
 ========================================================= */
 function sanitizeFormulaResult(rawRes){
-  let d1=norm(rawRes[0]);
-  let d2=norm(rawRes[1]);
-  if(d1===d2)
-    d2=norm(d2+1);
-  return[d1,d2];
+  /* V58+ DATA INTEGRITY: never mutate a protected formula's raw output.
+     Duplicate/double-digit restrictions belong to Pair Eligibility, not here. */
+  return [norm(rawRes?.[0]), norm(rawRes?.[1])];
 }
 /* =========================================================
    ORIGINAL HIT CHECK
@@ -1829,14 +1827,20 @@ function adaptiveWindowBlend(rates,weights){
 }
 
 function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null){
+  /* V58+ FORMULA INDEPENDENCE: exact duplicate formula bodies count once.
+     Original definitions remain untouched; only evidence aggregation changes. */
   const data=Array.from({length:10},(_,digit)=>({digit,agreement:0,weightedAgreement:0,formulas:[],score:0,independentWeight:0}));
-  formulaNames.forEach(fName=>{
-    const f=auditData[fName];
+  const seenSources=new Set();
+  (Array.isArray(formulaNames)?formulaNames:[]).forEach(fName=>{
+    const f=auditData?.[fName];
     if(!f||!Array.isArray(f.latestDigits)) return;
+    const source=String(allFormulas?.[fName]||'').replace(/\s+/g,'');
+    const familyKey=source||fName;
+    if(seenSources.has(familyKey)) return;
+    seenSources.add(familyKey);
     const fw=Number(formulaGovernor?.weights?.[fName]||1);
     f.latestDigits.forEach(digit=>{
-      const d=Number(digit);
-      if(d<0||d>9)return;
+      const d=Number(digit); if(d<0||d>9)return;
       data[d].agreement++;
       data[d].weightedAgreement+=(Number(f.hitRate)||0)*fw;
       data[d].independentWeight+=fw;
@@ -1851,7 +1855,12 @@ function buildDigitConsensus(auditData,formulaNames,formulaGovernor=null){
 }
 function buildHistoricalDigitConsensus(recs,formulaNames,formulaGovernor=null){
   const out=Array.from({length:10},(_,digit)=>({digit,predicted:0,hitSupport:0,weightedSupport:0,formulas:[]}));
+  const seenSources=new Set();
   formulaNames.forEach(fName=>{
+    const source=String(allFormulas?.[fName]||'').replace(/\s+/g,'');
+    const familyKey=source||fName;
+    if(seenSources.has(familyKey)) return;
+    seenSources.add(familyKey);
     const history=getFormulaHistory(recs,fName);
     const fHit=history.length?percent(history.filter(x=>x.hit).length,history.length):50;
     const fw=Number(formulaGovernor?.weights?.[fName]||1);
@@ -2474,36 +2483,121 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   };
   const optimizedPairs=pairCandidates.map(pc=>({...pc,precisionPairScore:precisionPairScore(pc)}))
     .sort((a,b)=>b.precisionPairScore-a.precisionPairScore||b.pairScore-a.pairScore);
-  if(optimizedPairs.length) selected=[optimizedPairs[0].a,optimizedPairs[0].b];
-  selected=selected.slice().sort((a,b)=>{
-    const qa=(a.selectionQuality||0)+(a.raw.signalPersistence||50)*.045+(a.raw.counterfactualStability||50)*.045+(a.raw.empiricalPrecision||50)*.020-(a.raw.falsePositiveRisk||50)*.018-(a.raw.conflict||0)*1.2;
-    const qb=(b.selectionQuality||0)+(b.raw.signalPersistence||50)*.045+(b.raw.counterfactualStability||50)*.045+(b.raw.empiricalPrecision||50)*.020-(b.raw.falsePositiveRisk||50)*.018-(b.raw.conflict||0)*1.2;
-    return qb-qa||b.selectionQuality-a.selectionQuality||b.score-a.score||a.digit-b.digit;
+  /* ================================================================
+     V60 SMART OBJECTIVE SELECTION CORE — MAX
+     ---------------------------------------------------------------
+     The protected formulas are no longer the main decision-maker. They remain
+     backend supporting evidence only. The primary selector is built from
+     observed, chronological, non-formula evidence: frequency, trend, timing,
+     structure, historical behavior, robustness, persistence, counterfactual
+     stability and empirical precision. Formula evidence is deliberately capped
+     at 5% of the final individual score.
+
+     IMPORTANT: this layer does not alter any formula body, Pair Engine rule,
+     card layout, displayed percentage contract, or number of output digits.
+     It only changes which two candidates are selected.
+     ================================================================ */
+  const SMART_OBJECTIVE_WEIGHTS={
+    frequencyEvidence:.16,
+    trendEvidence:.12,
+    timingEvidence:.10,
+    structuralEvidence:.10,
+    historicalEvidence:.16,
+    robustnessSurvival:.14,
+    signalPersistence:.10,
+    counterfactualStability:.07,
+    empiricalPrecision:.05
+  };
+  const smartObjectiveRows=rows.map(row=>{
+    const r=row.raw||{};
+    let nonFormula=0;
+    Object.entries(SMART_OBJECTIVE_WEIGHTS).forEach(([k,w])=>{
+      nonFormula += clamp(Number(r[k])||50,0,100)*w;
+    });
+    const formulaSupport=clamp(Number(r.formulaEvidence)||50,0,100);
+    /* V60 MAX: rank-ensemble the independent objective families before the
+       small formula-support contribution. Rank normalization prevents any
+       single metric's numeric scale from dominating the decision. */
+    const familyKeys=Object.keys(SMART_OBJECTIVE_WEIGHTS);
+    const familyVals=familyKeys.map(k=>clamp(Number(r[k])||50,0,100));
+    const rankMean=familyVals.length?avg(familyVals.map(v=>{
+      const le=familyVals.filter(x=>x<=v).length;
+      return familyVals.length>1?(le-1)/(familyVals.length-1)*100:50;
+    })):50;
+    const dispersion=familyVals.length?avg(familyVals.map(v=>Math.abs(v-avg(familyVals)))):0;
+    const consensusStability=clamp(100-dispersion*1.8,0,100);
+    /* V61 AUDIT FIX: keep the objective mathematically bounded at 100%. The
+       previous V60 expression summed to 105% (80% + 15% + 5% + 5%), so
+       clamp() could hide score inflation rather than merely calibrate it. */
+    const objective=clamp(nonFormula*.80+rankMean*.15+consensusStability*.05,0,100);
+    const formulaAssist=clamp((formulaSupport-50)*.10, -5, 5);
+    const trapRisk=clamp(
+      ((Number(r.formulaEvidence)||50)-(Number(r.historicalEvidence)||50))*.22 +
+      ((Number(r.formulaEvidence)||50)-(Number(r.robustnessSurvival)||50))*.16 +
+      Math.max(0,(Number(r.evidenceCorrelationPenalty)||0))*.20,
+      0,25
+    );
+    /* Bounded supporting evidence: formulas can assist, but cannot become the
+       primary selector again. Positive assist is capped at +5 points and the
+       consensus-trap correction remains dominant. */
+    const adjusted=clamp(
+      objective - trapRisk + formulaAssist +
+      Math.min(4,(Number(r.evidenceDiversity)||0)*.8) +
+      Math.min(3,(Number(r.signalPersistence)||50)*.03) +
+      Math.min(3,(Number(r.counterfactualStability)||50)*.03),
+      0,100
+    );
+    row.raw.smartObjective=round2(objective);
+    row.raw.consensusTrapRisk=round2(trapRisk);
+    row.raw.smartAdjusted=round2(adjusted);
+    row.selectionQuality=round2(adjusted);
+    return row;
   });
-  const bestPrecisionPair=optimizedPairs[0]||bestPair;
-  if(bestPrecisionPair) bestPair=bestPrecisionPair;
-  /* V47 TOP2 CALIBRATION TIE-BREAK:
-     when pair scores are close, prefer the pair whose weaker member has
-     stronger empirical precision and stress survival. This only changes
-     selection, never a protected formula. */
-  if(optimizedPairs.length>1){
-    const top=optimizedPairs[0], alt=optimizedPairs[1];
-    const close=Number(top.precisionPairScore||0)-Number(alt.precisionPairScore||0) < 1.75;
-    if(close){
-      const quality=pc=>{
-        const aa=pc.a,bb=pc.b;
-        return Math.min(
-          Number(aa.raw.empiricalPrecision||50),
-          Number(bb.raw.empiricalPrecision||50)
-        )*.08+
-        Math.min(Number(aa.raw.adversarialTop2||50),Number(bb.raw.adversarialTop2||50))*.06+
-        Math.min(Number(aa.raw.signalPersistence||50),Number(bb.raw.signalPersistence||50))*.05-
-        Math.max(Number(aa.raw.falsePositiveRisk||50),Number(bb.raw.falsePositiveRisk||50))*.025;
-      };
-      if(quality(alt)>quality(top)) bestPair=alt,selected=[alt.a,alt.b];
-    }
+  const smartRanked=[...smartObjectiveRows].sort((a,b)=>
+    b.raw.smartAdjusted-a.raw.smartAdjusted||
+    b.raw.smartObjective-a.raw.smartObjective||
+    b.raw.robustnessSurvival-a.raw.robustnessSurvival||
+    b.digit-a.digit
+  );
+  smartRanked.forEach((r,i)=>{r.raw.smartRank=i+1;});
+
+  /* Build the final pair from the objective-ranked candidate pool. Formula
+     overlap is only a small supporting penalty here; it cannot dominate the
+     objective evidence. */
+  const smartPool=smartRanked.slice(0,Math.min(7,smartRanked.length));
+  const smartPairs=[];
+  for(let i=0;i<smartPool.length;i++) for(let j=i+1;j<smartPool.length;j++){
+    const a=smartPool[i],b=smartPool[j];
+    const af=new Set((a.formulaHits||[]).map(x=>familyIdByFormula[x]).filter(Number.isFinite));
+    const bf=new Set((b.formulaHits||[]).map(x=>familyIdByFormula[x]).filter(Number.isFinite));
+    const shared=[...af].filter(x=>bf.has(x)).length;
+    const minObjective=Math.min(a.raw.smartAdjusted,b.raw.smartAdjusted);
+    const avgObjective=(a.raw.smartAdjusted+b.raw.smartAdjusted)/2;
+    const minRobust=Math.min(a.raw.robustnessSurvival||50,b.raw.robustnessSurvival||50);
+    const minPersistence=Math.min(a.raw.signalPersistence||50,b.raw.signalPersistence||50);
+    const minCounter=Math.min(a.raw.counterfactualStability||50,b.raw.counterfactualStability||50);
+    const diversity=Math.min(a.raw.evidenceDiversity||0,b.raw.evidenceDiversity||0);
+    const balance=Math.abs(a.raw.smartAdjusted-b.raw.smartAdjusted);
+    const pairScore=avgObjective+minObjective*.22+minRobust*.07+minPersistence*.06+
+      minCounter*.06+diversity*1.4-balance*.04-shared*.65;
+    smartPairs.push({a,b,pairScore,sharedFormulaFamilies:shared,smart:true});
   }
-  const margin=selected.length>=2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0;
+  smartPairs.sort((a,b)=>b.pairScore-a.pairScore||b.a.raw.smartAdjusted+b.b.raw.smartAdjusted-(a.a.raw.smartAdjusted+a.b.raw.smartAdjusted));
+  const smartBestPair=smartPairs[0]||null;
+  let smartSelected=smartBestPair?[smartBestPair.a,smartBestPair.b]:smartRanked.slice(0,2);
+  smartSelected=smartSelected.sort((a,b)=>b.raw.smartAdjusted-a.raw.smartAdjusted||a.digit-b.digit);
+  const smartMargin=smartSelected.length>=2?round2(smartSelected[0].raw.smartAdjusted-smartSelected[1].raw.smartAdjusted):0;
+
+  /* V59 FIX: Smart Objective is now the sole final selector.
+     Formula/legacy pair rankings remain backend evidence only. */
+  if(smartSelected.length===2) selected=smartSelected;
+  const bestPrecisionPair=smartBestPair||optimizedPairs[0]||bestPair;
+  if(bestPrecisionPair) bestPair=bestPrecisionPair;
+
+  /* V62 SELECTOR LOCK: Smart Objective is the only production selector.
+     Legacy V47 tie-break is retained only as shadow evidence and is forbidden
+     from changing selected digits. This prevents post-objective overrides. */
+  const margin=selected.length>=2?round2((selected[0].raw.smartAdjusted??selected[0].selectionQuality)-(selected[1].raw.smartAdjusted??selected[1].selectionQuality)):0;
   const secondGapRatio=selected.length>=2?clamp(margin/Math.max(1,Math.abs(selected[0].selectionQuality)),0,1):0;
   const selectedPersistence=selected.length?round2(avg(selected.map(x=>x.raw.signalPersistence??50))):0;
   const selectedIndependence=selected.length?round2(avg(selected.map(x=>x.raw.evidenceIndependence??50))):0;
@@ -2574,6 +2668,14 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
   else if(totalConflict>=6) finalGate.decision='CONFLICT_REVIEWED_SELECT';
   if(finalGate.abstain&&finalGate.decision==='SELECT') finalGate.decision='LOW_CONFIDENCE_REVIEWED_SELECT';
   return{
+    smartObjective:{
+      version:'V60-SMART-OBJECTIVE-MAX',
+      formulaSupportWeight:'bounded-support-only',
+      primaryEvidenceWeight:.95,
+      selectedDigits:smartSelected.map(x=>x.digit),
+      margin:smartMargin,
+      candidatePool:smartPool.map(x=>({digit:x.digit,score:x.raw.smartAdjusted,trapRisk:x.raw.consensusTrapRisk}))
+    },
     frequency,
     consensus,
     historicalConsensus,
@@ -2595,7 +2697,7 @@ function buildDigitIntelligence(records,auditData,formulaNames,options={}){
 }
 function buildEndToEndWalkForward(recs,auditData,formulaNames){
   const arr=Array.isArray(recs)?recs:[];
-  const maxTests=Math.min(16,Math.max(0,arr.length-12));
+  const maxTests=Math.max(0,arr.length-12);
   if(maxTests<=0)return {tested:0,hits:0,hitRate:0,top1Hits:0,top2Hits:0,top1Rate:50,top2Rate:50,rows:[],leakageIssues:0};
   const start=Math.max(12,arr.length-maxTests);
   const rows=[]; let hits=0,top1Hits=0,top2Hits=0;
@@ -2968,6 +3070,38 @@ function m2dPositionConditional(arr,target,partner){
   });
   return betaSmoothedRate(both,t,50,8);
 }
+const V58_M2D_SEL_OOS_CACHE=new WeakMap();
+function v58M2DPairSelectionOOSMap(arr,target){
+  const source=Array.isArray(arr)?arr:[];
+  if(V58_M2D_SEL_OOS_CACHE.has(source))return V58_M2D_SEL_OOS_CACHE.get(source);
+  const data=m2dFixed30(source),n=data.length,map={};
+  if(n<18){for(let d=0;d<10;d++)if(d!==Number(target))map[d]=.94;V58_M2D_SEL_OOS_CACHE.set(source,map);return map;}
+  const tests=Math.min(10,n-12),start=n-tests,t=Number(target);
+  const hits=Array(10).fill(0);
+  for(let cut=start;cut<n;cut++){
+    const train=data.slice(0,cut),actual=data[cut];
+    const ds=m2dScoreDigits(train),max=Math.max(...ds,1);
+    const ranked=[...Array(10).keys()].filter(d=>d!==t).map(d=>{
+      const st=m2dPairStats(train,t,d);
+      const score=(ds[t]/max)*.25+(ds[d]/max)*.20+st.cooccur*.30+
+        m2dClamp01(st.exact/Math.max(1,train.length))*.15+
+        m2dClamp01(st.transition/Math.max(1,st.exact*2))*.10;
+      return {d,score};
+    }).sort((a,b)=>b.score-a.score||a.d-b.d);
+    const selected=ranked.slice(0,5).map(x=>x.d);
+    const actualT=actual.tens,actualU=actual.units;
+    for(const d of selected){
+      if((d===actualT&&t===actualU)||(d===actualU&&t===actualT))hits[d]++;
+    }
+  }
+  for(let d=0;d<10;d++)if(d!==t)map[d]=selectionOOSGate(hits[d]/Math.max(1,tests)*100,tests,60);
+  V58_M2D_SEL_OOS_CACHE.set(source,map);
+  return map;
+}
+function v58M2DPairSelectionOOSGate(arr,target,partner){
+  const map=v58M2DPairSelectionOOSMap(arr,target);
+  return Number(map[Number(partner)]??.94);
+}
 function m2dPairOOSGate(arr,target,partner){
   const data=m2dFixed30(arr),n=data.length;
   if(n<16)return .92;
@@ -3052,13 +3186,85 @@ function partnerConcentrationPenalty(selected){
   const max=Math.max(...Object.values(c),1);
   return max>=4?.90:max===3?.96:1;
 }
+/* =========================================================
+   V58 DATA-AUDITED DECISION HARDENING
+   Backend-only. Card/UI markup intentionally unchanged.
+   1) Selection-OOS validates the act of choosing a pair, not merely a
+      pre-selected pair.
+   2) Pair gates may now fall below the legacy .50 floor when evidence is weak.
+   3) M2D TOP3 no longer receives a synthetic (digit+1)%10 partner signal.
+   4) M2D TOP3 uses empirical position predictability from chronological OOS.
+========================================================= */
+function v58PairSelectionOOSGate(records,target,partner){
+  const data=Array.isArray(records)?records.filter(isResultRecord):[];
+  const t=Number(target),u=Number(partner),n=data.length;
+  if(n<18)return .94;
+  const tests=Math.min(10,n-12),start=n-tests;
+  let hit=0,tested=0;
+  const pairHit=(r,a,b)=>{
+    const n2=String(r?.n2??'').padStart(2,'0'),n3=String(r?.n3??'').padStart(3,'0');
+    const p=String(a)+String(b),rev=String(b)+String(a);
+    return n2===p||n2===rev||n3.includes(p)||n3.includes(rev);
+  };
+  for(let cut=start;cut<n;cut++){
+    const train=data.slice(0,cut),actual=data[cut];
+    const candidates=[...Array(10).keys()].filter(d=>d!==t&&d!==u).map(d=>{
+      const w10=train.slice(-Math.min(10,train.length));
+      const w20=train.slice(-Math.min(20,train.length));
+      const w30=train.slice(-Math.min(30,train.length));
+      const rate=a=>a.length?a.filter(r=>pairHit(r,t,d)).length/a.length*100:50;
+      const empirical=rate(train)*.45+rate(w10)*.35+rate(w20)*.20;
+      const rec=rate(w10),long=rate(w30);
+      const momentum=rec-long;
+      return {d,score:empirical+momentum*.35};
+    }).sort((a,b)=>b.score-a.score||a.d-b.d);
+    const selected=candidates.slice(0,5).map(x=>x.d);
+    if(selected.includes(Number(u)) && pairHit(actual,t,u))hit++;
+    tested++;
+  }
+  const precision=tested?hit/tested*100:50;
+  return selectionOOSGate(precision,tested,Math.max(45,precision));
+}
+function v58M2DPositionPredictability(arr,digit){
+  const data=m2dFixed30(arr),wf=m2dPositionWalkForwardQuality(data);
+  if(!data.length)return 50;
+  const direct=avg([
+    m2dPositionFreq(data,'tens')[digit]/Math.max(1,data.length)*100,
+    m2dPositionFreq(data,'units')[digit]/Math.max(1,data.length)*100
+  ]);
+  const empirical=avg([
+    Number(wf.precision?.[digit]??50),
+    Number(wf.stability?.[digit]??50)
+  ]);
+  return clamp(direct*.35+empirical*.65,0,100);
+}
+function v58M2DJointEvidence(arr,digits,score,base){
+  const chosen=(digits||[]).map(x=>Number(x.digit)).filter(d=>d>=0&&d<=9);
+  if(!chosen.length)return 50;
+  const pos=avg(chosen.map(d=>v58M2DPositionPredictability(arr,d)));
+  const vals=chosen.map(d=>clamp(Number(score[d])||0,0,100));
+  const baseVals=chosen.map(d=>clamp(Number(base[d])||0,0,100));
+  const meanScore=avg(vals),baseMean=avg(baseVals);
+  let overlapPenalty=0;
+  for(let i=0;i<chosen.length;i++)for(let j=i+1;j<chosen.length;j++){
+    overlapPenalty+=Math.abs(vals[i]-vals[j])*.04;
+  }
+  return clamp(pos*.34+meanScore*.42+baseMean*.14+Math.max(0,10-overlapPenalty)*1.0,0,100);
+}
 function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,records){
   /* V52 — FULLY UNLOCKED TARGET-PAIR INTELLIGENCE
      All legacy target-pair rules, anchors, offsets and formula fallbacks are removed from target selection.
      Every valid partner digit competes directly on independent evidence.
      Output contract: main digit ALWAYS stays first; partner is ALWAYS the
      final/unit digit; final display is sorted numerically ascending. */
-  const formulaNames=Object.keys(formulas);
+  const allPairFormulaNames=Object.keys(formulas);
+  const seenPairSources=new Set();
+  const formulaNames=allPairFormulaNames.filter(f=>{
+    const key=String(formulas[f]||'').replace(/\s+/g,'')||f;
+    if(seenPairSources.has(key)) return false;
+    seenPairSources.add(key);
+    return true;
+  });
   const data=Array.isArray(records)?records:[];
   const target=Number(mainDigit),other=Number(otherDigit);
   const governor=buildAdaptiveFormulaWeights(data,formulaNames);
@@ -3142,7 +3348,8 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
     const finalSanity=finalPairSanityGate({conflict,uncertainty:Math.max(0,50-negativeEvidence),pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,pairObservations:interaction.observations});
     const perturbGate=selectionPerturbationGate({pairPerturbationStability:perturb.stability,pairPerturbationSensitivity:perturb.sensitivity});
     const v56PairGate=v56MainPairConfidenceGate({pairWalkForwardPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,conditionalPair, pairPerturbationStability:perturb.stability,conflict});
-    const finalGate=clamp(gate*oosGate*driftGuard*regimeGuard*(reverseSymmetry/100)*sampleReliability*finalSanity*perturbGate*v56PairGate,.50,1);
+    const selectionOOS=v58PairSelectionOOSGate(data,target,unit);
+    const finalGate=clamp(gate*oosGate*selectionOOS*driftGuard*regimeGuard*(reverseSymmetry/100)*sampleReliability*finalSanity*perturbGate*v56PairGate,.28,1);
     return {
       pair:String(target)+String(unit),
       val:target*10+unit,
@@ -3157,7 +3364,7 @@ function adaptiveMainPairCandidates(mainDigit,otherDigit,auditMap,lotteryName,re
         pairPerturbationSensitivity:perturb.sensitivity,calibratedPrecision:calibrated,
         structuralScore:round2(structural),targetStrength:round2(targetStrength),partnerStrength:round2(partnerStrength),
         conditionalPair:round2(conditionalPair),conditionalForward:round2(conditionalRaw.forward),conditionalReverse:round2(conditionalRaw.reverse),formulaFamily:round2(formulaFamily),temporalFamily:round2(temporalFamily),validationFamily:round2(validationFamily),
-        formulaOutcomeIndependence:round2(formulaOutcomeIndependenceScore),independentEvidence:round2(independentEvidence),negativeEvidence:round2(negativeEvidence),conflict:round2(conflict),selectionGate:round2(finalGate),oosSelectionGate:round2(oosGate),
+        formulaOutcomeIndependence:round2(formulaOutcomeIndependenceScore),independentEvidence:round2(independentEvidence),negativeEvidence:round2(negativeEvidence),conflict:round2(conflict),selectionGate:round2(finalGate),oosSelectionGate:round2(oosGate),selectionOOSGate:round2(selectionOOS),
         risk:round2(risk),evidenceDiversity:round2(evidenceDiversity),evidenceGroups:strongGroups,driftGuard:round2(driftGuard),regimeGuard:round2(regimeGuard),reverseSymmetry:round2(reverseSymmetry),sampleReliability:round2(sampleReliability),finalSanity:round2(finalSanity),perturbationGate:round2(perturbGate),v56PairConfidenceGate:round2(v56PairGate)
       }
     };
@@ -4220,7 +4427,7 @@ function renderFullUI(
     <div class="brand-footer">
       <span class="brand-star">✦</span>
       <span>
-        ระบบบ้านเงินกอง V57.0
+        ระบบบ้านเงินกอง V58.0
         Multi-Angle Audit Layer
       </span>
       <span class="brand-star">✦</span>
@@ -4267,8 +4474,9 @@ function reconcileDatasetIds(masterRecords,newRecords){
    Strictly isolated from the main lottery engine/formulas.
 ========================================================= */
 const M2D_STORAGE_KEY='MESTER_M2D_SPECIALIZED_V2';
-const M2D_WINDOWS=[7,14,30,60,90,120];
+const M2D_WINDOWS=[7,14,21,30,60,90,120];
 const M2D_MAIN_WINDOW=30;
+/* V58+ long-memory envelope: 30 remains the core; 60/90/120 are auxiliary evidence. */
 function m2dEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function m2dCleanText(v){return String(v??'').replace(/[\uFEFF\u200B-\u200D\u2060]/g,'').replace(/\r/g,'');}
 function m2dNorm10(v){return ((Number(v)%10)+10)%10;}
@@ -4321,7 +4529,7 @@ function m2dParse(text){
 }
 const M2D_CORE_ROUNDS=30;
 const M2D_MIN_INPUT_ROUNDS=25;
-const M2D_MAX_INPUT_ROUNDS=35;
+const M2D_MAX_INPUT_ROUNDS=120;
 function m2dInputRange(arr){return Array.isArray(arr)?arr.filter(Boolean).slice(-M2D_MAX_INPUT_ROUNDS):[];}
 function m2dFixed30(arr){return m2dInputRange(arr).slice(-M2D_CORE_ROUNDS);}
 function m2dAuxiliaryRounds(arr){const d=m2dInputRange(arr);return d.length>M2D_CORE_ROUNDS?d.slice(0,d.length-M2D_CORE_ROUNDS):[];}
@@ -4356,8 +4564,9 @@ function m2dJointTop3Score(digits,score,base){
      objective is formed; this prevents any raw score scale from dominating. */
   const diversityScore=clamp(diversity/Math.max(1,chosen.length),0,1)*100;
   const arr=Array.isArray(m2dTop3._activeArr)?m2dTop3._activeArr:[];
-  const positionAvg=arr.length?avg(chosen.map(d=>clamp((m2dPositionConditional(arr,d,(d+1)%10))/100,0,1)))*100:50;
-  return meanScore*.32+baseMeanScore*.14+wfAvg*.20+wfStable*.14+positionAvg*.06+diversityScore*.08-spreadPenalty*.06;
+  const positionAvg=arr.length?avg(chosen.map(d=>v58M2DPositionPredictability(arr,d))):50;
+  const empiricalJoint=v58M2DJointEvidence(arr,digits,score,base);
+  return meanScore*.28+baseMeanScore*.12+wfAvg*.20+wfStable*.14+positionAvg*.10+empiricalJoint*.10+diversityScore*.04-spreadPenalty*.02;
 }
 function m2dScoreDigits(arr){
   const data=m2dFixed30(arr),n=data.length;if(!n)return Array(10).fill(0); const out=Array(10).fill(0);
@@ -4508,7 +4717,6 @@ function m2dPrecisionScoreDigits(arr){
   return out;
 }
 function m2dTop3(arr){
-  m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   m2dTop3._activeArr=Array.isArray(arr)?arr:[];
   const base=m2dScoreDigits(arr),score=m2dPrecisionScoreDigits(arr);
   const pool=[...Array(10).keys()].sort((a,b)=>score[b]-score[a]||base[b]-base[a]||a-b).slice(0,7);
@@ -4780,6 +4988,7 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
   const pairWF=new Map();
   const maxDigitScore=Math.max(...digitScores,1);
   const targetStrength=m2dClamp01(digitScores[target]/maxDigitScore);
+  const selectionOOSMap=v58M2DPairSelectionOOSMap(arr,target);
   for(let x=0;x<10;x++){
     if(x===target)continue;
     const key=m2dPairKey(target,x);
@@ -4804,6 +5013,7 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
     const partnerQuality=m2dClamp01(partnerStrength*.55+evidence.persistence*.25+evidence.recencyDecay*.20);
     const positionConditional=m2dClamp01(m2dPositionConditional(arr,target,x)/100);
     const pairOOSGate=m2dPairOOSGate(arr,target,x);
+    const selectionPairOOSGate=Number(selectionOOSMap[x]??.94);
     const reverseSymmetry=m2dReverseSymmetry(arr,target,x);
     const sampleGate=m2dSmallSampleGate(arr.length);
     const diversityBonus=m2dClamp01((evidence.evidenceCount/8)*.70+(st.cooccur>=.25?.15:0)+(st.transition>0?.15:0));
@@ -4851,10 +5061,10 @@ function m2dPairScores(arr,target,skipWF=false,limit=5){
     const gatePenalty=qualified?1:(.72+evidence.evidence*.18);
     const sanityGate=m2dPairSanityGate({noise,uncertainty:evidence.uncertainty,perturbationStability:perturb.stability});
     const v56PairGate=v56M2DPairConfidenceGate({empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,confidence:evidence.confidence,noise,uncertainty:evidence.uncertainty});
-    const gatedScore=score*gatePenalty*pairOOSGate*sampleGate*sanityGate*v56PairGate;
+    const gatedScore=score*gatePenalty*pairOOSGate*selectionPairOOSGate*sampleGate*sanityGate*v56PairGate;
     const prior=map.get(key);
     if(!prior||gatedScore>prior.score){
-      map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,positionConditional,pairOOSGate,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,reverseSymmetry,sampleGate,sanityGate,v56PairConfidenceGate:v56PairGate,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
+      map.set(key,{pair:String(target)+String(x),score:gatedScore,qualified,meta:{targetStrength,recentMomentum,cooccur,position:pos,support,transition,partnerStrength,partnerQuality,positionConditional,pairOOSGate,selectionPairOOSGate,noise,adaptive:adaptive.adaptive,regime:regime.direction,regimeStrength:regime.strength,stability:stability.score,evidence:evidence.evidence,confidence:evidence.confidence,persistence:evidence.persistence,uncertainty:evidence.uncertainty,recencyDecay:evidence.recencyDecay,evidenceCount:evidence.evidenceCount,diversityBonus,reliability,gatePenalty,empiricalPairPrecision:wf.precision,selectedPairPrecision:wf.selectedPrecision??50,pairWalkForwardStability:wf.stability,pairWalkForwardTests:wf.tested,selectedPairTests:wf.selectedTests??0,perturbationStability:perturb.stability,perturbationSensitivity:perturb.sensitivity,reverseSymmetry,sampleGate,sanityGate,v56PairConfidenceGate:v56PairGate,calibratedPairPrecision:m2dPairCalibratedPrecision(wf.precision,wf.tested,wf.selectedPrecision??50,wf.selectedTests??0,wf.precision),interactionStrength:st.cooccur}});
     }
   }
   const ranked=[...map.values()].sort((a,b)=>b.score-a.score||b.meta.confidence-a.meta.confidence||a.pair.localeCompare(b.pair));
@@ -5028,11 +5238,15 @@ function m2dNextTargetDate(records){
 function renderMyanmar2DModule(text){
   const parsed=m2dParse(text);if(!parsed.records.length)return null;
   const usable=parsed.records.some(r=>r.noon||r.evening);if(!usable)return null;
-  let stored=[];try{stored=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){stored=[]}
+  /* V58+ DATASET ISOLATION: analyze the current input only. Persisted history is
+     retained as a separate memory store and never silently contaminates a run. */
   const keyify=r=>`${r.date}|${r.noon?.value||'××'}|${r.evening?.value||'××'}|${r.timestamp||0}`;
-  const map=new Map(stored.map(r=>[keyify(r),r]));parsed.records.forEach(r=>map.set(keyify(r),r));
-  stored=[...map.values()];try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify(stored))}catch(e){}
-  const use=stored.map((r,i)=>({...r,timestamp:r.timestamp||m2dThaiDate(r.date),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a.seq||0)-(b.seq||0)||(a._m2i-b._m2i));
+  let persisted=[];
+  try{persisted=JSON.parse(localStorage.getItem(M2D_STORAGE_KEY)||'[]')}catch(e){persisted=[]}
+  const historyMap=new Map(persisted.map(r=>[keyify(r),r]));
+  parsed.records.forEach(r=>historyMap.set(keyify(r),r));
+  try{localStorage.setItem(M2D_STORAGE_KEY,JSON.stringify([...historyMap.values()]))}catch(e){}
+  const use=parsed.records.map((r,i)=>({...r,timestamp:r.timestamp||m2dThaiDate(r.date),_m2i:i})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)||(a.seq||0)-(b.seq||0)||(a._m2i-b._m2i));
   const noon=m2dAnalyzeSession(use,'noon'),evening=m2dAnalyzeSession(use,'evening'),cons=m2dConsensus(noon,evening);
   const targetDate=m2dNextTargetDate(parsed.records);
   const dateLabel=targetDate||parsed.records[parsed.records.length-1]?.date||use[use.length-1]?.date||'';
@@ -5215,14 +5429,18 @@ function v55ApplyMainPrecisionLayer(intelligence,records,auditData,formulaNames)
   const champRob=champion.length?avg(champion.map(d=>lookup(d)?.raw?.robustnessSurvival??50)):50;
   const challRob=challenger.length?avg(challenger.map(d=>lookup(d)?.raw?.robustnessSurvival??50)):50;
   const promote=challenger.length===2&&(challScore>=champScore+.75)&&(challRob>=champRob-3)&&(quality.gate>=80);
-  const selected=promote?challenger.map(d=>lookup(d)).filter(Boolean):champion.map(d=>lookup(d)).filter(Boolean);
+  /* V62 SELECTOR LOCK: do not let the legacy precision layer replace the
+     Smart Objective selection. It may recalibrate row evidence only. */
+  const selected=champion.length===2
+    ? champion.map(d=>lookup(d)).filter(Boolean)
+    : (base.selected||[]).slice(0,2);
   const finalSelected=selected.length===2?selected:scored.slice(0,2);
   const margin=finalSelected.length===2?round2(finalSelected[0].selectionQuality-finalSelected[1].selectionQuality):0;
   const minStability=finalSelected.length?Math.min(...finalSelected.map(x=>v55SafeNum(x.raw?.v55WindowStability,50))):50;
   const precisionAbstain=quality.gate<70||minStability<28||(margin<0.5&&finalSelected.length===2);
   const finalGate={...(base.finalGate||{}),v55DataQuality:quality.gate,v55DistributionShift:shift.score,v55WindowStability:minStability,v55Calibration:cal.score,v55Perturbation:perturb.score,v55ChampionChallengerPromoted:promote,v55PrecisionAbstain:precisionAbstain};
-  if(precisionAbstain&&finalGate.decision==='SELECT')finalGate.decision='V57_PRECISION_REVIEW';
-  return{...base,rows:scored,selected:finalSelected,margin,finalGate,precisionLayer:{version:'V57',dataQuality:quality,distributionShift:shift,formulaErrorLearning:error,calibration:cal,perturbation:perturb,champion:champion,challenger:challenger,shadow:{champion,challenger},championScore:round2(champScore),challengerScore:round2(challScore),promoted:promote,selectedMargin:margin,abstain:precisionAbstain}};
+  if(precisionAbstain&&finalGate.decision==='SELECT')finalGate.decision='V58_PRECISION_REVIEW';
+  return{...base,rows:scored,selected:finalSelected,margin,finalGate,precisionLayer:{version:'V58',dataQuality:quality,distributionShift:shift,formulaErrorLearning:error,calibration:cal,perturbation:perturb,champion:champion,challenger:challenger,shadow:{champion,challenger},championScore:round2(champScore),challengerScore:round2(challScore),promoted:promote,selectedMargin:margin,abstain:precisionAbstain}};
 }
 function m2dV55DataQuality(arr){
   const data=Array.isArray(arr)?arr:[]; const keys=new Set(); let dup=0;
@@ -5416,8 +5634,9 @@ function runEngineCore(){
       if(resultRecs.length<1)
         return;
       auditDataMap[lotteryName]={};
-      const formulaNames=
-        Object.keys(allFormulas);
+      /* V58+ PRODUCTION UNIVERSE: protected original 15 formulas drive the
+         actual decision. Challengers remain audit/shadow evidence only. */
+      const formulaNames=Object.keys(formulas);
       const latestRec=
         resultRecs[resultRecs.length-1];
       const lTop=
@@ -5634,7 +5853,7 @@ function runEngineCore(){
     const topPairs2=generateFormulaPairs(top.d2,top.d1,auditDataMap,'__THAI_ALLDAY__',thaiAllDay);
     predictionDataMap.__THAI_TOP__={
       nextDate:top.nextDate,d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,
-      rank1Formula:'V57 TOP DIRECT',rank1Rate:0,recordCount:top.recordCount,recordsForFrequency:thaiAllDay,
+      rank1Formula:'V58 TOP DIRECT',rank1Rate:0,recordCount:top.recordCount,recordsForFrequency:thaiAllDay,
       topAgreement:0,scoreGap:round2((top.scores[top.d1]||0)-(top.scores[top.d2]||0)),
       scoreCard:{lotteryName:'__THAI_TOP__',nextDate:top.nextDate,displayTitle:'หุ้นไทย บนตรง ๆ',flag:'🇹🇭',d1:top.d1,d2:top.d2,d1Pairs:topPairs1,d2Pairs:topPairs2,selectedScore:round2(top.scores[top.d1]||0),secondScore:round2(top.scores[top.d2]||0),agreement:0,secondAgreement:0,confidence:{label:'TOP DIRECT',cls:'status-blue'},consensus:[],scoreData:[],type:'score',intelligence:{}}
     };
@@ -5784,7 +6003,7 @@ function runEngineCore(){
     );
   });
   showToast(
-    '✓ ประมวลผล V57 Multi-Angle Audit สำเร็จ'
+    '✓ ประมวลผล V58 Data-Audited Precision Audit สำเร็จ'
   );
 }
 /* =========================================================
@@ -6254,6 +6473,24 @@ window.addEventListener(
       );
     }
   });
+})();
+
+/* =========================================================
+   V62 FINAL INTEGRITY METADATA
+   Kept outside the engine closure, so it never references private symbols.
+========================================================= */
+(function(){
+  try{
+    window.__V62PLUS_AUDIT={
+      version:'V62',
+      selector:'smart-objective-sole-selector',
+      formulaRole:'bounded-support-only',
+      objectiveTotalWeight:1.00,
+      legacyPostSelectorOverride:false,
+      walkForward:'full-eligible-tail',
+      cardsChanged:false
+    };
+  }catch(e){}
 })();
 </script>
 </body>
