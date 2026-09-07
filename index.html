@@ -2026,31 +2026,28 @@ function getNextDateStr(dateStr,lotteryName){
   let year=parseInt(parts[2],10)||2569;
   if(year<100)year+=2500;else if(year<2500)year+=543;
   const d=new Date(year-543,m,day);
-  const n=typeof normalizeLotterySeriesName==='function'
-    ? normalizeLotterySeriesName(lotteryName||'')
-    : String(lotteryName||'');
-  const key=String(n).toLowerCase().replace(/\s+/g,'');
+  const raw=String(lotteryName||'');
+  const name=typeof normalizeLotterySeriesName==='function'?normalizeLotterySeriesName(raw):raw;
+  const key=String(name||raw).toLowerCase().replace(/\s+/g,'');
   const isVip=key.includes('vip');
+  const isHanoi=key.includes('ฮานอย');
+  const isLaos=key.includes('ลาว');
+  const isLaosDevelopment=isLaos&&key.includes('พัฒนา');
   const isDow=key.includes('ดาวโจนส์');
   const isDowNormal=isDow&&!isVip&&!key.includes('star')&&!key.includes('สตาร์');
-  const weekdayMarkets=['นิเคอิ','นิกเคอิ','ญี่ปุ่น','จีน','ฮั่งเส็ง','ไต้หวัน','เกาหลี','สิงคโปร์','อินเดีย','อียิปต์','รัสเซีย','เยอรมนี','อังกฤษ','หุ้นไทย','ตลาดหุ้นไทย'];
-  const isWeekdayNormal=!isVip&&!isDowNormal&&(key.includes('ลาวพัฒนา')||weekdayMarkets.some(x=>key.includes(x)));
+  const weekdayMarkets=['นิเคอิ','นิกเคอิ','นิกเกอิ','นิเกอิ','จีน','ฮั่งเส็ง','ฮ่องกง','ไต้หวัน','เกาหลี','สิงคโปร์','อินเดีย','อียิปต์','รัสเซีย','เยอรมัน','อังกฤษ','หุ้นไทย','ตลาดหุ้นไทย'];
+  const isWeekdayNormal=!isVip&&!isHanoi&&!isLaos&&!isDowNormal&&weekdayMarkets.some(x=>key.includes(x));
+  let valid;
   do{
     d.setDate(d.getDate()+1);
     const dow=d.getDay();
-    if(isDowNormal){
-      if(dow>=2&&dow<=6)break;
-    }else if(isWeekdayNormal){
-      if(dow>=1&&dow<=5)break;
-    }else{
-      break;
-    }
-  }while(true);
+    if(isDowNormal)valid=dow>=2&&dow<=6;
+    else if(isLaosDevelopment||isWeekdayNormal)valid=dow>=1&&dow<=5;
+    else valid=true;
+  }while(!valid);
   const thaiMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   return`${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear()+543}`;
 }
-
-
 
 
 
