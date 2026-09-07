@@ -4701,7 +4701,20 @@ function renderCardHTML(
   const isScore=
     card.type==='score';
 
-
+  /*
+     Final card display guard:
+     the processing/Series name may differ from the card name.
+     Always derive the visible title and flag at render time so a
+     stale/missing card.flag cannot fall back to the globe flag.
+  */
+  const finalDisplayTitle=
+    formatDisplayTitle(
+      card.displayTitle||card.lotteryName||''
+    );
+  const finalCardFlag=
+    getLotteryFlag(
+      finalDisplayTitle||card.lotteryName||''
+    );
 
 
   /*
@@ -4745,7 +4758,7 @@ function renderCardHTML(
 
 
         <div class="card-flag">
-          ${card.flag}
+          ${finalCardFlag}
         </div>
 
 
@@ -4764,7 +4777,7 @@ function renderCardHTML(
 
 
           <b>
-            ${esc(card.displayTitle)}
+            ${esc(finalDisplayTitle)}
           </b>
 
 
@@ -4805,7 +4818,7 @@ function renderCardHTML(
             class="card-action-btn"
             onclick="copyCardText(
               '${cardId}',
-              '${esc(card.displayTitle)}',
+              '${esc(finalDisplayTitle)}',
               '${esc(card.nextDate)}',
               ${d1Json},
               ${d2Json}
@@ -4820,7 +4833,7 @@ function renderCardHTML(
             class="card-action-btn"
             onclick="captureCardImage(
               '${cardId}',
-              '${esc(card.displayTitle)}'
+              '${esc(finalDisplayTitle)}'
             )">
             📸 แคปภาพ
           </button>
