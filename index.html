@@ -1387,8 +1387,11 @@ function parseThaiDate(dateStr){
     const day=parseInt(parts[0],10)||1;
     const month=months[parts[1]]||1;
     let year=parseInt(parts[2],10)||2569;
-    if(year<2500)
-      year+=2543;
+    /* 2-digit Buddhist year: 69 => 2569, not 2612. */
+    if(year<100)
+      year+=2500;
+    else if(year<2500)
+      year+=543;
     return new Date(
       year-543,
       month-1,
@@ -1398,117 +1401,129 @@ function parseThaiDate(dateStr){
   return 0;
 }
 /* =========================================================
-   SCHEDULE-AWARE NEXT-DRAW RESOLVER
-   V96 schedule patch — date/session logic only.
-   IMPORTANT:
-   - Does NOT modify prediction formulas, targeted-pair formulas,
-     scoring, ranking, or card structure.
-   - Normal Dow Jones: Tue-Sat, 03:05 (Thailand time); Sun+Mon off.
-   - Dow Jones Star / VIP: daily.
-   - Malaysia 4D normal: Wed/Sat/Sun, 19:00 Malaysia time.
-     Tuesday is Special Draw only when officially announced.
-   - Government Lottery: normally 1st and 16th; official postponement
-     overrides are applied through GLO_DRAW_OVERRIDES.
-   ========================================================= */
-const GLO_DRAW_OVERRIDES=Object.freeze({
-  /* 'YYYY-MM-DD':'YYYY-MM-DD' can be added when GLO officially
-     announces a postponed draw. Leave empty rather than guessing. */
-});
+   SCHEDULE-AWARE NEXT-DRAW RESOLVER — MASTER REGISTRY
+   Cross-check source: ExpHuay result pages / backward pages.
+   Date logic only. Prediction formulas, pair engine, scoring and cards are untouched.
+   IMPORTANT: exact special/holiday dates are never guessed; official overrides win.
+========================================================= */
+const GLO_DRAW_OVERRIDES=Object.freeze({});
+const V96_SCHEDULE_REGISTRY=Object.freeze([
+  /* =========================================================
+     V96 BACKEND DRAW-CALENDAR MASTER
+     - Backend only: determines the next scheduled draw date/time.
+     - Never rendered as a prediction-card field.
+     - Specific type rules MUST precede generic family rules.
+     - VIP / VISA / SPECIAL are explicitly separated from normal.
+     ========================================================= */
+  {id:'dow-normal', test:n=>/(ดาวโจนส์|dowjones|dow)/i.test(n)&&!/(vip|สตาร์|star)/i.test(n), days:[2,3,4,5], time:'03:20 น.'},
+  {id:'dow-vip', test:n=>/(ดาวโจนส์|dowjones|dow)/i.test(n)&&/vip/i.test(n), days:[0,1,2,3,4,5,6], time:'00:30 น.'},
+  {id:'dow-star', test:n=>/(ดาวโจนส์|dowjones|dow)/i.test(n)&&/(สตาร์|star)/i.test(n), days:[0,1,2,3,4,5,6], time:'01:30 น.'},
 
-function v96ScheduleKey(d){
-  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function v96ScheduleThaiDate(d){
-  const thaiMonths=[
-    'ม.ค.','ก.พ.','มี.ค.','เม.ย.',
-    'พ.ค.','มิ.ย.','ก.ค.','ส.ค.',
-    'ก.ย.','ต.ค.','พ.ย.','ธ.ค.'
-  ];
-  return`${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear()+543}`;
-}
-function v96ScheduleParseDate(dateStr){
-  const parts=String(dateStr||'').trim().split(/\s+/);
-  if(parts.length<3)return null;
-  const months={
-    'ม.ค.':0,'ก.พ.':1,'มี.ค.':2,'เม.ย.':3,'พ.ค.':4,'มิ.ย.':5,
-    'ก.ค.':6,'ส.ค.':7,'ก.ย.':8,'ต.ค.':9,'พ.ย.':10,'ธ.ค.':11
-  };
-  const day=parseInt(parts[0],10);
-  const m=months[parts[1]];
-  let y=parseInt(parts[2],10);
-  if(!Number.isFinite(day)||m===undefined||!Number.isFinite(y))return null;
-  if(y<2500)y+=543;
-  const d=new Date(y-543,m,day);
-  d.setHours(12,0,0,0);
-  return Number.isNaN(d.getTime())?null:d;
-}
-function v96IsDowNormal(name){
-  const n=String(name||'').toLowerCase().replace(/\s+/g,'');
-  if(!n.includes('ดาวโจนส์'))return false;
-  return !/(vip|สตาร์|star)/i.test(n);
-}
-function v96IsMalaysia(name){
-  const n=String(name||'').toLowerCase();
-  return /มาเลย์|มาเลเซีย|มาเล|malaysia|malay/.test(n);
-}
-function v96IsGovernment(name){
-  const n=String(name||'').toLowerCase();
-  return /รัฐบาล|รัฐบาลไทย|glo|governmentlottery/.test(n);
-}
-function v96NextScheduledDate(baseDate, predicate, maxDays=370){
-  const d=new Date(baseDate.getTime());
-  d.setHours(12,0,0,0);
-  for(let i=1;i<=maxDays;i++){
-    d.setDate(d.getDate()+1);
-    if(predicate(d))return new Date(d.getTime());
-  }
-  return null;
-}
-function v96NextGovernmentDate(baseDate){
-  const d=new Date(baseDate.getTime());
-  d.setHours(12,0,0,0);
-  for(let i=1;i<=370;i++){
-    d.setDate(d.getDate()+1);
-    const key=v96ScheduleKey(d);
-    if(GLO_DRAW_OVERRIDES[key]){
-      const od=v96ScheduleParseDate(
-        GLO_DRAW_OVERRIDES[key].split('-').reverse().join(' ')
-      );
-      if(od)return od;
-    }
-    if(d.getDate()===1||d.getDate()===16)return new Date(d.getTime());
-  }
-  return null;
-}
-function getNextDrawInfo(dateStr, lotteryName){
-  const base=v96ScheduleParseDate(dateStr);
-  if(!base)return{date:dateStr,time:''};
+  {id:'government', test:n=>/รัฐบาล|รัฐบาลไทย|glo|governmentlottery/i.test(n), government:true, time:'ประมาณ 14:30–16:00 น.'},
+  {id:'gsb', test:n=>/ออมสิน|gsb/i.test(n), officialOnly:true, time:'ตามประกาศธนาคารออมสิน'},
+  {id:'baac', test:n=>/ธ\.?ก\.?ส|ธกส|baac/i.test(n), officialOnly:true, time:'ตามประกาศ ธ.ก.ส.'},
 
-  let next=null;
-  let time='';
+  /* ===== Hanoi ===== */
+  {id:'hanoi-special', test:n=>/ฮานอย.*เฉพาะกิจ|เฉพาะกิจ.*ฮานอย|hanoi.*special/i.test(n), days:[0,1,2,3,4,5,6], time:'16:30 น.'},
+  {id:'hanoi-extra', test:n=>/ฮานอย.*พิเศษ|พิเศษ.*ฮานอย|hanoi.*extra/i.test(n), days:[0,1,2,3,4,5,6], time:'17:30 น.'},
+  {id:'hanoi-vip', test:n=>/ฮานอย.*vip|vip.*ฮานอย|hanoi.*vip/i.test(n), days:[0,1,2,3,4,5,6], time:'19:30 น.'},
+  {id:'hanoi', test:n=>/ฮานอย|hanoi|เวียดนาม|vietnam/i.test(n)&&!/(vip|พิเศษ|เฉพาะกิจ|extra|special)/i.test(n), days:[0,1,2,3,4,5,6], time:'18:30 น.'},
 
-  if(v96IsDowNormal(lotteryName)){
-    /* JS: Sun=0, Mon=1, Tue=2 ... Sat=6 */
-    next=v96NextScheduledDate(base,d=>d.getDay()>=2&&d.getDay()<=6);
-    time='03:05 น.';
-  }else if(v96IsMalaysia(lotteryName)){
-    next=v96NextScheduledDate(base,d=>[0,3,6].includes(d.getDay()));
-    time='19:00 น. (มาเลเซีย)';
-  }else if(v96IsGovernment(lotteryName)){
-    next=v96NextGovernmentDate(base);
-    time='ประมาณ 14:30–16:00 น.';
-  }else{
-    next=v96NextScheduledDate(base,()=>true);
-  }
+  /* ===== Laos ===== */
+  {id:'laos-development', test:n=>/ลาวพัฒนา|หวยพัฒนา|laodevelopment|laolotterydevelopment/i.test(n), days:[1,2,3,4,5], time:'20:00 น.'},
+  {id:'laos-vip', test:n=>/ลาว.*vip|vip.*ลาว/i.test(n), days:[0,1,2,3,4,5,6], time:'21:30 น.'},
+  {id:'laos-daily', test:n=>/ลาว|laos|lao/i.test(n)&&!/(ลาวพัฒนา|หวยพัฒนา|vip|ประชาชน|ประชาชนลาว)/i.test(n), days:[0,1,2,3,4,5,6], time:'20:30 น.'},
+  {id:'laos-citizen', test:n=>/ประชาชน\s*ลาว|ประชาชนลาว/i.test(n), days:[0,1,2,3,4,5,6], time:'07:45 น.'},
 
-  return{
-    date:next?v96ScheduleThaiDate(next):dateStr,
-    time
-  };
-}
-function getNextDateStr(dateStr,lotteryName){
-  return getNextDrawInfo(dateStr,lotteryName).date;
-}
+  /* ===== Malaysia / Myanmar ===== */
+  {id:'malaysia', test:n=>/มาเลย์|มาเลเซีย|มาเล|malaysia|malay/i.test(n), days:[0,3,6], time:'18:30 น. (มาเลเซีย)'},
+  {id:'myanmar-2d', test:n=>/พม่า\s*2d|myanmar\s*2d|myanmar2d/i.test(n), days:[1,2,3,4,5], time:'ตามรอบตลาดเมียนมา'},
+
+  /* ===== Thailand ===== */
+  {id:'thai-stock-morning', test:n=>/หุ้นไทย.*เช้า|ไทยเช้า/i.test(n), days:[1,2,3,4,5], time:'12:30 น.'},
+  {id:'thai-stock-midday', test:n=>/หุ้นไทย.*เที่ยง|ไทยเที่ยง/i.test(n), days:[1,2,3,4,5], time:'14:00 น.'},
+  {id:'thai-stock-afternoon', test:n=>/หุ้นไทย.*บ่าย|ไทยบ่าย/i.test(n), days:[1,2,3,4,5], time:'16:00 น.'},
+  {id:'thai-stock-evening', test:n=>/หุ้นไทย.*เย็น|ไทยเย็น|หวยหุ้นไทย.*เย็น/i.test(n), days:[1,2,3,4,5], time:'16:40 น.'},
+  {id:'thai-stock', test:n=>/หุ้นไทย|ตลาดหุ้นไทย|หวยหุ้นไทย|thai\s*stock/i.test(n), days:[1,2,3,4,5], time:'16:40 น.'},
+
+  /* ===== Nikkei ===== */
+  {id:'nikkei-vip-morning', test:n=>/(นิเคอิ|นิกเคอิ|nikkei).*vip.*เช้า|vip.*(นิเคอิ|นิกเคอิ|nikkei).*เช้า/i.test(n), days:[0,1,2,3,4,5,6], time:'09:05 น.'},
+  {id:'nikkei-vip-afternoon', test:n=>/(นิเคอิ|นิกเคอิ|nikkei).*vip.*บ่าย|vip.*(นิเคอิ|นิกเคอิ|nikkei).*บ่าย/i.test(n), days:[0,1,2,3,4,5,6], time:'13:25 น.'},
+  {id:'nikkei-vip', test:n=>/(นิเคอิ|นิกเคอิ|nikkei).*vip|vip.*(นิเคอิ|นิกเคอิ|nikkei)/i.test(n), days:[0,1,2,3,4,5,6], time:'09:05 น.'},
+  {id:'nikkei-morning', test:n=>/(นิเคอิ|นิกเคอิ|nikkei).*เช้า/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'09:05 น.'},
+  {id:'nikkei-afternoon', test:n=>/(นิเคอิ|นิกเคอิ|nikkei).*บ่าย/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'11:35 น.'},
+  {id:'nikkei-standard', test:n=>/(นิเคอิ|นิกเคอิ|nikkei)/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'09:05 น.'},
+
+  /* ===== China ===== */
+  {id:'china-vip-morning', test:n=>/(จีน|หุ้นจีน|china).*vip.*เช้า|vip.*(จีน|หุ้นจีน|china).*เช้า/i.test(n), days:[0,1,2,3,4,5,6], time:'10:05 น.'},
+  {id:'china-vip-afternoon', test:n=>/(จีน|หุ้นจีน|china).*vip.*บ่าย|vip.*(จีน|หุ้นจีน|china).*บ่าย/i.test(n), days:[0,1,2,3,4,5,6], time:'14:25 น.'},
+  {id:'china-vip', test:n=>/(จีน|หุ้นจีน|china).*vip|vip.*(จีน|หุ้นจีน|china)/i.test(n), days:[0,1,2,3,4,5,6], time:'10:05 น.'},
+  {id:'china-morning', test:n=>/(จีน|หุ้นจีน|china).*เช้า/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'10:30 น.'},
+  {id:'china-afternoon', test:n=>/(จีน|หุ้นจีน|china).*บ่าย/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'14:00 น.'},
+  {id:'china-standard', test:n=>/(จีน|หุ้นจีน|china)/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'10:30 น.'},
+
+  /* ===== Hang Seng ===== */
+  {id:'hangseng-vip-morning', test:n=>/(ฮั่งเส็ง|ฮ่องกง|hang\s*seng|hangseng|hong\s*kong).*vip.*เช้า|vip.*(ฮั่งเส็ง|ฮ่องกง|hang\s*seng|hangseng|hong\s*kong).*เช้า/i.test(n), days:[0,1,2,3,4,5,6], time:'10:35 น.'},
+  {id:'hangseng-vip-afternoon', test:n=>/(ฮั่งเส็ง|ฮ่องกง|hang\s*seng|hangseng|hong\s*kong).*vip.*บ่าย|vip.*(ฮั่งเส็ง|ฮ่องกง|hang\s*seng|hangseng|hong\s*kong).*บ่าย/i.test(n), days:[0,1,2,3,4,5,6], time:'15:25 น.'},
+  {id:'hangseng-vip', test:n=>/(ฮั่งเส็ง|ฮ่องกง|hang\s*seng|hangseng|hong\s*kong).*vip/i.test(n), days:[0,1,2,3,4,5,6], time:'10:35 น.'},
+  {id:'hangseng-morning', test:n=>/(ฮั่งเส็ง|ฮ่องกง|hang\s*seng|hangseng|hong\s*kong).*เช้า/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'11:05 น.'},
+  {id:'hangseng-afternoon', test:n=>/(ฮั่งเส็ง|ฮ่องกง|hang\s*seng|hangseng|hong\s*kong).*บ่าย/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'15:05 น.'},
+  {id:'hangseng-standard', test:n=>/(ฮั่งเส็ง|ฮ่องกง|hang\s*seng|hangseng|hong\s*kong)/i.test(n)&&!/vip/i.test(n), days:[1,2,3,4,5], time:'11:05 น.'},
+
+  /* ===== Taiwan / Korea / Singapore ===== */
+  {id:'taiwan-vip-special', test:n=>/ไต้หวัน|taiwan/i.test(n)&&/(vip|visa|พิเศษ)/i.test(n), days:[0,1,2,3,4,5,6], time:'11:35 น.'},
+  {id:'taiwan-standard', test:n=>/ไต้หวัน|taiwan/i.test(n)&&!/(vip|visa|พิเศษ)/i.test(n), days:[1,2,3,4,5], time:'12:35 น.'},
+  {id:'korea-vip-special', test:n=>/เกาหลี|korea|kospi/i.test(n)&&/(vip|visa|พิเศษ)/i.test(n), days:[0,1,2,3,4,5,6], time:'12:35 น.'},
+  {id:'korea-standard', test:n=>/เกาหลี|korea|kospi/i.test(n)&&!/(vip|visa|พิเศษ)/i.test(n), days:[1,2,3,4,5], time:'13:35 น.'},
+  {id:'singapore-vip', test:n=>/สิงคโปร์|singapore|sti/i.test(n)&&/(vip|visa|พิเศษ)/i.test(n), days:[0,1,2,3,4,5,6], time:'17:05 น.'},
+  {id:'singapore-standard', test:n=>/สิงคโปร์|singapore|sti/i.test(n)&&!/(vip|visa|พิเศษ)/i.test(n), days:[1,2,3,4,5], time:'16:30 น.'},
+
+  /* ===== Europe — every variant is explicit and daily for VIP/VISA/SPECIAL ===== */
+  {id:'russia-vip', test:n=>/รัสเซีย|russia/i.test(n)&&/vip/i.test(n), days:[0,1,2,3,4,5,6], time:'23:50 น.'},
+  {id:'russia-visa', test:n=>/รัสเซีย|russia/i.test(n)&&/visa/i.test(n), days:[0,1,2,3,4,5,6], time:'23:15 น.'},
+  {id:'russia-special', test:n=>/รัสเซีย|russia/i.test(n)&&/(พิเศษ|special)/i.test(n), days:[0,1,2,3,4,5,6], time:'22:25 น.'},
+  {id:'russia-standard', test:n=>/รัสเซีย|russia/i.test(n)&&!/(vip|visa|พิเศษ|special)/i.test(n), days:[1,2,3,4,5], time:'23:00 น.'},
+  {id:'germany-vip', test:n=>/เยอรมัน|germany|dax/i.test(n)&&/vip/i.test(n), days:[0,1,2,3,4,5,6], time:'22:50 น.'},
+  {id:'germany-visa', test:n=>/เยอรมัน|germany|dax/i.test(n)&&/visa/i.test(n), days:[0,1,2,3,4,5,6], time:'22:15 น.'},
+  {id:'germany-special', test:n=>/เยอรมัน|germany|dax/i.test(n)&&/(พิเศษ|special)/i.test(n), days:[0,1,2,3,4,5,6], time:'22:25 น.'},
+  {id:'germany-standard', test:n=>/เยอรมัน|germany|dax/i.test(n)&&!/(vip|visa|พิเศษ|special)/i.test(n), days:[1,2,3,4,5], time:'23:00 น.'},
+  {id:'uk-vip', test:n=>/อังกฤษ|uk|united\s*kingdom|england|ftse/i.test(n)&&/vip/i.test(n), days:[0,1,2,3,4,5,6], time:'21:50 น.'},
+  {id:'uk-visa', test:n=>/อังกฤษ|uk|united\s*kingdom|england|ftse/i.test(n)&&/visa/i.test(n), days:[0,1,2,3,4,5,6], time:'21:15 น.'},
+  {id:'uk-special', test:n=>/อังกฤษ|uk|united\s*kingdom|england|ftse/i.test(n)&&/(พิเศษ|special)/i.test(n), days:[0,1,2,3,4,5,6], time:'23:15 น.'},
+  {id:'uk-standard', test:n=>/อังกฤษ|uk|united\s*kingdom|england|ftse/i.test(n)&&!/(vip|visa|พิเศษ|special)/i.test(n), days:[1,2,3,4,5], time:'23:00 น.'},
+  {id:'india', test:n=>/อินเดีย|india|sensex|nifty/i.test(n), days:[1,2,3,4,5], time:'16:40 น.'},
+  {id:'egypt', test:n=>/อียิปต์|egypt/i.test(n), days:[1,2,3,4,5], time:'20:00 น.'}
+]);
+function v96ScheduleKey(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function v96ScheduleThaiDate(d){const m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return`${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()+543}`;}
+function v96ScheduleParseDate(dateStr){const p=String(dateStr||'').trim().split(/\s+/);if(p.length<3)return null;const m={'ม.ค.':0,'ก.พ.':1,'มี.ค.':2,'เม.ย.':3,'พ.ค.':4,'มิ.ย.':5,'ก.ค.':6,'ส.ค.':7,'ก.ย.':8,'ต.ค.':9,'พ.ย.':10,'ธ.ค.':11};const day=parseInt(p[0],10),mi=m[p[1]];let y=parseInt(p[2],10);if(!Number.isFinite(day)||mi===undefined||!Number.isFinite(y))return null;if(y<100)y+=2500;else if(y<2500)y+=543;const d=new Date(y-543,mi,day);d.setHours(12,0,0,0);return Number.isNaN(d.getTime())?null:d;}
+function v96NextScheduledDate(base,pred,max=370){const d=new Date(base.getTime());d.setHours(12,0,0,0);for(let i=1;i<=max;i++){d.setDate(d.getDate()+1);if(pred(d))return new Date(d);}return null;}
+function v96NextGovernmentDate(base){const d=new Date(base.getTime());d.setHours(12,0,0,0);for(let i=1;i<=370;i++){d.setDate(d.getDate()+1);const k=v96ScheduleKey(d);if(GLO_DRAW_OVERRIDES[k]){const od=v96ScheduleParseDate(GLO_DRAW_OVERRIDES[k]);if(od)return od;}if(d.getDate()===1||d.getDate()===16)return new Date(d);}return null;}
+function v96GetSchedule(name){const n=String(name||'').toLowerCase().replace(/\s+/g,'');return V96_SCHEDULE_REGISTRY.find(r=>r.test(n))||null;}
+function v96TodayThaiDate(){const d=new Date();d.setHours(12,0,0,0);return d;}
+function getNextDrawInfo(dateStr,lotteryName){const input=v96ScheduleParseDate(dateStr);if(!input)return{date:dateStr,time:''};const base=input;const r=v96GetSchedule(lotteryName);let next=null,time=r?.time||'';if(r?.government)next=v96NextGovernmentDate(base);else if(r?.days)next=v96NextScheduledDate(base,d=>r.days.includes(d.getDay()));else {next=v96NextScheduledDate(base,()=>true);time='';}return{date:next?v96ScheduleThaiDate(next):dateStr,time};}
+function getNextDateStr(dateStr,lotteryName){return getNextDrawInfo(dateStr,lotteryName).date;}
+/* Registry regression locks */
+const V961_SCHEDULE_CASES=Object.freeze([
+ ['4 ก.ย. 69','ดาวโจนส์','8 ก.ย. 2569'],['4 ก.ย. 69','ดาวโจนส์ VIP','5 ก.ย. 2569'],
+ ['4 ก.ย. 69','ลาวพัฒนา','7 ก.ย. 2569'],['5 ก.ย. 69','ลาวพัฒนา','7 ก.ย. 2569'],
+ ['6 ก.ย. 69','ลาวพัฒนา','7 ก.ย. 2569'],['4 ก.ย. 69','ฮานอยปกติ','5 ก.ย. 2569'],
+ ['4 ก.ย. 69','หุ้นไทยเย็น','7 ก.ย. 2569'],['4 ก.ย. 69','นิเคอิ เช้า','7 ก.ย. 2569'],
+ ['4 ก.ย. 69','จีน เช้า','7 ก.ย. 2569'],['4 ก.ย. 69','ฮั่งเส็ง เช้า','7 ก.ย. 2569'],
+ ['4 ก.ย. 69','ไต้หวัน','7 ก.ย. 2569'],['4 ก.ย. 69','เกาหลี','7 ก.ย. 2569'],
+ ['4 ก.ย. 69','สิงคโปร์','7 ก.ย. 2569'],['4 ก.ย. 69','อังกฤษ','7 ก.ย. 2569'],
+ ['4 ก.ย. 69','เยอรมัน','7 ก.ย. 2569'],['4 ก.ย. 69','รัสเซีย','7 ก.ย. 2569'],
+ ['4 ก.ย. 69','มาเลย์','5 ก.ย. 2569'],['4 ก.ย. 69','ลาว VIP','5 ก.ย. 2569'],
+ ['4 ก.ย. 69','จีน VIP เช้า','5 ก.ย. 2569'],['4 ก.ย. 69','จีน VIP บ่าย','5 ก.ย. 2569'],
+ ['4 ก.ย. 69','ฮั่งเส็ง VIP เช้า','5 ก.ย. 2569'],['4 ก.ย. 69','ฮั่งเส็ง VIP บ่าย','5 ก.ย. 2569'],
+ ['4 ก.ย. 69','นิเคอิ VIP เช้า','5 ก.ย. 2569'],['4 ก.ย. 69','นิเคอิ VIP บ่าย','5 ก.ย. 2569']
+]);
+const V961_SCHEDULE_AUDIT=V961_SCHEDULE_CASES.map(([base,name,expected])=>({base,name,expected,actual:getNextDateStr(base,name),pass:getNextDateStr(base,name)===expected}));
+const V961_SCHEDULE_AUDIT_PASS=V961_SCHEDULE_AUDIT.every(x=>x.pass);
+const V961_SCHEDULE_TIME_CASES=Object.freeze([['จีน VIP เช้า','10:05 น.'],['จีน VIP บ่าย','14:25 น.'],['นิเคอิ VIP เช้า','09:05 น.'],['นิเคอิ VIP บ่าย','13:25 น.'],['ฮั่งเส็ง VIP เช้า','10:35 น.'],['ฮั่งเส็ง VIP บ่าย','15:25 น.'],['ฮานอย VIP','19:30 น.'],['ลาว VIP','21:30 น.'],['ดาวโจนส์','03:20 น.']]);
+const V961_SCHEDULE_TIME_AUDIT=V961_SCHEDULE_TIME_CASES.map(([name,expected])=>({name,expected,actual:v96GetSchedule(name)?.time||'',pass:(v96GetSchedule(name)?.time||'')===expected}));
+const V961_SCHEDULE_TIME_AUDIT_PASS=V961_SCHEDULE_TIME_AUDIT.every(x=>x.pass);
+const V961_SCHEDULE_MASTER_AUDIT_PASS=V961_SCHEDULE_AUDIT_PASS&&V961_SCHEDULE_TIME_AUDIT_PASS;
 /* =========================================================
    RESULT STATUS
    งวดที่งดออกผลจะถูกเก็บไว้ในประวัติ แต่ไม่นำไปคำนวณเป็น
