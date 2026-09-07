@@ -1248,6 +1248,12 @@ function formatDisplayTitle(rawName){
     'สิงคโปร์','รัสเซีย','เยอรมัน','อังกฤษ','ดาวโจนส์'
   ];
   const market=normalMarkets.find(m=>compact.includes(m));
+  /* V110.4 DISPLAY NAME MICRO-FIX — Dow Jones STAR is a distinct public
+     label and must NOT inherit the generic normal-market "ปกติ" token.
+     Presentation only; internal market identity/calendar remain unchanged. */
+  if(market==='ดาวโจนส์' && compact.includes('สตาร์')){
+    return 'ดาวโจนส์ สตาร์';
+  }
   if(market&&!vip&&!compact.includes('ปกติ')){
     const rest=name.replace(new RegExp('^'+market),'').trim();
     return `${market} ปกติ${rest?' '+rest:''}`.trim();
@@ -10841,6 +10847,257 @@ if(typeof oldPairs==='function')window.generateFormulaPairs=function(mainDigit,o
 };
 window.__V1103_CONFIG__=V1103_CFG;
 window.__V1103_LOCK_AUDIT__=Object.freeze({formulaBodiesUntouched:true,formula31Untouched:true,pairConstructionUntouched:true,uiMutation:false,cardAppearanceUntouched:true,calendarUntouched:true,namesUntouched:true,typesUntouched:true,displayUntouched:true,stableTop3Equal:true,challenger46Equal:true,everyDigitCanWin:true,marketSpecificLearning:true,pairMarketCalibration:true});
+})();
+</script>
+
+
+<script id="V1104_DEEP_ADAPTIVE_EVIDENCE_AUTHORITY">
+(function(){
+'use strict';
+/* V110.4 — DEEP ADAPTIVE EVIDENCE / DECISION AUTHORITY
+   Backend-only continuation of V110.3.
+   LOCKS: formula bodies, Formula 31, targeted-pair construction, UI/card
+   structure, names/types except the explicitly requested Dow STAR display
+   label, calendar/date logic, and public percentage formatting.
+   No new formula is introduced.
+*/
+const V1104_CFG=Object.freeze({
+  version:'V110.4',
+  horizons:Object.freeze([3,6,9,12,15,18,21,24,27,30]),
+  shrinkPrior:8,
+  positionWeights:Object.freeze([.18,.28,.27,.27]),
+  marketWeight:.18,
+  formulaWeight:.24,
+  horizonWeight:.24,
+  recentWeight:.16,
+  positionWeight:.10,
+  conflictWeight:.08,
+  tierBonusCap:5.0,
+  vetoCap:4.0,
+  marginCap:4.0,
+  pairCap:2.5,
+  pairIndependenceFloor:.35
+});
+const v1104Clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number.isFinite(Number(v))?Number(v):50));
+const v1104R=v=>Math.round((Number(v)||0)*100)/100;
+function v1104Arr(records){
+  return (Array.isArray(records)?records:[]).filter(r=>typeof isResultRecord!=='function'||isResultRecord(r)).slice()
+    .sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
+}
+function v1104Targets(r){
+  const n3=String(r?.n3??'').padStart(3,'0'), n2=String(r?.n2??'').padStart(2,'0');
+  if(!/^\d{3}$/.test(n3)||!/^\d{2}$/.test(n2)) return [];
+  return [Number(n3[1]),Number(n3[2]),Number(n2[0]),Number(n2[1])];
+}
+function v1104Has(r,d){return v1104Targets(r).includes(Number(d));}
+function v1104PosRate(arr,d){
+  if(!arr.length)return {score:50,positions:[50,50,50,50]};
+  const den=[0,0,0,0],hit=[0,0,0,0];
+  arr.forEach(r=>v1104Targets(r).forEach((x,i)=>{den[i]++;if(x===Number(d))hit[i]++;}));
+  const p=den.map((n,i)=>n?100*hit[i]/n:50);
+  return {score:p.reduce((s,x,i)=>s+x*V1104_CFG.positionWeights[i],0),positions:p};
+}
+function v1104Shrink(raw,n,prior=V1104_CFG.shrinkPrior,base=50){
+  const nn=Math.max(0,Number(n)||0);
+  return base+(Number(raw)-base)*(nn/(nn+prior));
+}
+function v1104FormulaH(records,name){
+  try{return getFormulaHistory(v1104Arr(records),name)||[];}catch(e){return[];}
+}
+function v1104HorizonStats(h){
+  const rates=V1104_CFG.horizons.map(w=>{
+    const a=h.slice(-w);
+    if(!a.length)return 50;
+    return 100*a.filter(x=>x.hit).length/a.length;
+  });
+  return rates;
+}
+function v1104FormulaEvidence(records,name){
+  const h=v1104FormulaH(records,name);
+  if(!h.length)return {score:50,recent:50,short:50,long:50,stability:50,horizons:[],tests:0};
+  const rates=v1104HorizonStats(h);
+  const valid=rates.filter((v,i)=>h.length>=V1104_CFG.horizons[i]);
+  const overall=valid.length?valid.reduce((a,b)=>a+b,0)/valid.length:50;
+  const recentSet=h.slice(-Math.min(6,h.length));
+  const recent=100*recentSet.filter(x=>x.hit).length/recentSet.length;
+  const short=.50*rates[0]+.30*rates[1]+.20*rates[2];
+  const long=.30*rates[7]+.30*rates[8]+.40*rates[9];
+  const vals=valid.length?valid:[overall];
+  const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const dev=Math.sqrt(vals.reduce((s,v)=>s+(v-mean)*(v-mean),0)/vals.length);
+  const stability=v1104Clamp(100-dev*1.7);
+  const score=.42*short+.30*long+.18*recent+.10*stability;
+  return {score:v1104R(score),recent:v1104R(recent),short:v1104R(short),long:v1104R(long),stability:v1104R(stability),horizons:rates.map(v=>v1104R(v)),tests:h.length};
+}
+function v1104FormulaRank(records,names){
+  return (names||[]).map(name=>({name,ev:v1104FormulaEvidence(records,name)}))
+    .sort((a,b)=>b.ev.score-a.ev.score||b.ev.recent-a.ev.recent||a.name.localeCompare(b.name));
+}
+function v1104Tier(rank){return rank<=3?1:rank<=6?.58:.30;}
+function v1104Pearson(a,b){
+  const n=Math.min(a?.length||0,b?.length||0); if(n<4)return 0;
+  let ma=0,mb=0;for(let i=0;i<n;i++){ma+=a[i];mb+=b[i];}ma/=n;mb/=n;
+  let xy=0,xx=0,yy=0;
+  for(let i=0;i<n;i++){const x=a[i]-ma,y=b[i]-mb;xy+=x*y;xx+=x*x;yy+=y*y;}
+  return xx&&yy?xy/Math.sqrt(xx*yy):0;
+}
+function v1104DigitFormulaEvidence(arr,names,d){
+  const ranked=v1104FormulaRank(arr,names), chosen=[];
+  ranked.forEach((f,idx)=>{
+    const h=v1104FormulaH(arr,f.name); if(!h.length)return;
+    const latest=h[h.length-1];
+    if(!(Array.isArray(latest?.predicted)&&latest.predicted.map(Number).includes(Number(d))))return;
+    const series=h.map(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d))?1:0);
+    let corr=0;
+    if(chosen.length)corr=Math.max(...chosen.map(x=>Math.abs(v1104Pearson(x.series,series))));
+    const indep=Math.max(V1104_CFG.pairIndependenceFloor,1-Math.max(0,corr-.45));
+    const tier=v1104Tier(idx+1);
+    chosen.push({name:f.name,rank:idx+1,tier,reliability:f.ev.score,series,independence:indep});
+  });
+  if(!chosen.length)return {score:50,support:[],independent:0};
+  const usable=chosen.slice(0,10);
+  let sw=0,ss=0;
+  usable.forEach(x=>{
+    const w=x.tier*(.55+.45*x.reliability/100)*x.independence;
+    sw+=w;ss+=x.reliability*w;
+  });
+  return {score:sw?ss/sw:50,support:chosen,independent:usable.reduce((s,x)=>s+x.independence,0)/usable.length};
+}
+function v1104MarketState(records,lotteryName){
+  const s=String(lotteryName||'').toLowerCase().replace(/\s+/g,'');
+  const market=(typeof v1086MarketIdentity==='function')?v1086MarketIdentity(lotteryName):s;
+  return {key:JSON.stringify(market),identity:market};
+}
+function v1104Recent(arr,d,w){const a=arr.slice(-Math.min(w,arr.length));return a.length?100*a.filter(r=>v1104Has(r,d)).length/a.length:50;}
+function v1104Gap(arr,d){
+  let g=0;for(let i=arr.length-1;i>=0;i--){if(v1104Has(arr[i],d))break;g++;}return g;
+}
+function v1104Rebound(arr,d){
+  const gap=v1104Gap(arr,d); if(gap<3)return 0;
+  return Math.min(4.0,(gap-2)*.72);
+}
+function v1104Conflict(arr,d,names){
+  const vals=[];
+  (names||[]).forEach(name=>{
+    const h=v1104FormulaH(arr,name); if(!h.length)return;
+    const recent=h.slice(-Math.min(6,h.length));
+    if(!recent.length)return;
+    vals.push(100*recent.filter(x=>Array.isArray(x.predicted)&&x.predicted.map(Number).includes(Number(d))).length/recent.length);
+  });
+  if(vals.length<3)return 0;
+  const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const dev=Math.sqrt(vals.reduce((s,v)=>s+(v-mean)*(v-mean),0)/vals.length);
+  return Math.min(V1104_CFG.vetoCap,Math.max(0,(dev-18)*.10));
+}
+function v1104MarginBonus(sorted){
+  if(sorted.length<2)return 0;
+  const gap=Number(sorted[0].score)-Number(sorted[1].score);
+  return v1104Clamp(gap,0,V1104_CFG.marginCap);
+}
+function v1104Apply(base,records,auditData,formulaNames){
+  const src=base||{}, rows=Array.isArray(src.rows)?src.rows:[];
+  if(rows.length!==10)return src;
+  const arr=v1104Arr(records), names=(formulaNames||[]).filter(x=>x&&!String(x).startsWith('__V'));
+  const market=v1104MarketState(arr,auditData?.lotteryName||auditData?.name||'');
+  const ranked=v1104FormulaRank(arr,names);
+  const metrics=rows.map(row=>{
+    const d=Number(row.digit), fe=v1104DigitFormulaEvidence(arr,names,d), pos=v1104PosRate(arr,d);
+    const r3=v1104Recent(arr,d,3),r6=v1104Recent(arr,d,6),r9=v1104Recent(arr,d,9),r12=v1104Recent(arr,d,12);
+    const recent=.42*r3+.30*r6+.18*r9+.10*r12;
+    const overall=arr.length?100*arr.filter(r=>v1104Has(r,d)).length/arr.length:50;
+    const shrunk=v1104Shrink(overall,arr.length);
+    const rebound=v1104Rebound(arr,d);
+    const conflict=v1104Conflict(arr,d,names);
+    const stableSupport=fe.support.filter(x=>x.rank<=3).length;
+    const challengerSupport=fe.support.filter(x=>x.rank>=4&&x.rank<=6).length;
+    const tierBonus=v1104Clamp((fe.score-50)/50*V1104_CFG.tierBonusCap,-V1104_CFG.tierBonusCap,V1104_CFG.tierBonusCap);
+    const raw=(Number(row.score)||50)
+      +V1104_CFG.marketWeight*(shrunk-50)
+      +V1104_CFG.formulaWeight*(fe.score-50)
+      +V1104_CFG.horizonWeight*((.55*fe.support.reduce((s,x)=>s+x.reliability,0)/(fe.support.length||1))-50)
+      +V1104_CFG.recentWeight*(recent-50)
+      +V1104_CFG.positionWeight*(pos.score-50)
+      +tierBonus
+      +rebound
+      -V1104_CFG.conflictWeight*conflict;
+    return {...row,score:v1104R(v1104Clamp(raw)),selectionQuality:v1104R(v1104Clamp(raw)),
+      v1104:{market:market.identity,formulaEvidence:v1104R(fe.score),independentFormulaSupport:v1104R(fe.independent*100),
+        stableSupport,challengerSupport,recent3:v1104R(r3),recent6:v1104R(r6),recent9:v1104R(r9),recent12:v1104R(r12),
+        recentFusion:v1104R(recent),positionScore:v1104R(pos.score),positionRates:pos.positions.map(v1104R),
+        shrunkBase:v1104R(shrunk),reboundBonus:v1104R(rebound),conflictVeto:v1104R(conflict),
+        tierBonus:v1104R(tierBonus),formulaSupport:fe.support.slice(0,8).map(x=>({name:x.name,rank:x.rank,
+          tier:x.tier,reliability:v1104R(x.reliability),independence:v1104R(x.independence)}))}};
+  }).sort((a,b)=>Number(b.score)-Number(a.score)||Number(b.selectionQuality)-Number(a.selectionQuality)||Number(a.digit)-Number(b.digit));
+  const margin=v1104MarginBonus(metrics);
+  const top3=metrics.slice(0,3).map(x=>x.digit);
+  const selected=metrics.slice(0,2);
+  const errorAttribution=Object.fromEntries(metrics.map(x=>[String(x.digit),{
+    formulaContribution:v1104R((x.v1104?.formulaEvidence||50)-50),
+    recentContribution:v1104R((x.v1104?.recentFusion||50)-50),
+    positionContribution:v1104R((x.v1104?.positionScore||50)-50),
+    marketBaseContribution:v1104R((x.v1104?.shrunkBase||50)-50),
+    rebound:v1104R(x.v1104?.reboundBonus||0),
+    conflictVeto:v1104R(x.v1104?.conflictVeto||0)
+  }]));
+  return {...src,rows:metrics,top3,selected,margin:v1104R(margin),
+    v98:{...(src.v98||{}),version:'V110.4 DEEP ADAPTIVE EVIDENCE AUTHORITY',
+      authority:'MARKET × FORMULA × HORIZON × DIGIT × POSITION × DECISION',
+      layers:['market-specific formula reliability','exact 3/6/9/12/15/18/21/24/27/30 horizons',
+        'shrinkage calibration','position-aware evidence','independence de-duplication',
+        'rebound detector','bounded conflict veto','final decision margin'],formulaBodiesUntouched:true,cardAppearanceUntouched:true},
+    finalGate:{...(src.finalGate||{}),v1104DeepAuthority:true,formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false},
+    selectionAudit:{...(src.selectionAudit||{}),version:'V110.4 DEEP ADAPTIVE EVIDENCE AUTHORITY',
+      horizons:V1104_CFG.horizons,marketIdentity:market.identity,formulaRank:ranked.map((x,i)=>({name:x.name,rank:i+1,score:v1104R(x.ev.score)})),
+      finalMargin:v1104R(margin),errorAttribution}};
+}
+const priorClean=window.v98CleanAuthority;
+if(typeof priorClean==='function'){
+  window.v98CleanAuthority=function(base,records,auditData,formulaNames){
+    const out=priorClean(base,records,auditData,formulaNames);
+    const up=v1104Apply(out,records,auditData,formulaNames);
+    window.__V1104_DIGIT_AUTHORITY__=up.selectionAuthority||up.rows||[];
+    window.__V1104_SELECTION_AUDIT__=up.selectionAudit||{};
+    return up;
+  };
+}
+const priorPairs=window.generateFormulaPairs;
+if(typeof priorPairs==='function'){
+  window.generateFormulaPairs=function(mainDigit,otherDigit,auditMap,lotteryName,records){
+    const base=priorPairs(mainDigit,otherDigit,auditMap,lotteryName,records);
+    if(!Array.isArray(base)||!base.length)return base;
+    const arr=v1104Arr(records), a=Number(mainDigit), b=Number(otherDigit);
+    const out=base.map(p=>{
+      const pair=String(p.pair||'').padStart(2,'0'); if(!/^\d{2}$/.test(pair))return p;
+      let n=0,h=0,rn=0,rh=0;
+      for(let i=0;i<arr.length-1;i++){
+        const next=v1104Targets(arr[i+1]);
+        n++; if(next.includes(Number(pair[0]))&&next.includes(Number(pair[1])))h++;
+        if(i>=arr.length-7){rn++;if(next.includes(Number(pair[0]))&&next.includes(Number(pair[1])))rh++;}
+      }
+      const long=n?100*h/n:50, recent=rn?100*rh/rn:long;
+      const pairInd=v1104Pearson(
+        arr.map(r=>v1104Has(r,a)?1:0),
+        arr.map(r=>v1104Has(r,b)?1:0)
+      );
+      const independence=Math.max(V1104_CFG.pairIndependenceFloor,1-Math.abs(pairInd));
+      const signal=.65*long+.35*recent;
+      const adj=v1104Clamp((signal-50)/50*V1104_CFG.pairCap,-V1104_CFG.pairCap,V1104_CFG.pairCap)*independence;
+      const score=v1104R(v1104Clamp((Number(p.score)||50)+adj));
+      return {...p,score,meta:{...(p.meta||{}),v1104Pair:{pair,tests:n,hits:h,long:v1104R(long),recent:v1104R(recent),
+        independence:v1104R(independence*100),adjustment:v1104R(adj),market:v1104MarketState(arr,lotteryName).identity,
+        stage:'two-stage empirical + independence calibration'}}};
+    }).sort((x,y)=>Number(y.score)-Number(x.score)||String(x.pair).localeCompare(String(y.pair)));
+    return out;
+  };
+}
+window.__V1104_CONFIG__=V1104_CFG;
+window.__V1104_LOCK_AUDIT__=Object.freeze({
+  formulaBodiesUntouched:true,formula31Untouched:true,targetedPairConstructionUntouched:true,
+  uiMutation:false,cardAppearanceUntouched:true,calendarUntouched:true,
+  publicPercentageUntouched:true,onlyRequestedDisplayNameChanged:'ดาวโจนส์ สตาร์',
+  exactHorizonSet:true,shrinkage:true,positionAware:true,independenceDedup:true,
+  reboundBounded:true,conflictVetoBounded:true,decisionMarginBounded:true,errorAttribution:true
+});
 })();
 </script>
 
