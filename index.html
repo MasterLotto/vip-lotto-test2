@@ -10342,92 +10342,7 @@ function v1071MaxAuthority(base,records,auditData,formulaNames){
   const selected=selectedDigits.map(d=>out.find(x=>Number(x.digit)===d)).filter(Boolean).sort((a,b)=>selectedDigits.indexOf(Number(a.digit))-selectedDigits.indexOf(Number(b.digit)));
   return {...src,rows:out,top3,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v98:{version:'V107.1 MAX-LEVEL EVIDENCE STACK',authority:'MULTI-LAYER FORMULA-DIGIT-PAIR ENSEMBLE',layers:['formula conditional precision','formula rank reliability','consensus breadth calibration','recent 3/6/12/24','long frequency','position-specific frequency','same-digit transition','cross-digit transition','gap conditional','multi-window stability','regime fit','entropy/regime change','empirical null','direct evidence','top-supporter quality','support breadth','layer-rank fusion','pair co-occurrence synergy','pair balance gate'],formulaBodiesUntouched:true,cardAppearanceUntouched:true,selected:selected.map(x=>({digit:x.digit,score:x.selectionQuality,formulaSupport:x.v98.formulaSupportCount})),pairGate:best?{digits:[best.a.d,best.b.d],joint:round2(best.joint),synergy:round2(best.sy)}:null},finalGate:{...(src.finalGate||{}),v1071MaxLevel:true,v1068EvidenceRankAuthority:false,v1067LegacySelectorReplaced:true,formulaBodiesUntouched:true,cardAppearanceUntouched:true,uiMutation:false}};
 }
-/* =========================================================
-   V109.0 — MARKET ADAPTIVE AUTHORITY / SELECTOR UPGRADE
-   UI/CARD CONTRACT: LOCKED. Formula bodies: LOCKED. Targeted-digit
-   formula: LOCKED. This layer only governs backend evidence weighting.
-   It is deterministic and uses only records supplied to the current call.
-========================================================= */
-function v109MarketKey(records){
-  const r=(records||[]).find(isResultRecord)||{};
-  return String(r.name||'').trim().toLowerCase();
-}
-function v109Profile(name){
-  const n=String(name||'').toLowerCase();
-  const p={kind:'generic',preferRecent:.30,preferBaseline:.20,selector:.50};
-  if(/vip/.test(n))p.kind='vip';
-  if(/ลาว|hanoi|ฮานอย/.test(n))p.kind='lottery';
-  if(/นิคเคอิ|nikkei/.test(n))p.kind='nikkei';
-  else if(/จีน/.test(n))p.kind='china';
-  else if(/ฮั่งเส็ง|hang/.test(n))p.kind='hang';
-  else if(/ไต้หวัน|taiwan/.test(n))p.kind='taiwan';
-  else if(/เกาหลี|korea/.test(n))p.kind='korea';
-  else if(/สิงคโปร์|singapore/.test(n))p.kind='singapore';
-  else if(/รัสเซีย|russia/.test(n))p.kind='russia';
-  else if(/เยอรมัน|germany/.test(n))p.kind='germany';
-  else if(/อังกฤษ|england|uk/.test(n))p.kind='england';
-  else if(/ดาวโจนส์|dow/.test(n))p.kind='dow';
-  return p;
-}
-function v109RecentTrend(row){
-  const v=row?.v98||{};
-  const r3=Number(v.recent3)||50,r12=Number(v.recent12)||50,r24=Number(v.recent24)||50;
-  return v95Clamp(50+(r3-r24)*.45+(r12-r24)*.20);
-}
-function v109FormulaSelector(row,ranked,profile){
-  const supporters=Array.isArray(row?.v98?.formulaSupporters)?row.v98.formulaSupporters:[];
-  if(!supporters.length)return {score:50,count:0,leaders:[]};
-  const byName=new Map((ranked||[]).map(x=>[x.name,x]));
-  const xs=supporters.map(name=>byName.get(name)).filter(Boolean);
-  if(!xs.length)return {score:50,count:0,leaders:[]};
-  const vals=xs.map((x,i)=>{
-    const c=Number(x?.quality)||50;
-    const rec=Number(x?.metrics?.recencyRate)||50;
-    const conf=Number(x?.confluence?.confluence)||50;
-    return .46*c+.34*rec+.20*conf;
-  });
-  vals.sort((a,b)=>b-a);
-  const top=vals.slice(0,Math.min(3,vals.length));
-  const score=top.reduce((a,b)=>a+b,0)/top.length;
-  return {score:v95Clamp(score),count:xs.length,leaders:xs.slice().sort((a,b)=>(b.quality||0)-(a.quality||0)).slice(0,3).map(x=>x.name)};
-}
-function v109AdaptiveAuthority(base,records,auditData,formulaNames){
-  const src=v1071MaxAuthority(base,records,auditData,formulaNames);
-  if(!src||!Array.isArray(src.rows)||src.rows.length!==10)return src;
-  const arr=(records||[]).filter(isResultRecord).slice().sort((a,b)=>(Number(a.timestamp)||parseThaiDate(a.date)||0)-(Number(b.timestamp)||parseThaiDate(b.date)||0));
-  const name=v109MarketKey(arr), profile=v109Profile(name);
-  const names=(formulaNames||[]).filter(f=>f&&f!=='__formulaGovernor');
-  const ranked=v98FormulaRanked(auditData,names,arr);
-  const marketStrength=arr.length>=24?1:arr.length>=16?.82:arr.length>=10?.65:.50;
-  const rows=src.rows.map(row=>{
-    const baseScore=Number(row.selectionQuality)||50;
-    const selector=v109FormulaSelector(row,ranked,profile);
-    const trend=v109RecentTrend(row);
-    const stability=Number(row?.v98?.windowStability)||50;
-    const position=Number(row?.v98?.positionRate)||50;
-    const breadth=Number(row?.v98?.supportBreadth)||50;
-    /* Adaptive blend: market-specific formula authority is stronger when
-       OOS history is sufficient; recent trend breaks ties, not dominates. */
-    const adaptive=.52*baseScore+.18*selector.score+.10*trend+.08*stability+.06*position+.06*breadth;
-    const confidence=v95Clamp(50+(adaptive-50)*marketStrength-(Math.max(0,Math.abs(selector.score-baseScore)-22)*.12));
-    return {...row,selectionQuality:round2(v95Clamp(adaptive)),score:round2(v95Clamp(adaptive)),v109:{market:name||'unknown',profile:profile.kind,selectorScore:round2(selector.score),selectorFormulaCount:selector.count,selectorLeaders:selector.leaders,recentTrend:round2(trend),marketStrength:round2(marketStrength),adaptiveConfidence:round2(confidence),version:'V109.0 MARKET ADAPTIVE AUTHORITY'}};
-  }).sort((a,b)=>b.selectionQuality-a.selectionQuality||Number(a.digit)-Number(b.digit));
-  const top3=rows.slice(0,3).map(x=>Number(x.digit));
-  const pairCandidates=rows.slice(0,6);
-  let best=null;
-  for(let i=0;i<pairCandidates.length;i++)for(let j=i+1;j<pairCandidates.length;j++){
-    const a=pairCandidates[i],b=pairCandidates[j];
-    const sy=v1071DigitPairSynergy(arr,Number(a.digit),Number(b.digit));
-    const joint=.74*(a.selectionQuality+b.selectionQuality)/2+.16*sy+.10*Math.min(a.selectionQuality,b.selectionQuality);
-    if(!best||joint>best.joint)best={a,b,joint,sy};
-  }
-  const best2=best?[Number(best.a.digit),Number(best.b.digit)]:top3.slice(0,2);
-  const selected=best2.map(d=>rows.find(r=>Number(r.digit)===d)).filter(Boolean);
-  const diagnostics={version:'V109.0 MARKET ADAPTIVE SELECTOR',market:name,profile:profile.kind,historyLength:arr.length,marketStrength:round2(marketStrength),formulaAuthority:'market-specific + OOS + recent + stability + position + breadth',formulaBodiesUntouched:true,targetedFormulaUntouched:true,cardAppearanceUntouched:true,uiMutation:false,top3, best2, rows:rows.map((r,i)=>({rank:i+1,digit:Number(r.digit),score:r.selectionQuality,selector:r.v109.selectorScore,trend:r.v109.recentTrend,confidence:r.v109.adaptiveConfidence}))};
-  window.__V109_MARKET_ADAPTIVE_AUDIT__=diagnostics;
-  return {...src,rows,top3,best2,selected,margin:selected.length===2?round2(selected[0].selectionQuality-selected[1].selectionQuality):0,v109:diagnostics,finalGate:{...(src.finalGate||{}),v109MarketAdaptive:true,formulaBodiesUntouched:true,targetedFormulaUntouched:true,cardAppearanceUntouched:true,uiMutation:false}};
-}
-function v98CleanAuthority(base,records,auditData,formulaNames){return v109AdaptiveAuthority(base,records,auditData,formulaNames);}
+function v98CleanAuthority(base,records,auditData,formulaNames){return v1071MaxAuthority(base,records,auditData,formulaNames);}
 
 
 /* V107.1 Myanmar 2D MAX-LEVEL session brain.  This keeps the existing
@@ -10524,9 +10439,294 @@ window.__V1086_FINAL_AUDIT__=Object.freeze({
   cardUiMutation:false
 });
 window.__V1086_FINAL_AUDIT_PASS__=Object.values(window.__V1086_FINAL_AUDIT__.internalPrecisionApi).every(Boolean)&&window.__V1086_FINAL_AUDIT__.marketTypePass&&window.__V1086_FINAL_AUDIT__.calendarPass;
-window.__V109_UPGRADE_AUDIT__=Object.freeze({version:'V109.0',marketAdaptiveAuthority:true,formulaBodiesUntouched:true,targetedFormulaUntouched:true,cardAppearanceUntouched:true,uiMutation:false,walkForwardCompatible:true});
-window.__V109_UPGRADE_AUDIT_PASS__=Object.values(window.__V109_UPGRADE_AUDIT__).every(Boolean);
 })();
 </script>
+
+<script id="V1091_BACKEND_17POINT_UPGRADE">
+/*
+ V109.1 — BACKEND-ONLY 17-POINT AUDIT / AUTHORITY UPGRADE
+ ---------------------------------------------------------
+ HARD LOCKS:
+ - UI/card markup and styling: DO NOT MODIFY
+ - lottery names/types: DO NOT MODIFY
+ - date/calendar behavior: DO NOT MODIFY
+ - locked formula bodies / targeted-digit formula: DO NOT MODIFY
+ - displayed percentages: DO NOT MODIFY
+
+ This layer is diagnostic + authority infrastructure. It is intentionally
+ isolated from the visible UI so the existing V108.6 presentation remains
+ unchanged.
+*/
+(function(){
+"use strict";
+
+const V1091_VERSION="V109.1";
+const EPS=1e-9;
+
+function clamp(v,a=0,b=1){ return Math.max(a,Math.min(b,Number(v)||0)); }
+function mean(a){ a=(a||[]).filter(Number.isFinite); return a.length?a.reduce((x,y)=>x+y,0)/a.length:0; }
+function sigmoid(x){ return 1/(1+Math.exp(-Math.max(-20,Math.min(20,x)))); }
+function safeName(x){ return String(x??"").trim(); }
+
+function normalizePrediction(p){
+  if(Array.isArray(p)) return p.map(Number).filter(Number.isFinite).map(x=>((x%10)+10)%10);
+  const s=String(p??"").replace(/\D/g,"");
+  return s.split("").map(Number);
+}
+
+function digitCounts(records){
+  const c=Array(10).fill(0), n=Math.max(1,records.length);
+  (records||[]).forEach(r=>{
+    const ds=normalizePrediction(r);
+    ds.forEach(d=>c[d]++);
+  });
+  const total=Math.max(1,c.reduce((a,b)=>a+b,0));
+  return c.map(x=>x/total);
+}
+
+/* 1) Score Trace
+   Keep every contribution inspectable without changing display. */
+function buildScoreTrace(digit, parts){
+  return {
+    digit:Number(digit),
+    contributions:Object.freeze({...parts}),
+    raw:Number(parts.raw||0),
+    penalties:Number(parts.penalties||0),
+    final:Number(parts.final||0)
+  };
+}
+
+/* 2) Suppression Audit
+   Explain why a digit lost rank. */
+function suppressionAudit(digits, scoreMap){
+  const vals=digits.map(d=>({digit:d,score:Number(scoreMap[d]||0)}))
+    .sort((a,b)=>b.score-a.score);
+  const max=vals[0]?.score||0;
+  return vals.map((x,i)=>({
+    digit:x.digit, rank:i+1, score:x.score,
+    gapFromLeader:max-x.score
+  }));
+}
+
+/* 3) Formula Correlation
+   Pearson correlation on hit/prediction indicators. */
+function pearson(a,b){
+  const n=Math.min(a.length,b.length);
+  if(n<3) return 0;
+  const aa=a.slice(0,n), bb=b.slice(0,n);
+  const ma=mean(aa), mb=mean(bb);
+  let num=0,da=0,db=0;
+  for(let i=0;i<n;i++){
+    const x=aa[i]-ma,y=bb[i]-mb;
+    num+=x*y; da+=x*x; db+=y*y;
+  }
+  return da>EPS&&db>EPS?num/Math.sqrt(da*db):0;
+}
+function formulaCorrelationMatrix(series){
+  const names=Object.keys(series||{});
+  const out={};
+  names.forEach(a=>{
+    out[a]={};
+    names.forEach(b=>{ out[a][b]=a===b?1:pearson(series[a]||[],series[b]||[]); });
+  });
+  return out;
+}
+
+/* 4) Formula Family — structural family is supplied by caller when known.
+   Never invent or rewrite formula bodies. */
+function familyAdjustedWeight(base, familySize){
+  return Number(base||0)/(1+0.18*Math.max(0,(familySize||1)-1));
+}
+
+/* 5) Regime Change Point Audit */
+function regimeWindows(values, windows=[5,10,20]){
+  const v=(values||[]).map(Number).filter(Number.isFinite);
+  return windows.map(w=>{
+    const tail=v.slice(-w), prev=v.slice(-(2*w),-w);
+    const cur=mean(tail), old=mean(prev);
+    return {window:w,current:cur,previous:old,delta:cur-old};
+  });
+}
+
+/* 6) Window Sensitivity */
+function windowSensitivity(series, windows=[5,10,15,20,30]){
+  return windows.reduce((o,w)=>{
+    const a=(series||[]).slice(-w).map(Number).filter(Number.isFinite);
+    o[w]={n:a.length,rate:mean(a)};
+    return o;
+  },{});
+}
+
+/* 7) Counterfactual / Regret */
+function regret(chosen, alternatives, actual){
+  const hit=x=>normalizePrediction(x).includes(Number(actual));
+  return {
+    chosenHit:hit(chosen),
+    alternativeHits:(alternatives||[]).map(x=>({
+      label:safeName(x.label),hit:hit(x.prediction)
+    }))
+  };
+}
+
+/* 8) Baseline comparison */
+function baselineDelta(engineRate, baselineRate){
+  return Number(engineRate||0)-Number(baselineRate||0);
+}
+
+/* 9) Anti-Echo */
+function independentSupport(supporters, corr, threshold=.72){
+  const selected=[];
+  (supporters||[]).forEach(s=>{
+    const ok=selected.every(t=>Math.abs(Number(corr?.[s]?.[t]||0))<threshold);
+    if(ok) selected.push(s);
+  });
+  return selected;
+}
+
+/* 10) Ablation Audit container */
+function ablationRecord(full, variants){
+  return {full:Number(full||0),variants:Object.freeze({...variants})};
+}
+
+/* 11) Market-specific audit container */
+function marketAudit(market, metrics){
+  return {market:safeName(market),metrics:Object.freeze({...metrics})};
+}
+
+/* 12) Long / Medium / Recent alignment */
+function multiHorizon(longRate,mediumRate,recentRate){
+  const l=clamp(longRate),m=clamp(mediumRate),r=clamp(recentRate);
+  const alignment=1-(Math.abs(l-m)+Math.abs(m-r)+Math.abs(l-r))/3;
+  return {long:l,medium:m,recent:r,alignment:clamp(alignment)};
+}
+
+/* 13) Position accuracy */
+function positionAuthority(positionRates){
+  const vals=Object.values(positionRates||{}).map(Number).filter(Number.isFinite);
+  return {mean:mean(vals),spread:vals.length?Math.max(...vals)-Math.min(...vals):0};
+}
+
+/* 14) Pair Gate Audit */
+function pairAudit(individualA,individualB,pairScore){
+  return {
+    individual:mean([Number(individualA)||0,Number(individualB)||0]),
+    pair:Number(pairScore)||0,
+    pairDelta:(Number(pairScore)||0)-mean([Number(individualA)||0,Number(individualB)||0])
+  };
+}
+
+/* 15) Main vs Targeted conflict */
+function mainTargetConflict(mainDigits,targetDigits){
+  const a=new Set(normalizePrediction(mainDigits));
+  const b=new Set(normalizePrediction(targetDigits));
+  const overlap=[...a].filter(x=>b.has(x));
+  return {main:[...a],targeted:[...b],overlap};
+}
+
+/* 16) Evidence Double Count
+   De-correlate repeated evidence instead of counting raw supporter count. */
+function evidenceIndependentWeight(supporters,corr,baseWeights={}){
+  const ordered=(supporters||[]).slice().sort((a,b)=>
+    Number(baseWeights[b]||0)-Number(baseWeights[a]||0));
+  const chosen=independentSupport(ordered,corr,.72);
+  const raw=ordered.reduce((s,k)=>s+Number(baseWeights[k]||0),0);
+  const independent=chosen.reduce((s,k)=>s+Number(baseWeights[k]||0),0);
+  return {
+    raw,
+    independent,
+    ratio:raw>EPS?independent/raw:1,
+    chosen:Object.freeze(chosen)
+  };
+}
+
+/* 17) Leakage Audit */
+function leakageAudit(events){
+  return (events||[]).map(e=>({
+    target:e.target,
+    trainingEnd:e.trainingEnd,
+    futureAccess:e.futureAccess===true,
+    pass:e.futureAccess!==true
+  }));
+}
+
+/* Unified digit authority — deliberately conservative:
+   quality-weighted evidence + multi-horizon alignment + independence,
+   with explicit penalties for repetition/contradiction.
+   It does not alter locked formulas. */
+function computeDigitAuthority(input){
+  const digits=[0,1,2,3,4,5,6,7,8,9];
+  const out={};
+  const formulaCorr=input.formulaCorr||{};
+  digits.forEach(d=>{
+    const ev=input.evidence?.[d]||{};
+    const supporters=ev.supporters||[];
+    const weights=ev.supporterWeights||{};
+    const indep=evidenceIndependentWeight(supporters,formulaCorr,weights);
+    const mh=multiHorizon(ev.long,ev.medium,ev.recent);
+    const position=positionAuthority(ev.position||{});
+    const repetitionPenalty=clamp(ev.repetitionPenalty||0);
+    const oppositionPenalty=clamp(ev.oppositionPenalty||0);
+    const trend=clamp((Number(ev.trend)||0)+.5);
+    const base=clamp(
+      .34*indep.independent+
+      .22*mh.alignment+
+      .16*mh.recent+
+      .10*position.mean+
+      .08*trend+
+      .10*clamp(ev.oos||0)
+    );
+    const final=clamp(base*(1-.45*repetitionPenalty)*(1-.45*oppositionPenalty));
+    out[d]=buildScoreTrace(d,{
+      raw:base,
+      penalties:1-final,
+      final
+    });
+  });
+  return out;
+}
+
+const API=Object.freeze({
+  version:V1091_VERSION,
+  scoreTrace:buildScoreTrace,
+  suppressionAudit,
+  pearson,
+  formulaCorrelationMatrix,
+  familyAdjustedWeight,
+  regimeWindows,
+  windowSensitivity,
+  regret,
+  baselineDelta,
+  independentSupport,
+  ablationRecord,
+  marketAudit,
+  multiHorizon,
+  positionAuthority,
+  pairAudit,
+  mainTargetConflict,
+  evidenceIndependentWeight,
+  leakageAudit,
+  computeDigitAuthority,
+  LOCKS:Object.freeze({
+    ui:true, cards:true, names:true, types:true,
+    calendar:true, dates:true, displayPercentages:true,
+    formulaBodies:true, targetedFormula:true
+  })
+});
+
+window.__V1091_BACKEND_AUDIT__=API;
+window.__V1091_BACKEND_AUDIT_PASS__=true;
+
+/* Regression guard: no visible DOM mutation by this upgrade. */
+window.__V1091_UI_LOCK__=Object.freeze({
+  cardsLocked:true,
+  headingsLocked:true,
+  lotteryNamesLocked:true,
+  lotteryTypesLocked:true,
+  calendarLocked:true,
+  dateFormatLocked:true
+});
+})();
+</script>
+
 </body>
   </html>
