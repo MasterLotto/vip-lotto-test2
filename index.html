@@ -1194,7 +1194,7 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 
 
 
-  .actions{grid-template-columns:1fr}
+  .actions{grid-template-columns:1fr 1fr}
 
 
 
@@ -1426,8 +1426,8 @@ table.audit-table tr:nth-child(even){background:#fdfbf7}
 
   <div class="actions">
     <button id="run" class="run">⚡ ประมวลผลระบบ V32.4</button>
-    <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
     <button id="clearGlobal" class="clear-global">ล้างข้อมูลสะสมทั้งหมด</button>
+    <button id="clearInput" class="clear">ล้างกล่องกรอกข้อมูล</button>
   </div>
 
 
@@ -1691,21 +1691,9 @@ function percent(part,total){
 
 
 
-function formatDisplayTitle(rawName){
-
-
-
-
-  let name=String(rawName||'').trim();
-
-
-
-
-  const thaiStockKey=name
-    .replace(/\s+/g,'')
-    .toLowerCase();
-
-
+function normalizeLotterySeriesName(rawName){
+  const name=String(rawName||'').trim();
+  const key=name.replace(/\s+/g,'').toLowerCase();
   const thaiStockLabels={
     'ไทยเปิดเช้า':'หุ้นไทย เปิดเช้า',
     'ไทยปิดเที่ยง':'หุ้นไทย ปิดเที่ยง',
@@ -1716,11 +1704,14 @@ function formatDisplayTitle(rawName){
     'หุ้นไทยเปิดบ่าย':'หุ้นไทย เปิดบ่าย',
     'หุ้นไทยปิดเย็น':'หุ้นไทย ปิดเย็น'
   };
+  return thaiStockLabels[key]||name;
+}
 
 
-  if(thaiStockLabels[thaiStockKey])
-    return thaiStockLabels[thaiStockKey];
-
+function formatDisplayTitle(rawName){
+  let name=normalizeLotterySeriesName(rawName);
+  if(/^หุ้นไทย (เปิดเช้า|ปิดเที่ยง|เปิดบ่าย|ปิดเย็น)$/.test(name))
+    return name;
 
   name=name
     .replace(/^สถิติหุ้น\s*/,'')
@@ -1881,7 +1872,8 @@ function formatDisplayTitle(rawName){
 
 function getLotteryFlag(name){
   const n=String(name||'').toLowerCase().trim();
-  if(n.includes('นิเคอิ')||n.includes('นิกเคอิ')||n.includes('ญี่ปุ่น'))return'🇯🇵';
+  const nikkei=/นิเคอิ|นิกเคอิ|นิกเกอิ|นิเกอิ|nikkei|nikkey|japan/.test(n);
+  if(nikkei)return'🇯🇵';
   if(n.includes('ลาว'))return'🇱🇦';
   if(n.includes('ฮานอย')||n.includes('เวียดนาม'))return'🇻🇳';
   if(n.includes('ไทย')||n.includes('รัฐบาล')||n.includes('ออมสิน')||n.includes('ธกส'))return'🇹🇭';
@@ -2111,7 +2103,7 @@ function parseInput(text){
 
 
 
-    const name=header[1].trim();
+    const name=normalizeLotterySeriesName(header[1].trim());
     const date=header[2].trim();
 
 
@@ -6894,6 +6886,11 @@ function runEngine(){
     if(stored)
       masterRecords=
         JSON.parse(stored);
+
+    masterRecords.forEach(r=>{
+      if(r&&r.name)
+        r.name=normalizeLotterySeriesName(r.name);
+    });
 
 
 
