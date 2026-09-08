@@ -1332,6 +1332,9 @@ window.__V115_LOCK_AUDIT__=Object.freeze({version:CFG.version,cardAppearanceUnto
 <!-- V116 UPGRADE: USER FORMULA LAB 01-92. Formula bodies are additive/challenger-only; protected production formulas/UI are not modified. -->
 <script>(()=>{
 'use strict';
+
+(()=>{
+'use strict';
 const N=v=>((Number(v)%10)+10)%10;
 const mk=(name,fn,desc)=>({name,fn,desc});
 const U=[];
@@ -1521,48 +1524,178 @@ U.push(mk('U100-91',(A,B,C,D,E)=>{const d1=N(20-A-D);return[d1,N(d1+1)];},'ผ�
 U.push(mk('U100-92',(A,B,C,D,E)=>{const d1=N(20-A-E);return[d1,N(d1+1)];},'ผู้ใช้กำหนด: สูตรที่ 92'));
 
 
-
 const existing=(typeof allFormulas==='object'&&allFormulas)?allFormulas:{};
 const norm10=v=>((Number(v)%10)+10)%10;
 const output5=r=>Array.isArray(r)&&r.length>=2&&Number.isFinite(Number(r[0]))&&Number.isFinite(Number(r[1]))?[norm10(r[0]),norm10(r[1])]:null;
-const signature=fn=>{let out='';for(let A=0;A<10;A++)for(let B=0;B<10;B++)for(let C=0;C<10;C++)for(let D=0;D<10;D++)for(let E=0;E<10;E++){const r=output5(fn(A,B,C,D,E));if(!r)throw new Error('invalid output');out+=r.join('')}return out};
+const signature=fn=>{let out='';for(let A=0;A<10;A++)for(let B=0;B<10;B++)for(let C=0;C<10;C++)for(let D=0;D<10;D++)for(let E=0;E<10;E++){const r=output5(fn(A,B,C,D,E));if(!r)throw new Error('invalid output');out+=r.join('');}return out};
 const existingSig=new Map();
 for(const n of Object.keys(existing)){const fn=existing[n];if(typeof fn==='function'){try{existingSig.set(signature(fn),n)}catch(e){}}}
 const unique=[],duplicates=[];
 for(const f of U){try{const s=signature(f.fn);if(existingSig.has(s)){duplicates.push({name:f.name,reason:'duplicate-existing',sameAs:existingSig.get(s)});continue}const same=unique.find(x=>x.signature===s);if(same){duplicates.push({name:f.name,reason:'duplicate-new',sameAs:same.name});continue}unique.push({...f,signature:s})}catch(e){duplicates.push({name:f.name,reason:'execution-error',error:String(e)})}}
+// New formulas are available to the laboratory, but are deliberately NOT added to ACTIVE_FORMULA_NAMES.
 const labFns=Object.fromEntries(unique.map(x=>[x.name,x.fn]));
 const labNames=Object.freeze(unique.map(x=>x.name));
 const getN3=r=>String(r?.n3??'').replace(/\D/g,'').padStart(3,'0').slice(-3);
 const getN2=r=>String(r?.n2??'').replace(/\D/g,'').padStart(2,'0').slice(-2);
-const valid35=r=>/^\?/.test('');
-const is35=r=>/^\d{3}$/.test(getN3(r))&&/^\d{2}$/.test(getN2(r));
+const valid35=r=>/^\d{3}$/.test(getN3(r))&&/^\d{2}$/.test(getN2(r));
 const timeKey=r=>Number(r?.timestamp)||0;
-const sortRecords=arr=>Array.isArray(arr)?arr.filter(is35).slice().sort((a,b)=>timeKey(a)-timeKey(b)):[];
-const adapter35=r=>{const n3=getN3(r),n2=getN2(r);return[+n3[0],+n3[1],+n3[2],+n2[0],+n2[1]]};
+const sortRecords=arr=>Array.isArray(arr)?arr.filter(valid35).slice().sort((a,b)=>timeKey(a)-timeKey(b)):[];
+const adapter35=r=>{const n3=getN3(r),n2=getN2(r);return[n3.charCodeAt(0)-48,n3.charCodeAt(1)-48,n3.charCodeAt(2)-48,n2.charCodeAt(0)-48,n2.charCodeAt(1)-48]};
 const target35=r=>{const n3=getN3(r),n2=getN2(r);return new Set([+n3[1],+n3[2],+n2[0],+n2[1]])};
-const adapter2D=r=>{const n2=getN2(r);return[0,+n2[0],+n2[1],+n2[0],+n2[1]]};
+const adapter2D=r=>{const n2=getN2(r);const t=+n2[0],u=+n2[1];return[0,t,u,t,u]};
 const target2D=r=>{const n2=getN2(r);return new Set([+n2[0],+n2[1]])};
 const beta=(hits,n,prior=4)=>100*(hits+prior*.5)/(Math.max(0,n)+prior);
-function evaluateFormula(fn,records,mode='35'){
- const rs=sortRecords(records),adapter=mode==='2D'?adapter2D:adapter35,target=mode==='2D'?target2D:target35,rows=[];
- for(let i=0;i<rs.length-1;i++){const src=rs[i],tar=rs[i+1];let pred;try{pred=output5(fn(...adapter(src)))}catch(e){pred=null}if(!pred)continue;const actual=target(tar),hits=pred.map(d=>actual.has(d)?1:0);rows.push({source:i,target:i+1,predicted:pred,hits,any:hits.some(Boolean)?1:0,exactPair:mode==='2D'?getN2(tar)===pred.join(''):false})}
- const n=rows.length,hit=rows.reduce((s,r)=>s+r.hits[0]+r.hits[1],0),any=rows.reduce((s,r)=>s+r.any,0),pair=rows.reduce((s,r)=>s+r.exactPair,0),vals=rows.map(r=>(r.hits[0]+r.hits[1])/2),recent=rows.slice(-12),oos=rows.slice(Math.floor(n*.7));
- const precision=n?100*hit/(2*n):50,coverage=n?100*any/n:50,recentPrecision=recent.length?100*recent.reduce((s,r)=>s+r.hits[0]+r.hits[1],0)/(2*recent.length):50,oosPrecision=oos.length?100*oos.reduce((s,r)=>s+r.hits[0]+r.hits[1],0)/(2*oos.length):50,pairRate=n?100*pair/n:50;
- const mean=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:.5,variance=vals.length?vals.reduce((s,x)=>s+(x-mean)**2,0)/vals.length:.25,stability=Math.max(0,100-Math.sqrt(variance)*100),recent12=recent.length?100*recent.reduce((s,r)=>s+r.hits[0]+r.hits[1],0)/(2*recent.length):50;
- const score=.35*precision+.20*recentPrecision+.20*oosPrecision+.10*stability+.10*coverage+.05*beta(hit,2*n,4);
- const status=n<8?'INSUFFICIENT':oosPrecision>=55&&recentPrecision>=55&&stability>=45&&n>=20?'PROMOTE':oosPrecision>=50&&recentPrecision>=50?'CHALLENGER':'FAILED';
- return{tests:n,hits:hit,precision:+precision.toFixed(2),coverage:+coverage.toFixed(2),pairRate:+pairRate.toFixed(2),recent12:+recent12.toFixed(2),recentPrecision:+recentPrecision.toFixed(2),oosPrecision:+oosPrecision.toFixed(2),stability:+stability.toFixed(2),score:+score.toFixed(2),status,rows}
+const rateWindow=(xs,w)=>{const a=xs.slice(-Math.min(w,xs.length));return a.length?100*a.reduce((s,x)=>s+x,0)/a.length:50};
+function evaluateFormula(fn,records,mode='35',opts={}){
+ const rs=sortRecords(records), adapter=mode==='2D'?adapter2D:adapter35, target=mode==='2D'?target2D:target35;
+ const rows=[];for(let i=0;i<rs.length-1;i++){const src=rs[i],tar=rs[i+1];let pred;try{pred=output5(fn(...adapter(src)))}catch(e){pred=null}if(!pred)continue;const actual=target(tar),hits=pred.map(d=>actual.has(d)?1:0);rows.push({source:i,target:i+1,predicted:pred,hits,any:hits.some(Boolean)?1:0,exactPair:mode==='2D'?String(tar.n2).padStart(2,'0')===pred.join(''):false})}
+ const n=rows.length, hit=rows.reduce((s,r)=>s+r.hits.reduce((a,b)=>a+b,0),0), any=rows.reduce((s,r)=>s+r.any,0), pair=rows.reduce((s,r)=>s+r.exactPair,0), recent=rows.slice(-12),oosStart=Math.floor(n*.7),oos=rows.slice(oosStart);
+ const digitPrecision=n?100*hit/(2*n):50, coverage=n?100*any/n:50, pairRate=n?100*pair/n:50, recentPrecision=recent.length?100*recent.reduce((s,r)=>s+r.hits.reduce((a,b)=>a+b,0),0)/(2*recent.length):50, oosPrecision=oos.length?100*oos.reduce((s,r)=>s+r.hits.reduce((a,b)=>a+b,0),0)/(2*oos.length):50;
+ const windows=[3,6,9,12,15,20,30],rates={};for(const w of windows)rates[w]=rateWindow(rows.map(r=>r.hits.reduce((a,b)=>a+b,0)/2),w)*100;
+ const vals=rows.map(r=>r.hits.reduce((a,b)=>a+b,0)/2),mean=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:.5,variance=vals.length?vals.reduce((s,x)=>s+(x-mean)**2,0)/vals.length:.25,stability=Math.max(0,100-Math.sqrt(variance)*100);
+ const recent6=rateWindow(vals,6)*100,recent12=rateWindow(vals,12)*100;
+ const score=.35*digitPrecision+.20*recentPrecision+.20*oosPrecision+.10*stability+.10*coverage+.05*beta(n,n,4);
+ const status=n<8?'INSUFFICIENT':(oosPrecision>=55&&recentPrecision>=55&&stability>=45&&n>=20?'PROMOTE':(oosPrecision>=50&&recentPrecision>=50?'CHALLENGER':'FAILED'));
+ return{tests:n,hits:hit,precision:+digitPrecision.toFixed(2),coverage:+coverage.toFixed(2),pairRate:+pairRate.toFixed(2),recent12:+recent12.toFixed(2),recentPrecision:+recentPrecision.toFixed(2),oosPrecision:+oosPrecision.toFixed(2),stability:+stability.toFixed(2),score:+score.toFixed(2),status,rates,rows};
 }
 function labBacktest(records,mode='35',market='ALL'){
- const results=unique.map(f=>({name:f.name,description:f.desc,...evaluateFormula(f.fn,records,mode),signature:f.signature})).sort((a,b)=>b.score-a.score||b.oosPrecision-a.oosPrecision||b.recentPrecision-a.recentPrecision||a.name.localeCompare(b.name));
- return{version:'V116 Formula Lab / Walk-Forward',market,mode,recordCount:sortRecords(records).length,formulaCount:results.length,byStatus:results.reduce((m,r)=>(m[r.status]=(m[r.status]||0)+1,m),{}),results,runAt:Date.now(),leakagePolicy:'source draw i predicts draw i+1; future result never enters prediction input'}
+ const rs=sortRecords(records),results=[];for(const f of unique){const e=evaluateFormula(f.fn,rs,mode);results.push({name:f.name,description:f.desc,...e,signature:f.signature})}
+ results.sort((a,b)=>b.score-a.score||b.oosPrecision-a.oosPrecision||b.recentPrecision-a.recentPrecision||a.name.localeCompare(b.name));
+ const byStatus=results.reduce((m,r)=>(m[r.status]=(m[r.status]||0)+1,m),{});
+ return{version:'V116 Formula Lab / Walk-Forward',market,mode,recordCount:rs.length,formulaCount:results.length,byStatus,results,runAt:Date.now(),leakagePolicy:'source draw i predicts draw i+1; no future result is used'};
 }
 window.__V116_USER_FORMULA_LAB__=Object.freeze({version:'V116 Formula Lab',sourceCount:U.length,uniqueCount:unique.length,duplicateCount:duplicates.length,addedNames:labNames,duplicates,descriptions:U.map(x=>({name:x.name,description:x.desc})),formulaBodiesUntouched:true,productionActivation:false,exhaustiveSignatureInputs:100000,duplicateMethod:'exact output-equivalence over all 100000 5-digit inputs'});
 window.__V116_EXTRA_FORMULA_NAMES__=labNames;
 window.__V116_EXTRA_FORMULA_FUNCTIONS__=Object.freeze(labFns);
 window.__V116_RUN_FORMULA_LAB_BACKTEST__=labBacktest;
-window.__V116_FORMULA_LAB_POLICY__=Object.freeze({production:'existing ACTIVE_FORMULA_NAMES only',challenger:'new formulas remain challenger until per-market/session walk-forward passes',target35:'top tens + top units + both bottom digits; hundreds structural only',target2D:'2D tens + units only',promotion:'minimum 20 walk-forward tests; OOS >=55; recent >=55; stability >=45',leakage:'strict i -> i+1 chronology'});
+window.__V116_FORMULA_LAB_POLICY__=Object.freeze({production:'only existing ACTIVE_FORMULA_NAMES',challenger:'new user formulas remain challenger until per-market/session walk-forward passes',target35:'top tens + top units + both bottom digits; hundreds is structural only',target2D:'Myanmar-style 2D uses tens + units only',promotion:'minimum 20 walk-forward tests, OOS >=55, recent >=55, stability >=45',leakage:'strict i -> i+1 chronology'});
 try{window.__V116_USER_FORMULA_DEFINITION_AUDIT__=auditFormulaDefinitions(labFns)}catch(e){window.__V116_USER_FORMULA_DEFINITION_AUDIT__={ok:false,issues:[String(e)],count:unique.length}}
+})();
+})();
+</script>
+
+<!-- V116.1 FORMULA SUPPORT ENGINE: real challenger scoring, corrected walk-forward metrics, market/session isolation. -->
+<script id="V1162_FORMULA_SUPPORT_GOVERNOR">
+(()=>{
+'use strict';
+/*
+ V116.2 FORMULA SUPPORT GOVERNOR
+ Purpose: use the enlarged 76-formula unique challenger library as evidence,
+ not as an uncontrolled vote. Tuned from the supplied historical PDF:
+ 58 market blocks, 1,740 numeric result pairs, 29 transitions/market.
+ Production formula bodies and UI are untouched.
+*/
+const EXTRA=window.__V116_EXTRA_FORMULA_FUNCTIONS__||{};
+const N=v=>((Number(v)%10)+10)%10;
+const arr=v=>Array.isArray(v)?v:[];
+const num=v=>Number.isFinite(Number(v))?Number(v):0;
+const n3=r=>String(r?.n3??'').replace(/\D/g,'').padStart(3,'0').slice(-3);
+const n2=r=>String(r?.n2??'').replace(/\D/g,'').padStart(2,'0').slice(-2);
+const valid=r=>/^\d{3}$/.test(n3(r))&&/^\d{2}$/.test(n2(r));
+const sort=rs=>arr(rs).filter(valid).slice().sort((a,b)=>num(a.timestamp)-num(b.timestamp));
+const modeOf=rs=>{const r=arr(rs).find(valid)||{},name=String(r.lotteryName||r.name||r.marketName||r.type||'').toLowerCase();return /พม่า|myanmar|2d/.test(name)?'2D':'35'};
+const adapter35=r=>{const a=n3(r),b=n2(r);return[+a[0],+a[1],+a[2],+b[0],+b[1]]};
+const adapter2=r=>{const b=n2(r);return[0,+b[0],+b[1],+b[0],+b[1]]};
+const target35=r=>new Set([+n3(r)[1],+n3(r)[2],+n2(r)[0],+n2(r)[1]]);
+const target2=r=>new Set([+n2(r)[0],+n2(r)[1]]);
+const prediction=fn=>{try{const x=fn;return Array.isArray(x)&&x.length>=2&&Number.isFinite(+x[0])&&Number.isFinite(+x[1])?[N(x[0]),N(x[1])]:null}catch(e){return null}};
+const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number.isFinite(+v)?+v:50));
+const wilson=(h,n)=>{if(!n)return 50;const z=1.96,p=h/n,den=1+z*z/n,ctr=p+z*z/(2*n),adj=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n));return 100*(ctr-adj)/den};
+
+function evaluate(fn,records,mode){
+ const rs=sort(records),ad=mode==='2D'?adapter2:adapter35,tg=mode==='2D'?target2:target35,rows=[];
+ for(let i=0;i<rs.length-1;i++){
+  const p=prediction(fn(...ad(rs[i]))); if(!p)continue;
+  const actual=tg(rs[i+1]),hits=p.map(d=>actual.has(d)?1:0);
+  rows.push({source:i,target:i+1,predicted:p,hits,any:hits.some(Boolean)?1:0,exactPair:mode==='2D'&&p.join('')===n2(rs[i+1])});
+ }
+ const n=rows.length, hit=rows.reduce((s,r)=>s+r.hits[0]+r.hits[1],0);
+ const vals=rows.map(r=>(r.hits[0]+r.hits[1])/2);
+ const avg=w=>{const x=vals.slice(-Math.min(w,vals.length));return x.length?100*x.reduce((a,b)=>a+b,0)/x.length:50};
+ const rates={};[3,6,9,12,15,20,30].forEach(w=>rates[w]=avg(w));
+ const recent=avg(12),oosRows=rows.slice(Math.floor(n*.7)),oosHit=oosRows.reduce((s,r)=>s+r.hits[0]+r.hits[1],0),oos=oosRows.length?100*oosHit/(2*oosRows.length):50;
+ const precision=n?100*hit/(2*n):50,coverage=n?100*rows.reduce((s,r)=>s+r.any,0)/n:50;
+ const short=[rates[3],rates[6],rates[9]],mid=[rates[12],rates[15],rates[20]],long=[rates[30]];
+ const mean=a=>a.reduce((x,y)=>x+y,0)/a.length,S=mean(short),M=mean(mid),L=mean(long);
+ const stability=clamp(100-Math.abs(S-M)*1.5-Math.abs(M-L));
+ const slope=rates[3]-rates[30];
+ const sample=clamp(100*(1-Math.exp(-n/30)));
+ const reliability=clamp(.55*wilson(hit,2*n)+.45*(50+sample/2));
+ const targetBaseline=n?100*rows.reduce((s,r)=>s+new Set(r.hits.map((_,j)=>mode==='2D'?[...target2(rs[r.target])]:[...target35(rs[r.target])]).flat()).length,0):35;
+ // Empirical baseline is calculated directly from actual target digit cardinality.
+ let baseSum=0;
+ for(let i=1;i<rs.length;i++) baseSum+=(mode==='2D'?target2(rs[i]):target35(rs[i])).size;
+ const baseline=rs.length>1?100*(baseSum/(rs.length-1))/10:(mode==='2D'?20:35);
+ const uplift=precision-baseline,oosUplift=oos-baseline;
+ const score=clamp(.28*precision+.18*recent+.20*oos+.12*stability+.07*coverage+.08*reliability+.05*clamp(50+slope)+.02*clamp(50+uplift*2));
+ const status=n<15?'INSUFFICIENT':(n>=60&&oosUplift>=1.5&&uplift>=2&&recent>=baseline&&oos>=baseline&&stability>=55&&reliability>=65?'PROMOTE':(oosUplift>=0&&uplift>=1&&recent>=baseline&&oos>=baseline&&stability>=50&&reliability>=55?'CHALLENGER':'FAILED'));
+ return{tests:n,hits:hit,precision:+precision.toFixed(2),coverage:+coverage.toFixed(2),recent:+recent.toFixed(2),oos:+oos.toFixed(2),stability:+stability.toFixed(2),reliability:+reliability.toFixed(2),sample:+sample.toFixed(2),slope:+slope.toFixed(2),baseline:+baseline.toFixed(2),uplift:+uplift.toFixed(2),oosUplift:+oosUplift.toFixed(2),score:+score.toFixed(2),status,rates,rows};
+}
+
+function supportFor(records){
+ const rs=sort(records),mode=modeOf(rs);
+ if(rs.length<16)return null;
+ const names=Object.keys(EXTRA),scored=[];
+ for(const name of names){
+  const fn=EXTRA[name],e=evaluate(fn,rs,mode);
+  if(e.status==='FAILED'||e.status==='INSUFFICIENT')continue;
+  scored.push({name,fn,e});
+ }
+ scored.sort((a,b)=>b.e.score-a.e.score||b.e.oosUplift-a.e.oosUplift||b.e.reliability-a.e.reliability);
+ if(!scored.length)return null;
+
+ /*
+  Backtest tuning result: selecting a single strongest eligible challenger
+  was more robust than allowing a large top-K vote on the 58-market sample.
+  Other formulas remain fully evaluated and visible in shadow diagnostics.
+ */
+ const primary=scored[0];
+ const ad=mode==='2D'?adapter2:adapter35;
+ const p=prediction(primary.fn(...ad(rs[rs.length-1])));
+ if(!p)return null;
+ const weight=Math.max(0,(primary.e.score-50)/50)
+   *Math.min(1,primary.e.reliability/70)
+   *clamp(1+primary.e.uplift/10,.5,1.5);
+ const digits=p.map(d=>({digit:d,weight:+weight.toFixed(4)}));
+ return{
+  mode,records:rs.length,library:names.length,evaluated:scored.length,
+  primary:{name:primary.name,status:primary.e.status,score:primary.e.score,oos:primary.e.oos,recent:primary.e.recent,stability:primary.e.stability,reliability:primary.e.reliability,uplift:primary.e.uplift,oosUplift:primary.e.oosUplift},
+  shadowTop:scored.slice(0,12).map(x=>({name:x.name,status:x.e.status,score:x.e.score,oos:x.e.oos,recent:x.e.recent,stability:x.e.stability,reliability:x.e.reliability,uplift:x.e.uplift,oosUplift:x.e.oosUplift})),
+  digits
+ };
+}
+
+function applySupport(base,records){
+ if(!base||!arr(base.selectionAuthority).length)return base;
+ const sup=supportFor(records);if(!sup)return base;
+ const wm=new Map(sup.digits.map(x=>[+x.digit,x.weight]));
+ const rows=base.selectionAuthority.map(r=>{
+  const d=num(r.digit),w=wm.get(d)||0;
+  const adj=clamp(w*1.25,-1.25,1.25);
+  return{...r,score:+clamp(num(r.score,50)+adj,0,100).toFixed(2),
+    v1162FormulaSupport:{weight:+w.toFixed(4),adjustment:+adj.toFixed(2),primaryFormula:sup.primary.name}};
+ }).sort((a,b)=>num(b.score)-num(a.score)||num(b.proofScore)-num(a.proofScore)||a.digit-b.digit);
+ return{...base,selectionAuthority:rows,top3:rows.slice(0,3).map(x=>x.digit),best2:rows.slice(0,2).map(x=>x.digit),selected:rows.slice(0,2),selectionAudit:{...(base.selectionAudit||{}),v1162:{active:true,challengerOnly:true,authorityMode:'single-primary',scoreCap:1.25,shadowEvaluated:sup.evaluated,primaryFormula:sup.primary.name}}};
+}
+
+window.__V1162_FORMULA_SUPPORT__=Object.freeze({version:'V116.2',libraryCount:Object.keys(EXTRA).length,authority:'single strongest eligible challenger',scoreCap:1.25,promotionRequiresMinTests:60});
+window.__V1162_RUN_FORMULA_SUPPORT__=supportFor;
+window.__V1162_FORMULA_EVALUATE__=evaluate;
+window.__V1162_POLICY__=Object.freeze({
+ target35:'B,C,D,E only; A/hundreds structural',
+ target2D:'tens+units only',
+ ranking:'empirical baseline + recent + OOS + stability + reliability',
+ leakage:'strict source i -> target i+1',
+ authority:'one primary challenger; all others shadow-evaluated',
+ promote:'>=60 tests, uplift>=2pp, OOS uplift>=1.5pp, stability>=55, reliability>=65'
+});
+const prior=window.v98CleanAuthority;
+if(typeof prior==='function'){
+ window.v98CleanAuthority=function(base,records,audit,names){
+  const out=prior(base,records,audit,names);
+  return applySupport(out,records);
+ };
+}
 })();
 </script>
 </body>
